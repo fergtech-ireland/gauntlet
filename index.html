@@ -472,6 +472,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .revrow .chg{font-size:12.5px;font-weight:700;color:var(--marine);flex:0 0 auto}
 .tempo{font-size:11.5px;color:var(--mute);margin-top:3px}
 .tempoline{font-size:11px;color:var(--mute);padding:0 0 9px;margin-top:-4px}
+.skipbtn{display:block;margin:10px auto 0;font-size:13px;font-weight:700;color:var(--mute);text-decoration:underline}
 </style>
 </head>
 <body>
@@ -688,11 +689,12 @@ const AIMS=[
   {id:'eat',    t:'Eat better',   s:'Cook more than you order'}
 ];
 const aimOf=id=>AIMS.find(a=>a.id===id)||AIMS[0];
+/* Four runs a week, one of them hard and one of them long: the 80/20 shape. */
 const PATTERNS={
-  lose:  ['t_push','walk','t_lower','walk','t_pull','run','checkin'],
+  lose:  ['t_push','walk','t_lower','r_easy','t_pull','walk','checkin'],
   build: ['t_push','t_lower','walk','t_pull','t_lower','rest','checkin'],
-  endure:['run','t_lower','run','walk','run','rest','checkin'],
-  hold:  ['t_push','walk','t_lower','rest','t_pull','walk','checkin'],
+  endure:['r_easy','t_lower','r_intervals','walk','r_easy','r_long','checkin'],
+  hold:  ['t_push','walk','t_lower','rest','t_pull','r_easy','checkin'],
   eat:   ['cook','t_push','cook','walk','t_lower','cook','checkin']
 };
 const SLOTS={
@@ -933,16 +935,20 @@ const stepsToday=()=>{ const a=autoOf(todayKey()); return a? a.steps : null; };
 
 /* ===================== the plan ===================== */
 function slotFor(code){
-  if(SLOTS[code]) return Object.assign({slot:code},SLOTS[code],{templateId:null,exclude:[],setDelta:0});
+  if(SLOTS[code]) return Object.assign({slot:code},SLOTS[code],{templateId:null,runId:null,exclude:[],setDelta:0});
+  const r=(S.runPlans||[]).find(x=>x.id===code);
+  if(r) return {slot:code, runId:code, templateId:null, label:r.name, sub:r.sub, mins:r.mins,
+    kind:'run', type:'run', exclude:[], setDelta:0};
   const t=(S.templates||[]).find(x=>x.id===code);
   return {slot:code, templateId:code, label:(t?t.name:'Lift')+' day', sub:t? t.ex.length+' movements':'Lift',
     mins:50, kind:'workout', type:'workout', exclude:[], setDelta:0};
 }
-function composePlan(c){
+function composePlan(c,swaps){
   const base=(PATTERNS[S.profile.aim]||PATTERNS.lose).filter(x=>x!=='checkin');
   const ci=Math.min(6,Math.max(0,S.profile.checkinDay===undefined?6:S.profile.checkinDay));
   const pattern=[]; let k=0;
   for(let i=0;i<7;i++) pattern.push(i===ci? 'checkin' : base[k++%base.length]);
+  if(swaps) Object.keys(swaps).forEach(i=>{ if(pattern[+i]!=='checkin') pattern[+i]=swaps[i]; });
   const days=pattern.map((code,i)=>Object.assign(slotFor(code),{dow:i}));
   const why=adaptPlan(days,c);
   return {weekOf:mondayKey(), at:Date.now(), days, why};
@@ -958,8 +964,8 @@ function planDiff(a,b){
   });
   return out;
 }
-function buildPlan(){
-  S.plan=composePlan(S.checkins[0]);
+function buildPlan(swaps){
+  S.plan=composePlan(S.checkins[0],swaps);
   const training=S.plan.days.filter(d=>d.type&&d.slot!=='checkin'&&d.slot!=='walk').length;
   S.goal={kind:'any',target:training,unit:'sessions',label:'Move '+training+' times',now:S.goal?S.goal.now:0};
   return S.plan;
@@ -995,10 +1001,12 @@ function ensurePlan(){
 function dayLabel(d){
   if(!d) return '';
   if(d.templateId){ const t=(S.templates||[]).find(x=>x.id===d.templateId); if(t) return t.name+' day'; }
+  if(d.runId&&typeof runPlan==='function'){ const r=runPlan(d.runId); if(r) return r.name; }
   return d.label;
 }
 function daySub(d){
   if(d.templateId){ const t=(S.templates||[]).find(x=>x.id===d.templateId); if(t) return t.ex.length+' movements'; }
+  if(d.runId&&typeof runPlan==='function'){ const r=runPlan(d.runId); if(r) return r.sub; }
   return d.sub||'';
 }
 const todayPlan=()=>{ ensurePlan(); return S.plan.days[dowIdx()]; };
@@ -1012,9 +1020,77 @@ function weekStats(){
   return {planned,done,lifted,vol,steps:avg7('steps'),sleep:avg7('sleep'),wb:avg7('wb'),
     protein:avg7('protein'),weighIns:w.length,wChange};
 }
+/* Pushing a day along. The week absorbs it at the first rest day rather than
+   shunting everything into next week: if Thursday is a rest day and you skip
+   Tuesday, Tuesday lands on Wednesday, Wednesday lands on Thursday, and nothing
+   past that needs to move. If there is no rest day left, the last session in the
+   week drops out and the app says so rather than quietly losing it. */
+function nextSlots(i){
+  const ci=S.profile.checkinDay===undefined?6:S.profile.checkinDay;
+  const out=[];
+  for(let k=i+1;k<7;k++){ if(k!==ci) out.push(k); }
+  return out;
+}
+function absorberFor(i){
+  const after=nextSlots(i);
+  for(const k of after){ const d=S.plan.days[k]; if(d.slot==='rest') return k; }
+  return after.length? after[after.length-1] : null;
+}
+function pushPlanDay(i){
+  ensurePlan();
+  const moved=dayLabel(S.plan.days[i]);
+  const absorb=absorberFor(i);
+  if(absorb===null){ S.plan.days[i]=Object.assign(slotFor('rest'),{dow:i}); save(); renderAll();
+    return {ok:true,moved,dropped:moved,absorbed:null}; }
+  const chain=nextSlots(i).filter(k=>k<=absorb);
+  const dropped = S.plan.days[absorb].slot==='rest'? null : dayLabel(S.plan.days[absorb]);
+  for(let n=chain.length-1;n>0;n--) S.plan.days[chain[n]]=Object.assign({},S.plan.days[chain[n-1]],{dow:chain[n]});
+  S.plan.days[chain[0]]=Object.assign({},S.plan.days[i],{dow:chain[0]});
+  S.plan.days[i]=Object.assign(slotFor('rest'),{dow:i});
+  S.goal.target=S.plan.days.filter(d=>d.type&&d.slot!=='checkin'&&d.slot!=='walk').length;
+  S.goal.label='Move '+S.goal.target+' times';
+  save(); renderAll();
+  return {ok:true,moved,to:chain[0],dropped,absorbed:absorb};
+}
+function dropPlanDay(i){
+  ensurePlan();
+  const dropped=dayLabel(S.plan.days[i]);
+  S.plan.days[i]=Object.assign(slotFor('rest'),{dow:i});
+  S.goal.target=S.plan.days.filter(d=>d.type&&d.slot!=='checkin'&&d.slot!=='walk').length;
+  S.goal.label='Move '+S.goal.target+' times';
+  save(); renderAll();
+  return {ok:true,dropped};
+}
+function openRestChoice(i){
+  const d=S.plan.days[i];
+  document.getElementById('altTitle').textContent='Taking '+DAYS[i]+' off';
+  document.getElementById('altSub').textContent=dayLabel(d)+' is on for that day. What do you want done with it?';
+  const absorb=absorberFor(i);
+  const landing=absorb===null? null : nextSlots(i)[0];
+  document.getElementById('altBody').innerHTML=`
+    <button class="logrow" data-restchoice="push:${i}"><div class="txt"><div class="t">Push it to ${landing!==null?DAYS[landing]:'the next day'}</div>
+      <div class="s">${landing!==null? 'Everything after it shifts along too'+(absorb!==null&&S.plan.days[absorb].slot==='rest'?', and the week soaks it up at '+DAYS[absorb]:'')
+        : 'Nothing left in the week to move it to'}</div></div></button>
+    <button class="logrow" data-restchoice="drop:${i}"><div class="txt"><div class="t">Drop it this week</div>
+      <div class="s">Rest day instead. It comes back next week</div></div></button>
+    <button class="logrow" data-restchoice="keep:${i}"><div class="txt"><div class="t">Leave it where it is</div></div></button>`;
+  openSheet('altSheet');
+}
+document.addEventListener('click',e=>{
+  const rc=e.target.closest('[data-restchoice]'); if(!rc) return;
+  const [mode,iRaw]=rc.dataset.restchoice.split(':'); const i=+iRaw;
+  closeSheets();
+  if(mode==='keep') return;
+  if(mode==='drop'){ const r=dropPlanDay(i); toast(r.dropped+' dropped for this week'); return; }
+  const r=pushPlanDay(i);
+  if(!r.to&&r.dropped) toast('Nothing left to move it to, so '+r.dropped+' comes off this week');
+  else toast(r.moved+' moved to '+DAYS[r.to]+(r.dropped? ', and '+r.dropped+' came off the end':''));
+});
+
 function startPlanDay(day){
   if(!day) return null;
   if(day.templateId) return startWorkout(day.templateId,{exclude:day.exclude,setDelta:day.setDelta});
+  if(day.runId){ const sess=runSession(day.runId); if(sess) return startSession(sess); }
   if(day.slot==='checkin') return openWeek();
   if(day.slot==='rest'){ toast('Rest is part of it. Nothing owed today.'); return null; }
   const seed=SEED_POSTS.find(p=>p.kind===day.type);
@@ -1062,6 +1138,7 @@ function renderToday(){
       : isWalk
         ? (walkDone()? `<div class="doneline">Done. ${num(st)} steps in.</div>` : `<button class="cta ghost" data-go="plan">See the week</button>`)
         : `<button class="cta" id="startToday">${done&&d.type?'Do it again':(d.slot==='checkin'?'Start the check in':'Start')}</button>`}
+    ${d.type&&d.slot!=='walk'&&!done? `<button class="skipbtn" data-restday="${i}">Not today</button>`:''}
     ${d.exclude&&d.exclude.length?`<div class="note">Leaving out ${d.exclude.join(', ')} while it settles.</div>`:''}
   </div>
   <div class="ribbon">${plan.days.map((x,n)=>`<button data-planday="${n}" class="${n===i?'today':''}">
@@ -1105,14 +1182,21 @@ function openDayDetail(n){
   $('dayTitle').textContent=DAYS[n]+' · '+dayLabel(d);
   $('daySub').textContent=d.sub||'';
   $('dayDetail').innerHTML=`
-    ${tpl? `<div style="padding:2px 14px 10px">${tpl.ex.map(r=>`<div class="move" style="display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line-soft);font-size:13.5px">
+    ${d.runId&&typeof runPlan==='function'&&runPlan(d.runId)? `<div style="padding:2px 14px 10px">
+      ${runPlan(d.runId).steps.map(st=>`<div class="move" style="display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line-soft);font-size:13.5px">
+        <span style="flex:1;font-weight:600">${st.n}</span><span style="color:var(--mute);font-size:12.5px">${st.r}</span></div>`).join('')}
+      <div class="note">${runPlan(d.runId).why}</div>
+      <button class="mini" data-runswap="${n}">Change this run</button></div>`:''}
+    ${tpl? `<div style="padding:2px 14px 10px">${tpl.ex.map(r=>`<button class="move" data-dayswap="${r.exId}" style="display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line-soft);font-size:13.5px;width:100%;text-align:left">
         <span style="flex:1;font-weight:600">${exOf(r.exId).n}</span>
-        <span style="color:var(--mute);font-size:12.5px">${r.sets} × ${r.reps}</span></div>`).join('')}
+        <span style="color:var(--mute);font-size:12.5px">${r.sets} × ${r.reps}</span>
+        <span style="color:var(--marine);font-weight:700;font-size:12.5px">Change</span></button>`).join('')}
       ${d.exclude&&d.exclude.length?`<div class="note">Leaving out ${d.exclude.join(', ')}.</div>`:''}
       ${d.setDelta?`<div class="note">One set lighter than the template this week.</div>`:''}</div>`
       : `<div class="note" style="padding:0 14px 12px">${d.slot==='rest'?'Nothing owed. Rest is part of it.':(d.slot==='walk'?'Counted by your tracker. Nothing to press.':'')}</div>`}
     ${d.type&&d.slot!=='walk'? `<button class="sheetcta" data-startday="${n}">Start this ${n===dowIdx()?'now':'day'}</button>`:''}
-    <button class="sheetcta" style="background:var(--grey-btn);color:var(--ink)" data-swap="${n}">Change this day</button>`;
+    <button class="sheetcta" style="background:var(--grey-btn);color:var(--ink)" data-swap="${n}">Change this day</button>
+    ${d.type&&d.slot!=='walk'? `<button class="sheetcta" style="background:var(--grey-btn);color:var(--ink)" data-restday="${n}">Cannot do it, move or drop it</button>`:''}`;
   openSheet('daySheet');
 }
 
@@ -1356,6 +1440,12 @@ document.addEventListener('click',e=>{
   const sd=e.target.closest('[data-startday]'); if(sd){ closeSheets(); startPlanDay(S.plan.days[+sd.dataset.startday]); }
   const pd=e.target.closest('[data-planday]'); if(pd) openDayDetail(+pd.dataset.planday);
   const sw=e.target.closest('[data-swap]'); if(sw){ closeSheets(); openSwap(+sw.dataset.swap); }
+  const dsw=e.target.closest('[data-dayswap]');
+  if(dsw){ closeSheets(); openAlternatives(dsw.dataset.dayswap,{day:true}); }
+  const rd=e.target.closest('[data-restday]');
+  if(rd){ closeSheets(); openRestChoice(+rd.dataset.restday); }
+  const rs=e.target.closest('[data-runswap]');
+  if(rs){ const n=+rs.dataset.runswap; closeSheets(); openRunSwap(n, S.plan.days[n].runId); }
   const st=e.target.closest('[data-swapto]');
   if(st){ const [n,code]=st.dataset.swapto.split(':');
     const old=S.plan.days[+n];
@@ -1426,6 +1516,7 @@ document.addEventListener('click',e=>{
   if(u&&draft){ draft.units=u.dataset.units; drawDetails(); }
 });
 document.addEventListener('input',e=>{
+  if(e.target.id==='onbPeriod'&&onbDraft){ onbDraft.lastPeriod=e.target.value; }
   const r=e.target.closest('[data-range]'); if(!r||!draft) return;
   const k=r.dataset.range; draft[k]=+r.value;
   const out=$('out'+k);
@@ -1514,8 +1605,8 @@ document.addEventListener('click',e=>{
 /* ===================== onboarding: two steps ===================== */
 let step=0, onbDraft=null;
 const cloudAvailable=()=>{ try{ return typeof cloudReady==='function'? !!cloudReady() : !!(window.__CLOUD&&window.__CLOUD.cloudReady()); }catch(e){ return false; } };
-const stepCount=()=>cloudAvailable()?5:4;
-function startOnboarding(){ onbDraft={handle:S.profile.handle,aim:S.profile.aim,checkinDay:6}; step=0; $('onb').classList.add('on'); onbRender(); }
+const stepCount=()=>cloudAvailable()?6:5;
+function startOnboarding(){ onbDraft={handle:S.profile.handle,aim:S.profile.aim,checkinDay:6,sex:'',cycle:false,lastPeriod:''}; step=0; $('onb').classList.add('on'); onbRender(); }
 function onbRender(){
   const b=$('onbBody');
   $('onbDots').innerHTML=Array.from({length:stepCount()},(_,i)=>`<i class="${i<=step?'on':''}"></i>`).join('');
@@ -1533,29 +1624,68 @@ function onbRender(){
         <div class="txt"><div class="t">${a.t}</div><div class="s">${a.s}</div></div><div class="rad"></div></button>`).join('');
   }
   if(step===2){
-    const ids=[...new Set((PATTERNS[onbDraft.aim]||PATTERNS.lose).filter(x=>x.indexOf('t_')===0))];
-    const tpls=ids.map(id=>(S.templates||[]).find(t=>t.id===id)).filter(Boolean);
+    const sex=onbDraft.sex||'';
+    b.innerHTML=`<h2>One thing about you.</h2>
+      <p class="lead">Only used for two things: the calorie maths, which is different for men and women, and whether to offer cycle tracking. Nothing else, and you can change it later.</p>
+      <div class="pair" style="margin-bottom:8px">
+        <button class="big-pick ${sex==='f'?'on':''}" data-onbsex="f">Female</button>
+        <button class="big-pick ${sex==='m'?'on':''}" data-onbsex="m">Male</button></div>
+      <button class="big-pick ${sex==='x'?'on':''}" data-onbsex="x" style="width:100%;margin-bottom:18px">Rather not say</button>
+      ${sex==='f'? `<div class="revday">
+        <div class="revhead">Cycle tracking <span>optional</span></div>
+        <div class="revrow" style="pointer-events:none"><div class="txt"><div class="s">It does two things. It widens the weight forecast where fluid retention peaks, so a normal half kilo of water is not read as fat, and it says so on the day. It never changes your training on its own.</div></div></div>
+        <div class="pair" style="padding:12px">
+          <button class="big-pick ${onbDraft.cycle?'on':''}" data-onbcycle="on">Track it</button>
+          <button class="big-pick ${!onbDraft.cycle?'on':''}" data-onbcycle="off">Not for now</button></div>
+        ${onbDraft.cycle? `<div style="padding:0 12px 14px">
+          <div class="nf"><label>First day of your last period</label>
+            <input id="onbPeriod" type="date" value="${onbDraft.lastPeriod||''}" style="font-family:Archivo;font-size:15px;font-weight:600"></div>
+          <div class="note">You can skip the date and set it later from Progress.</div></div>`:''}
+      </div>`
+      : (sex==='x'? `<div class="note">Fair enough. The calorie estimate will use the average of the two equations, which is a little less precise. Cycle tracking is on the Progress screen if you want it later.</div>`:'')}`;
+  }
+  if(step===3){
+    const plan=(PATTERNS[onbDraft.aim]||PATTERNS.lose);
+    const ci=onbDraft.checkinDay===undefined?6:onbDraft.checkinDay;
+    const base=plan.filter(x=>x!=='checkin'); const week=[]; let k=0;
+    for(let i=0;i<7;i++) week.push(i===ci? 'checkin' : base[k++%base.length]);
+    if(onbDraft.runSwaps) Object.keys(onbDraft.runSwaps).forEach(i=>{ week[+i]=onbDraft.runSwaps[i]; });
     b.innerHTML=`<h2>Here is your week.</h2>
-      <p class="lead">Have a read before you start. If something hurts, or you simply cannot do it, change it now and I will swap in something that trains the same thing.</p>
-      ${tpls.map(t=>`<div class="revday">
-        <div class="revhead">${t.name} day <span>${t.ex.length} movements</span></div>
-        ${t.ex.map(r=>`<button class="revrow" data-onbswap="${r.exId}">
-          <div class="txt"><div class="t">${exOf(r.exId).n}</div>
-            <div class="s">${r.sets} × ${r.reps}${showTempo()?' · tempo '+(r.tempo||tempoOf(r.exId)):''} · rest ${r.rest}s</div>
-            ${showTempo()&&tempoMatters(r.tempo||tempoOf(r.exId))?`<div class="s" style="color:var(--burnt)">${tempoWords(r.tempo||tempoOf(r.exId))}</div>`:''}</div>
-          <span class="chg">Change</span></button>`).join('')}
-      </div>`).join('')}
+      <p class="lead">Every day, and what is in it. If something hurts, or you cannot do it, change it now and I will put something similar in its place.</p>
+      ${week.map((code,i)=>{
+        const d=slotFor(code), t=d.templateId? (S.templates||[]).find(x=>x.id===d.templateId):null;
+        const r=d.runId? runPlan(d.runId):null;
+        return `<div class="revday">
+          <div class="revhead">${DAYS[i]} · ${dayLabel(d)} <span>${d.mins?d.mins+' min':''}</span></div>
+          ${t? t.ex.map(row=>`<button class="revrow" data-onbswap="${row.exId}">
+              <div class="txt"><div class="t">${exOf(row.exId).n}</div>
+                <div class="s">${row.sets} × ${row.reps}${showTempo()?' · tempo '+(row.tempo||tempoOf(row.exId)):''} · rest ${row.rest}s</div>
+                ${showTempo()&&tempoMatters(row.tempo||tempoOf(row.exId))?`<div class="s" style="color:var(--burnt)">${tempoWords(row.tempo||tempoOf(row.exId))}</div>`:''}</div>
+              <span class="chg">Change</span></button>`).join('')
+            : r? `<div class="revrow" style="pointer-events:none;background:var(--canvas)"><div class="txt"><div class="t">${r.sub}</div></div></div>
+                ${r.steps.map(st=>`<div class="revrow" style="pointer-events:none">
+                  <div class="txt"><div class="t">${st.n}</div><div class="s">${st.r}</div></div></div>`).join('')}
+                <div class="revrow" style="background:var(--canvas)"><div class="txt"><div class="s">${r.why}</div></div></div>
+                <button class="revrow" data-onbrun="${i}:${code}"><div class="txt"><div class="t">Change this run</div>
+                  <div class="s">Easier, harder, longer, or something else entirely</div></div><span class="chg">Change</span></button>`
+            : `<div class="revrow"><div class="txt"><div class="s">${
+                code==='walk'? 'Counted by your tracker. Nothing to press.' :
+                code==='cook'? 'Cook something with protein in it.' :
+                code==='rest'? 'Nothing owed. Rest is part of it.' :
+                'Two minutes. Next week is built from it.'}</div></div>
+                ${code==='walk'||code==='rest'?'':''}</div>`}
+        </div>`}).join('')}
       <button class="logrow" id="tempoHelp" style="border-top:1px solid var(--line-soft)">
         <div class="txt"><div class="t">What do the four numbers mean?</div>
           <div class="s">Tempo, and why it is there</div></div></button>
       ${((S.profile.excluded)||[]).length?`<div class="note">Taken out: ${S.profile.excluded.map(id=>exOf(id).n).join(', ')}. They will not appear in any day.</div>`:''}`;
   }
-  if(step===3){
+  if(step===4){
     b.innerHTML=`<h2>When suits for a check in?</h2><p class="lead">Once a week, two minutes, and it is what rebuilds your plan. Pick the day you are most likely to actually do it.</p>`+
       DAYS.map((d,i)=>`<button class="opt ${onbDraft.checkinDay===i?'on':''}" data-onbday="${i}">
         <div class="txt"><div class="t">${d}</div><div class="s">${i===5||i===6?'weekend, quieter':'midweek, before things slip'}</div></div><div class="rad"></div></button>`).join('');
   }
-  if(step===4){
+  if(step===5){
     b.innerHTML=`<h2>Keep it safe?</h2><p class="lead">An account backs your week up, puts it on any device you sign in on, and lets you see what the others are doing. No password: you get a link by email.</p>
       <div class="nf" style="margin-bottom:10px"><label>Email</label>
         <input id="onbEmail" type="email" inputmode="email" placeholder="you@example.com" value="${onbDraft.email||''}" style="font-family:Archivo;font-size:15px;font-weight:600"></div>
@@ -1564,14 +1694,38 @@ function onbRender(){
     if(inp) inp.addEventListener('input',()=>{ onbDraft.email=inp.value.trim(); onbCta(); });
   }
   $('onbNext').textContent = step===stepCount()-1
-    ? (step===4? (onbDraft.email? 'Send me a link' : 'Skip for now') : 'Build my week')
-    : (step===0? 'Claim it' : (step===2? 'Looks good' : (step===3? 'Next' : 'Next')));
+    ? (step===5? (onbDraft.email? 'Send me a link' : 'Skip for now') : 'Build my week')
+    : (step===0? 'Claim it' : (step===3? 'Looks good' : 'Next'));
   onbCta();
 }
 function onbCta(){
   $('onbNext').disabled = step===0 && onbDraft.handle.length<2;
-  if(step===4) $('onbNext').textContent = onbDraft.email? 'Send me a link' : 'Skip for now';
+  if(step===5) $('onbNext').textContent = onbDraft.email? 'Send me a link' : 'Skip for now';
+  if(step===2) $('onbNext').disabled = !onbDraft.sex;
 }
+function openRunSwap(dayIndex,current){
+  const list=(S.runPlans||[]);
+  document.getElementById('altTitle').textContent='Change this run';
+  document.getElementById('altSub').textContent='Most of a week should be easy. One harder session and one longer one is the shape worth keeping.';
+  document.getElementById('altBody').innerHTML=list.map(r=>`<button class="logrow" data-runpick="${dayIndex}:${r.id}">
+      <div class="txt"><div class="t">${r.name}${r.id===current?' · current':''}</div>
+        <div class="s">${r.sub} · about ${r.mins} min</div></div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2.2" stroke-linecap="round"><path d="m9 5 7 7-7 7"/></svg></button>`).join('')
+    +`<button class="logrow" data-runpick="${dayIndex}:walk"><div class="txt"><div class="t">Walk instead</div>
+        <div class="s">Counted by your tracker, nothing to press</div></div></button>
+     <button class="logrow" data-runpick="${dayIndex}:rest"><div class="txt"><div class="t">Rest instead</div>
+        <div class="s">Nothing owed that day</div></div></button>`;
+  openSheet('altSheet');
+}
+document.addEventListener('click',e=>{
+  const rp=e.target.closest('[data-runpick]'); if(!rp) return;
+  const [i,code]=rp.dataset.runpick.split(':');
+  if(S.plan&&S.plan.days[+i]) S.plan.days[+i]=Object.assign(slotFor(code),{dow:+i});
+  if(onbDraft&&typeof onbDraft==='object'){ onbDraft.runSwaps=onbDraft.runSwaps||{}; onbDraft.runSwaps[i]=code; }
+  save(); closeSheets();
+  if(document.getElementById('onb').classList.contains('on')) onbRender(); else renderAll();
+  toast(DAYS[+i]+' is now '+dayLabel(slotFor(code)));
+});
 function openTempoHelp(){
   document.getElementById('altTitle').textContent='Tempo';
   document.getElementById('altSub').textContent='Four numbers, in seconds, in this order.';
@@ -1599,6 +1753,12 @@ document.addEventListener('click',e=>{
     toast(showTempo()?'Tempo shown':'Tempo hidden'); }
   const a=e.target.closest('[data-onbaim]');
   if(a){ onbDraft.aim=a.dataset.onbaim; onbRender(); }
+  const sx=e.target.closest('[data-onbsex]');
+  if(sx){ onbDraft.sex=sx.dataset.onbsex; if(onbDraft.sex!=='f') onbDraft.cycle=false; onbRender(); }
+  const cy=e.target.closest('[data-onbcycle]');
+  if(cy){ onbDraft.cycle=cy.dataset.onbcycle==='on'; onbRender(); }
+  const rr=e.target.closest('[data-onbrun]');
+  if(rr){ const [i,code]=rr.dataset.onbrun.split(':'); openRunSwap(+i,code); }
   const dd=e.target.closest('[data-onbday]');
   if(dd){ onbDraft.checkinDay=+dd.dataset.onbday; onbRender(); }
   const os=e.target.closest('[data-onbswap]');
@@ -1607,9 +1767,9 @@ document.addEventListener('click',e=>{
 });
 $('onbNext').addEventListener('click',async()=>{
   if($('onbNext').disabled) return;
-  if(step===3&&cloudAvailable()){ finishOnboarding(true); step=4; $('onb').classList.add('on'); onbRender(); return; }
+  if(step===4&&cloudAvailable()){ finishOnboarding(true); step=5; $('onb').classList.add('on'); onbRender(); return; }
   if(step<stepCount()-1){ step++; onbRender(); return; }
-  if(step===4){
+  if(step===5){
     if(onbDraft.email&&window.__CLOUD){
       const note=$('onbEmailNote'); if(note) note.textContent='Sending...';
       const r=await window.__CLOUD.sendMagicLink(onbDraft.email);
@@ -1624,8 +1784,11 @@ $('onbNext').addEventListener('click',async()=>{
 $('onbBack').addEventListener('click',()=>{ if(step>0){ step--; onbRender(); } });
 function finishOnboarding(keepOpen){
   S.profile=Object.assign({},S.profile,{handle:onbDraft.handle,aim:onbDraft.aim,checkinDay:onbDraft.checkinDay,
+    sex:onbDraft.sex&&onbDraft.sex!=='x'? onbDraft.sex : (onbDraft.sex==='x'? '' : S.profile.sex),
+    sexAnswered:!!onbDraft.sex,
     excluded:S.profile.excluded||[],onboarded:true});
-  buildPlan();
+  if(onbDraft.cycle){ S.cycle=Object.assign({},S.cycle,{tracking:true,lastPeriod:onbDraft.lastPeriod||S.cycle.lastPeriod}); }
+  buildPlan(onbDraft.runSwaps);
   ME.n=onbDraft.handle; ME.full=onbDraft.handle.replace(/[._]/g,' ');
   save(); renderAll();
   if(!keepOpen){ $('onb').classList.remove('on'); go('today'); toast('Your week is ready, @'+onbDraft.handle); }
@@ -1648,11 +1811,13 @@ window.__G={
   freshState,load,save,migrate,normalise,fmt,num,pct,ago,triesOf,allPosts,postById,goalCredit,avg7,
   bmrOf,tdeeOf,proteinOf,showH,showW,todayKey,mondayKey,dowIdx,
   buildPlan,ensurePlan,adaptPlan,composePlan,previewPlan,planDiff,todayPlan,startPlanDay,slotFor,openSwap,setAim,
-  weekStats,checkinDone,checkinDayName,healthOn,connectHealth,disconnectHealth,healthSync,stubDay,sourceName,openConnect,openDayDetail,dayLabel,daySub,showSeg,walkDone,stepsToday,
+  pushPlanDay,dropPlanDay,openRestChoice,absorberFor,nextSlots,
+  weekStats,openRunSwap,checkinDone,checkinDayName,healthOn,connectHealth,disconnectHealth,healthSync,stubDay,sourceName,openConnect,openDayDetail,dayLabel,daySub,showSeg,walkDone,stepsToday,
   SOURCES,STEP_TARGET,
   toggleFollow,startSessionFromPost,startSession,nextStep,prevStep,finishSession,closePlayer,
   logSession,demoPickup,openWeigh,openDetails,renderAll,renderToday,renderPlan,renderProgress,renderFeed,renderPeople,
   go,openSheet,closeSheets,updateBadge,mountColophons,startOnboarding,onbRender,finishOnboarding,openTempoHelp,showTempoSafe,
+  get __cloudReady(){ try{ return typeof cloudReady==='function'&&cloudReady(); }catch(e){ return false; } },
   SEED_POSTS,people,AIMS,ACTIVITY,PATTERNS,SLOTS,HUE,DAYS,STORE_KEY,APP_VERSION
 };
 Object.defineProperties(window.__G,{
@@ -1851,7 +2016,12 @@ $('saveDay').addEventListener('click',()=>{
     const day=S.week[todayIdx()], kind=d.training==='cardio'?'run':'workout';
     if(day&&!day.done.includes(kind)) day.done.push(kind);
   }
-  save(); closeSheets(); renderAll(); toast('Today saved');
+  save(); closeSheets(); renderAll();
+  const planned=typeof todayPlan==='function'? todayPlan() : null;
+  if(d.training==='rest' && planned && planned.type && planned.slot!=='walk' && !dayDone(todayIdx())){
+    toast('Today saved');
+    setTimeout(()=>openRestChoice(dowIdx()),300);
+  } else toast('Today saved');
 });
 
 /* ---------- weekly check in: mostly already answered ---------- */
@@ -2081,6 +2251,48 @@ function similarTo(exId,n){
 const exOf=id=>LIBRARY.find(x=>x.id===id)||{id,n:id,g:'Other'};
 const GROUPS=[...new Set(LIBRARY.map(x=>x.g))];
 
+/* Running sessions, structured rather than "go for a run".
+   The distribution follows polarised training: most of the week easy enough to
+   hold a conversation, one harder session, one longer one. Seiler's work on
+   elite endurance athletes is where the 80/20 split comes from, and the trials
+   since have generally favoured it over training everything in the middle.
+   Every session is editable, and any day can be swapped for another. */
+function seedRunPlans(){
+  return [
+    {id:'r_easy',name:'Easy run',kind:'run',mins:35,
+      sub:'Conversational the whole way',
+      why:'The bulk of a week should be easy enough to talk in full sentences. This is the one that builds the engine.',
+      steps:[{n:'Walk to loosen off',r:'5 min',sec:10},{n:'Easy running',r:'25 min, conversational',sec:16},
+        {n:'Walk home',r:'5 min',sec:8}]},
+    {id:'r_long',name:'Long run',kind:'run',mins:60,
+      sub:'Slower than you think, further than usual',
+      why:'One longer effort a week. Pace should feel too easy at the start. If it does not, it is too fast.',
+      steps:[{n:'Walk to loosen off',r:'5 min',sec:10},{n:'Easy running',r:'45 to 55 min',sec:18},
+        {n:'Walk and stretch',r:'5 min',sec:10}]},
+    {id:'r_intervals',name:'Intervals',kind:'run',mins:40,
+      sub:'6 × 2 minutes hard, 2 minutes easy',
+      why:'The hard fifth of the week. Hard means you can manage a word or two, not a sentence.',
+      steps:[{n:'Easy jog to warm up',r:'10 min',sec:12},{n:'2 min hard, 2 min easy jog',r:'× 6',sec:18},
+        {n:'Easy jog to cool down',r:'10 min',sec:12}]},
+    {id:'r_tempo',name:'Tempo run',kind:'run',mins:40,
+      sub:'20 minutes comfortably hard',
+      why:'Comfortably hard: you could say a short sentence, but you would rather not.',
+      steps:[{n:'Easy jog to warm up',r:'10 min',sec:12},{n:'Steady, comfortably hard',r:'20 min',sec:18},
+        {n:'Easy jog to cool down',r:'10 min',sec:10}]},
+    {id:'r_walkrun',name:'Run walk build',kind:'run',mins:30,
+      sub:'8 × 2 minutes running, 1 minute walking',
+      why:'How to start, or come back, without wrecking yourself. Move to the easy run once 30 minutes feels fine.',
+      steps:[{n:'Walk to warm up',r:'5 min',sec:10},{n:'2 min run, 1 min walk',r:'× 8',sec:18},
+        {n:'Walk to finish',r:'5 min',sec:10}]}
+  ];
+}
+S.runPlans=Array.isArray(S.runPlans)&&S.runPlans.length? S.runPlans : seedRunPlans();
+const runPlan=id=>(S.runPlans||[]).find(r=>r.id===id)||null;
+function runSession(id){
+  const r=runPlan(id); if(!r) return null;
+  return {title:r.name,type:'run',adds:1,runId:id,steps:r.steps.slice()};
+}
+
 /* seeded templates, taken from the coach sheet, fully editable after that */
 function seedTemplates(){
   const mk=(id,name,rows)=>({id,name,seeded:true,ex:rows.map(([exId,sets,reps,rest,note])=>
@@ -2104,7 +2316,7 @@ S.templates=Array.isArray(S.templates)&&S.templates.length? S.templates : seedTe
 S.workouts=Array.isArray(S.workouts)? S.workouts : [];
 S.restPrefs=S.restPrefs&&typeof S.restPrefs==='object'? S.restPrefs : {};
 const _fresh2=freshState;
-freshState=function(){ const f=_fresh2(); f.templates=seedTemplates(); f.workouts=[]; f.restPrefs={}; return f; };
+freshState=function(){ const f=_fresh2(); f.templates=seedTemplates(); f.runPlans=seedRunPlans(); f.workouts=[]; f.restPrefs={}; return f; };
 
 /* ---------- history and records ---------- */
 const e1RM=(kg,reps)=>reps>0? Math.round(kg*(1+reps/30)) : 0;
@@ -2302,7 +2514,10 @@ function openExMenu(i){
     <button class="logrow" data-exact="rest:${i}"><div class="txt"><div class="t">Rest timer: ${e.rest}s</div><div class="s">Tap to cycle 60, 90, 120, 180</div></div></button>
     <button class="logrow" data-exact="up:${i}"><div class="txt"><div class="t">Move up</div></div></button>
     <button class="logrow" data-exact="down:${i}"><div class="txt"><div class="t">Move down</div></div></button>
-    <button class="logrow" data-exact="del:${i}"><div class="txt"><div class="t" style="color:var(--oxblood)">Remove from this workout</div></div></button>`;
+    <button class="logrow" data-exact="del:${i}"><div class="txt"><div class="t">Remove from today only</div>
+      <div class="s">It stays in the template for next time</div></div></button>
+    <button class="logrow" data-exact="forever:${i}"><div class="txt"><div class="t" style="color:var(--oxblood)">Take it out for good</div>
+      <div class="s">Gone from every day, and never suggested again</div></div></button>`;
   openSheet('exMenu');
 }
 document.addEventListener('click',e=>{
@@ -2314,6 +2529,8 @@ document.addEventListener('click',e=>{
   if(act==='up'&&i>0){ const t=GYM.ex[i]; GYM.ex[i]=GYM.ex[i-1]; GYM.ex[i-1]=t; }
   if(act==='down'&&i<GYM.ex.length-1){ const t=GYM.ex[i]; GYM.ex[i]=GYM.ex[i+1]; GYM.ex[i+1]=t; }
   if(act==='del') GYM.ex.splice(i,1);
+  if(act==='forever'){ const id=GYM.ex[i].exId, n=exOf(id).n;
+    GYM.ex.splice(i,1); removeEverywhere(id); toast(n+' taken out of every day'); }
   closeSheets(); drawGym();
 });
 
@@ -2421,6 +2638,11 @@ function afterAlt(){
   closeSheets();
   if(altCtx&&altCtx.ctx.onboarding&&typeof onbRender==='function') onbRender();
   if(altCtx&&altCtx.ctx.draft&&typeof drawTplEdit==='function'){ drawTplEdit(); openSheet('tplEdit'); }
+  if(altCtx&&altCtx.ctx.day){ renderAll(); }
+  if(altCtx&&altCtx.ctx.gym&&typeof GYM!=='undefined'&&GYM){
+    GYM.ex=GYM.ex.filter(x=>x.exId!==altCtx.exId);
+    if(typeof drawGym==='function') drawGym();
+  }
   altCtx=null;
 }
 document.addEventListener('click',e=>{
@@ -2524,7 +2746,7 @@ coachBrief=function(){
   return t;
 };
 
-Object.assign(window.__G,{LIBRARY,exOf,seedTemplates,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
+Object.assign(window.__G,{LIBRARY,exOf,seedTemplates,seedRunPlans,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
   openExMenu,openTplEdit,drawTemplates,exerciseStats,e1RM,lastSets,gymVolume,gymSets,templateChanged,startRest,
   get GYM(){return GYM}, get tplDraft(){return tplDraft}});
 Object.defineProperties(window.__G,{
@@ -3050,8 +3272,8 @@ Object.assign(window.__G,{weeklyHistory,buildForecast,ensureForecast,reviewWeek,
    Supabase: Project Settings, API keys.
    ============================================================ */
 const CLOUD_CONFIG={
-  url: 'https://zerclmrlwniaogtxyngw.supabase.co',                 // e.g. 'https://abcdefgh.supabase.co'
-  key: 'sb_publishable_C5lUkvG-ZtESrhc_-71HOg_jejh2AJG'                  // e.g. 'sb_publishable_...'
+  url: 'https://zerclmrlwniaogtxyngw.supabase.co',
+  key: 'sb_publishable_C5lUkvG-ZtESrhc_-71HOg_jejh2AJG'
 };
 const cloudReady=()=>!!(CLOUD_CONFIG.url&&CLOUD_CONFIG.key);
 const CLOUD_KEY='gauntlet.cloud';

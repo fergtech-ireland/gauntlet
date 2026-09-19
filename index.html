@@ -473,6 +473,15 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .tempo{font-size:11.5px;color:var(--mute);margin-top:3px}
 .tempoline{font-size:11px;color:var(--mute);padding:0 0 9px;margin-top:-4px}
 .skipbtn{display:block;margin:10px auto 0;font-size:13px;font-weight:700;color:var(--mute);text-decoration:underline}
+.citem{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line-soft);width:100%;text-align:left}
+.citem .cn{font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);width:52px;flex:0 0 auto}
+.citem .ct{flex:1;min-width:0}
+.citem .ct b{display:block;font-weight:600;font-size:14.5px}
+.citem .ct span{font-size:12px;color:var(--mute)}
+.citem .ctick{width:26px;height:26px;border-radius:8px;border:1.5px solid var(--line);display:grid;place-items:center;color:#fff;font-size:13px;flex:0 0 auto}
+.citem.done .ctick{background:var(--forest);border-color:var(--forest)}
+.citem.done .ct b{color:var(--mute);text-decoration:line-through}
+.warn{font-size:12.5px;color:var(--oxblood);background:#fbeef0;border-radius:8px;padding:10px 12px;margin-top:10px}
 </style>
 </head>
 <body>
@@ -678,7 +687,6 @@ const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
 const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='2.0';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
-const DEMO_SOCIAL=true;
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 const AIMS=[
@@ -711,18 +719,13 @@ const ACTIVITY=[
   {id:'high',t:'Very active',s:'Five plus, or a physical job',mult:1.725}];
 const actOf=id=>ACTIVITY.find(a=>a.id===id)||ACTIVITY[2];
 const ME={id:'me',n:'you',full:'You',c:'#1e3a6e',s:'You'};
-const people=[
-  {id:'niamh',n:'niamh.k',full:'Niamh Kelleher',c:'#1e3a6e',s:'Marathon block, week 9'},
-  {id:'dara',n:'dara.oc',full:"Dara O'Connor",c:'#6e1f2e',s:'Hybrid lifter, 5.30am club'},
-  {id:'saoirse',n:'saoirse_h',full:'Saoirse Hayes',c:'#a8552a',s:'Plant heavy, high protein'},
-  {id:'tom',n:'tom_burke',full:'Tom Burke',c:'#8a6a2f',s:'16:8 for 400 days'},
-  {id:'mark',n:'markd',full:'Mark Dunne',c:'#1b4a3c',s:'Back squat 180kg. Still mad.'},
-  {id:'aoife',n:'aoife.rn',full:'Aoife Regan',c:'#161618',s:'Coach. Does not accept excuses.'},
-  {id:'ella',n:'ella.mv',full:'Ella Moriarty',c:'#2f5d6e',s:'Chasing a sub-20 5k'},
-  {id:'ruairi',n:'ruairi.l',full:'Ruairí Long',c:'#5c6b2f',s:'Pilates and pasta'}
-];
-const P=Object.fromEntries(people.concat([ME]).map(p=>[p.id,p]));
+/* No invented people. The feed is whoever is signed in to your project and
+   nobody else, and it is empty until you follow one of them. */
+const people=[];
+const P=Object.fromEntries([ME].map(p=>[p.id,p]));
 
+/* Starter sessions. These are what the plan and the log sheet use for a run,
+   a meal or a fast. They are never posted and never appear in the feed. */
 const SEED_POSTS=[
   {id:'p1',by:'niamh',kind:'run',when:'22m',title:'14.2',unit:'km along the Shannon',
    chips:['5:12 /km','1:13:47','Annacotty loop'],baseTries:412,
@@ -751,21 +754,19 @@ const SEED_POSTS=[
      {n:'Last bite logged',r:'20:30',sec:8},{n:'Sleep window',r:'8 hours',sec:12},
      {n:'Coffee, water, salt',r:'morning',sec:10},{n:'Break the fast',r:'12:30',sec:8}]}}
 ];
-const SEED_GRID=[['run','12.4','km'],['workout','Pull B','52 min'],['meal','Skyr bowl','38g protein'],
-  ['fast','16:8','Friday'],['run','5.02','km'],['workout','Legs','61 min']];
 
 /* ===================== state ===================== */
 /* ===================== state ===================== */
 function freshState(){
   return {
     v:4,
-    profile:{onboarded:false,handle:'',aim:'lose',detailsSet:false,checkinDay:6,excluded:[],showTempo:true,
+    profile:{onboarded:false,handle:'',aim:'lose',detailsSet:false,checkinDay:6,excluded:[],showTempo:true,liftDays:null,cardioDays:null,
       sex:'',age:34,height:178,weight:82,units:'metric',activity:'mod'},
     plan:null, goal:{kind:'any',target:4,unit:'sessions',label:'Move 4 times',now:0},
     mine:[], tries:[], pickups:[], tryCounts:{}, weights:[],
     days:{}, checkins:[], lifts:{}, health:{connected:false},
     cycle:{tracking:false,lastPeriod:null,length:28,periodLen:5}, forecasts:{},
-    follows:{niamh:true,dara:true,saoirse:true,tom:true,mark:false,aoife:false,ella:false,ruairi:false},
+    follows:{},
     week:[{d:'M',done:[]},{d:'T',done:[]},{d:'W',done:[]},{d:'T',done:[]},
           {d:'F',done:[]},{d:'S',done:[],today:true},{d:'S',done:[]}],
     sessions:0
@@ -832,8 +833,8 @@ const av=(p,cls)=>`<div class="${cls||'av-sm'}" style="background:${p.c}">${init
 const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
 const num=n=>n.toLocaleString('en-IE');
 const pct=g=>Math.max(0,Math.min(100,Math.round(g.now/g.target*100)));
-const allPosts=()=>S.mine.concat(SEED_POSTS);
-const postById=id=>allPosts().find(p=>p.id===id);
+const allPosts=()=>S.mine.slice();
+const postById=id=>allPosts().find(p=>p.id===id)||SEED_POSTS.find(p=>p.id===id);
 const triesOf=p=>(p.baseTries||0)+(S.tryCounts[p.id]||0);
 const todayKey=()=>new Date().toISOString().slice(0,10);
 const dowIdx=()=>{const d=new Date().getDay();return d===0?6:d-1;};
@@ -937,17 +938,52 @@ const stepsToday=()=>{ const a=autoOf(todayKey()); return a? a.steps : null; };
 function slotFor(code){
   if(SLOTS[code]) return Object.assign({slot:code},SLOTS[code],{templateId:null,runId:null,exclude:[],setDelta:0});
   const r=(S.runPlans||[]).find(x=>x.id===code);
-  if(r) return {slot:code, runId:code, templateId:null, label:r.name, sub:r.sub, mins:r.mins,
+  if(r) return {slot:code, runId:code, templateId:null, circuitId:null, label:r.name, sub:r.sub, mins:r.mins,
     kind:'run', type:'run', exclude:[], setDelta:0};
+  const c=(S.circuits||[]).find(x=>x.id===code);
+  if(c) return {slot:code, circuitId:code, templateId:null, runId:null, label:c.name, sub:c.sub, mins:c.mins,
+    kind:'workout', type:'workout', exclude:[], setDelta:0};
   const t=(S.templates||[]).find(x=>x.id===code);
   return {slot:code, templateId:code, label:(t?t.name:'Lift')+' day', sub:t? t.ex.length+' movements':'Lift',
     mins:50, kind:'workout', type:'workout', exclude:[], setDelta:0};
 }
-function composePlan(c,swaps){
-  const base=(PATTERNS[S.profile.aim]||PATTERNS.lose).filter(x=>x!=='checkin');
+const AIM_DEFAULTS={lose:{lift:3,cardio:2},build:{lift:4,cardio:1},endure:{lift:1,cardio:4},
+  hold:{lift:3,cardio:1},eat:{lift:2,cardio:1}};
+const LIFT_ORDER=['t_push','t_lower','t_pull'];
+const CARDIO_BY_AIM={endure:['r_easy','r_intervals','r_easy','r_long'],
+  lose:['r_easy','walk','r_easy','walk'], build:['walk','r_easy','walk','r_easy'],
+  hold:['r_easy','walk','r_easy','walk'], eat:['walk','r_easy','walk','r_easy']};
+function dayCounts(){
+  const p=S.profile, d=AIM_DEFAULTS[p.aim]||AIM_DEFAULTS.lose;
+  const lift=p.liftDays===undefined||p.liftDays===null? d.lift : p.liftDays;
+  const cardio=p.cardioDays===undefined||p.cardioDays===null? d.cardio : p.cardioDays;
+  return {lift:Math.max(0,Math.min(6,lift)), cardio:Math.max(0,Math.min(6,cardio))};
+}
+/* Interleave lifting and cardio so two hard days do not sit on top of each other,
+   then fill what is left with rest, or cooking if that is the aim. */
+function weekPattern(){
   const ci=Math.min(6,Math.max(0,S.profile.checkinDay===undefined?6:S.profile.checkinDay));
-  const pattern=[]; let k=0;
-  for(let i=0;i<7;i++) pattern.push(i===ci? 'checkin' : base[k++%base.length]);
+  const {lift,cardio}=dayCounts();
+  const slots=[]; for(let i=0;i<7;i++) if(i!==ci) slots.push(i);
+  const lifts=Array.from({length:Math.min(lift,slots.length)},(_,n)=>LIFT_ORDER[n%LIFT_ORDER.length]);
+  const cardios=Array.from({length:Math.min(cardio,Math.max(0,slots.length-lifts.length))},
+    (_,n)=>(CARDIO_BY_AIM[S.profile.aim]||CARDIO_BY_AIM.lose)[n%4]);
+  const mixed=[];
+  const big=lifts.length>=cardios.length? lifts : cardios;
+  const small=lifts.length>=cardios.length? cardios : lifts;
+  const gap=small.length? Math.max(1,Math.round(big.length/small.length)) : 0;
+  let si=0;
+  big.forEach((x,n)=>{ mixed.push(x); if(si<small.length&&gap&&((n+1)%gap===0)) mixed.push(small[si++]); });
+  while(si<small.length) mixed.push(small[si++]);
+  const filler=S.profile.aim==='eat'? 'cook':'rest';
+  while(mixed.length<slots.length) mixed.push(filler);
+  const pattern=[];
+  let k=0;
+  for(let i=0;i<7;i++) pattern.push(i===ci? 'checkin' : mixed[k++]);
+  return pattern;
+}
+function composePlan(c,swaps){
+  const pattern=weekPattern();
   if(swaps) Object.keys(swaps).forEach(i=>{ if(pattern[+i]!=='checkin') pattern[+i]=swaps[i]; });
   const days=pattern.map((code,i)=>Object.assign(slotFor(code),{dow:i}));
   const why=adaptPlan(days,c);
@@ -1002,11 +1038,13 @@ function dayLabel(d){
   if(!d) return '';
   if(d.templateId){ const t=(S.templates||[]).find(x=>x.id===d.templateId); if(t) return t.name+' day'; }
   if(d.runId&&typeof runPlan==='function'){ const r=runPlan(d.runId); if(r) return r.name; }
+  if(d.circuitId&&typeof circuitOf==='function'){ const c=circuitOf(d.circuitId); if(c) return c.name; }
   return d.label;
 }
 function daySub(d){
   if(d.templateId){ const t=(S.templates||[]).find(x=>x.id===d.templateId); if(t) return t.ex.length+' movements'; }
   if(d.runId&&typeof runPlan==='function'){ const r=runPlan(d.runId); if(r) return r.sub; }
+  if(d.circuitId&&typeof circuitOf==='function'){ const c=circuitOf(d.circuitId); if(c) return c.sub; }
   return d.sub||'';
 }
 const todayPlan=()=>{ ensurePlan(); return S.plan.days[dowIdx()]; };
@@ -1090,6 +1128,7 @@ document.addEventListener('click',e=>{
 function startPlanDay(day){
   if(!day) return null;
   if(day.templateId) return startWorkout(day.templateId,{exclude:day.exclude,setDelta:day.setDelta});
+  if(day.circuitId&&typeof startCircuit==='function') return startCircuit(day.circuitId);
   if(day.runId){ const sess=runSession(day.runId); if(sess) return startSession(sess); }
   if(day.slot==='checkin') return openWeek();
   if(day.slot==='rest'){ toast('Rest is part of it. Nothing owed today.'); return null; }
@@ -1303,14 +1342,15 @@ function renderProgress(){
     <div class="twoup">
       <div><div class="n">${S.tries.length}</div><div class="l">sessions you took<br>from other people</div></div>
       <div><div class="n">${S.pickups.length}</div><div class="l">times someone<br>took one of yours</div></div></div>
-    ${!signedInSafe()&&S.pickups.length?`<div class="note" style="margin:0 0 8px;color:var(--burnt)">Demo activity, to show how this works. Sign in and these become real people.</div>`:''}
     ${ripples.length? ripples.map(r=>`<div class="actrow">${av(r.u)}<div class="txt"><div class="t">${r.t}</div>
       <div class="w">${ago(r.at)}</div></div></div>`).join('')
       : `<div class="note" style="margin:0">Try someone's session from the feed and it shows here, with their name on it.</div>`}
   </div>`;
 
-  $('grid').innerHTML=S.mine.map(m=>[m.kind,m.title,m.unit.split(',')[0]]).concat(SEED_GRID).slice(0,12)
-    .map(([k,a,b])=>`<div class="gcell" style="background:${k==='meal'?CLAY:HUE[k].deep};color:${k==='meal'?'#161618':'#fff'}">${a}<small>${b}</small></div>`).join('');
+  const cells=S.mine.map(m=>[m.kind,m.title,(m.unit||'').split(',')[0]]).slice(0,12);
+  $('grid').innerHTML= cells.length
+    ? cells.map(([k,a,b])=>`<div class="gcell" style="background:${k==='meal'?CLAY:HUE[k].deep};color:${k==='meal'?'#161618':'#fff'}">${a}<small>${b}</small></div>`).join('')
+    : `<div class="empty">Your sessions show up here once you have done a few.</div>`;
   updateBadge();
 }
 let progSeg='week';
@@ -1350,14 +1390,17 @@ function cardHTML(p){
       ${p.mine&&p.origin?`<div class="credit">Picked up from <b>@${(P[p.origin.by]||ME).n}</b></div>`:''}</div></article>`;
 }
 function renderFeed(){
-  const visible=allPosts().filter(p=>p.mine||S.follows[p.by]);
-  $('feed').innerHTML=(visible.length? visible.map(cardHTML).join('')
-    : `<div class="empty">You are not following anyone. Tap the person icon up top.</div>`);
+  const mine=S.mine.slice();
+  const signed=signedInSafe();
+  $('feed').innerHTML= mine.length? mine.map(cardHTML).join('')
+    : `<div class="empty">${signed
+        ? 'Nothing here yet. Log a session and it appears, and follow someone from the person icon up top to see theirs.'
+        : 'Nothing here yet. Log a session and it appears here. Make an account and you can see what the others are doing too.'}</div>`;
 }
 function renderPeople(){
-  $('people').innerHTML=people.map(p=>`<div class="prow">${av(p)}
-    <div class="txt"><div class="n">${p.n}</div><div class="s">${p.s}</div></div>
-    <button class="follow ${S.follows[p.id]?'on':''}" data-follow="${p.id}">${S.follows[p.id]?'Following':'Follow'}</button></div>`).join('');
+  $('people').innerHTML=`<div class="empty">${signedInSafe()
+    ? 'Nobody else has signed in yet. You are first.'
+    : 'Make an account and anyone else using your copy of Gauntlet shows up here.'}</div>`;
 }
 function renderAll(){ renderToday(); renderPlan(); renderFeed(); renderPeople(); renderProgress(); }
 
@@ -1417,19 +1460,6 @@ function logSession(sess){
   if(typeof afterLog==='function') afterLog(sess);
   save(); renderAll();
   return {post,goal:S.goal,credited,added:add};
-}
-function demoPickup(){
-  if(!DEMO_SOCIAL||!S.mine.length) return null;
-  if(S.pickups.length>=S.mine.length*2) return null;
-  const crowd=people.filter(x=>S.follows[x.id]);
-  if(!crowd.length) return null;
-  const post=S.mine[Math.floor(Math.random()*S.mine.length)];
-  const who=crowd[Math.floor(Math.random()*crowd.length)];
-  const k={id:'k'+Date.now()+Math.random().toString(16).slice(2,6),at:Date.now()-Math.floor(Math.random()*6e7),
-    postId:post.id,by:who.id,title:post.session.title,kind:post.kind,seen:false};
-  S.pickups.unshift(k); S.tryCounts[post.id]=(S.tryCounts[post.id]||0)+1;
-  save(); updateBadge();
-  return k;
 }
 document.addEventListener('click',e=>{
   const nav=e.target.closest('[data-go]'); if(nav) go(nav.dataset.go);
@@ -1619,9 +1649,21 @@ function onbRender(){
     inp.addEventListener('input',()=>{ onbDraft.handle=inp.value.replace(/[^a-z0-9._]/gi,'').toLowerCase(); inp.value=onbDraft.handle; onbCta(); });
   }
   if(step===1){
+    const d=AIM_DEFAULTS[onbDraft.aim]||AIM_DEFAULTS.lose;
+    if(onbDraft.liftDays===undefined||onbDraft.liftDays===null) onbDraft.liftDays=d.lift;
+    if(onbDraft.cardioDays===undefined||onbDraft.cardioDays===null) onbDraft.cardioDays=d.cardio;
+    const total=onbDraft.liftDays+onbDraft.cardioDays;
     b.innerHTML=`<h2>What are you after?</h2><p class="lead">This builds your first week. Every day in it can be changed, and it rebuilds itself from your check ins.</p>`+
       AIMS.map(a=>`<button class="opt ${onbDraft.aim===a.id?'on':''}" data-onbaim="${a.id}">
-        <div class="txt"><div class="t">${a.t}</div><div class="s">${a.s}</div></div><div class="rad"></div></button>`).join('');
+        <div class="txt"><div class="t">${a.t}</div><div class="s">${a.s}</div></div><div class="rad"></div></button>`).join('')+
+      `<div class="slab">How many days a week</div>
+       <div class="field" style="margin-bottom:12px"><div class="fl"><div class="k">Lifting</div><div class="v">${onbDraft.liftDays}</div></div>
+         <div class="chips">${[0,1,2,3,4,5,6].map(n=>`<button class="${onbDraft.liftDays===n?'on':''}" data-onblift="${n}">${n}</button>`).join('')}</div></div>
+       <div class="field"><div class="fl"><div class="k">Cardio</div><div class="v">${onbDraft.cardioDays}</div></div>
+         <div class="chips">${[0,1,2,3,4,5,6].map(n=>`<button class="${onbDraft.cardioDays===n?'on':''}" data-onbcardio="${n}">${n}</button>`).join('')}</div></div>
+       <div class="note">${total>6? 'That is '+total+' days into six slots, so the last ones will not fit. Drop one.'
+         : (total===0? 'Nothing scheduled. You can still log whatever you do.'
+         : 'Six days to fill, plus your check in. '+(6-total)+' left as rest.')}</div>`;
   }
   if(step===2){
     const sex=onbDraft.sex||'';
@@ -1645,10 +1687,11 @@ function onbRender(){
       : (sex==='x'? `<div class="note">Fair enough. The calorie estimate will use the average of the two equations, which is a little less precise. Cycle tracking is on the Progress screen if you want it later.</div>`:'')}`;
   }
   if(step===3){
-    const plan=(PATTERNS[onbDraft.aim]||PATTERNS.lose);
-    const ci=onbDraft.checkinDay===undefined?6:onbDraft.checkinDay;
-    const base=plan.filter(x=>x!=='checkin'); const week=[]; let k=0;
-    for(let i=0;i<7;i++) week.push(i===ci? 'checkin' : base[k++%base.length]);
+    const saved={aim:S.profile.aim,checkinDay:S.profile.checkinDay,liftDays:S.profile.liftDays,cardioDays:S.profile.cardioDays};
+    S.profile=Object.assign({},S.profile,{aim:onbDraft.aim,checkinDay:onbDraft.checkinDay,
+      liftDays:onbDraft.liftDays,cardioDays:onbDraft.cardioDays});
+    const week=weekPattern();
+    S.profile=Object.assign({},S.profile,saved);
     if(onbDraft.runSwaps) Object.keys(onbDraft.runSwaps).forEach(i=>{ week[+i]=onbDraft.runSwaps[i]; });
     b.innerHTML=`<h2>Here is your week.</h2>
       <p class="lead">Every day, and what is in it. If something hurts, or you cannot do it, change it now and I will put something similar in its place.</p>
@@ -1666,14 +1709,17 @@ function onbRender(){
                 ${r.steps.map(st=>`<div class="revrow" style="pointer-events:none">
                   <div class="txt"><div class="t">${st.n}</div><div class="s">${st.r}</div></div></div>`).join('')}
                 <div class="revrow" style="background:var(--canvas)"><div class="txt"><div class="s">${r.why}</div></div></div>
-                <button class="revrow" data-onbrun="${i}:${code}"><div class="txt"><div class="t">Change this run</div>
-                  <div class="s">Easier, harder, longer, or something else entirely</div></div><span class="chg">Change</span></button>`
+                `
+            : d.circuitId? `${(circuitOf(d.circuitId).items||[]).slice(0,4).map(it=>`<div class="revrow" style="pointer-events:none">
+                  <div class="txt"><div class="t">${it.label}</div><div class="s">${it.sub||it.t}</div></div></div>`).join('')}
+                <div class="revrow" style="pointer-events:none;background:var(--canvas)"><div class="txt"><div class="s">${circuitOf(d.circuitId).items.length} parts in all, run for time.</div></div></div>`
             : `<div class="revrow"><div class="txt"><div class="s">${
                 code==='walk'? 'Counted by your tracker. Nothing to press.' :
                 code==='cook'? 'Cook something with protein in it.' :
                 code==='rest'? 'Nothing owed. Rest is part of it.' :
-                'Two minutes. Next week is built from it.'}</div></div>
-                ${code==='walk'||code==='rest'?'':''}</div>`}
+                'Two minutes. Next week is built from it.'}</div></div></div>`}
+          ${code==='checkin'? '' : `<button class="revrow" data-onbrun="${i}:${code}"><div class="txt"><div class="t">Change this day</div>
+              <div class="s">A different session, a walk, or nothing</div></div><span class="chg">Change</span></button>`}
         </div>`}).join('')}
       <button class="logrow" id="tempoHelp" style="border-top:1px solid var(--line-soft)">
         <div class="txt"><div class="t">What do the four numbers mean?</div>
@@ -1702,19 +1748,25 @@ function onbCta(){
   $('onbNext').disabled = step===0 && onbDraft.handle.length<2;
   if(step===5) $('onbNext').textContent = onbDraft.email? 'Send me a link' : 'Skip for now';
   if(step===2) $('onbNext').disabled = !onbDraft.sex;
+  if(step===1) $('onbNext').disabled = (onbDraft.liftDays+onbDraft.cardioDays)>6;
 }
 function openRunSwap(dayIndex,current){
-  const list=(S.runPlans||[]);
-  document.getElementById('altTitle').textContent='Change this run';
-  document.getElementById('altSub').textContent='Most of a week should be easy. One harder session and one longer one is the shape worth keeping.';
-  document.getElementById('altBody').innerHTML=list.map(r=>`<button class="logrow" data-runpick="${dayIndex}:${r.id}">
-      <div class="txt"><div class="t">${r.name}${r.id===current?' · current':''}</div>
-        <div class="s">${r.sub} · about ${r.mins} min</div></div>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2.2" stroke-linecap="round"><path d="m9 5 7 7-7 7"/></svg></button>`).join('')
-    +`<button class="logrow" data-runpick="${dayIndex}:walk"><div class="txt"><div class="t">Walk instead</div>
-        <div class="s">Counted by your tracker, nothing to press</div></div></button>
-     <button class="logrow" data-runpick="${dayIndex}:rest"><div class="txt"><div class="t">Rest instead</div>
-        <div class="s">Nothing owed that day</div></div></button>`;
+  const row=(id,title,sub)=>`<button class="logrow" data-runpick="${dayIndex}:${id}">
+      <div class="txt"><div class="t">${title}${id===current?' · current':''}</div><div class="s">${sub}</div></div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2.2" stroke-linecap="round"><path d="m9 5 7 7-7 7"/></svg></button>`;
+  document.getElementById('altTitle').textContent='What is on '+(DAYS[dayIndex]||'this day')+'?';
+  document.getElementById('altSub').textContent='Anything can go on any day. Most of a running week should be easy, with one harder session and one longer one.';
+  document.getElementById('altBody').innerHTML=
+    `<div class="slab" style="padding:0 14px">Lifting</div>`+
+    (S.templates||[]).map(t=>row(t.id,t.name+' day',t.ex.length+' movements')).join('')+
+    `<div class="slab" style="padding:0 14px">Running</div>`+
+    (S.runPlans||[]).map(r=>row(r.id,r.name,r.sub+' · about '+r.mins+' min')).join('')+
+    ((S.circuits||[]).length? `<div class="slab" style="padding:0 14px">Circuits</div>`+
+      (S.circuits||[]).map(c=>row(c.id,c.name,c.sub+' · about '+c.mins+' min')).join('') : '')+
+    `<div class="slab" style="padding:0 14px">Or nothing much</div>`+
+    row('walk','Walk','Counted by your tracker, nothing to press')+
+    row('cook','Cook','Something with protein in it')+
+    row('rest','Rest','Nothing owed that day');
   openSheet('altSheet');
 }
 document.addEventListener('click',e=>{
@@ -1752,13 +1804,19 @@ document.addEventListener('click',e=>{
     renderProgress();
     toast(showTempo()?'Tempo shown':'Tempo hidden'); }
   const a=e.target.closest('[data-onbaim]');
-  if(a){ onbDraft.aim=a.dataset.onbaim; onbRender(); }
+  if(a){ onbDraft.aim=a.dataset.onbaim;
+    const d=AIM_DEFAULTS[onbDraft.aim]||AIM_DEFAULTS.lose;
+    onbDraft.liftDays=d.lift; onbDraft.cardioDays=d.cardio; onbRender(); }
   const sx=e.target.closest('[data-onbsex]');
   if(sx){ onbDraft.sex=sx.dataset.onbsex; if(onbDraft.sex!=='f') onbDraft.cycle=false; onbRender(); }
   const cy=e.target.closest('[data-onbcycle]');
   if(cy){ onbDraft.cycle=cy.dataset.onbcycle==='on'; onbRender(); }
   const rr=e.target.closest('[data-onbrun]');
   if(rr){ const [i,code]=rr.dataset.onbrun.split(':'); openRunSwap(+i,code); }
+  const ld=e.target.closest('[data-onblift]');
+  if(ld){ onbDraft.liftDays=+ld.dataset.onblift; onbRender(); }
+  const cd=e.target.closest('[data-onbcardio]');
+  if(cd){ onbDraft.cardioDays=+cd.dataset.onbcardio; onbRender(); }
   const dd=e.target.closest('[data-onbday]');
   if(dd){ onbDraft.checkinDay=+dd.dataset.onbday; onbRender(); }
   const os=e.target.closest('[data-onbswap]');
@@ -1785,6 +1843,7 @@ $('onbBack').addEventListener('click',()=>{ if(step>0){ step--; onbRender(); } }
 function finishOnboarding(keepOpen){
   S.profile=Object.assign({},S.profile,{handle:onbDraft.handle,aim:onbDraft.aim,checkinDay:onbDraft.checkinDay,
     sex:onbDraft.sex&&onbDraft.sex!=='x'? onbDraft.sex : (onbDraft.sex==='x'? '' : S.profile.sex),
+    liftDays:onbDraft.liftDays, cardioDays:onbDraft.cardioDays,
     sexAnswered:!!onbDraft.sex,
     excluded:S.profile.excluded||[],onboarded:true});
   if(onbDraft.cycle){ S.cycle=Object.assign({},S.cycle,{tracking:true,lastPeriod:onbDraft.lastPeriod||S.cycle.lastPeriod}); }
@@ -1811,11 +1870,11 @@ window.__G={
   freshState,load,save,migrate,normalise,fmt,num,pct,ago,triesOf,allPosts,postById,goalCredit,avg7,
   bmrOf,tdeeOf,proteinOf,showH,showW,todayKey,mondayKey,dowIdx,
   buildPlan,ensurePlan,adaptPlan,composePlan,previewPlan,planDiff,todayPlan,startPlanDay,slotFor,openSwap,setAim,
-  pushPlanDay,dropPlanDay,openRestChoice,absorberFor,nextSlots,
+  pushPlanDay,dropPlanDay,openRestChoice,absorberFor,nextSlots,dayCounts,weekPattern,AIM_DEFAULTS,
   weekStats,openRunSwap,checkinDone,checkinDayName,healthOn,connectHealth,disconnectHealth,healthSync,stubDay,sourceName,openConnect,openDayDetail,dayLabel,daySub,showSeg,walkDone,stepsToday,
   SOURCES,STEP_TARGET,
   toggleFollow,startSessionFromPost,startSession,nextStep,prevStep,finishSession,closePlayer,
-  logSession,demoPickup,openWeigh,openDetails,renderAll,renderToday,renderPlan,renderProgress,renderFeed,renderPeople,
+  logSession,openWeigh,openDetails,renderAll,renderToday,renderPlan,renderProgress,renderFeed,renderPeople,
   go,openSheet,closeSheets,updateBadge,mountColophons,startOnboarding,onbRender,finishOnboarding,openTempoHelp,showTempoSafe,
   get __cloudReady(){ try{ return typeof cloudReady==='function'&&cloudReady(); }catch(e){ return false; } },
   SEED_POSTS,people,AIMS,ACTIVITY,PATTERNS,SLOTS,HUE,DAYS,STORE_KEY,APP_VERSION
@@ -2293,6 +2352,38 @@ function runSession(id){
   return {title:r.name,type:'run',adds:1,runId:id,steps:r.steps.slice()};
 }
 
+/* Circuits. A run, a station, a run, a station, done for time. Neither the
+   lifting logger nor the run player fits: there are no sets to beat and no single
+   pace, the number that matters is the clock. Every station is editable, and the
+   one that ships is a shoulder safe HYROX simulation where each station swaps the
+   overhead or floor loaded movement for something that keeps the arms down. */
+function seedCircuits(){
+  return [{
+    id:'c_hyrox_safe', name:'HYROX simulation, shoulder safe', forTime:true,
+    sub:'Eight runs, seven stations, one clock', mins:55,
+    why:'Straight from run to station, no rest between. Nothing overhead, nothing pushing off the floor.',
+    warn:'If anything pinches in the shoulder on the curls, shrugs or holds, put the weights down and finish that station with bodyweight.',
+    items:[
+      {t:'run',label:'800m run',sub:'Buy in'},
+      {t:'station',label:'50 dumbbell hammer curls',sub:'Instead of ski or row. Arms stay at your sides.'},
+      {t:'run',label:'400m run'},
+      {t:'station',label:'40 weighted glute bridges',sub:'Instead of the sled push. Dumbbells on the hips, legs do the work.'},
+      {t:'run',label:'400m run'},
+      {t:'station',label:'40 dumbbell shrugs, 2 second hold',sub:'Instead of the sled pull. Arms straight down.'},
+      {t:'run',label:'400m run'},
+      {t:'station',label:'30 jump squats or 40 speed air squats',sub:'Instead of burpees. No floor loading through the shoulder.'},
+      {t:'run',label:'400m run'},
+      {t:'station',label:'40 dumbbell suitcase squats',sub:'Instead of wall balls. Weights held down at your sides.'},
+      {t:'run',label:'400m run'},
+      {t:'station',label:'60 to 90 second static dumbbell hold',sub:"Instead of the farmer's carry. Stand still, shoulders packed down and back."},
+      {t:'run',label:'400m run'},
+      {t:'station',label:'30 dumbbell suitcase lunges',sub:'Instead of the sandbag lunge. Weights at your sides while you step.'},
+      {t:'run',label:'800m run',sub:'Cash out'}
+    ]}];
+}
+S.circuits=Array.isArray(S.circuits)&&S.circuits.length? S.circuits : seedCircuits();
+const circuitOf=id=>(S.circuits||[]).find(c=>c.id===id)||null;
+
 /* seeded templates, taken from the coach sheet, fully editable after that */
 function seedTemplates(){
   const mk=(id,name,rows)=>({id,name,seeded:true,ex:rows.map(([exId,sets,reps,rest,note])=>
@@ -2316,7 +2407,7 @@ S.templates=Array.isArray(S.templates)&&S.templates.length? S.templates : seedTe
 S.workouts=Array.isArray(S.workouts)? S.workouts : [];
 S.restPrefs=S.restPrefs&&typeof S.restPrefs==='object'? S.restPrefs : {};
 const _fresh2=freshState;
-freshState=function(){ const f=_fresh2(); f.templates=seedTemplates(); f.runPlans=seedRunPlans(); f.workouts=[]; f.restPrefs={}; return f; };
+freshState=function(){ const f=_fresh2(); f.templates=seedTemplates(); f.runPlans=seedRunPlans(); f.circuits=seedCircuits(); f.workouts=[]; f.restPrefs={}; return f; };
 
 /* ---------- history and records ---------- */
 const e1RM=(kg,reps)=>reps>0? Math.round(kg*(1+reps/30)) : 0;
@@ -2337,6 +2428,20 @@ function exerciseStats(exId){
   return {sessions:h.length, heaviest, best1, bestVol, last:h[0]};
 }
 const setVolume=s=>(+s.kg||0)*(+s.reps||0);
+/* Finish a set and the rest of that exercise follows it: same weight, same reps.
+   It only fills sets you have not touched and have not done, so anything you
+   typed yourself stands, and warm ups are left alone. */
+function fillForward(i,j){
+  const e=GYM.ex[i], src=e.sets[j];
+  if(!src||src.warm) return 0;
+  let n=0;
+  for(let k=j+1;k<e.sets.length;k++){
+    const t=e.sets[k];
+    if(t.done||t.warm||t.touched) continue;
+    t.kg=src.kg; t.reps=src.reps; n++;
+  }
+  return n;
+}
 function setPR(exId,st){
   if(!st||!st.done||st.warm||st.kg===''||st.reps==='') return null;
   const pre=GYM&&GYM.pre? GYM.pre[exId] : null;
@@ -2431,13 +2536,19 @@ document.addEventListener('click',e=>{
   const d=e.target.closest('[data-done]');
   if(d){ const [i,j]=d.dataset.done.split(':').map(Number);
     const st=GYM.ex[i].sets[j]; st.done=!st.done;
-    if(st.done){ if(st.reps==='') st.reps=GYM.ex[i].reps; startRest(st.warm?0:GYM.ex[i].rest, exOf(GYM.ex[i].exId).n); }
+    if(st.done){
+      if(st.reps==='') st.reps=GYM.ex[i].reps;
+      fillForward(i,j);
+      startRest(st.warm?0:GYM.ex[i].rest, exOf(GYM.ex[i].exId).n);
+    }
     drawGym(); }
   const w=e.target.closest('[data-warm]');
   if(w){ const [i,j]=w.dataset.warm.split(':').map(Number); GYM.ex[i].sets[j].warm=!GYM.ex[i].sets[j].warm; drawGym(); }
   const a=e.target.closest('[data-addset]');
-  if(a){ const i=+a.dataset.addset; const last=GYM.ex[i].sets[GYM.ex[i].sets.length-1]||{};
-    GYM.ex[i].sets.push({kg:last.kg||'',reps:'',warm:false,done:false}); drawGym(); }
+  if(a){ const i=+a.dataset.addset;
+    const working=GYM.ex[i].sets.filter(x=>!x.warm);
+    const src=working.filter(x=>x.done).pop() || working[working.length-1] || {};
+    GYM.ex[i].sets.push({kg:src.kg||'',reps:src.reps||'',warm:false,done:false}); drawGym(); }
   const aw=e.target.closest('[data-addwarm]');
   if(aw){ const i=+aw.dataset.addwarm; GYM.ex[i].sets.unshift({kg:'',reps:'',warm:true,done:false}); drawGym(); }
   const ds=e.target.closest('[data-delset]');
@@ -2451,15 +2562,79 @@ document.addEventListener('input',e=>{
   if(!f||!GYM) return;
   const [i,j,k]=f.dataset.set.split(':');
   GYM.ex[+i].sets[+j][k]= f.value===''? '' : +f.value;
+  GYM.ex[+i].sets[+j].touched=true;
   $('gymFoot').querySelector('b').textContent=num(Math.round(gymVolume()))+' kg';
 });
 $('restPlus').addEventListener('click',()=>{ rest.left+=15; paintRest(); });
 $('restSkip').addEventListener('click',()=>{ clearInterval(restTick); $('restBar').classList.remove('on'); });
 $('gymClose').addEventListener('click',()=>{
-  const work=GYM&&!GYM.done&&gymSets()>0;
+  const work=GYM&&!GYM.done&&(GYM.mode==='circuit'? circuitDone()>0 : gymSets()>0);
   $('gym').classList.remove('on'); clearInterval(restTick); $('restBar').classList.remove('on');
-  if(work) toast('Session paused, nothing lost','Resume',()=>{ $('gym').classList.add('on'); drawGym(); });
+  if(work) toast('Session paused, nothing lost','Resume',()=>{ $('gym').classList.add('on');
+    GYM.mode==='circuit'? drawCircuit() : drawGym(); });
   else clearInterval(gymTick);
+});
+
+/* ---------- circuits, run for time ---------- */
+function startCircuit(id){
+  const c=circuitOf(id); if(!c) return null;
+  closeSheets();
+  GYM={mode:'circuit', circuitId:id, name:c.name, templateId:null, started:Date.now(),
+    items:c.items.map(x=>Object.assign({},x,{done:false})), ex:[], pre:{}, done:false};
+  document.getElementById('gym').classList.add('on');
+  drawCircuit();
+  clearInterval(gymTick);
+  gymTick=setInterval(()=>{ if(GYM&&!GYM.done) $('gymSub').textContent=elapsed()+' · for time'; },1000);
+  return GYM;
+}
+function circuitDone(){ return GYM.items.filter(x=>x.done).length; }
+function drawCircuit(){
+  const c=circuitOf(GYM.circuitId);
+  $('gymName').textContent=GYM.name;
+  $('gymSub').textContent=elapsed()+' · for time';
+  $('gymBody').innerHTML=`
+    <div class="exc"><div class="cue">${c.why}</div>
+      ${c.warn?`<div class="warn">${c.warn}</div>`:''}</div>
+    ${GYM.items.map((x,i)=>`<button class="citem ${x.done?'done':''}" data-citem="${i}">
+        <span class="cn">${x.t==='run'?'run':'station'}</span>
+        <span class="ct"><b>${x.label}</b>${x.sub?`<span>${x.sub}</span>`:''}</span>
+        <span class="ctick">${x.done?'✓':''}</span></button>`).join('')}
+    <div class="addex"><button id="cAdd">+ Add a station</button></div>`;
+  $('gymFoot').innerHTML=`<div>Done <b>${circuitDone()} of ${GYM.items.length}</b></div>
+    <div style="margin-left:auto">Tap each one as you finish it</div>`;
+}
+function finishCircuit(){
+  if(!GYM||GYM.done) return null;
+  GYM.done=true; clearInterval(gymTick);
+  const mins=Math.max(1,Math.round((Date.now()-GYM.started)/60000));
+  const done=circuitDone(), total=GYM.items.length;
+  const record={id:'w'+Date.now(),d:todayKey(),name:GYM.name,kind:'circuit',circuitId:GYM.circuitId,
+    minutes:mins,sets:done,volume:0,stations:done,ofStations:total,
+    ex:[]};
+  S.workouts.unshift(record);
+  const prev=S.workouts.filter(w=>w.circuitId===GYM.circuitId&&w.id!==record.id)[0];
+  logSession({title:GYM.name,type:'workout',adds:1,steps:GYM.items.map(x=>({n:x.label,r:x.t}))});
+  $('gymBody').innerHTML=`<div class="summary">
+    <div class="big">${mins} minutes.</div>
+    <div class="numline" style="margin-top:10px"><div><b>${done}</b> of ${total} finished</div>
+      <div>${prev? 'last time <b>'+prev.minutes+' min</b>':'first time on this one'}</div></div>
+    ${prev? `<div class="note">${mins<prev.minutes? 'That is '+(prev.minutes-mins)+' minutes quicker than last time.' :
+      (mins>prev.minutes? 'That is '+(mins-prev.minutes)+' minutes slower. Conditions, sleep and the weights all move this number.' :
+      'Same time as last time.')}</div>`:'<div class="note">That is the time to beat.</div>'}
+    ${done<total? `<div class="note">You ticked ${done} of ${total}, so the time is not comparable to a full one.</div>`:''}
+  </div>`;
+  $('gymFoot').innerHTML=`<div style="margin-left:auto"><button class="mini go" id="gymDone">Close</button></div>`;
+  save(); renderAll();
+  return {record,prev};
+}
+document.addEventListener('click',e=>{
+  const ci=e.target.closest('[data-citem]');
+  if(ci&&GYM&&GYM.mode==='circuit'){ const i=+ci.dataset.citem;
+    GYM.items[i].done=!GYM.items[i].done;
+    if(GYM.items[i].done&&navigator.vibrate) navigator.vibrate(60);
+    drawCircuit(); }
+  if(e.target.closest('#cAdd')&&GYM&&GYM.mode==='circuit'){
+    GYM.items.push({t:'station',label:'Extra station',sub:'',done:false}); drawCircuit(); }
 });
 
 /* ---------- exercise picker and per exercise menu ---------- */
@@ -2585,8 +2760,11 @@ function gymToTemplateRows(){
     reps:e.reps,tempo:e.tempo,rest:e.rest,note:e.note}));
 }
 $('gymFinish').addEventListener('click',()=>{
-  if(!GYM) return;
-  if(GYM.done) return;
+  if(!GYM||GYM.done) return;
+  if(GYM.mode==='circuit'){
+    if(!circuitDone()){ toast('Tick at least one station first'); return; }
+    finishCircuit(); return;
+  }
   if(!gymSets()){ toast('Tick at least one set first'); return; }
   finishWorkout();
 });
@@ -2746,7 +2924,7 @@ coachBrief=function(){
   return t;
 };
 
-Object.assign(window.__G,{LIBRARY,exOf,seedTemplates,seedRunPlans,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
+Object.assign(window.__G,{LIBRARY,exOf,fillForward,seedTemplates,seedRunPlans,seedCircuits,circuitOf,startCircuit,finishCircuit,drawCircuit,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
   openExMenu,openTplEdit,drawTemplates,exerciseStats,e1RM,lastSets,gymVolume,gymSets,templateChanged,startRest,
   get GYM(){return GYM}, get tplDraft(){return tplDraft}});
 Object.defineProperties(window.__G,{
@@ -2762,7 +2940,6 @@ S.week.forEach((d,i)=>{ d.today = i===dowIdx(); });
 ensurePlan();
 mountColophons();
 renderAll();
-demoPickup();
 if(!S.profile.onboarded) startOnboarding();
 </script>
 

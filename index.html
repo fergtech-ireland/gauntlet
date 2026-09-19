@@ -1406,8 +1406,26 @@ function renderAll(){ renderToday(); renderPlan(); renderFeed(); renderPeople();
 
 /* ===================== chrome and actions ===================== */
 const scrim=$('scrim');
-const openSheet=id=>{$(id).classList.add('on');scrim.classList.add('on')};
-const closeSheets=()=>{document.querySelectorAll('.sheet').forEach(s=>s.classList.remove('on'));scrim.classList.remove('on')};
+/* Sheets are opened from inside full screen layers (onboarding, the gym, the
+   guided session), and those sit above the default sheet layer. So work out what
+   is on screen and put the sheet above it, rather than behind it where it looks
+   like the button did nothing. */
+function topLayer(){
+  let z=60;
+  [['onb',90],['gym',75],['player',70]].forEach(([id,base])=>{
+    const el=$(id); if(el&&el.classList.contains('on')) z=Math.max(z,base);
+  });
+  return z;
+}
+const openSheet=id=>{
+  const z=topLayer();
+  scrim.style.zIndex=z+10; $(id).style.zIndex=z+11;
+  $(id).classList.add('on'); scrim.classList.add('on');
+};
+const closeSheets=()=>{
+  document.querySelectorAll('.sheet').forEach(s2=>{ s2.classList.remove('on'); s2.style.zIndex=''; });
+  scrim.classList.remove('on'); scrim.style.zIndex='';
+};
 scrim.addEventListener('click',closeSheets);
 let toastTimer=null,undoFn=null;
 function toast(msg,undoLabel,fn){
@@ -1416,6 +1434,19 @@ function toast(msg,undoLabel,fn){
   t.classList.add('on'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('on'),3400);
 }
 $('toastAct').addEventListener('click',()=>{ if(undoFn) undoFn(); $('toast').classList.remove('on'); });
+/* Nothing in here should feel broken. If a button is ahead of the build, it says
+   so in its own words rather than doing nothing at all. */
+const NOT_YET=[
+  'Not built yet. It is on the list, somewhere under the biscuits.',
+  'That one is still in the oven. Give it a week.',
+  'Coming, but not today. Consider this a very polite shrug.',
+  'Half built. The other half is out for a walk.',
+  'Not wired up yet. It knows, and it is embarrassed.'
+];
+function notYet(what){
+  const line=NOT_YET[Math.floor(Math.random()*NOT_YET.length)];
+  toast((what? what+'. ':'')+line);
+}
 function go(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   $('s-'+name).classList.add('on');
@@ -1875,7 +1906,7 @@ window.__G={
   SOURCES,STEP_TARGET,
   toggleFollow,startSessionFromPost,startSession,nextStep,prevStep,finishSession,closePlayer,
   logSession,openWeigh,openDetails,renderAll,renderToday,renderPlan,renderProgress,renderFeed,renderPeople,
-  go,openSheet,closeSheets,updateBadge,mountColophons,startOnboarding,onbRender,finishOnboarding,openTempoHelp,showTempoSafe,
+  go,openSheet,closeSheets,topLayer,notYet,updateBadge,mountColophons,startOnboarding,onbRender,finishOnboarding,openTempoHelp,showTempoSafe,
   get __cloudReady(){ try{ return typeof cloudReady==='function'&&cloudReady(); }catch(e){ return false; } },
   SEED_POSTS,people,AIMS,ACTIVITY,PATTERNS,SLOTS,HUE,DAYS,STORE_KEY,APP_VERSION
 };
@@ -2663,6 +2694,8 @@ $('exQ').addEventListener('input',e=>drawExList(e.target.value));
 document.addEventListener('click',e=>{
   const pk=e.target.closest('[data-pick]'); if(!pk) return;
   const id=pk.dataset.pick;
+  const gymOpen=document.getElementById('gym').classList.contains('on');
+  if(!altSwapPick && !tplPicking && !gymOpen){ closeSheets(); notYet('Nothing open to add '+exOf(id).n+' to'); return; }
   if(altSwapPick){ const ctx=altSwapPick; altSwapPick=null;
     swapEverywhere(ctx.exId,id); toast('Swapped for '+exOf(id).n);
     closeSheets();

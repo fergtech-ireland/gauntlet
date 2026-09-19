@@ -482,6 +482,13 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .citem.done .ctick{background:var(--forest);border-color:var(--forest)}
 .citem.done .ct b{color:var(--mute);text-decoration:line-through}
 .warn{font-size:12.5px;color:var(--oxblood);background:#fbeef0;border-radius:8px;padding:10px 12px;margin-top:10px}
+.cidot{width:5px;height:5px;border-radius:50%;background:var(--marigold);margin:4px auto 0}
+.cichip{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--burnt);background:var(--t-marigold);padding:3px 6px;border-radius:5px;vertical-align:middle}
+.viewbtn{display:block;margin:10px auto 0;font-size:13px;font-weight:700;color:var(--marine)}
+.why-row{font-size:11.5px;color:var(--burnt);margin-top:4px}
+.cedit{display:grid;grid-template-columns:38px 1fr 26px 26px;gap:6px;align-items:center;padding:8px 0 0}
+.cedit input{border:1px solid var(--line);border-radius:7px;padding:7px 8px;font-size:13.5px;font-weight:600;outline:none;width:100%}
+.cisub{border:1px solid var(--line-soft);border-radius:7px;padding:6px 8px;font-size:12px;outline:none;width:100%;margin-top:4px;color:var(--mute)}
 </style>
 </head>
 <body>
@@ -609,6 +616,13 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   <div id="tplList"></div>
 </div>
 
+<div class="sheet" id="circEdit">
+  <div class="grab"></div><h3 id="circEditTitle">Edit circuit</h3>
+  <p class="sub">Runs, stations, in whatever order suits. Tap run or stn to switch a line between the two.</p>
+  <div id="circEditBody" style="padding:0 14px"></div>
+  <button class="sheetcta" id="circSave">Save circuit</button>
+</div>
+
 <div class="sheet" id="tplEdit">
   <div class="grab"></div><h3 id="tplEditTitle">Edit template</h3>
   <p class="sub">Sets, reps and rest per movement. Yours to change.</p>
@@ -685,7 +699,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='2.0';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='16';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -729,27 +743,27 @@ const P=Object.fromEntries([ME].map(p=>[p.id,p]));
 const SEED_POSTS=[
   {id:'p1',by:'niamh',kind:'run',when:'22m',title:'14.2',unit:'km along the Shannon',
    chips:['5:12 /km','1:13:47','Annacotty loop'],baseTries:412,
-   cap:'Legs were bold for the first 4k then behaved. Negative split by 40 seconds.',
+   cap:'Easy miles along the river.',
    session:{title:'Shannon 14.2km',type:'run',adds:14.2,steps:[
      {n:'Easy opening 3 km',r:'5:35 /km',sec:12},{n:'Settle to goal pace',r:'5:10 /km',sec:14},
      {n:'Riverside push, 6 km',r:'5:02 /km',sec:16},{n:'Last 2 km, empty the tank',r:'4:48 /km',sec:12},
      {n:'Walk back over the bridge',r:'cool down',sec:8}]}},
   {id:'p2',by:'saoirse',kind:'meal',when:'1h',title:'Harissa chickpea bowl',unit:'42g protein, 12 minutes',
    chips:['12 min','5 ingredients','€2.40 a portion'],baseTries:1204,macros:{p:42,c:64,f:19},
-   cap:'Batch of four done on Sunday. Tastes better on day two, which is the whole point.',
+   cap:'Batch of four, better on day two.',
    session:{title:'Harissa chickpea bowl',type:'meal',adds:1,steps:[
      {n:'Roast chickpeas with harissa',r:'12 min',sec:14},{n:'Whip the lemon yoghurt',r:'2 min',sec:8},
      {n:'Char the tenderstem',r:'4 min',sec:10},{n:'Build the bowl, seeds last',r:'1 min',sec:8}]}},
   {id:'p3',by:'dara',kind:'workout',when:'3h',title:'Push A',unit:'6 movements, 48 min',
    chips:['Upper','Dumbbells and bench','RPE 8'],baseTries:318,
-   cap:'Third week on this block. Everything up 2.5kg except the dips, which stay humbling.',
+   cap:'Pressing day, done.',
    session:{title:'Push A',type:'workout',adds:1,steps:[
      {n:'Incline dumbbell press',r:'4 × 8',sec:14},{n:'Standing overhead press',r:'4 × 6',sec:14},
      {n:'Weighted dip',r:'3 × 8',sec:12},{n:'Cable fly',r:'3 × 12',sec:12},
      {n:'Lateral raise, slow down',r:'3 × 15',sec:10},{n:'Overhead triceps',r:'3 × 12',sec:10}]}},
   {id:'p4',by:'tom',kind:'fast',when:'5h',title:'16:8',unit:'closed at 12.30',
    chips:['Black coffee only','Broke it with eggs','Slept 7h 40m'],baseTries:96,
-   cap:'The morning hunger stopped being a thing around day nine.',
+   cap:'Sixteen hours, eight to eat.',
    session:{title:'16:8 fast',type:'fast',adds:1,steps:[
      {n:'Last bite logged',r:'20:30',sec:8},{n:'Sleep window',r:'8 hours',sec:12},
      {n:'Coffee, water, salt',r:'morning',sec:10},{n:'Break the fast',r:'12:30',sec:8}]}}
@@ -962,9 +976,8 @@ function dayCounts(){
 /* Interleave lifting and cardio so two hard days do not sit on top of each other,
    then fill what is left with rest, or cooking if that is the aim. */
 function weekPattern(){
-  const ci=Math.min(6,Math.max(0,S.profile.checkinDay===undefined?6:S.profile.checkinDay));
   const {lift,cardio}=dayCounts();
-  const slots=[]; for(let i=0;i<7;i++) if(i!==ci) slots.push(i);
+  const slots=[0,1,2,3,4,5,6];
   const lifts=Array.from({length:Math.min(lift,slots.length)},(_,n)=>LIFT_ORDER[n%LIFT_ORDER.length]);
   const cardios=Array.from({length:Math.min(cardio,Math.max(0,slots.length-lifts.length))},
     (_,n)=>(CARDIO_BY_AIM[S.profile.aim]||CARDIO_BY_AIM.lose)[n%4]);
@@ -977,15 +990,13 @@ function weekPattern(){
   while(si<small.length) mixed.push(small[si++]);
   const filler=S.profile.aim==='eat'? 'cook':'rest';
   while(mixed.length<slots.length) mixed.push(filler);
-  const pattern=[];
-  let k=0;
-  for(let i=0;i<7;i++) pattern.push(i===ci? 'checkin' : mixed[k++]);
-  return pattern;
+  return mixed.slice(0,7);
 }
 function composePlan(c,swaps){
   const pattern=weekPattern();
-  if(swaps) Object.keys(swaps).forEach(i=>{ if(pattern[+i]!=='checkin') pattern[+i]=swaps[i]; });
-  const days=pattern.map((code,i)=>Object.assign(slotFor(code),{dow:i}));
+  if(swaps) Object.keys(swaps).forEach(i=>{ pattern[+i]=swaps[i]; });
+  const ci=Math.min(6,Math.max(0,S.profile.checkinDay===undefined?6:S.profile.checkinDay));
+  const days=pattern.map((code,i)=>Object.assign(slotFor(code),{dow:i,checkin:i===ci}));
   const why=adaptPlan(days,c);
   return {weekOf:mondayKey(), at:Date.now(), days, why};
 }
@@ -1002,7 +1013,7 @@ function planDiff(a,b){
 }
 function buildPlan(swaps){
   S.plan=composePlan(S.checkins[0],swaps);
-  const training=S.plan.days.filter(d=>d.type&&d.slot!=='checkin'&&d.slot!=='walk').length;
+  const training=S.plan.days.filter(d=>d.type&&d.slot!=='walk').length;
   S.goal={kind:'any',target:training,unit:'sessions',label:'Move '+training+' times',now:S.goal?S.goal.now:0};
   return S.plan;
 }
@@ -1032,6 +1043,12 @@ function adaptPlan(days,c){
 }
 function ensurePlan(){
   if(!S.plan || S.plan.weekOf!==mondayKey() || (S.checkins[0] && S.checkins[0].at>S.plan.at)) buildPlan();
+  /* older plans gave the check in a day of its own. It rides along now. */
+  const ci=S.profile.checkinDay===undefined?6:S.profile.checkinDay;
+  if(S.plan.days.some(d=>d.slot==='checkin')){
+    S.plan.days=S.plan.days.map((d,i)=>d.slot==='checkin'? Object.assign(slotFor('rest'),{dow:i}) : d);
+  }
+  S.plan.days.forEach((d,i)=>{ d.checkin=(i===ci); });
   return S.plan;
 }
 function dayLabel(d){
@@ -1049,7 +1066,7 @@ function daySub(d){
 }
 const todayPlan=()=>{ ensurePlan(); return S.plan.days[dowIdx()]; };
 function weekStats(){
-  const planned=S.plan? S.plan.days.filter(d=>d.type&&d.slot!=='checkin'&&d.slot!=='walk').length : 0;
+  const planned=S.plan? S.plan.days.filter(d=>d.type&&d.slot!=='walk').length : 0;
   const done=S.week.filter(d=>d.done.length).length;
   const lifted=S.workouts? S.workouts.filter(w=>w.d>=mondayKey()).length : 0;
   const vol=S.workouts? S.workouts.filter(w=>w.d>=mondayKey()).reduce((a,w)=>a+w.volume,0) : 0;
@@ -1064,9 +1081,8 @@ function weekStats(){
    past that needs to move. If there is no rest day left, the last session in the
    week drops out and the app says so rather than quietly losing it. */
 function nextSlots(i){
-  const ci=S.profile.checkinDay===undefined?6:S.profile.checkinDay;
   const out=[];
-  for(let k=i+1;k<7;k++){ if(k!==ci) out.push(k); }
+  for(let k=i+1;k<7;k++) out.push(k);
   return out;
 }
 function absorberFor(i){
@@ -1082,10 +1098,12 @@ function pushPlanDay(i){
     return {ok:true,moved,dropped:moved,absorbed:null}; }
   const chain=nextSlots(i).filter(k=>k<=absorb);
   const dropped = S.plan.days[absorb].slot==='rest'? null : dayLabel(S.plan.days[absorb]);
+  const flags=S.plan.days.map(d=>!!d.checkin);
   for(let n=chain.length-1;n>0;n--) S.plan.days[chain[n]]=Object.assign({},S.plan.days[chain[n-1]],{dow:chain[n]});
   S.plan.days[chain[0]]=Object.assign({},S.plan.days[i],{dow:chain[0]});
   S.plan.days[i]=Object.assign(slotFor('rest'),{dow:i});
-  S.goal.target=S.plan.days.filter(d=>d.type&&d.slot!=='checkin'&&d.slot!=='walk').length;
+  S.plan.days.forEach((d,n)=>{ d.checkin=flags[n]; });
+  S.goal.target=S.plan.days.filter(d=>d.type&&d.slot!=='walk').length;
   S.goal.label='Move '+S.goal.target+' times';
   save(); renderAll();
   return {ok:true,moved,to:chain[0],dropped,absorbed:absorb};
@@ -1093,8 +1111,9 @@ function pushPlanDay(i){
 function dropPlanDay(i){
   ensurePlan();
   const dropped=dayLabel(S.plan.days[i]);
-  S.plan.days[i]=Object.assign(slotFor('rest'),{dow:i});
-  S.goal.target=S.plan.days.filter(d=>d.type&&d.slot!=='checkin'&&d.slot!=='walk').length;
+  const wasCheckin=!!S.plan.days[i].checkin;
+  S.plan.days[i]=Object.assign(slotFor('rest'),{dow:i,checkin:wasCheckin});
+  S.goal.target=S.plan.days.filter(d=>d.type&&d.slot!=='walk').length;
   S.goal.label='Move '+S.goal.target+' times';
   save(); renderAll();
   return {ok:true,dropped};
@@ -1177,12 +1196,14 @@ function renderToday(){
       : isWalk
         ? (walkDone()? `<div class="doneline">Done. ${num(st)} steps in.</div>` : `<button class="cta ghost" data-go="plan">See the week</button>`)
         : `<button class="cta" id="startToday">${done&&d.type?'Do it again':(d.slot==='checkin'?'Start the check in':'Start')}</button>`}
+    ${d.type&&d.slot!=='walk'? `<button class="viewbtn" data-view="${i}">See what is in it</button>`:''}
     ${d.type&&d.slot!=='walk'&&!done? `<button class="skipbtn" data-restday="${i}">Not today</button>`:''}
     ${d.exclude&&d.exclude.length?`<div class="note">Leaving out ${d.exclude.join(', ')} while it settles.</div>`:''}
   </div>
   <div class="ribbon">${plan.days.map((x,n)=>`<button data-planday="${n}" class="${n===i?'today':''}">
       <div class="d">${DAYS[n][0]}</div>
       <div class="m ${x.kind==='rest'?'empty':''} ${dayDone(n)?'done':''}" style="${x.kind==='rest'?'':'background:'+(HUE[x.kind]||HUE.any).deep}">${dayLabel(x).slice(0,2)}</div>
+      ${x.checkin?`<div class="cidot" title="Check in"></div>`:''}
     </button>`).join('')}</div>
   <div class="sechead"><h2>Quick bits</h2></div>
   <button class="todo ${weighedToday?'done':''}" id="todoWeigh">
@@ -1215,8 +1236,9 @@ function openConnect(){
   openSheet('connectSheet');
 }
 /* tapping a day in the ribbon shows that day, rather than dumping you on a tab */
-function openDayDetail(n){
+function openDayDetail(n,opts){
   ensurePlan();
+  const ro=!!(opts&&opts.readOnly);
   const d=S.plan.days[n], tpl=d.templateId? (S.templates||[]).find(t=>t.id===d.templateId):null;
   $('dayTitle').textContent=DAYS[n]+' · '+dayLabel(d);
   $('daySub').textContent=d.sub||'';
@@ -1226,16 +1248,16 @@ function openDayDetail(n){
         <span style="flex:1;font-weight:600">${st.n}</span><span style="color:var(--mute);font-size:12.5px">${st.r}</span></div>`).join('')}
       <div class="note">${runPlan(d.runId).why}</div>
       <button class="mini" data-runswap="${n}">Change this run</button></div>`:''}
-    ${tpl? `<div style="padding:2px 14px 10px">${tpl.ex.map(r=>`<button class="move" data-dayswap="${r.exId}" style="display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line-soft);font-size:13.5px;width:100%;text-align:left">
+    ${tpl? `<div style="padding:2px 14px 10px">${tpl.ex.map(r=>`<button class="move" ${ro?'':`data-dayswap="${r.exId}"`} style="display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line-soft);font-size:13.5px;width:100%;text-align:left">
         <span style="flex:1;font-weight:600">${exOf(r.exId).n}</span>
         <span style="color:var(--mute);font-size:12.5px">${r.sets} × ${r.reps}</span>
-        <span style="color:var(--marine);font-weight:700;font-size:12.5px">Change</span></button>`).join('')}
+        ${ro?'':'<span style="color:var(--marine);font-weight:700;font-size:12.5px">Change</span>'}</button>`).join('')}
       ${d.exclude&&d.exclude.length?`<div class="note">Leaving out ${d.exclude.join(', ')}.</div>`:''}
       ${d.setDelta?`<div class="note">One set lighter than the template this week.</div>`:''}</div>`
       : `<div class="note" style="padding:0 14px 12px">${d.slot==='rest'?'Nothing owed. Rest is part of it.':(d.slot==='walk'?'Counted by your tracker. Nothing to press.':'')}</div>`}
     ${d.type&&d.slot!=='walk'? `<button class="sheetcta" data-startday="${n}">Start this ${n===dowIdx()?'now':'day'}</button>`:''}
-    <button class="sheetcta" style="background:var(--grey-btn);color:var(--ink)" data-swap="${n}">Change this day</button>
-    ${d.type&&d.slot!=='walk'? `<button class="sheetcta" style="background:var(--grey-btn);color:var(--ink)" data-restday="${n}">Cannot do it, move or drop it</button>`:''}`;
+    ${ro? '' : `<button class="sheetcta" style="background:var(--grey-btn);color:var(--ink)" data-swap="${n}">Change this day</button>
+    ${d.type&&d.slot!=='walk'? `<button class="sheetcta" style="background:var(--grey-btn);color:var(--ink)" data-restday="${n}">Cannot do it, move or drop it</button>`:''}`}`;
   openSheet('daySheet');
 }
 
@@ -1245,7 +1267,7 @@ function renderPlan(){
   $('planView').innerHTML=`
   <div class="h1">Your week</div>
   <div class="sect" style="border-bottom:0;padding-bottom:6px">
-    <div class="numline"><div>Aim <b>${aim.t}</b></div><div>Training days <b>${plan.days.filter(d=>d.type&&d.slot!=='checkin'&&d.slot!=='walk').length}</b></div></div>
+    <div class="numline"><div>Aim <b>${aim.t}</b></div><div>Training days <b>${plan.days.filter(d=>d.type&&d.slot!=='walk').length}</b></div></div>
   </div>
   <div class="sect">
     <h2>Why this week looks like this</h2>
@@ -1253,7 +1275,7 @@ function renderPlan(){
   </div>
   ${plan.days.map((d,n)=>`<div class="pday ${n===i?'today':''}">
     <div class="dd">${DAYS[n]}</div>
-    <div class="txt"><b>${dayLabel(d)}${d.setDelta?' (lighter)':''}</b><span>${daySub(d)}${d.exclude&&d.exclude.length?' · minus '+d.exclude.length+' movement'+(d.exclude.length>1?'s':''):''}</span></div>
+    <div class="txt"><b>${dayLabel(d)}${d.setDelta?' (lighter)':''}${d.checkin?' <span class="cichip">check in</span>':''}</b><span>${daySub(d)}${d.exclude&&d.exclude.length?' · minus '+d.exclude.length+' movement'+(d.exclude.length>1?'s':''):''}</span></div>
     <button class="mini" data-swap="${n}">Change</button>
     ${d.type&&d.slot!=='walk'?`<button class="mini go" data-startday="${n}">Start</button>`:''}
   </div>`).join('')}
@@ -1269,11 +1291,15 @@ function openSwap(n){
   const d=S.plan.days[n];
   $('swapTitle').textContent=DAYS[n];
   const opts=(S.templates||[]).map(t=>({code:t.id,label:t.name+' day',sub:t.ex.length+' movements'}))
-    .concat([{code:'walk',label:'Walk',sub:'30 to 45 minutes'},{code:'run',label:'Run',sub:'Zone 2'},
-      {code:'cook',label:'Cook',sub:'Something with protein in it'},{code:'rest',label:'Rest',sub:'Nothing owed'},
-      {code:'checkin',label:'Check in',sub:'Two minutes'}]);
-  $('swapBody').innerHTML=opts.map(o=>`<button class="logrow" data-swapto="${n}:${o.code}">
-    <div class="txt"><div class="t">${o.label}${d.slot===o.code?' · current':''}</div><div class="s">${o.sub}</div></div></button>`).join('');
+    .concat((S.runPlans||[]).map(r=>({code:r.id,label:r.name,sub:r.sub})))
+    .concat((S.circuits||[]).map(c=>({code:c.id,label:c.name,sub:c.sub})))
+    .concat([{code:'walk',label:'Walk',sub:'Counted by your tracker'},
+      {code:'cook',label:'Cook',sub:'Something with protein in it'},{code:'rest',label:'Rest',sub:'Nothing owed'}]);
+  $('swapBody').innerHTML=opts.map(o=>{
+    const why=(typeof suggestFor==='function')? suggestFor(o.code) : '';
+    return `<button class="logrow" data-swapto="${n}:${o.code}">
+      <div class="txt"><div class="t">${o.label}${d.slot===o.code?' · current':''}</div><div class="s">${o.sub}</div>
+      ${why?`<div class="why-row">${why}</div>`:''}</div></button>`;}).join('');
   openSheet('swapSheet');
 }
 
@@ -1500,6 +1526,7 @@ document.addEventListener('click',e=>{
   if(e.target.closest('#startToday')) startPlanDay(todayPlan());
   const sd=e.target.closest('[data-startday]'); if(sd){ closeSheets(); startPlanDay(S.plan.days[+sd.dataset.startday]); }
   const pd=e.target.closest('[data-planday]'); if(pd) openDayDetail(+pd.dataset.planday);
+  const vw=e.target.closest('[data-view]'); if(vw) openDayDetail(+vw.dataset.view,{readOnly:true});
   const sw=e.target.closest('[data-swap]'); if(sw){ closeSheets(); openSwap(+sw.dataset.swap); }
   const dsw=e.target.closest('[data-dayswap]');
   if(dsw){ closeSheets(); openAlternatives(dsw.dataset.dayswap,{day:true}); }
@@ -1510,8 +1537,8 @@ document.addEventListener('click',e=>{
   const st=e.target.closest('[data-swapto]');
   if(st){ const [n,code]=st.dataset.swapto.split(':');
     const old=S.plan.days[+n];
-    S.plan.days[+n]=Object.assign(slotFor(code),{dow:+n,exclude:old.exclude,setDelta:old.setDelta});
-    S.goal.target=S.plan.days.filter(d=>d.type&&d.slot!=='checkin'&&d.slot!=='walk').length;
+    S.plan.days[+n]=Object.assign(slotFor(code),{dow:+n,checkin:!!old.checkin,exclude:old.exclude,setDelta:old.setDelta});
+    S.goal.target=S.plan.days.filter(d=>d.type&&d.slot!=='walk').length;
     S.goal.label='Move '+S.goal.target+' times';
     save(); closeSheets(); renderAll(); toast(DAYS[+n]+' is now '+S.plan.days[+n].label); }
   if(e.target.closest('#rebuild')){ buildPlan(); save(); renderAll(); toast('Week rebuilt from your last check in'); }
@@ -1725,13 +1752,15 @@ function onbRender(){
     S.profile=Object.assign({},S.profile,saved);
     if(onbDraft.runSwaps) Object.keys(onbDraft.runSwaps).forEach(i=>{ week[+i]=onbDraft.runSwaps[i]; });
     b.innerHTML=`<h2>Here is your week.</h2>
-      <p class="lead">Every day, and what is in it. If something hurts, or you cannot do it, change it now and I will put something similar in its place.</p>
+      <p class="lead">This is a starting point, not a prescription. It is built from what tends to work, but nobody knows your week, your body or your gym better than you do. Change anything: the session on a day, the movements in it, the sets and reps, or take a day out entirely.</p>
       ${week.map((code,i)=>{
         const d=slotFor(code), t=d.templateId? (S.templates||[]).find(x=>x.id===d.templateId):null;
         const r=d.runId? runPlan(d.runId):null;
         return `<div class="revday">
           <div class="revhead">${DAYS[i]} · ${dayLabel(d)} <span>${d.mins?d.mins+' min':''}</span></div>
-          ${t? t.ex.map(row=>`<button class="revrow" data-onbswap="${row.exId}">
+          ${t? `<button class="revrow" data-onbedit="${t.id}"><div class="txt"><div class="t">Edit sets, reps and rest</div>
+            <div class="s">Or add and remove movements</div></div><span class="chg">Edit</span></button>`+
+          t.ex.map(row=>`<button class="revrow" data-onbswap="${row.exId}">
               <div class="txt"><div class="t">${exOf(row.exId).n}</div>
                 <div class="s">${row.sets} × ${row.reps}${showTempo()?' · tempo '+(row.tempo||tempoOf(row.exId)):''} · rest ${row.rest}s</div>
                 ${showTempo()&&tempoMatters(row.tempo||tempoOf(row.exId))?`<div class="s" style="color:var(--burnt)">${tempoWords(row.tempo||tempoOf(row.exId))}</div>`:''}</div>
@@ -1741,9 +1770,10 @@ function onbRender(){
                   <div class="txt"><div class="t">${st.n}</div><div class="s">${st.r}</div></div></div>`).join('')}
                 <div class="revrow" style="background:var(--canvas)"><div class="txt"><div class="s">${r.why}</div></div></div>
                 `
-            : d.circuitId? `${(circuitOf(d.circuitId).items||[]).slice(0,4).map(it=>`<div class="revrow" style="pointer-events:none">
-                  <div class="txt"><div class="t">${it.label}</div><div class="s">${it.sub||it.t}</div></div></div>`).join('')}
-                <div class="revrow" style="pointer-events:none;background:var(--canvas)"><div class="txt"><div class="s">${circuitOf(d.circuitId).items.length} parts in all, run for time.</div></div></div>`
+            : d.circuitId? `<div class="revrow" style="pointer-events:none;background:var(--canvas)"><div class="txt"><div class="t">${circuitOf(d.circuitId).sub}</div>
+                  <div class="s">${circuitOf(d.circuitId).why}</div></div></div>
+                ${(circuitOf(d.circuitId).items||[]).map(it=>`<div class="revrow" style="pointer-events:none">
+                  <div class="txt"><div class="t">${it.label}</div><div class="s">${it.sub||it.t}</div></div></div>`).join('')}`
             : `<div class="revrow"><div class="txt"><div class="s">${
                 code==='walk'? 'Counted by your tracker. Nothing to press.' :
                 code==='cook'? 'Cook something with protein in it.' :
@@ -1782,9 +1812,12 @@ function onbCta(){
   if(step===1) $('onbNext').disabled = (onbDraft.liftDays+onbDraft.cardioDays)>6;
 }
 function openRunSwap(dayIndex,current){
-  const row=(id,title,sub)=>`<button class="logrow" data-runpick="${dayIndex}:${id}">
-      <div class="txt"><div class="t">${title}${id===current?' · current':''}</div><div class="s">${sub}</div></div>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2.2" stroke-linecap="round"><path d="m9 5 7 7-7 7"/></svg></button>`;
+  const row=(id,title,sub)=>{
+    const why=(typeof suggestFor==='function')? suggestFor(id) : '';
+    return `<button class="logrow" data-runpick="${dayIndex}:${id}">
+      <div class="txt"><div class="t">${title}${id===current?' · current':''}</div><div class="s">${sub}</div>
+      ${why?`<div class="why-row">${why}</div>`:''}</div>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2.2" stroke-linecap="round"><path d="m9 5 7 7-7 7"/></svg></button>`;};
   document.getElementById('altTitle').textContent='What is on '+(DAYS[dayIndex]||'this day')+'?';
   document.getElementById('altSub').textContent='Anything can go on any day. Most of a running week should be easy, with one harder session and one longer one.';
   document.getElementById('altBody').innerHTML=
@@ -1803,7 +1836,7 @@ function openRunSwap(dayIndex,current){
 document.addEventListener('click',e=>{
   const rp=e.target.closest('[data-runpick]'); if(!rp) return;
   const [i,code]=rp.dataset.runpick.split(':');
-  if(S.plan&&S.plan.days[+i]) S.plan.days[+i]=Object.assign(slotFor(code),{dow:+i});
+  if(S.plan&&S.plan.days[+i]) S.plan.days[+i]=Object.assign(slotFor(code),{dow:+i,checkin:!!S.plan.days[+i].checkin});
   if(onbDraft&&typeof onbDraft==='object'){ onbDraft.runSwaps=onbDraft.runSwaps||{}; onbDraft.runSwaps[i]=code; }
   save(); closeSheets();
   if(document.getElementById('onb').classList.contains('on')) onbRender(); else renderAll();
@@ -1852,6 +1885,8 @@ document.addEventListener('click',e=>{
   if(dd){ onbDraft.checkinDay=+dd.dataset.onbday; onbRender(); }
   const os=e.target.closest('[data-onbswap]');
   if(os){ openAlternatives(os.dataset.onbswap,{onboarding:true}); }
+  const oe=e.target.closest('[data-onbedit]');
+  if(oe){ openTplEdit(oe.dataset.onbedit); }
   if(e.target.closest('#tempoHelp')) openTempoHelp();
 });
 $('onbNext').addEventListener('click',async()=>{
@@ -1889,7 +1924,7 @@ function mountColophons(){
   document.querySelectorAll('.screen').forEach(sc=>{
     if(sc.querySelector('.colophon')) return;
     sc.insertAdjacentHTML('beforeend',`<div class="colophon"><div class="fx">FERG<i>TECH</i></div>
-      <div class="sub">Gauntlet v${APP_VERSION}. Built in Limerick.<br>Your week lives on this device and nowhere else.</div></div>`);
+      <div class="sub">Gauntlet, build ${APP_VERSION}. Built in Limerick.<br>Your week lives on this device and nowhere else.</div></div>`);
   });
 }
 let deferredPrompt=null;
@@ -2385,32 +2420,53 @@ function runSession(id){
 
 /* Circuits. A run, a station, a run, a station, done for time. Neither the
    lifting logger nor the run player fits: there are no sets to beat and no single
-   pace, the number that matters is the clock. Every station is editable, and the
-   one that ships is a shoulder safe HYROX simulation where each station swaps the
-   overhead or floor loaded movement for something that keeps the arms down. */
+   pace, the number that matters is the clock. Every station is editable. The one
+   that ships is a HYROX simulation you can do with a pair of dumbbells and
+   somewhere to run, which is the point: no sled, no ski erg, no wall balls. */
 function seedCircuits(){
-  return [{
-    id:'c_hyrox_safe', name:'HYROX simulation, shoulder safe', forTime:true,
-    sub:'Eight runs, seven stations, one clock', mins:55,
-    why:'Straight from run to station, no rest between. Nothing overhead, nothing pushing off the floor.',
-    warn:'If anything pinches in the shoulder on the curls, shrugs or holds, put the weights down and finish that station with bodyweight.',
-    items:[
-      {t:'run',label:'800m run',sub:'Buy in'},
-      {t:'station',label:'50 dumbbell hammer curls',sub:'Instead of ski or row. Arms stay at your sides.'},
-      {t:'run',label:'400m run'},
-      {t:'station',label:'40 weighted glute bridges',sub:'Instead of the sled push. Dumbbells on the hips, legs do the work.'},
-      {t:'run',label:'400m run'},
-      {t:'station',label:'40 dumbbell shrugs, 2 second hold',sub:'Instead of the sled pull. Arms straight down.'},
-      {t:'run',label:'400m run'},
-      {t:'station',label:'30 jump squats or 40 speed air squats',sub:'Instead of burpees. No floor loading through the shoulder.'},
-      {t:'run',label:'400m run'},
-      {t:'station',label:'40 dumbbell suitcase squats',sub:'Instead of wall balls. Weights held down at your sides.'},
-      {t:'run',label:'400m run'},
-      {t:'station',label:'60 to 90 second static dumbbell hold',sub:"Instead of the farmer's carry. Stand still, shoulders packed down and back."},
-      {t:'run',label:'400m run'},
-      {t:'station',label:'30 dumbbell suitcase lunges',sub:'Instead of the sandbag lunge. Weights at your sides while you step.'},
-      {t:'run',label:'800m run',sub:'Cash out'}
-    ]}];
+  const run=(m,sub)=>({t:'run',label:m+' run',sub:sub||''});
+  const st=(label,sub)=>({t:'station',label,sub:sub||''});
+  return [
+    {id:'c_hyrox_full', name:'HYROX simulation', forTime:true,
+      sub:'Eight runs, seven stations, one clock', mins:55,
+      why:'Straight from the run into the station, no rest in between. A pair of dumbbells and a stretch of road is all it takes.',
+      warn:'If anything pinches or a station falls apart, put the weights down and finish it with bodyweight. The clock is not worth an injury.',
+      items:[run('800m','Buy in'),
+        st('50 dumbbell hammer curls','Standing in for the ski erg'),run('400m'),
+        st('40 weighted glute bridges','Standing in for the sled push. Dumbbells on the hips, drive through the legs.'),run('400m'),
+        st('40 dumbbell shrugs, 2 second hold','Standing in for the sled pull'),run('400m'),
+        st('30 jump squats or 40 speed air squats','Standing in for the burpee broad jumps'),run('400m'),
+        st('40 dumbbell suitcase squats','Standing in for the wall balls. Weights down at your sides.'),run('400m'),
+        st('60 to 90 second static dumbbell hold',"Standing in for the farmer's carry. Stand still and squeeze."),run('400m'),
+        st('30 dumbbell suitcase lunges','Standing in for the sandbag lunges'),run('800m','Cash out')]},
+    {id:'c_hyrox_half', name:'Half HYROX', forTime:true,
+      sub:'Four runs, four stations, about half the damage', mins:30,
+      why:'The same shape in half the time. A sensible first one, and a good midweek session once the full one is in your legs.',
+      warn:'If a station falls apart, finish it with bodyweight rather than slowing to a crawl.',
+      items:[run('400m','Buy in'),
+        st('25 dumbbell hammer curls','Ski erg stand in'),run('400m'),
+        st('20 weighted glute bridges','Sled push stand in'),run('400m'),
+        st('20 dumbbell suitcase squats','Wall ball stand in'),run('400m'),
+        st('15 dumbbell suitcase lunges','Sandbag stand in'),run('400m','Cash out')]},
+    {id:'c_hyrox_stations', name:'HYROX stations only', forTime:true,
+      sub:'Seven stations, no running', mins:35,
+      why:'For a day you cannot get outside, or when the legs need a break from the road. One minute easy between stations.',
+      warn:'Rest a minute between stations. This is not meant to be a race against yourself.',
+      items:[st('50 dumbbell hammer curls','Ski erg stand in'),
+        st('40 weighted glute bridges','Sled push stand in'),
+        st('40 dumbbell shrugs, 2 second hold','Sled pull stand in'),
+        st('30 jump squats','Burpee broad jump stand in'),
+        st('40 dumbbell suitcase squats','Wall ball stand in'),
+        st('60 to 90 second static hold',"Farmer's carry stand in"),
+        st('30 dumbbell suitcase lunges','Sandbag lunge stand in')]},
+    {id:'c_engine', name:'Engine builder', forTime:true,
+      sub:'Five rounds, run and carry', mins:32,
+      why:'Simpler than a HYROX, and the one to reach for when you just want the heart rate up for half an hour.',
+      warn:'If the running pace collapses, walk the recovery and keep the stations honest.',
+      items:[run('400m'),st('20 goblet squats'),run('400m'),st('20 dumbbell rows each side'),
+        run('400m'),st('40 second static hold'),run('400m'),st('20 glute bridges'),
+        run('400m'),st('20 suitcase lunges')]}
+  ];
 }
 S.circuits=Array.isArray(S.circuits)&&S.circuits.length? S.circuits : seedCircuits();
 const circuitOf=id=>(S.circuits||[]).find(c=>c.id===id)||null;
@@ -2430,8 +2486,13 @@ function seedTemplates(){
       ['rdl',3,12,120,'Stop before the back rounds.'],['bss',3,12,120,'Do not rush these.'],
       ['hamcurl',3,12,120,'Hips stay down.'],['calf',3,12,60,'Pause in the stretch.'],
       ['backext',3,12,60,'']]),
-    mk('t_rehab','Back rehab',[['catcow',2,10,30,'Slow, no forcing it.'],['deadbug',3,8,45,''],
-      ['paloff',3,10,45,''],['hipflex',2,30,30,'Thirty seconds a side.'],['foamroll',1,1,0,'Five minutes.']])
+    mk('t_full','Full body',[['goblet',3,10,120,'Chest up, elbows inside the knees.'],
+      ['dbpress',3,10,120,''],['csrow',3,10,120,'Pinch at the top.'],
+      ['rdl',3,10,120,'Stop before the back rounds.'],['lateral',3,15,60,''],
+      ['plank',3,45,45,'Ribs down, squeeze the glutes.']]),
+    mk('t_mobility','Mobility and core',[['catcow',2,10,30,'Slow, no forcing it.'],
+      ['deadbug',3,8,45,''],['paloff',3,10,45,''],['90_90',2,8,30,''],
+      ['sidplank',2,30,30,'Thirty seconds a side.']]),
   ];
 }
 S.templates=Array.isArray(S.templates)&&S.templates.length? S.templates : seedTemplates();
@@ -2813,6 +2874,49 @@ document.addEventListener('click',e=>{
   }
 });
 
+/* Every choice comes with a reason, taken from the aim you picked and what you
+   have actually been doing. Suggestions, not instructions: the label says why a
+   thing is being put forward, and you are free to ignore it. */
+function suggestFor(code){
+  const aim=S.profile.aim, st=(typeof weekStats==='function')? weekStats() : null;
+  const counts=dayCounts();
+  const lifts=S.plan? S.plan.days.filter(d=>d.templateId).length : 0;
+  const cardio=S.plan? S.plan.days.filter(d=>d.runId||d.slot==='walk').length : 0;
+  const steps=st&&st.steps!==null? st.steps : null;
+  if((S.templates||[]).some(t=>t.id===code)){
+    if(lifts<counts.lift) return 'You asked for '+counts.lift+' lifting days and the week has '+lifts;
+    if(aim==='build') return 'Lifting is the main lever for what you are after';
+    if(aim==='lose') return 'Holds on to muscle while you are eating less';
+    if(aim==='endure') return 'Strength work is what keeps you in one piece as the mileage climbs';
+    if(aim==='eat') return 'Two lifting days sit fine alongside the cooking';
+    return 'Enough to keep what you have';
+  }
+  if((S.runPlans||[]).some(r=>r.id===code)){
+    const r=runPlan(code);
+    if(aim==='endure'&&r.id==='r_long') return 'One longer run a week is the backbone of this aim';
+    if(aim==='endure'&&r.id==='r_intervals') return 'Your one hard session. The rest should stay easy';
+    if(aim==='lose') return 'Cheap calories and it leaves you fresh for lifting';
+    if(r.id==='r_walkrun') return 'Where to start if running is new or you are coming back';
+    return 'Most of a running week should feel this easy';
+  }
+  if((S.circuits||[]).some(c=>c.id===code)){
+    const c=circuitOf(code);
+    if(c.id==='c_hyrox_half') return 'A sensible first one before the full simulation';
+    if(c.id==='c_hyrox_stations') return 'For a day you cannot get outside';
+    return 'Hard, and it counts as both a lift and a run';
+  }
+  if(code==='walk'){
+    if(steps!==null&&steps<5000) return 'Your steps have been low, and this is the cheapest thing to move';
+    return 'Counted by your tracker, so there is nothing to log';
+  }
+  if(code==='rest'){
+    if(cardio+lifts>=5) return 'You have five hard days already. This one earns its place';
+    return 'Rest is part of the plan, not the absence of one';
+  }
+  if(code==='cook') return aim==='eat'? 'The habit your aim is built on' : 'A cooked meal is usually the cheapest nutrition win';
+  return '';
+}
+
 /* ---------- swapping something you cannot do ---------- */
 let altCtx=null;
 function openAlternatives(exId,ctx){
@@ -2871,14 +2975,81 @@ let altSwapPick=null;
 
 /* ---------- template manager ---------- */
 function drawTemplates(){
-  $('tplList').innerHTML=S.templates.map(t=>`<div class="trow">
-    <div class="txt"><div class="n">${t.name}</div>
-      <div class="s">${t.ex.length} movements · ${t.ex.map(r=>exOf(r.exId).n.split(' ')[0]).slice(0,3).join(', ')}${t.ex.length>3?'...':''}</div></div>
-    <button class="mini" data-tpledit="${t.id}">Edit</button>
-    <button class="mini go" data-tplstart="${t.id}">Start</button></div>`).join('')
-    +`<button class="logrow" data-tplstart=""><div class="txt"><div class="t">Empty workout</div>
-      <div class="s">Build it as you go, save it as a template after</div></div></button>`;
+  $('tplList').innerHTML=
+    `<div class="slab" style="padding:0 14px">Lifting</div>`+
+    S.templates.map(t=>`<div class="trow">
+      <div class="txt"><div class="n">${t.name}</div>
+        <div class="s">${t.ex.length} movements · ${t.ex.map(r=>exOf(r.exId).n.split(' ')[0]).slice(0,3).join(', ')}${t.ex.length>3?'...':''}</div></div>
+      <button class="mini" data-tpledit="${t.id}">Edit</button>
+      <button class="mini go" data-tplstart="${t.id}">Start</button></div>`).join('')+
+    `<div class="slab" style="padding:12px 14px 0">Circuits and HYROX</div>`+
+    (S.circuits||[]).map(c=>`<div class="trow">
+      <div class="txt"><div class="n">${c.name}</div><div class="s">${c.sub} · ${c.items.length} parts</div></div>
+      <button class="mini" data-circedit="${c.id}">Edit</button>
+      <button class="mini go" data-circstart="${c.id}">Start</button></div>`).join('')+
+    `<div class="slab" style="padding:12px 14px 0">Running</div>`+
+    (S.runPlans||[]).map(r=>`<div class="trow">
+      <div class="txt"><div class="n">${r.name}</div><div class="s">${r.sub} · about ${r.mins} min</div></div>
+      <button class="mini go" data-runstart="${r.id}">Start</button></div>`).join('')+
+    `<button class="logrow" data-tplstart=""><div class="txt"><div class="t">Empty workout</div>
+      <div class="s">Build it as you go, save it as a template after</div></div></button>
+     <button class="logrow" id="circNew"><div class="txt"><div class="t">New circuit</div>
+      <div class="s">Copy one of the HYROX sessions and make it yours</div></div></button>`;
 }
+/* ---------- editing a circuit ---------- */
+let circDraft=null;
+function openCircEdit(id){
+  const c=circuitOf(id); if(!c) return;
+  circDraft=JSON.parse(JSON.stringify(c));
+  drawCircEdit(); closeSheets(); openSheet('circEdit');
+}
+function drawCircEdit(){
+  $('circEditTitle').textContent=circDraft.name;
+  $('circEditBody').innerHTML=`
+    <div class="nf" style="margin-bottom:10px"><label>Name</label>
+      <input id="circName" value="${circDraft.name}" style="font-family:Archivo;font-size:15px;font-weight:700"></div>
+    <div class="nf" style="margin-bottom:12px"><label>One line about it</label>
+      <input id="circSub" value="${circDraft.sub||''}" style="font-family:Archivo;font-size:13.5px;font-weight:600"></div>
+    ${circDraft.items.map((it,i)=>`<div class="cedit">
+      <button class="x" data-citype="${i}">${it.t==='run'?'run':'stn'}</button>
+      <input value="${(it.label||'').replace(/"/g,'&quot;')}" data-cifield="${i}:label" aria-label="What it is">
+      <button class="x" data-ciup="${i}">↑</button>
+      <button class="x" data-cidel="${i}">×</button></div>
+      <input class="cisub" value="${(it.sub||'').replace(/"/g,'&quot;')}" data-cifield="${i}:sub" placeholder="A note, if it needs one" aria-label="Note">`).join('')}
+    <div class="setbtns" style="margin:12px 0 4px"><button id="circAddRun">+ Run</button><button id="circAddStation">+ Station</button></div>`;
+}
+document.addEventListener('input',e=>{
+  const f=e.target.closest('[data-cifield]');
+  if(f&&circDraft){ const [i,k]=f.dataset.cifield.split(':'); circDraft.items[+i][k]=f.value; }
+  if(e.target.id==='circName'&&circDraft) circDraft.name=e.target.value;
+  if(e.target.id==='circSub'&&circDraft) circDraft.sub=e.target.value;
+});
+document.addEventListener('click',e=>{
+  const ed=e.target.closest('[data-circedit]'); if(ed) openCircEdit(ed.dataset.circedit);
+  const cs=e.target.closest('[data-circstart]'); if(cs){ closeSheets(); startCircuit(cs.dataset.circstart); }
+  const rs2=e.target.closest('[data-runstart]'); if(rs2){ closeSheets(); const sess=runSession(rs2.dataset.runstart); if(sess) startSession(sess); }
+  if(e.target.closest('#circNew')){
+    const base=(S.circuits||[])[0];
+    const copy=JSON.parse(JSON.stringify(base));
+    copy.id='c'+Date.now(); copy.name=base.name+' (mine)';
+    S.circuits.push(copy); save(); openCircEdit(copy.id); return;
+  }
+  if(!circDraft) return;
+  const ty=e.target.closest('[data-citype]');
+  if(ty){ const i=+ty.dataset.citype; circDraft.items[i].t = circDraft.items[i].t==='run'?'station':'run'; drawCircEdit(); }
+  const up=e.target.closest('[data-ciup]');
+  if(up){ const i=+up.dataset.ciup; if(i>0){ const t=circDraft.items[i]; circDraft.items[i]=circDraft.items[i-1]; circDraft.items[i-1]=t; drawCircEdit(); } }
+  const del=e.target.closest('[data-cidel]');
+  if(del){ circDraft.items.splice(+del.dataset.cidel,1); drawCircEdit(); }
+  if(e.target.closest('#circAddRun')){ circDraft.items.push({t:'run',label:'400m run',sub:''}); drawCircEdit(); }
+  if(e.target.closest('#circAddStation')){ circDraft.items.push({t:'station',label:'New station',sub:''}); drawCircEdit(); }
+  if(e.target.closest('#circSave')){
+    const i=S.circuits.findIndex(c=>c.id===circDraft.id);
+    if(i>=0) S.circuits[i]=circDraft; else S.circuits.push(circDraft);
+    save(); closeSheets(); toast('Saved'); circDraft=null;
+    if(document.getElementById('onb').classList.contains('on')&&typeof onbRender==='function') onbRender(); else renderAll();
+  }
+});
 document.addEventListener('click',e=>{
   const st=e.target.closest('[data-tplstart]');
   if(st){ startWorkout(st.dataset.tplstart||null); return; }
@@ -2925,7 +3096,9 @@ $('tplSave').addEventListener('click',()=>{
   if(!tplDraft) return;
   const i=S.templates.findIndex(t=>t.id===tplDraft.id);
   if(i>=0) S.templates[i]=tplDraft; else S.templates.push(tplDraft);
-  save(); closeSheets(); toast('Template saved'); tplDraft=null;
+  save(); closeSheets(); toast('Saved'); tplDraft=null;
+  if(document.getElementById('onb').classList.contains('on')&&typeof onbRender==='function') onbRender();
+  else renderAll();
 });
 
 /* the You screen gets a lifting block */
@@ -2957,12 +3130,13 @@ coachBrief=function(){
   return t;
 };
 
-Object.assign(window.__G,{LIBRARY,exOf,fillForward,seedTemplates,seedRunPlans,seedCircuits,circuitOf,startCircuit,finishCircuit,drawCircuit,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
+Object.assign(window.__G,{LIBRARY,exOf,fillForward,suggestFor,openCircEdit,drawTemplates,seedTemplates,seedRunPlans,seedCircuits,circuitOf,startCircuit,finishCircuit,drawCircuit,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
   openExMenu,openTplEdit,drawTemplates,exerciseStats,e1RM,lastSets,gymVolume,gymSets,templateChanged,startRest,
   get GYM(){return GYM}, get tplDraft(){return tplDraft}});
 Object.defineProperties(window.__G,{
   GYM:{get:()=>GYM,set:v=>{GYM=v},configurable:true},
   tplDraft:{get:()=>tplDraft,set:v=>{tplDraft=v},configurable:true},
+  circDraft:{get:()=>circDraft,set:v=>{circDraft=v},configurable:true},
   rest:{get:()=>rest,configurable:true}
 });
 </script>
@@ -3171,7 +3345,7 @@ function buildForecast(weekOf){
   const stepsAvg=mean(recent.map(w=>w.steps).filter(v=>v!==null));
   const liftMinAvg=(()=>{ const w=(S.workouts||[]).filter(x=>x.d>=addDays(weekOf,-21));
     return w.length? w.reduce((a,x)=>a+x.minutes,0)/21 : 0; })();
-  const planned=S.plan? S.plan.days.filter(d=>d.type&&d.slot!=='checkin'&&d.slot!=='walk').length : 4;
+  const planned=S.plan? S.plan.days.filter(d=>d.type&&d.slot!=='walk').length : 4;
   const adherence=recent.length? Math.min(1.2,mean(recent.map(w=>w.sessions))/Math.max(1,planned)) : 0.8;
 
   const obs=tdeeObserved(21);
@@ -3317,7 +3491,7 @@ function projectionLine(){
 }
 function consistencyChart(){
   const hist=weeklyHistory(8).reverse();
-  const planned=S.plan? S.plan.days.filter(d=>d.type&&d.slot!=='checkin'&&d.slot!=='walk').length : 4;
+  const planned=S.plan? S.plan.days.filter(d=>d.type&&d.slot!=='walk').length : 4;
   const maxV=Math.max(planned,...hist.map(w=>w.sessions),1);
   return `<div class="bars">${hist.map((w,i)=>`<div class="barcol">
       <div class="col"><i style="height:${Math.round((w.sessions/maxV)*100)}%;background:${i===hist.length-1?'var(--ink)':'var(--line)'}"></i></div>

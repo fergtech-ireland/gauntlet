@@ -1,5 +1,5 @@
 /* Gauntlet service worker: offline-first, never fails install on a single 404 */
-const CACHE = 'gauntlet-v16';
+const CACHE = 'gauntlet-v19';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icon.svg', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
 
 self.addEventListener('install', event => {

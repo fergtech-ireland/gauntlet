@@ -11,7 +11,11 @@ from your check ins. The social side sits in a tab, where it belongs.
 | `manifest.webmanifest` | Tells the phone it is an app, not a web page |
 | `sw.js` | Makes it work with no signal |
 | `icon.svg`, `icon-192.png`, `icon-512.png`, `icon-maskable-512.png` | The logo at every size |
-| `test/run-tests.js` | The test suite (705 checks, 41 suites) |
+| `test/run-tests.js` | The test suite (1010 checks, 56 suites) |
+| `test/cta-audit.js` | Clicks every button in the app and fails if one does nothing or opens behind something |
+| `test/flow-audit.js` | Walks each flow end to end and checks the empty states |
+| `test/uat.js` | Four journeys done by tapping only, no internals touched |
+| `test/boot-check.js` | Does the page come up at all, with every export resolving |
 | `test/final-deployment.js` | A full tester journey through the file as uploaded (54 checks) |
 | `supabase-setup.sql` | Paste into Supabase to create the tables and policies |
 | `DEPLOY.md` | Step by step: GitHub Pages, then Supabase, then redeploying |
@@ -128,7 +132,8 @@ swapping a day, or finishing a check in rebuilds the week immediately.
 
 ## Sign up
 
-Five steps: a handle, an aim, one question about you, a read through the week you
+Five steps: a handle, an aim (with how many days a week you want to lift and how
+many you want for cardio), one question about you, a read through the week you
 have been given, and the day you want to check in on. A sixth asks for an email if
 the copy you installed has a project behind it.
 
@@ -138,14 +143,39 @@ between the two, and cycle tracking cannot be offered to someone the app has nev
 asked. Answering female offers cycle tracking there and then, with what it does and
 does not do written out.
 
-The review step is the one that matters. All seven days are shown, not just the
-lifting: run sessions with their structure and what they are for, walks, cooking,
+The review step is the one that matters, and everything in it is editable: the
+session on a day, the movements inside it, and the sets, reps and rest. It says as
+much, because a plan built from averages is a suggestion rather than a prescription.
+All seven days are shown, not just the lifting: run sessions with their structure and what they are for, walks, cooking,
 rest and the check in. Every movement is listed with its sets, reps, tempo and rest. Tap any of them and you get three substitutes that train the
 same pattern, the full library if none of those suit, or the option to take it out
 for good. A movement you take out leaves every day it appears in, is never
 suggested as a substitute again, and the exercise list offers to put it back if you
 change your mind. That is there so an injury or a dodgy shoulder is dealt with
 before the first session rather than three weeks in.
+
+## Circuits
+
+A third kind of session, for the ones that are neither a lift nor a run: a run, a
+station, a run, a station, done against the clock. There are no sets to beat and no
+single pace, so the logger is a tick list with a running clock, and the number it
+keeps is your time.
+
+Four ship with the app, all editable: a full HYROX simulation, a half one to start
+with, a stations only version for a day you cannot get outside, and a simpler engine
+session. The HYROX ones need a pair of dumbbells and somewhere to run, nothing else:
+hammer curls stand in for the ski erg, glute bridges for the sled push, shrugs for
+the sled pull, jump squats for the burpee broad jumps, suitcase squats for the wall
+balls, a static hold for the carry, suitcase lunges for the sandbag.
+
+The circuit editor lets you rename one, add or remove runs and stations, reorder
+them, or switch any line between a run and a station. "New circuit" copies an
+existing one so you are never starting from a blank page. Any of them can go on any
+day, including at sign up.
+
+Finish it a second time and it tells you whether you were quicker or slower, and if
+you only ticked some of it, it says the time is not comparable rather than
+pretending it is. A circuit can go on any day, from sign up or from the plan.
 
 ## Running
 
@@ -180,6 +210,70 @@ daily log asks the same question. Three answers:
 - **Leave it.**
 
 The check in day never moves.
+
+## Progressive overload
+
+Double progression, which is the method with the most support behind it. Pick a
+rep range, start at the bottom, add reps session to session, and when every
+working set reaches the top, add the smallest useful jump and drop back to the
+bottom. The app does the bookkeeping and tells you the decision before you start.
+
+| Rule | Where it comes from |
+| --- | --- |
+| Reps first, then load | Double progression, as taught by every serious coach |
+| Raise the load once the target is beaten by a rep or two | ACSM novice guidance, 2 to 10% |
+| Two reps past the target, two sessions running, means go up | The 2 for 2 rule (NASM) |
+| 2.5kg barbell, 5kg on big lower body lifts, 2kg dumbbell, 1.25kg isolation | The smallest increment that still measures, all inside the ACSM band |
+| None of it is magic | Plotkin and colleagues (2022) found load progression and rep progression grew muscle about equally, with effort and volume mattering more |
+
+In the session, each exercise carries the decision in words: "You hit 12 reps on
+every set at 80kg, so cash it in: 82.5kg for 10 reps", along with what you lifted
+last time and the total load to beat. The session opens already prefilled at the
+prescription. At the end, a line per exercise says what to aim for next time, with
+a rise marked plainly, and the honest caveat that these are suggestions.
+
+## Built for a phone in a gym
+
+Every set row has a minus and a plus on both the weight and the reps, stepping by
+the right increment for that movement, so you can dial in 60kg without the
+keyboard ever appearing. Steppers are 52px tall and the tick is 52px square,
+comfortably above Apple's 44pt and Material's 48dp guidance, and the numbers are
+17px. Tapping a stepper updates the number in place rather than redrawing the
+list, so nothing flickers or drops a tap mid set.
+
+## The exercise library
+
+253 movements, written rather than scraped. Each one carries the things you
+actually need to choose it: primary muscle, what else it hits, the kit it needs,
+the movement pattern, a tempo, a difficulty, and one line of coaching.
+
+For scale: Hevy ships about 400, MacroFactor 900, Fitbod 1600. We are smaller on
+raw count and deliberately better on two things. There are no duplicate entries,
+because nobody crowdsourced it, so you will never scroll past "Bench Press (2)".
+And every entry has the pattern metadata, which is what lets the app offer a
+sensible substitute when something hurts: an RDL suggests other hinges, a bench
+press suggests other horizontal presses, and it prefers kit you already have.
+
+Coverage: at least 15 movements for every body part, at least 10 for every kind of
+equipment, and 60 odd that need nothing at all. A home setup with a pair of
+dumbbells is a first class citizen rather than an afterthought.
+
+Finding one is the other half. The picker searches names, muscles, patterns and
+equipment at once, ranks name matches above passing mentions, filters by body part
+and by what you have, and floats anything you have lifted before to the top.
+
+## Food
+
+Logged in taps. The research on why people stop tracking is unanimous that friction
+is the reason, and a 2023 study in Appetite found people who called logging "quick
+and easy" were over three times more likely to still be at it after 90 days. So
+there is a short list of things people actually eat, with half and double portions
+one tap away, your own recent items at the top, and a search box. Calories and
+protein fill themselves into the daily log as you add things, and the running total
+sits against your target.
+
+It is forty odd foods, not twenty million, and it does not pretend otherwise. If
+what you ate is not on the list, type the calories in as before.
 
 ## Tempo
 

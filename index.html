@@ -86,7 +86,8 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .pday.today{background:#fffdf6}
 .pday .dd{width:34px;font-size:11px;font-weight:700;color:var(--mute);text-align:center;flex:0 0 auto}
 .pday.today .dd{color:var(--ink)}
-.pday .txt{flex:1;min-width:0}
+.pday .txt{flex:1;min-width:0;background:none;border:0;padding:0;font:inherit;color:inherit;text-align:left;display:block}
+.pday .dd{background:none;border:0;padding:0;font:inherit}
 .pday .txt b{display:block;font-weight:600;font-size:14px}
 .pday .txt span{font-size:12px;color:var(--mute)}
 .pday .sq{width:8px;height:34px;border-radius:4px;flex:0 0 auto}
@@ -348,7 +349,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .setline .sn.warm{color:var(--burnt)}
 .setline .prev{font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .setline input{border:1px solid var(--line);border-radius:8px;padding:8px 6px;font-weight:700;font-size:14px;text-align:center;outline:none;width:100%;background:var(--paper)}
-.setline .tick{width:34px;height:34px;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;color:var(--line)}
+.setline .tick{width:52px;height:52px;border-radius:12px;border:1.5px solid var(--line);display:grid;place-items:center;color:#fff;flex:0 0 auto}
 .setline.done .tick{background:var(--forest);border-color:var(--forest);color:#fff}
 .setline.done input{background:#f2f7f5;border-color:#dbe7e2}
 .setbtns{display:flex;gap:8px;margin-top:10px}
@@ -489,6 +490,38 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .cedit{display:grid;grid-template-columns:38px 1fr 26px 26px;gap:6px;align-items:center;padding:8px 0 0}
 .cedit input{border:1px solid var(--line);border-radius:7px;padding:7px 8px;font-size:13.5px;font-weight:600;outline:none;width:100%}
 .cisub{border:1px solid var(--line-soft);border-radius:7px;padding:6px 8px;font-size:12px;outline:none;width:100%;margin-top:4px;color:var(--mute)}
+.frow{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line-soft)}
+.frow .txt{flex:1;min-width:0}
+.frow .t{font-weight:600;font-size:14px}
+.frow .s{font-size:11.5px;color:var(--mute);margin-top:2px}
+.frow .mini{flex:0 0 auto;padding:6px 9px;font-size:12px}
+.pickchips{display:flex;gap:6px;overflow-x:auto;padding:0 14px 8px;-webkit-overflow-scrolling:touch}
+.pickchips::-webkit-scrollbar{display:none}
+.pickchips button{flex:0 0 auto;padding:7px 11px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:700;color:var(--mute);background:#fff;white-space:nowrap}
+.pickchips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.exrow .cue2{font-size:11.5px;color:var(--mute);margin-top:3px;line-height:1.4}
+.setline{display:grid;grid-template-columns:24px 1fr 1fr 52px;gap:8px;align-items:center;padding:7px 0}
+.setline .sn{font-size:12px;font-weight:700;color:var(--mute);text-align:center}
+.setline.warm .sn{color:var(--burnt)}
+.stepper{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:#fff;height:52px}
+.stepper input{height:50px;border:0;text-align:center;font-size:17px;font-weight:700;outline:none;width:100%;background:transparent;padding:0}
+.stepper .step{height:50px;font-size:21px;font-weight:700;color:var(--mute);background:var(--canvas);display:grid;place-items:center;line-height:1}
+.stepper .step:active{background:var(--line)}
+.setline .tick{height:52px;width:52px;border-radius:12px;border:1.5px solid var(--line);display:grid;place-items:center;color:#fff}
+.setline.done .tick{background:var(--forest);border-color:var(--forest)}
+.setline.done .stepper{opacity:.55}
+.setline.ispr .tick{background:var(--marigold);border-color:var(--marigold)}
+.rxline{font-size:12.5px;color:#7a4a35;background:#fdf6ef;border-radius:9px;padding:9px 11px;margin-top:8px;line-height:1.45}
+.rxline b{display:block;font-size:12px;letter-spacing:.02em;color:var(--burnt)}
+.rxline .tonn{display:block;margin-top:4px;color:var(--mute)}
+.nextrow{padding:11px 0;border-bottom:1px solid var(--line-soft)}
+.nextrow .nn{font-weight:700;font-size:14px}
+.nextrow .nv{font-family:"Archivo Black";font-size:19px;letter-spacing:-.03em;margin:3px 0 4px}
+.nextrow.up .nv{color:var(--forest)}
+.nextrow .uparrow{font-family:Archivo;font-size:11px;font-weight:700;background:var(--t-forest);color:var(--forest);padding:3px 7px;border-radius:5px;vertical-align:middle;letter-spacing:.02em}
+.nextrow .nw{font-size:12px;color:var(--mute);line-height:1.45}
+.prevline{font-size:12.5px;color:var(--mute);margin-top:6px}
+.prevline b{color:var(--ink);font-weight:600}
 </style>
 </head>
 <body>
@@ -556,6 +589,12 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   <p class="sub">Two minutes. Next week's plan is built from this.</p>
   <div id="weekBody" style="padding:0 14px"></div>
   <button class="sheetcta" id="saveWeek">Send it</button>
+</div>
+
+<div class="sheet" id="foodSheet">
+  <div class="grab"></div><h3>Food today</h3>
+  <p class="sub">Tap to add. Half and double portions are one tap too.</p>
+  <div id="foodBody" style="padding:0 14px 12px"></div>
 </div>
 
 <div class="sheet" id="weighSheet">
@@ -699,7 +738,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='16';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='19';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -1274,8 +1313,8 @@ function renderPlan(){
     ${plan.why.map(w=>`<div class="note" style="margin-top:8px">${w}</div>`).join('')}
   </div>
   ${plan.days.map((d,n)=>`<div class="pday ${n===i?'today':''}">
-    <div class="dd">${DAYS[n]}</div>
-    <div class="txt"><b>${dayLabel(d)}${d.setDelta?' (lighter)':''}${d.checkin?' <span class="cichip">check in</span>':''}</b><span>${daySub(d)}${d.exclude&&d.exclude.length?' · minus '+d.exclude.length+' movement'+(d.exclude.length>1?'s':''):''}</span></div>
+    <button class="dd" data-planday="${n}" aria-label="Open ${DAYS[n]}">${DAYS[n]}</button>
+    <button class="txt" data-planday="${n}"><b>${dayLabel(d)}${d.setDelta?' (lighter)':''}${d.checkin?' <span class="cichip">check in</span>':''}</b><span>${daySub(d)}${d.exclude&&d.exclude.length?' · minus '+d.exclude.length+' movement'+(d.exclude.length>1?'s':''):''}</span></button>
     <button class="mini" data-swap="${n}">Change</button>
     ${d.type&&d.slot!=='walk'?`<button class="mini go" data-startday="${n}">Start</button>`:''}
   </div>`).join('')}
@@ -1605,6 +1644,14 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{
   if(e.target.id==='onbPeriod'&&onbDraft){ onbDraft.lastPeriod=e.target.value; }
+  if(onbDraft&&['onbAge','onbHeight','onbWeight'].includes(e.target.id)){
+    const k=e.target.id.replace('onb','').toLowerCase();
+    onbDraft[k]= e.target.value===''? null : +e.target.value;
+    clearTimeout(onbDraft._t);
+    onbDraft._t=setTimeout(()=>{ const a=document.activeElement&&document.activeElement.id;
+      onbRender(); const el=a&&document.getElementById(a);
+      if(el){ el.focus(); const v=el.value; el.value=''; el.value=v; } },600);
+  }
   const r=e.target.closest('[data-range]'); if(!r||!draft) return;
   const k=r.dataset.range; draft[k]=+r.value;
   const out=$('out'+k);
@@ -1694,7 +1741,7 @@ document.addEventListener('click',e=>{
 let step=0, onbDraft=null;
 const cloudAvailable=()=>{ try{ return typeof cloudReady==='function'? !!cloudReady() : !!(window.__CLOUD&&window.__CLOUD.cloudReady()); }catch(e){ return false; } };
 const stepCount=()=>cloudAvailable()?6:5;
-function startOnboarding(){ onbDraft={handle:S.profile.handle,aim:S.profile.aim,checkinDay:6,sex:'',cycle:false,lastPeriod:''}; step=0; $('onb').classList.add('on'); onbRender(); }
+function startOnboarding(){ onbDraft={handle:S.profile.handle,aim:S.profile.aim,checkinDay:6,sex:'',cycle:false,lastPeriod:'',age:null,height:null,weight:null,activity:'mod'}; step=0; $('onb').classList.add('on'); onbRender(); }
 function onbRender(){
   const b=$('onbBody');
   $('onbDots').innerHTML=Array.from({length:stepCount()},(_,i)=>`<i class="${i<=step?'on':''}"></i>`).join('');
@@ -1725,24 +1772,41 @@ function onbRender(){
   }
   if(step===2){
     const sex=onbDraft.sex||'';
-    b.innerHTML=`<h2>One thing about you.</h2>
-      <p class="lead">Only used for two things: the calorie maths, which is different for men and women, and whether to offer cycle tracking. Nothing else, and you can change it later.</p>
+    const p=Object.assign({},S.profile,{sex:sex==='x'?'':sex,age:onbDraft.age,height:onbDraft.height,
+      weight:onbDraft.weight,activity:onbDraft.activity||'mod'});
+    const ready=sex&&onbDraft.age&&onbDraft.height&&onbDraft.weight;
+    const kcal=ready? tdeeOf(p) : null, pro=ready? proteinOf(p) : null;
+    b.innerHTML=`<h2>Your numbers.</h2>
+      <p class="lead">Used for one thing: working out roughly what you burn in a day, so the calorie and protein targets are yours rather than somebody else's. Skip any of it and fill it in later.</p>
+      <div class="slab">Sex</div>
       <div class="pair" style="margin-bottom:8px">
         <button class="big-pick ${sex==='f'?'on':''}" data-onbsex="f">Female</button>
         <button class="big-pick ${sex==='m'?'on':''}" data-onbsex="m">Male</button></div>
-      <button class="big-pick ${sex==='x'?'on':''}" data-onbsex="x" style="width:100%;margin-bottom:18px">Rather not say</button>
-      ${sex==='f'? `<div class="revday">
+      <button class="big-pick ${sex==='x'?'on':''}" data-onbsex="x" style="width:100%">Rather not say</button>
+      <div class="note" style="margin-top:6px">The resting burn equation differs by about 166 kcal between the two. Rather not say uses the average, which is less precise.</div>
+      <div class="slab">You</div>
+      <div class="twoup" style="gap:10px">
+        <div class="nf"><label>Age</label><input id="onbAge" type="number" inputmode="numeric" value="${onbDraft.age||''}" placeholder="36"></div>
+        <div class="nf"><label>Height, cm</label><input id="onbHeight" type="number" inputmode="numeric" value="${onbDraft.height||''}" placeholder="178"></div></div>
+      <div class="nf" style="margin-top:10px"><label>Weight, kg</label><input id="onbWeight" type="number" inputmode="decimal" step="0.1" value="${onbDraft.weight||''}" placeholder="82"></div>
+      <div class="slab">How much you move outside training</div>
+      ${ACTIVITY.map(a=>`<button class="opt ${(onbDraft.activity||'mod')===a.id?'on':''}" data-onbact="${a.id}">
+        <div class="txt"><div class="t">${a.t}</div><div class="s">${a.s}</div></div><div class="rad"></div></button>`).join('')}
+      ${ready? `<div class="revday" style="margin-top:14px"><div class="revhead">What that gives you <span>an estimate</span></div>
+        <div class="revrow" style="pointer-events:none"><div class="txt"><div class="t">${num(kcal)} kcal a day</div>
+          <div class="s">Maintenance, by Mifflin St Jeor. Replaced by your own numbers once you have logged a couple of weeks.</div></div></div>
+        <div class="revrow" style="pointer-events:none"><div class="txt"><div class="t">${pro}g protein a day</div>
+          <div class="s">1.8g per kilo, mid range of what the research supports.</div></div></div></div>`
+        : `<div class="note" style="margin-top:14px">Fill those in and I will show you what they work out to.</div>`}
+      ${sex==='f'? `<div class="revday" style="margin-top:12px">
         <div class="revhead">Cycle tracking <span>optional</span></div>
-        <div class="revrow" style="pointer-events:none"><div class="txt"><div class="s">It does two things. It widens the weight forecast where fluid retention peaks, so a normal half kilo of water is not read as fat, and it says so on the day. It never changes your training on its own.</div></div></div>
+        <div class="revrow" style="pointer-events:none"><div class="txt"><div class="s">It widens the weight forecast where fluid retention peaks, about half a kilo on average, so water is not read as fat. It never changes your training on its own.</div></div></div>
         <div class="pair" style="padding:12px">
           <button class="big-pick ${onbDraft.cycle?'on':''}" data-onbcycle="on">Track it</button>
           <button class="big-pick ${!onbDraft.cycle?'on':''}" data-onbcycle="off">Not for now</button></div>
-        ${onbDraft.cycle? `<div style="padding:0 12px 14px">
-          <div class="nf"><label>First day of your last period</label>
-            <input id="onbPeriod" type="date" value="${onbDraft.lastPeriod||''}" style="font-family:Archivo;font-size:15px;font-weight:600"></div>
-          <div class="note">You can skip the date and set it later from Progress.</div></div>`:''}
-      </div>`
-      : (sex==='x'? `<div class="note">Fair enough. The calorie estimate will use the average of the two equations, which is a little less precise. Cycle tracking is on the Progress screen if you want it later.</div>`:'')}`;
+        ${onbDraft.cycle? `<div style="padding:0 12px 14px"><div class="nf"><label>First day of your last period</label>
+          <input id="onbPeriod" type="date" value="${onbDraft.lastPeriod||''}"></div></div>`:''}
+      </div>`:''}`;
   }
   if(step===3){
     const saved={aim:S.profile.aim,checkinDay:S.profile.checkinDay,liftDays:S.profile.liftDays,cardioDays:S.profile.cardioDays};
@@ -1871,6 +1935,8 @@ document.addEventListener('click',e=>{
   if(a){ onbDraft.aim=a.dataset.onbaim;
     const d=AIM_DEFAULTS[onbDraft.aim]||AIM_DEFAULTS.lose;
     onbDraft.liftDays=d.lift; onbDraft.cardioDays=d.cardio; onbRender(); }
+  const ac=e.target.closest('[data-onbact]');
+  if(ac){ onbDraft.activity=ac.dataset.onbact; onbRender(); }
   const sx=e.target.closest('[data-onbsex]');
   if(sx){ onbDraft.sex=sx.dataset.onbsex; if(onbDraft.sex!=='f') onbDraft.cycle=false; onbRender(); }
   const cy=e.target.closest('[data-onbcycle]');
@@ -1911,7 +1977,11 @@ function finishOnboarding(keepOpen){
     sex:onbDraft.sex&&onbDraft.sex!=='x'? onbDraft.sex : (onbDraft.sex==='x'? '' : S.profile.sex),
     liftDays:onbDraft.liftDays, cardioDays:onbDraft.cardioDays,
     sexAnswered:!!onbDraft.sex,
+    age:onbDraft.age||S.profile.age, height:onbDraft.height||S.profile.height,
+    weight:onbDraft.weight||S.profile.weight, activity:onbDraft.activity||S.profile.activity,
+    detailsSet: !!(onbDraft.sex&&onbDraft.age&&onbDraft.height&&onbDraft.weight) || S.profile.detailsSet,
     excluded:S.profile.excluded||[],onboarded:true});
+  if(typeof ownTargets==='function') S.targets=ownTargets();
   if(onbDraft.cycle){ S.cycle=Object.assign({},S.cycle,{tracking:true,lastPeriod:onbDraft.lastPeriod||S.cycle.lastPeriod}); }
   buildPlan(onbDraft.runSwaps);
   ME.n=onbDraft.handle; ME.full=onbDraft.handle.replace(/[._]/g,' ');
@@ -2104,7 +2174,11 @@ function drawDay(){
       : `<div class="field"><div class="fl"><div class="k">Sleep</div><div class="v" id="outsleep">${d.sleep} h</div></div>
           <input type="range" min="3" max="11" step="0.5" value="${d.sleep}" data-dayrange="sleep" aria-label="Sleep"></div>
          <div class="note" style="margin:-8px 0 16px">Connect a tracker and sleep and steps stop being your job.</div>`}
-    <div class="slab">Food, only if you track it</div>
+    <div class="slab">Food</div>
+    <button class="logrow" id="foodBtn"><span class="ic" style="background:var(--t-burnt);color:var(--burnt)">+</span>
+      <div class="txt"><div class="t">${dayFood(todayKey()).length? 'Add more food' : 'Log what you ate'}</div>
+        <div class="s">${dayFood(todayKey()).length? dayFood(todayKey()).length+' things logged · '+Math.round(foodTotals(todayKey()).kcal)+' kcal' : 'Tap from a list rather than typing numbers'}</div></div>
+      <span class="chev">›</span></button>
     ${t.kcal? '' : `<div class="note" style="margin:-4px 0 10px">No targets set. Work out your numbers on the Progress screen and they appear here.</div>`}
     <div class="nums">${nf('kcal','Calories',t.kcal)}${nf('protein','Protein (g)',t.protein)}${nf('carbs','Carbs (g)',t.carbs)}${nf('fat','Fat (g)',t.fat)}</div>
     <div class="nums" style="margin-top:8px">${nf('w','Weight (kg)','',0.1)}${nf('fibre','Fibre (g)',t.fibre)}</div>
@@ -2283,63 +2357,277 @@ Object.defineProperties(window.__G,{
    off past ten, so nothing here is slow for the sake of it, and no claim is made
    that tempo builds more muscle. It is here for repeatability and position. The pattern is what makes a sensible
    substitute possible when something hurts. */
+/* The exercise library. Every movement carries what a lifter actually needs to
+   pick one: the muscle it trains, what else it hits, the kit it needs, the
+   movement pattern (which is what makes a sensible substitute possible), a
+   tempo, a difficulty, and one line of coaching. Written rather than scraped,
+   so there are no duplicate entries with three different calorie counts and no
+   "Barbell Bench Press (2)". Tempo is lower, pause, lift, pause, as always. */
 const LIBRARY=[
-  {id:'bench',n:'Bench Press',g:'Chest',p:'horizontal push',t:'3010'},
-  {id:'incline',n:'Incline Bench Press',g:'Chest',p:'horizontal push',t:'3010'},
-  {id:'dbpress',n:'DB Bench Press',g:'Chest',p:'horizontal push',t:'3010'},
-  {id:'machpress',n:'Machine Chest Press',g:'Chest',p:'horizontal push',t:'3011'},
-  {id:'pushup',n:'Press Up',g:'Chest',p:'horizontal push',t:'3010',bw:true},
-  {id:'fly',n:'Cable Fly',g:'Chest',p:'horizontal push',t:'2011'},
-  {id:'ohp',n:'Overhead Press',g:'Shoulders',p:'vertical push',t:'3010'},
-  {id:'dbohp',n:'DB Shoulder Press',g:'Shoulders',p:'vertical push',t:'3010'},
-  {id:'landmine',n:'Landmine Press',g:'Shoulders',p:'vertical push',t:'3010'},
-  {id:'lateral',n:'DB Lateral Raise',g:'Shoulders',p:'shoulder isolation',t:'2011'},
-  {id:'rear',n:'Rear Delt Fly',g:'Shoulders',p:'shoulder isolation',t:'2011'},
-  {id:'dip',n:'Tricep Dip',g:'Arms',p:'elbow extension',t:'3010',bw:true},
-  {id:'pushdown',n:'Tricep Pushdown',g:'Arms',p:'elbow extension',t:'2011'},
-  {id:'ohtri',n:'Overhead Triceps',g:'Arms',p:'elbow extension',t:'3011'},
-  {id:'hammer',n:'Hammer Curl',g:'Arms',p:'elbow flexion',t:'2011'},
-  {id:'curl',n:'Barbell Curl',g:'Arms',p:'elbow flexion',t:'2011'},
-  {id:'cablecurl',n:'Cable Curl',g:'Arms',p:'elbow flexion',t:'2011'},
-  {id:'chin',n:'Chin Up',g:'Back',p:'vertical pull',t:'3110',bw:true},
-  {id:'pullup',n:'Pull Up',g:'Back',p:'vertical pull',t:'3110',bw:true},
-  {id:'pulldown',n:'Lat Pulldown',g:'Back',p:'vertical pull',t:'3011'},
-  {id:'assistchin',n:'Assisted Chin Up',g:'Back',p:'vertical pull',t:'3110'},
-  {id:'csrow',n:'Chest Supported Row',g:'Back',p:'horizontal pull',t:'2011'},
-  {id:'dbrow',n:'DB Incline Row',g:'Back',p:'horizontal pull',t:'2011'},
-  {id:'bbrow',n:'Barbell Row',g:'Back',p:'horizontal pull',t:'3010'},
-  {id:'cablerow',n:'Seated Cable Row',g:'Back',p:'horizontal pull',t:'2011'},
-  {id:'deadlift',n:'Deadlift',g:'Back',p:'hinge',t:'3010'},
-  {id:'backext',n:'Back Extension',g:'Back',p:'hinge',t:'2111',bw:true},
-  {id:'squat',n:'Back Squat',g:'Legs',p:'squat',t:'3010'},
-  {id:'hack',n:'Hack Squat or Leg Press',g:'Legs',p:'squat',t:'3010'},
-  {id:'goblet',n:'Goblet Squat',g:'Legs',p:'squat',t:'3110'},
-  {id:'legpress',n:'Leg Press',g:'Legs',p:'squat',t:'3010'},
-  {id:'rdl',n:'Romanian Deadlift',g:'Legs',p:'hinge',t:'3110'},
-  {id:'hipthrust',n:'Hip Thrust',g:'Legs',p:'hinge',t:'2011'},
-  {id:'goodmorning',n:'Good Morning',g:'Legs',p:'hinge',t:'3110'},
-  {id:'bss',n:'Bulgarian Split Squat',g:'Legs',p:'lunge',t:'3110'},
-  {id:'lunge',n:'Walking Lunge',g:'Legs',p:'lunge',t:'2010'},
-  {id:'stepup',n:'Step Up',g:'Legs',p:'lunge',t:'2010'},
-  {id:'legext',n:'Leg Extension',g:'Legs',p:'knee isolation',t:'2011'},
-  {id:'hamcurl',n:'Hamstring Curl',g:'Legs',p:'knee isolation',t:'2011'},
-  {id:'calf',n:'Calf Raise',g:'Legs',p:'calf',t:'2111'},
-  {id:'crunch',n:'Crunches',g:'Core',p:'trunk flexion',t:'2111',bw:true},
-  {id:'hanging',n:'Hanging Knee Raise',g:'Core',p:'trunk flexion',t:'2111',bw:true},
-  {id:'plank',n:'Plank',g:'Core',p:'anti-extension',t:'hold',bw:true},
-  {id:'deadbug',n:'Dead Bug',g:'Core',p:'anti-extension',t:'3030',bw:true},
-  {id:'paloff',n:'Pallof Press',g:'Core',p:'anti-rotation',t:'2121'},
-  {id:'sidplank',n:'Side Plank',g:'Core',p:'anti-rotation',t:'hold',bw:true},
-  {id:'hipflex',n:'Hip Flexor Stretch',g:'Mobility',p:'mobility',t:'hold',bw:true},
-  {id:'90_90',n:'90/90 Hip Switch',g:'Mobility',p:'mobility',t:'3030',bw:true},
-  {id:'catcow',n:'Cat Cow',g:'Mobility',p:'mobility',t:'3030',bw:true},
-  {id:'foamroll',n:'Foam Roll Quads and Glutes',g:'Mobility',p:'mobility',t:'hold',bw:true}
+  {id:"bench",n:"Bench Press",g:"Chest",p:"horizontal push",eq:"barbell",m:"Pectorals",s:"Triceps, Front delts",t:"3010",d:2,c:"Shoulder blades pinned, bar to mid chest."},
+  {id:"incline",n:"Incline Bench Press",g:"Chest",p:"horizontal push",eq:"barbell",m:"Upper pectorals",s:"Front delts, Triceps",t:"3010",d:2,c:"Thirty degrees. Any steeper and it becomes a shoulder press."},
+  {id:"decline",n:"Decline Bench Press",g:"Chest",p:"horizontal push",eq:"barbell",m:"Lower pectorals",s:"Triceps",t:"3010",d:2,c:"Bar to the lower chest, elbows tucked."},
+  {id:"closegrip",n:"Close Grip Bench Press",g:"Chest",p:"horizontal push",eq:"barbell",m:"Triceps",s:"Pectorals",t:"3010",d:2,c:"Hands shoulder width, elbows close to the ribs."},
+  {id:"floorpress",n:"Floor Press",g:"Chest",p:"horizontal push",eq:"barbell",m:"Pectorals",s:"Triceps",t:"3110",d:2,c:"Pause when the elbows touch the floor."},
+  {id:"dbpress",n:"DB Bench Press",g:"Chest",p:"horizontal push",eq:"dumbbell",m:"Pectorals",s:"Triceps, Front delts",t:"3010",d:1,c:"Wrists stacked over the elbows."},
+  {id:"dbincline",n:"DB Incline Press",g:"Chest",p:"horizontal push",eq:"dumbbell",m:"Upper pectorals",s:"Front delts",t:"3010",d:1,c:"Let the weights drift together at the top."},
+  {id:"dbfloor",n:"DB Floor Press",g:"Chest",p:"horizontal push",eq:"dumbbell",m:"Pectorals",s:"Triceps",t:"3110",d:1,c:"Kind on the shoulder. Pause on the floor."},
+  {id:"machpress",n:"Machine Chest Press",g:"Chest",p:"horizontal push",eq:"machine",m:"Pectorals",s:"Triceps",t:"3011",d:1,c:"Seat height so the handles sit at mid chest."},
+  {id:"hammerpress",n:"Hammer Strength Press",g:"Chest",p:"horizontal push",eq:"machine",m:"Pectorals",s:"Triceps",t:"3011",d:1,c:"Drive one arm at a time if the machine allows."},
+  {id:"smithbench",n:"Smith Machine Bench",g:"Chest",p:"horizontal push",eq:"machine",m:"Pectorals",s:"Triceps",t:"3010",d:1,c:"Useful when you have no spotter."},
+  {id:"pushup",n:"Press Up",g:"Chest",p:"horizontal push",eq:"bodyweight",m:"Pectorals",s:"Triceps, Core",t:"3010",d:1,c:"Body in one line, ribs down."},
+  {id:"pushupincline",n:"Incline Press Up",g:"Chest",p:"horizontal push",eq:"bodyweight",m:"Pectorals",s:"Triceps",t:"3010",d:1,c:"Hands on a bench. Where to start if the floor is too hard."},
+  {id:"pushupdecline",n:"Decline Press Up",g:"Chest",p:"horizontal push",eq:"bodyweight",m:"Upper pectorals",s:"Triceps",t:"3010",d:2,c:"Feet raised. Harder than it looks."},
+  {id:"diamond",n:"Diamond Press Up",g:"Chest",p:"horizontal push",eq:"bodyweight",m:"Triceps",s:"Pectorals",t:"3010",d:2,c:"Hands together under the sternum."},
+  {id:"fly",n:"Cable Fly",g:"Chest",p:"chest isolation",eq:"cable",m:"Pectorals",s:"Front delts",t:"2011",d:1,c:"Soft elbows, squeeze at the front."},
+  {id:"lowfly",n:"Low to High Cable Fly",g:"Chest",p:"chest isolation",eq:"cable",m:"Upper pectorals",s:"Front delts",t:"2011",d:1,c:"Finish with the hands at collarbone height."},
+  {id:"highfly",n:"High to Low Cable Fly",g:"Chest",p:"chest isolation",eq:"cable",m:"Lower pectorals",s:"Front delts",t:"2011",d:1,c:"Finish at the hips."},
+  {id:"dbfly",n:"DB Fly",g:"Chest",p:"chest isolation",eq:"dumbbell",m:"Pectorals",s:"Front delts",t:"3011",d:2,c:"Stop at chest level. No deeper."},
+  {id:"pecdeck",n:"Pec Deck",g:"Chest",p:"chest isolation",eq:"machine",m:"Pectorals",s:"Front delts",t:"2011",d:1,c:"Elbows at chest height throughout."},
+  {id:"dbpullover",n:"DB Pullover",g:"Chest",p:"chest isolation",eq:"dumbbell",m:"Pectorals",s:"Lats, Serratus",t:"3010",d:2,c:"Ribs stay down as the arms go back."},
+  {id:"chestdip",n:"Chest Dip",g:"Chest",p:"horizontal push",eq:"bodyweight",m:"Lower pectorals",s:"Triceps",t:"3010",d:3,c:"Lean forward. Stop when the shoulder feels stretched."},
+  {id:"bandpress",n:"Band Chest Press",g:"Chest",p:"horizontal push",eq:"band",m:"Pectorals",s:"Triceps",t:"3011",d:1,c:"Anchor behind you at chest height."},
+  {id:"svend",n:"Svend Press",g:"Chest",p:"chest isolation",eq:"other",m:"Pectorals",s:"Front delts",t:"2012",d:1,c:"Crush two plates together and press out."},
+  {id:"deadlift",n:"Deadlift",g:"Back",p:"hinge",eq:"barbell",m:"Erectors, Glutes",s:"Hamstrings, Traps, Lats",t:"3010",d:3,c:"Push the floor away. Bar stays against the legs."},
+  {id:"sumo",n:"Sumo Deadlift",g:"Back",p:"hinge",eq:"barbell",m:"Glutes, Adductors",s:"Erectors, Quads",t:"3010",d:3,c:"Wide stance, knees tracking over the toes."},
+  {id:"trapbar",n:"Trap Bar Deadlift",g:"Back",p:"hinge",eq:"barbell",m:"Glutes, Quads",s:"Erectors, Traps",t:"3010",d:2,c:"The friendliest deadlift for most backs."},
+  {id:"rackpull",n:"Rack Pull",g:"Back",p:"hinge",eq:"barbell",m:"Erectors, Traps",s:"Glutes",t:"3010",d:2,c:"From the knee. Heavier than a full pull."},
+  {id:"deficit",n:"Deficit Deadlift",g:"Back",p:"hinge",eq:"barbell",m:"Hamstrings, Glutes",s:"Erectors",t:"3010",d:3,c:"Standing on a plate. Only if your positions are solid."},
+  {id:"bbrow",n:"Barbell Row",g:"Back",p:"horizontal pull",eq:"barbell",m:"Lats, Mid back",s:"Biceps, Erectors",t:"3010",d:2,c:"Torso at forty five degrees, bar to the belly button."},
+  {id:"pendlay",n:"Pendlay Row",g:"Back",p:"horizontal pull",eq:"barbell",m:"Mid back",s:"Lats, Biceps",t:"3010",d:3,c:"Bar resets on the floor each rep."},
+  {id:"tbar",n:"T Bar Row",g:"Back",p:"horizontal pull",eq:"barbell",m:"Mid back",s:"Lats, Biceps",t:"2011",d:2,c:"Chest supported if the machine allows."},
+  {id:"yatesrow",n:"Yates Row",g:"Back",p:"horizontal pull",eq:"barbell",m:"Lats",s:"Biceps, Traps",t:"2011",d:2,c:"Underhand, more upright than a barbell row."},
+  {id:"dbrow",n:"DB Row",g:"Back",p:"horizontal pull",eq:"dumbbell",m:"Lats",s:"Biceps, Mid back",t:"2011",d:1,c:"Row toward the hip, not the armpit."},
+  {id:"chestrow",n:"Chest Supported DB Row",g:"Back",p:"horizontal pull",eq:"dumbbell",m:"Mid back",s:"Lats, Rear delts",t:"2011",d:1,c:"No momentum available, which is the point."},
+  {id:"csrow",n:"Chest Supported Row",g:"Back",p:"horizontal pull",eq:"machine",m:"Mid back",s:"Lats, Biceps",t:"2011",d:1,c:"Pinch the shoulder blades at the top."},
+  {id:"cablerow",n:"Seated Cable Row",g:"Back",p:"horizontal pull",eq:"cable",m:"Mid back",s:"Lats, Biceps",t:"2011",d:1,c:"Sit tall. The torso does not rock."},
+  {id:"onearmcable",n:"Single Arm Cable Row",g:"Back",p:"horizontal pull",eq:"cable",m:"Lats",s:"Mid back",t:"2011",d:1,c:"Let the shoulder reach forward at the stretch."},
+  {id:"machrow",n:"Machine Row",g:"Back",p:"horizontal pull",eq:"machine",m:"Mid back",s:"Lats",t:"2011",d:1,c:"Chest against the pad throughout."},
+  {id:"invrow",n:"Inverted Row",g:"Back",p:"horizontal pull",eq:"bodyweight",m:"Mid back",s:"Lats, Biceps",t:"2011",d:1,c:"Body in one line, chest to the bar."},
+  {id:"seallrow",n:"Seal Row",g:"Back",p:"horizontal pull",eq:"barbell",m:"Mid back",s:"Lats",t:"2011",d:2,c:"Lying face down. Pure back, no cheating."},
+  {id:"chin",n:"Chin Up",g:"Back",p:"vertical pull",eq:"bodyweight",m:"Lats",s:"Biceps",t:"3110",d:3,c:"Underhand. Chest to the bar, no swinging."},
+  {id:"pullup",n:"Pull Up",g:"Back",p:"vertical pull",eq:"bodyweight",m:"Lats",s:"Biceps, Mid back",t:"3110",d:3,c:"Overhand, hands outside the shoulders."},
+  {id:"neutralpull",n:"Neutral Grip Pull Up",g:"Back",p:"vertical pull",eq:"bodyweight",m:"Lats",s:"Biceps",t:"3110",d:3,c:"Palms facing. Usually the kindest on the elbows."},
+  {id:"assistchin",n:"Assisted Chin Up",g:"Back",p:"vertical pull",eq:"machine",m:"Lats",s:"Biceps",t:"3110",d:1,c:"Use as little help as you can manage."},
+  {id:"pulldown",n:"Lat Pulldown",g:"Back",p:"vertical pull",eq:"machine",m:"Lats",s:"Biceps",t:"3011",d:1,c:"Bar to the collarbone, elbows down not back."},
+  {id:"closepulldown",n:"Close Grip Pulldown",g:"Back",p:"vertical pull",eq:"machine",m:"Lats",s:"Biceps",t:"3011",d:1,c:"Narrow neutral handle, longer range."},
+  {id:"straightarm",n:"Straight Arm Pulldown",g:"Back",p:"vertical pull",eq:"cable",m:"Lats",s:"Triceps",t:"2011",d:1,c:"Arms stay straight. It is not a triceps press."},
+  {id:"pullover",n:"Cable Pullover",g:"Back",p:"vertical pull",eq:"cable",m:"Lats",s:"Chest",t:"3011",d:2,c:"Hinge slightly and keep the ribs down."},
+  {id:"negpull",n:"Negative Pull Up",g:"Back",p:"vertical pull",eq:"bodyweight",m:"Lats",s:"Biceps",t:"5010",d:2,c:"Jump up, lower for five seconds. How to earn a pull up."},
+  {id:"shrug",n:"Barbell Shrug",g:"Back",p:"shoulder isolation",eq:"barbell",m:"Traps",s:"Forearms",t:"2012",d:1,c:"Straight up, not in circles."},
+  {id:"dbshrug",n:"DB Shrug",g:"Back",p:"shoulder isolation",eq:"dumbbell",m:"Traps",s:"Forearms",t:"2012",d:1,c:"Pause at the top for a full second."},
+  {id:"facepull",n:"Face Pull",g:"Back",p:"horizontal pull",eq:"cable",m:"Rear delts",s:"Traps, Rotator cuff",t:"2012",d:1,c:"Rope to the forehead, elbows high."},
+  {id:"backext",n:"Back Extension",g:"Back",p:"hinge",eq:"bodyweight",m:"Erectors",s:"Glutes, Hamstrings",t:"2111",d:1,c:"Stop level. Do not arch past it."},
+  {id:"goodmorning",n:"Good Morning",g:"Back",p:"hinge",eq:"barbell",m:"Hamstrings, Erectors",s:"Glutes",t:"3110",d:3,c:"Light. Hinge, do not squat it."},
+  {id:"hyper45",n:"45 Degree Back Raise",g:"Back",p:"hinge",eq:"bodyweight",m:"Erectors",s:"Glutes",t:"2111",d:1,c:"Round the upper back if you want more glute."},
+  {id:"farmers",n:"Farmer's Carry",g:"Back",p:"carry",eq:"dumbbell",m:"Traps, Grip",s:"Core",t:"hold",d:1,c:"Stand tall, walk, do not rush."},
+  {id:"suitcase",n:"Suitcase Carry",g:"Back",p:"carry",eq:"dumbbell",m:"Obliques, Grip",s:"Traps",t:"hold",d:1,c:"One side only. Resist the lean."},
+  {id:"ohp",n:"Overhead Press",g:"Shoulders",p:"vertical push",eq:"barbell",m:"Front delts",s:"Triceps, Core",t:"3010",d:3,c:"Squeeze the glutes. No leg drive."},
+  {id:"pushpress",n:"Push Press",g:"Shoulders",p:"vertical push",eq:"barbell",m:"Front delts",s:"Triceps, Quads",t:"3010",d:3,c:"Small dip, drive with the legs."},
+  {id:"dbohp",n:"DB Shoulder Press",g:"Shoulders",p:"vertical push",eq:"dumbbell",m:"Front delts",s:"Triceps",t:"3010",d:2,c:"Seated is easier to control than standing."},
+  {id:"arnold",n:"Arnold Press",g:"Shoulders",p:"vertical push",eq:"dumbbell",m:"Front delts",s:"Side delts, Triceps",t:"3010",d:2,c:"Rotate as you press. Slowly."},
+  {id:"machohp",n:"Machine Shoulder Press",g:"Shoulders",p:"vertical push",eq:"machine",m:"Front delts",s:"Triceps",t:"3011",d:1,c:"Handles at ear height to start."},
+  {id:"landmine",n:"Landmine Press",g:"Shoulders",p:"vertical push",eq:"barbell",m:"Front delts",s:"Triceps, Core",t:"3010",d:1,c:"The friendliest press for a cranky shoulder."},
+  {id:"zpress",n:"Z Press",g:"Shoulders",p:"vertical push",eq:"dumbbell",m:"Front delts",s:"Core",t:"3010",d:3,c:"Sitting on the floor, legs straight. Nowhere to hide."},
+  {id:"pikepush",n:"Pike Press Up",g:"Shoulders",p:"vertical push",eq:"bodyweight",m:"Front delts",s:"Triceps",t:"3010",d:2,c:"Hips high, crown of the head to the floor."},
+  {id:"lateral",n:"DB Lateral Raise",g:"Shoulders",p:"shoulder isolation",eq:"dumbbell",m:"Side delts",s:"Traps",t:"2011",d:1,c:"Lead with the elbow, stop at shoulder height."},
+  {id:"cablelateral",n:"Cable Lateral Raise",g:"Shoulders",p:"shoulder isolation",eq:"cable",m:"Side delts",s:"Traps",t:"2011",d:1,c:"Constant tension all the way down."},
+  {id:"machlateral",n:"Machine Lateral Raise",g:"Shoulders",p:"shoulder isolation",eq:"machine",m:"Side delts",s:"Traps",t:"2011",d:1,c:"Pad against the outside of the arm, not the wrist."},
+  {id:"leanlateral",n:"Leaning Lateral Raise",g:"Shoulders",p:"shoulder isolation",eq:"dumbbell",m:"Side delts",s:"Traps",t:"2011",d:2,c:"Hang off an upright for a longer range."},
+  {id:"frontraise",n:"Front Raise",g:"Shoulders",p:"shoulder isolation",eq:"dumbbell",m:"Front delts",s:"Upper chest",t:"2011",d:1,c:"To eye level, no higher."},
+  {id:"plateraise",n:"Plate Front Raise",g:"Shoulders",p:"shoulder isolation",eq:"other",m:"Front delts",s:"Core",t:"2011",d:1,c:"Hold the plate at three and nine o'clock."},
+  {id:"rear",n:"Rear Delt Fly",g:"Shoulders",p:"shoulder isolation",eq:"dumbbell",m:"Rear delts",s:"Mid back",t:"2011",d:1,c:"Thumbs down, elbows soft."},
+  {id:"cablerear",n:"Cable Rear Delt Fly",g:"Shoulders",p:"shoulder isolation",eq:"cable",m:"Rear delts",s:"Mid back",t:"2011",d:1,c:"Cross the cables and open wide."},
+  {id:"reversepec",n:"Reverse Pec Deck",g:"Shoulders",p:"shoulder isolation",eq:"machine",m:"Rear delts",s:"Mid back",t:"2011",d:1,c:"Elbows level with the shoulders."},
+  {id:"uprightrow",n:"Upright Row",g:"Shoulders",p:"vertical pull",eq:"barbell",m:"Side delts",s:"Traps, Biceps",t:"2011",d:2,c:"Wide grip, stop at the sternum."},
+  {id:"ytraise",n:"Y Raise",g:"Shoulders",p:"shoulder isolation",eq:"dumbbell",m:"Lower traps",s:"Rear delts",t:"2012",d:1,c:"On an incline bench, thumbs up."},
+  {id:"cubanpress",n:"Cuban Press",g:"Shoulders",p:"shoulder isolation",eq:"dumbbell",m:"Rotator cuff",s:"Side delts",t:"3010",d:2,c:"Light. This is prehab, not a press."},
+  {id:"extrot",n:"External Rotation",g:"Shoulders",p:"shoulder isolation",eq:"band",m:"Rotator cuff",s:"Rear delts",t:"3011",d:1,c:"Elbow pinned to the ribs."},
+  {id:"bandpullapart",n:"Band Pull Apart",g:"Shoulders",p:"shoulder isolation",eq:"band",m:"Rear delts",s:"Mid back",t:"2012",d:1,c:"Thirty a day fixes a lot of desks."},
+  {id:"curl",n:"Barbell Curl",g:"Arms",p:"elbow flexion",eq:"barbell",m:"Biceps",s:"Forearms",t:"2011",d:1,c:"Elbows at the ribs. Five degrees of swing, no more."},
+  {id:"ezcurl",n:"EZ Bar Curl",g:"Arms",p:"elbow flexion",eq:"barbell",m:"Biceps",s:"Forearms",t:"2011",d:1,c:"Kinder on the wrists than a straight bar."},
+  {id:"dbcurl",n:"DB Curl",g:"Arms",p:"elbow flexion",eq:"dumbbell",m:"Biceps",s:"Forearms",t:"2011",d:1,c:"Supinate as you come up."},
+  {id:"hammer",n:"Hammer Curl",g:"Arms",p:"elbow flexion",eq:"dumbbell",m:"Brachialis",s:"Biceps, Forearms",t:"2011",d:1,c:"Neutral grip throughout."},
+  {id:"inclinecurl",n:"Incline DB Curl",g:"Arms",p:"elbow flexion",eq:"dumbbell",m:"Biceps",s:"Forearms",t:"3011",d:2,c:"Arms hang behind the body. Long stretch."},
+  {id:"preacher",n:"Preacher Curl",g:"Arms",p:"elbow flexion",eq:"barbell",m:"Biceps",s:"Forearms",t:"3011",d:1,c:"Do not bounce out of the bottom."},
+  {id:"cablecurl",n:"Cable Curl",g:"Arms",p:"elbow flexion",eq:"cable",m:"Biceps",s:"Forearms",t:"2011",d:1,c:"Tension does not disappear at the top."},
+  {id:"concentration",n:"Concentration Curl",g:"Arms",p:"elbow flexion",eq:"dumbbell",m:"Biceps",s:"Forearms",t:"3011",d:1,c:"Elbow braced on the thigh."},
+  {id:"spidercurl",n:"Spider Curl",g:"Arms",p:"elbow flexion",eq:"dumbbell",m:"Biceps",s:"Forearms",t:"3011",d:2,c:"Chest on an incline bench, arms straight down."},
+  {id:"reversecurl",n:"Reverse Curl",g:"Arms",p:"elbow flexion",eq:"barbell",m:"Brachioradialis",s:"Biceps, Forearms",t:"2011",d:1,c:"Overhand. Humbling weight."},
+  {id:"21s",n:"21s",g:"Arms",p:"elbow flexion",eq:"barbell",m:"Biceps",s:"Forearms",t:"2010",d:2,c:"Seven bottom half, seven top half, seven full."},
+  {id:"pushdown",n:"Tricep Pushdown",g:"Arms",p:"elbow extension",eq:"cable",m:"Triceps",s:"Forearms",t:"2011",d:1,c:"Elbows pinned. Only the forearm moves."},
+  {id:"ropepush",n:"Rope Pushdown",g:"Arms",p:"elbow extension",eq:"cable",m:"Triceps",s:"Forearms",t:"2012",d:1,c:"Split the rope at the bottom."},
+  {id:"ohtri",n:"Overhead Triceps Extension",g:"Arms",p:"elbow extension",eq:"dumbbell",m:"Triceps",s:"Shoulders",t:"3011",d:1,c:"Elbows point forward, not out."},
+  {id:"ropeoh",n:"Overhead Rope Extension",g:"Arms",p:"elbow extension",eq:"cable",m:"Triceps",s:"Shoulders",t:"3011",d:1,c:"Step away from the stack for a longer stretch."},
+  {id:"skull",n:"Skull Crusher",g:"Arms",p:"elbow extension",eq:"barbell",m:"Triceps",s:"Forearms",t:"3010",d:2,c:"To the forehead or just behind it."},
+  {id:"dip",n:"Tricep Dip",g:"Arms",p:"elbow extension",eq:"bodyweight",m:"Triceps",s:"Chest, Front delts",t:"3010",d:2,c:"Upright torso to bias the triceps."},
+  {id:"benchdip",n:"Bench Dip",g:"Arms",p:"elbow extension",eq:"bodyweight",m:"Triceps",s:"Front delts",t:"3010",d:1,c:"Feet closer in if the shoulders complain."},
+  {id:"kickback",n:"Tricep Kickback",g:"Arms",p:"elbow extension",eq:"dumbbell",m:"Triceps",s:"Rear delts",t:"2012",d:1,c:"Squeeze at the top, light weight."},
+  {id:"jmpress",n:"JM Press",g:"Arms",p:"elbow extension",eq:"barbell",m:"Triceps",s:"Chest",t:"3010",d:3,c:"Half a skull crusher, half a close grip press."},
+  {id:"wristcurl",n:"Wrist Curl",g:"Arms",p:"grip",eq:"dumbbell",m:"Forearms",s:"Grip",t:"2012",d:1,c:"Forearms on the thighs, small range."},
+  {id:"revwrist",n:"Reverse Wrist Curl",g:"Arms",p:"grip",eq:"dumbbell",m:"Forearm extensors",s:"Grip",t:"2012",d:1,c:"Good for elbow pain from gripping."},
+  {id:"deadhang",n:"Dead Hang",g:"Arms",p:"grip",eq:"bodyweight",m:"Grip",s:"Lats, Shoulders",t:"hold",d:1,c:"Just hang. Thirty seconds is plenty."},
+  {id:"plateping",n:"Plate Pinch",g:"Arms",p:"grip",eq:"other",m:"Grip",s:"Forearms",t:"hold",d:1,c:"Two plates, smooth sides out."},
+  {id:"squat",n:"Back Squat",g:"Legs",p:"squat",eq:"barbell",m:"Quads, Glutes",s:"Erectors, Adductors",t:"3010",d:3,c:"Knees track over the toes. Depth before weight."},
+  {id:"frontsquat",n:"Front Squat",g:"Legs",p:"squat",eq:"barbell",m:"Quads",s:"Glutes, Core",t:"3010",d:3,c:"Elbows high. The bar sits on the shoulders, not the hands."},
+  {id:"boxsquat",n:"Box Squat",g:"Legs",p:"squat",eq:"barbell",m:"Glutes, Quads",s:"Erectors",t:"3110",d:2,c:"Sit back, pause, drive up. Teaches depth."},
+  {id:"pausesquat",n:"Pause Squat",g:"Legs",p:"squat",eq:"barbell",m:"Quads",s:"Glutes",t:"3310",d:3,c:"Three seconds at the bottom. Leave your ego outside."},
+  {id:"goblet",n:"Goblet Squat",g:"Legs",p:"squat",eq:"dumbbell",m:"Quads, Glutes",s:"Core",t:"3110",d:1,c:"Chest up, elbows inside the knees."},
+  {id:"hack",n:"Hack Squat",g:"Legs",p:"squat",eq:"machine",m:"Quads",s:"Glutes",t:"3010",d:2,c:"Feet low on the platform for more quad."},
+  {id:"legpress",n:"Leg Press",g:"Legs",p:"squat",eq:"machine",m:"Quads, Glutes",s:"Hamstrings",t:"3010",d:1,c:"Do not let the lower back round at the bottom."},
+  {id:"smithsquat",n:"Smith Machine Squat",g:"Legs",p:"squat",eq:"machine",m:"Quads",s:"Glutes",t:"3010",d:1,c:"Feet slightly forward of the bar."},
+  {id:"bwsquat",n:"Bodyweight Squat",g:"Legs",p:"squat",eq:"bodyweight",m:"Quads, Glutes",s:"Core",t:"2010",d:1,c:"Where everything starts."},
+  {id:"jumpsquat",n:"Jump Squat",g:"Legs",p:"squat",eq:"bodyweight",m:"Quads, Glutes",s:"Calves",t:"10X0",d:2,c:"Land quietly. Quality over quantity."},
+  {id:"sissy",n:"Sissy Squat",g:"Legs",p:"knee isolation",eq:"bodyweight",m:"Quads",s:"Core",t:"3010",d:3,c:"Knees travel forward, hips stay extended."},
+  {id:"rdl",n:"Romanian Deadlift",g:"Legs",p:"hinge",eq:"barbell",m:"Hamstrings",s:"Glutes, Erectors",t:"3110",d:2,c:"Push the hips back. Stop before the back rounds."},
+  {id:"dbrdl",n:"DB Romanian Deadlift",g:"Legs",p:"hinge",eq:"dumbbell",m:"Hamstrings",s:"Glutes",t:"3110",d:1,c:"Weights travel down the front of the legs."},
+  {id:"slrdl",n:"Single Leg RDL",g:"Legs",p:"hinge",eq:"dumbbell",m:"Hamstrings",s:"Glutes, Core",t:"3110",d:3,c:"Hips square. Balance is part of the exercise."},
+  {id:"stifleg",n:"Stiff Leg Deadlift",g:"Legs",p:"hinge",eq:"barbell",m:"Hamstrings",s:"Erectors, Glutes",t:"3110",d:3,c:"Softer knees than it sounds."},
+  {id:"hipthrust",n:"Hip Thrust",g:"Legs",p:"hinge",eq:"barbell",m:"Glutes",s:"Hamstrings",t:"2012",d:2,c:"Ribs down, chin tucked, squeeze at the top."},
+  {id:"gluteBridge",n:"Glute Bridge",g:"Legs",p:"hinge",eq:"bodyweight",m:"Glutes",s:"Hamstrings",t:"2012",d:1,c:"Press through the heels."},
+  {id:"singleglute",n:"Single Leg Glute Bridge",g:"Legs",p:"hinge",eq:"bodyweight",m:"Glutes",s:"Hamstrings, Core",t:"2012",d:2,c:"Keep the hips level."},
+  {id:"kbswing",n:"Kettlebell Swing",g:"Legs",p:"hinge",eq:"kettlebell",m:"Glutes, Hamstrings",s:"Core, Shoulders",t:"10X0",d:2,c:"A hinge, not a squat. The arms are rope."},
+  {id:"bss",n:"Bulgarian Split Squat",g:"Legs",p:"lunge",eq:"dumbbell",m:"Quads, Glutes",s:"Adductors",t:"3110",d:3,c:"Do not rush these. Back foot on a bench."},
+  {id:"lunge",n:"Walking Lunge",g:"Legs",p:"lunge",eq:"dumbbell",m:"Quads, Glutes",s:"Hamstrings",t:"2010",d:2,c:"Long steps for glutes, short for quads."},
+  {id:"revlunge",n:"Reverse Lunge",g:"Legs",p:"lunge",eq:"dumbbell",m:"Glutes, Quads",s:"Hamstrings",t:"2010",d:1,c:"Kinder on the knees than stepping forward."},
+  {id:"staticlunge",n:"Static Lunge",g:"Legs",p:"lunge",eq:"dumbbell",m:"Quads, Glutes",s:"Hamstrings",t:"3010",d:1,c:"Feet stay put, straight up and down."},
+  {id:"curtsy",n:"Curtsy Lunge",g:"Legs",p:"lunge",eq:"dumbbell",m:"Glutes",s:"Adductors, Quads",t:"2010",d:2,c:"Step behind and across."},
+  {id:"stepup",n:"Step Up",g:"Legs",p:"lunge",eq:"dumbbell",m:"Quads, Glutes",s:"Hamstrings",t:"2010",d:1,c:"Drive through the top foot. Do not push off the bottom."},
+  {id:"splitsquat",n:"Split Squat",g:"Legs",p:"lunge",eq:"dumbbell",m:"Quads, Glutes",s:"Adductors",t:"3010",d:2,c:"Both feet on the floor, no bench needed."},
+  {id:"pistol",n:"Pistol Squat",g:"Legs",p:"lunge",eq:"bodyweight",m:"Quads, Glutes",s:"Core",t:"3010",d:3,c:"Hold a counterweight to learn it."},
+  {id:"legext",n:"Leg Extension",g:"Legs",p:"knee isolation",eq:"machine",m:"Quads",s:"-",t:"2011",d:1,c:"Pause at the top, do not swing."},
+  {id:"hamcurl",n:"Lying Hamstring Curl",g:"Legs",p:"knee isolation",eq:"machine",m:"Hamstrings",s:"Calves",t:"2011",d:1,c:"Hips stay down on the pad."},
+  {id:"seatedham",n:"Seated Hamstring Curl",g:"Legs",p:"knee isolation",eq:"machine",m:"Hamstrings",s:"Calves",t:"2011",d:1,c:"Often better loaded than the lying version."},
+  {id:"nordic",n:"Nordic Curl",g:"Legs",p:"knee isolation",eq:"bodyweight",m:"Hamstrings",s:"Glutes",t:"5010",d:3,c:"Lower as slowly as you can. Brutal."},
+  {id:"goodgirl",n:"Hip Abduction",g:"Legs",p:"hip isolation",eq:"machine",m:"Glute medius",s:"Glutes",t:"2012",d:1,c:"Lean forward slightly for more glute."},
+  {id:"adduction",n:"Hip Adduction",g:"Legs",p:"hip isolation",eq:"machine",m:"Adductors",s:"-",t:"2012",d:1,c:"Slow out of the stretch."},
+  {id:"cablekick",n:"Cable Kickback",g:"Legs",p:"hip isolation",eq:"cable",m:"Glutes",s:"Hamstrings",t:"2012",d:1,c:"Hips square, small range, big squeeze."},
+  {id:"clamshell",n:"Clamshell",g:"Legs",p:"hip isolation",eq:"band",m:"Glute medius",s:"Glutes",t:"2012",d:1,c:"Band above the knees, hips stacked."},
+  {id:"monster",n:"Monster Walk",g:"Legs",p:"hip isolation",eq:"band",m:"Glute medius",s:"Quads",t:"2010",d:1,c:"Small steps, knees pushed out."},
+  {id:"calf",n:"Standing Calf Raise",g:"Legs",p:"calf",eq:"machine",m:"Calves",s:"-",t:"2111",d:1,c:"Pause in the stretch at the bottom."},
+  {id:"seatedcalf",n:"Seated Calf Raise",g:"Legs",p:"calf",eq:"machine",m:"Soleus",s:"Calves",t:"2111",d:1,c:"Bent knee bias. Slow."},
+  {id:"legpresscalf",n:"Leg Press Calf Raise",g:"Legs",p:"calf",eq:"machine",m:"Calves",s:"-",t:"2111",d:1,c:"Full range, toes only on the platform."},
+  {id:"sled",n:"Sled Push",g:"Legs",p:"carry",eq:"other",m:"Quads, Glutes",s:"Calves, Core",t:"hold",d:2,c:"Low body angle, short quick steps."},
+  {id:"sledpull",n:"Sled Pull",g:"Legs",p:"carry",eq:"other",m:"Hamstrings, Glutes",s:"Back, Grip",t:"hold",d:2,c:"Lean back against the load."},
+  {id:"wallsit",n:"Wall Sit",g:"Legs",p:"squat",eq:"bodyweight",m:"Quads",s:"Glutes",t:"hold",d:1,c:"Thighs parallel. Count in breaths, not seconds."},
+  {id:"plank",n:"Plank",g:"Core",p:"anti-extension",eq:"bodyweight",m:"Abdominals",s:"Shoulders, Glutes",t:"hold",d:1,c:"Ribs down, glutes on. Quality beats minutes."},
+  {id:"sidplank",n:"Side Plank",g:"Core",p:"anti-rotation",eq:"bodyweight",m:"Obliques",s:"Glute medius",t:"hold",d:1,c:"Stack the shoulders and hips."},
+  {id:"deadbug",n:"Dead Bug",g:"Core",p:"anti-extension",eq:"bodyweight",m:"Abdominals",s:"Hip flexors",t:"3030",d:1,c:"Lower back stays flat to the floor."},
+  {id:"birddog",n:"Bird Dog",g:"Core",p:"anti-rotation",eq:"bodyweight",m:"Erectors",s:"Glutes, Abdominals",t:"3030",d:1,c:"Move slowly enough that nothing wobbles."},
+  {id:"paloff",n:"Pallof Press",g:"Core",p:"anti-rotation",eq:"cable",m:"Obliques",s:"Abdominals",t:"2121",d:1,c:"Resist the twist. That is the whole exercise."},
+  {id:"crunch",n:"Crunch",g:"Core",p:"trunk flexion",eq:"bodyweight",m:"Abdominals",s:"Hip flexors",t:"2111",d:1,c:"Short range, no pulling on the neck."},
+  {id:"cablecrunch",n:"Cable Crunch",g:"Core",p:"trunk flexion",eq:"cable",m:"Abdominals",s:"Obliques",t:"2111",d:1,c:"Round the spine down, hips stay put."},
+  {id:"hanging",n:"Hanging Knee Raise",g:"Core",p:"trunk flexion",eq:"bodyweight",m:"Abdominals",s:"Hip flexors",t:"2111",d:2,c:"Curl the pelvis, do not just swing the legs."},
+  {id:"legraise",n:"Lying Leg Raise",g:"Core",p:"trunk flexion",eq:"bodyweight",m:"Abdominals",s:"Hip flexors",t:"2111",d:1,c:"Hands under the hips if the back arches."},
+  {id:"toestobar",n:"Toes to Bar",g:"Core",p:"trunk flexion",eq:"bodyweight",m:"Abdominals",s:"Lats, Grip",t:"2010",d:3,c:"Strict before kipping."},
+  {id:"vup",n:"V Up",g:"Core",p:"trunk flexion",eq:"bodyweight",m:"Abdominals",s:"Hip flexors",t:"2010",d:2,c:"Reach for the toes, land softly."},
+  {id:"russian",n:"Russian Twist",g:"Core",p:"anti-rotation",eq:"other",m:"Obliques",s:"Abdominals",t:"2010",d:1,c:"Rotate from the ribs, not the arms."},
+  {id:"woodchop",n:"Cable Woodchop",g:"Core",p:"anti-rotation",eq:"cable",m:"Obliques",s:"Abdominals",t:"2011",d:1,c:"Pivot the back foot."},
+  {id:"abwheel",n:"Ab Wheel Rollout",g:"Core",p:"anti-extension",eq:"other",m:"Abdominals",s:"Lats",t:"3010",d:3,c:"Go only as far as you can keep the ribs down."},
+  {id:"hollow",n:"Hollow Hold",g:"Core",p:"anti-extension",eq:"bodyweight",m:"Abdominals",s:"Hip flexors",t:"hold",d:2,c:"Lower back glued to the floor."},
+  {id:"mountain",n:"Mountain Climber",g:"Core",p:"trunk flexion",eq:"bodyweight",m:"Abdominals",s:"Shoulders, Quads",t:"2010",d:1,c:"Hips stay low and still."},
+  {id:"bearcrawl",n:"Bear Crawl",g:"Core",p:"carry",eq:"bodyweight",m:"Abdominals",s:"Shoulders, Quads",t:"hold",d:2,c:"Knees an inch off the floor."},
+  {id:"copenhagen",n:"Copenhagen Plank",g:"Core",p:"anti-rotation",eq:"bodyweight",m:"Adductors",s:"Obliques",t:"hold",d:3,c:"Start with the bottom knee down."},
+  {id:"burpee",n:"Burpee",g:"Conditioning",p:"full body",eq:"bodyweight",m:"Full body",s:"Quads, Chest",t:"2010",d:2,c:"Step back instead of jumping if the back is grumpy."},
+  {id:"thruster",n:"Thruster",g:"Conditioning",p:"full body",eq:"dumbbell",m:"Quads, Shoulders",s:"Core",t:"2010",d:3,c:"Squat and press as one movement."},
+  {id:"clean",n:"Power Clean",g:"Conditioning",p:"full body",eq:"barbell",m:"Full body",s:"Traps, Quads",t:"10X0",d:3,c:"Technique first. Load much later."},
+  {id:"snatch",n:"DB Snatch",g:"Conditioning",p:"full body",eq:"dumbbell",m:"Full body",s:"Shoulders, Glutes",t:"10X0",d:3,c:"One pull from the floor to overhead."},
+  {id:"wallball",n:"Wall Ball",g:"Conditioning",p:"full body",eq:"other",m:"Quads, Shoulders",s:"Core",t:"2010",d:2,c:"Squat to the target, breathe at the top."},
+  {id:"boxjump",n:"Box Jump",g:"Conditioning",p:"full body",eq:"other",m:"Quads, Glutes",s:"Calves",t:"10X0",d:2,c:"Step down. Every time."},
+  {id:"battle",n:"Battle Ropes",g:"Conditioning",p:"full body",eq:"other",m:"Shoulders",s:"Core, Grip",t:"hold",d:1,c:"Thirty seconds on, thirty off."},
+  {id:"rowerg",n:"Row Erg",g:"Conditioning",p:"cardio",eq:"machine",m:"Full body",s:"Legs, Back",t:"hold",d:1,c:"Legs, then back, then arms. Reverse on the way in."},
+  {id:"skierg",n:"Ski Erg",g:"Conditioning",p:"cardio",eq:"machine",m:"Lats, Core",s:"Triceps",t:"hold",d:1,c:"Hinge at the hips, do not just pull with the arms."},
+  {id:"assault",n:"Assault Bike",g:"Conditioning",p:"cardio",eq:"machine",m:"Full body",s:"Quads, Shoulders",t:"hold",d:2,c:"Brutally honest about your fitness."},
+  {id:"treadmill",n:"Treadmill Run",g:"Conditioning",p:"cardio",eq:"machine",m:"Legs",s:"Full body",t:"hold",d:1,c:"One percent incline to match outdoors."},
+  {id:"skip",n:"Skipping",g:"Conditioning",p:"cardio",eq:"other",m:"Calves",s:"Shoulders",t:"hold",d:1,c:"Small jumps, wrists do the work."},
+  {id:"stair",n:"Stair Climber",g:"Conditioning",p:"cardio",eq:"machine",m:"Glutes, Quads",s:"Calves",t:"hold",d:1,c:"Do not lean on the handles."},
+  {id:"bike",n:"Stationary Bike",g:"Conditioning",p:"cardio",eq:"machine",m:"Quads",s:"Glutes, Calves",t:"hold",d:1,c:"Saddle height so the knee is almost straight at the bottom."},
+  {id:"sprint",n:"Sprints",g:"Conditioning",p:"cardio",eq:"bodyweight",m:"Hamstrings, Glutes",s:"Quads, Calves",t:"10X0",d:3,c:"Warm up properly first. Really."},
+  {id:"catcow",n:"Cat Cow",g:"Mobility",p:"mobility",eq:"bodyweight",m:"Spine",s:"Core",t:"3030",d:1,c:"Slow, no forcing it."},
+  {id:"hipflex",n:"Hip Flexor Stretch",g:"Mobility",p:"mobility",eq:"bodyweight",m:"Hip flexors",s:"Quads",t:"hold",d:1,c:"Squeeze the back glute to feel it properly."},
+  {id:"90_90",n:"90/90 Hip Switch",g:"Mobility",p:"mobility",eq:"bodyweight",m:"Hips",s:"Glutes",t:"3030",d:1,c:"Chest tall, move slowly between sides."},
+  {id:"worlds",n:"World's Greatest Stretch",g:"Mobility",p:"mobility",eq:"bodyweight",m:"Hips, Thoracic",s:"Hamstrings",t:"hold",d:1,c:"Worth the name. Two minutes a side."},
+  {id:"thoracic",n:"Thoracic Rotation",g:"Mobility",p:"mobility",eq:"bodyweight",m:"Thoracic spine",s:"Shoulders",t:"3030",d:1,c:"Rotate from the ribs, hips stay still."},
+  {id:"couch",n:"Couch Stretch",g:"Mobility",p:"mobility",eq:"bodyweight",m:"Quads, Hip flexors",s:"-",t:"hold",d:2,c:"Two minutes a side. Breathe."},
+  {id:"pigeon",n:"Pigeon Pose",g:"Mobility",p:"mobility",eq:"bodyweight",m:"Glutes",s:"Hips",t:"hold",d:2,c:"Back to it if the knee complains."},
+  {id:"hamstretch",n:"Hamstring Stretch",g:"Mobility",p:"mobility",eq:"bodyweight",m:"Hamstrings",s:"Calves",t:"hold",d:1,c:"Hinge from the hip, not the spine."},
+  {id:"calfstretch",n:"Calf Stretch",g:"Mobility",p:"mobility",eq:"bodyweight",m:"Calves",s:"Achilles",t:"hold",d:1,c:"Back heel down, knee straight then bent."},
+  {id:"shoulderdis",n:"Shoulder Dislocates",g:"Mobility",p:"mobility",eq:"band",m:"Shoulders",s:"Chest",t:"3030",d:1,c:"Wide grip. Narrow it over weeks, not days."},
+  {id:"childs",n:"Child's Pose",g:"Mobility",p:"mobility",eq:"bodyweight",m:"Lats, Spine",s:"Hips",t:"hold",d:1,c:"Where to start and finish."},
+  {id:"foamroll",n:"Foam Roll Quads and Glutes",g:"Mobility",p:"mobility",eq:"other",m:"Quads, Glutes",s:"IT band",t:"hold",d:1,c:"Slow. Pause where it is tender."},
+  {id:"foamback",n:"Foam Roll Upper Back",g:"Mobility",p:"mobility",eq:"other",m:"Thoracic spine",s:"Lats",t:"hold",d:1,c:"Support the head with the hands."},
+  {id:"ankle",n:"Ankle Mobilisation",g:"Mobility",p:"mobility",eq:"bodyweight",m:"Ankles",s:"Calves",t:"3030",d:1,c:"Knee over the toe, heel down."},
+  {id:"glutestretch",n:"Figure Four Stretch",g:"Mobility",p:"mobility",eq:"bodyweight",m:"Glutes",s:"Hips",t:"hold",d:1,c:"Lying or seated, both work."}
+,
+  {id:"dbsqueeze",n:"DB Squeeze Press",g:"Chest",p:"horizontal push",eq:"dumbbell",m:"Pectorals",s:"Triceps",t:"3012",d:1,c:"Press the weights together the whole set."},
+  {id:"guillotine",n:"Guillotine Press",g:"Chest",p:"horizontal push",eq:"barbell",m:"Upper pectorals",s:"Front delts",t:"3010",d:3,c:"Bar to the neck line. Light, spotter, care."},
+  {id:"banded_pushup",n:"Banded Press Up",g:"Chest",p:"horizontal push",eq:"band",m:"Pectorals",s:"Triceps",t:"3010",d:2,c:"Band across the back for tension at the top."},
+  {id:"cable_press",n:"Standing Cable Press",g:"Chest",p:"horizontal push",eq:"cable",m:"Pectorals",s:"Core, Triceps",t:"3011",d:1,c:"Split stance, ribs down."},
+  {id:"machfly",n:"Machine Fly",g:"Chest",p:"chest isolation",eq:"machine",m:"Pectorals",s:"Front delts",t:"2011",d:1,c:"Fixed path, good for a last set to failure."},
+  {id:"meadows",n:"Meadows Row",g:"Back",p:"horizontal pull",eq:"barbell",m:"Lats",s:"Mid back, Biceps",t:"2011",d:2,c:"Landmine, staggered stance, one arm."},
+  {id:"gorilla",n:"Gorilla Row",g:"Back",p:"horizontal pull",eq:"kettlebell",m:"Lats",s:"Mid back",t:"2011",d:2,c:"Alternate arms, other hand on the bell."},
+  {id:"kbrow",n:"Kettlebell Row",g:"Back",p:"horizontal pull",eq:"kettlebell",m:"Lats",s:"Biceps",t:"2011",d:1,c:"Hinge and hold the position."},
+  {id:"machpulldown",n:"Machine Pulldown",g:"Back",p:"vertical pull",eq:"machine",m:"Lats",s:"Biceps",t:"3011",d:1,c:"Chest pad takes the swing out."},
+  {id:"bandrow",n:"Band Row",g:"Back",p:"horizontal pull",eq:"band",m:"Mid back",s:"Lats, Biceps",t:"2011",d:1,c:"Anchor at waist height."},
+  {id:"bandpulldown",n:"Band Pulldown",g:"Back",p:"vertical pull",eq:"band",m:"Lats",s:"Biceps",t:"3011",d:1,c:"Anchor overhead, kneel underneath."},
+  {id:"renegade",n:"Renegade Row",g:"Back",p:"horizontal pull",eq:"dumbbell",m:"Lats",s:"Core, Shoulders",t:"2011",d:3,c:"Hips do not rotate. Widen the feet."},
+  {id:"highpull",n:"High Pull",g:"Back",p:"vertical pull",eq:"barbell",m:"Traps",s:"Rear delts, Biceps",t:"10X0",d:3,c:"Explosive. Elbows lead."},
+  {id:"hexshrug",n:"Trap Bar Shrug",g:"Back",p:"shoulder isolation",eq:"barbell",m:"Traps",s:"Grip",t:"2012",d:1,c:"Neutral grip, heavy, simple."},
+  {id:"prone_y",n:"Prone Y Raise",g:"Back",p:"shoulder isolation",eq:"bodyweight",m:"Lower traps",s:"Rear delts",t:"2012",d:1,c:"Face down, thumbs up, tiny weight."},
+  {id:"seated_ohp",n:"Seated Barbell Press",g:"Shoulders",p:"vertical push",eq:"barbell",m:"Front delts",s:"Triceps",t:"3010",d:2,c:"Back supported, no leg drive available."},
+  {id:"behindneck",n:"Behind the Neck Press",g:"Shoulders",p:"vertical push",eq:"barbell",m:"Side delts",s:"Triceps",t:"3010",d:3,c:"Only with the shoulder mobility to earn it."},
+  {id:"kbpress",n:"Kettlebell Press",g:"Shoulders",p:"vertical push",eq:"kettlebell",m:"Front delts",s:"Core, Triceps",t:"3010",d:2,c:"The bell rests on the forearm."},
+  {id:"bottomsup",n:"Bottoms Up Press",g:"Shoulders",p:"vertical push",eq:"kettlebell",m:"Front delts",s:"Grip, Rotator cuff",t:"3010",d:3,c:"Grip and shoulder stability in one."},
+  {id:"machrear",n:"Machine Rear Delt",g:"Shoulders",p:"shoulder isolation",eq:"machine",m:"Rear delts",s:"Mid back",t:"2011",d:1,c:"Fixed path, easy to overload."},
+  {id:"bandlateral",n:"Band Lateral Raise",g:"Shoulders",p:"shoulder isolation",eq:"band",m:"Side delts",s:"Traps",t:"2011",d:1,c:"Hardest at the top, where it should be."},
+  {id:"landmine_lat",n:"Landmine Lateral Raise",g:"Shoulders",p:"shoulder isolation",eq:"barbell",m:"Side delts",s:"Traps",t:"2011",d:2,c:"One arm, long lever."},
+  {id:"bayesian",n:"Bayesian Curl",g:"Arms",p:"elbow flexion",eq:"cable",m:"Biceps",s:"Forearms",t:"3011",d:2,c:"Facing away from the stack, arms behind you."},
+  {id:"drag",n:"Drag Curl",g:"Arms",p:"elbow flexion",eq:"barbell",m:"Biceps",s:"Forearms",t:"2011",d:2,c:"Bar drags up the body, elbows go back."},
+  {id:"zottman",n:"Zottman Curl",g:"Arms",p:"elbow flexion",eq:"dumbbell",m:"Biceps",s:"Forearms, Brachialis",t:"3011",d:2,c:"Up supinated, down pronated."},
+  {id:"bandcurl",n:"Band Curl",g:"Arms",p:"elbow flexion",eq:"band",m:"Biceps",s:"Forearms",t:"2011",d:1,c:"Travel friendly."},
+  {id:"machcurl",n:"Machine Curl",g:"Arms",p:"elbow flexion",eq:"machine",m:"Biceps",s:"Forearms",t:"2011",d:1,c:"Pad set so the elbows sit under the shoulders."},
+  {id:"machtri",n:"Machine Triceps Extension",g:"Arms",p:"elbow extension",eq:"machine",m:"Triceps",s:"-",t:"2011",d:1,c:"Fixed path, good for high reps."},
+  {id:"bandpushdown",n:"Band Pushdown",g:"Arms",p:"elbow extension",eq:"band",m:"Triceps",s:"Forearms",t:"2012",d:1,c:"Anchor high, elbows pinned."},
+  {id:"cgpushup",n:"Close Grip Press Up",g:"Arms",p:"elbow extension",eq:"bodyweight",m:"Triceps",s:"Chest",t:"3010",d:2,c:"Hands under the shoulders, elbows back."},
+  {id:"hexpress",n:"Hex Press",g:"Arms",p:"elbow extension",eq:"dumbbell",m:"Triceps",s:"Pectorals",t:"3012",d:1,c:"Weights pressed together throughout."},
+  {id:"farmerkb",n:"Kettlebell Farmer Walk",g:"Arms",p:"carry",eq:"kettlebell",m:"Grip",s:"Traps, Core",t:"hold",d:1,c:"Heavy, short, tall."},
+  {id:"frontrack",n:"Front Rack Carry",g:"Arms",p:"carry",eq:"kettlebell",m:"Core",s:"Shoulders, Grip",t:"hold",d:2,c:"Ribs down. Harder than it looks."},
+  {id:"overheadcarry",n:"Overhead Carry",g:"Arms",p:"carry",eq:"dumbbell",m:"Shoulders",s:"Core, Grip",t:"hold",d:3,c:"Arm locked, ribs down, walk slowly."},
+  {id:"zercher",n:"Zercher Squat",g:"Legs",p:"squat",eq:"barbell",m:"Quads, Glutes",s:"Core, Biceps",t:"3010",d:3,c:"Bar in the elbow crease. Uncomfortable and effective."},
+  {id:"bulgarianbb",n:"Barbell Split Squat",g:"Legs",p:"lunge",eq:"barbell",m:"Quads, Glutes",s:"Adductors",t:"3010",d:3,c:"Heavier than the dumbbell version, harder to balance."},
+  {id:"belt",n:"Belt Squat",g:"Legs",p:"squat",eq:"machine",m:"Quads, Glutes",s:"-",t:"3010",d:1,c:"No spinal load. Good on a tired back."},
+  {id:"vsquat",n:"V Squat",g:"Legs",p:"squat",eq:"machine",m:"Quads",s:"Glutes",t:"3010",d:1,c:"Between a hack squat and a leg press."},
+  {id:"landmine_squat",n:"Landmine Squat",g:"Legs",p:"squat",eq:"barbell",m:"Quads, Glutes",s:"Core",t:"3010",d:1,c:"Counterbalanced, easy to learn."},
+  {id:"kbgoblet",n:"Kettlebell Goblet Squat",g:"Legs",p:"squat",eq:"kettlebell",m:"Quads, Glutes",s:"Core",t:"3110",d:1,c:"Bell by the horns at the chest."},
+  {id:"kbdeadlift",n:"Kettlebell Deadlift",g:"Legs",p:"hinge",eq:"kettlebell",m:"Glutes, Hamstrings",s:"Erectors",t:"3010",d:1,c:"Where to learn the hinge."},
+  {id:"singleleg_press",n:"Single Leg Press",g:"Legs",p:"squat",eq:"machine",m:"Quads, Glutes",s:"Hamstrings",t:"3010",d:2,c:"Evens out a side to side difference."},
+  {id:"frog",n:"Frog Pump",g:"Legs",p:"hinge",eq:"bodyweight",m:"Glutes",s:"Hamstrings",t:"2012",d:1,c:"Soles together, knees out, high reps."},
+  {id:"bandhipthrust",n:"Band Hip Thrust",g:"Legs",p:"hinge",eq:"band",m:"Glutes",s:"Hamstrings",t:"2012",d:1,c:"Band above the knees to add abduction."},
+  {id:"reverse_hyper",n:"Reverse Hyperextension",g:"Legs",p:"hinge",eq:"machine",m:"Glutes, Hamstrings",s:"Erectors",t:"2012",d:2,c:"Kind on the back when done light."},
+  {id:"cossack",n:"Cossack Squat",g:"Legs",p:"lunge",eq:"bodyweight",m:"Adductors, Quads",s:"Glutes",t:"3010",d:2,c:"Sit into one side, other leg straight."},
+  {id:"tibialis",n:"Tibialis Raise",g:"Legs",p:"calf",eq:"bodyweight",m:"Tibialis",s:"Shins",t:"2012",d:1,c:"Shins against a wall. Good for runners."},
+  {id:"hipcircle",n:"Banded Side Step",g:"Legs",p:"hip isolation",eq:"band",m:"Glute medius",s:"Quads",t:"2010",d:1,c:"Stay low, small steps."},
+  {id:"hanging_oblique",n:"Hanging Oblique Raise",g:"Core",p:"trunk flexion",eq:"bodyweight",m:"Obliques",s:"Abdominals",t:"2111",d:3,c:"Knees to one hip, then the other."},
+  {id:"suitcase_hold",n:"Suitcase Hold",g:"Core",p:"anti-rotation",eq:"dumbbell",m:"Obliques",s:"Grip",t:"hold",d:1,c:"Stand still and resist the lean."},
+  {id:"turkish",n:"Turkish Get Up",g:"Core",p:"full body",eq:"kettlebell",m:"Core",s:"Shoulders, Glutes",t:"hold",d:3,c:"Five minutes a side, no rush. A whole workout in one move."},
+  {id:"deadbug_band",n:"Banded Dead Bug",g:"Core",p:"anti-extension",eq:"band",m:"Abdominals",s:"Hip flexors",t:"3030",d:2,c:"Band gives the arms something to fight."},
+  {id:"plankreach",n:"Plank Shoulder Tap",g:"Core",p:"anti-rotation",eq:"bodyweight",m:"Abdominals",s:"Shoulders",t:"2010",d:2,c:"Hips do not move."},
+  {id:"sprintbike",n:"Bike Intervals",g:"Conditioning",p:"cardio",eq:"machine",m:"Quads",s:"Full body",t:"hold",d:2,c:"Thirty hard, ninety easy."},
+  {id:"shuttle",n:"Shuttle Runs",g:"Conditioning",p:"cardio",eq:"bodyweight",m:"Legs",s:"Full body",t:"10X0",d:2,c:"Turn on the same foot each time."},
+  {id:"stepups_cond",n:"Weighted Step Up Intervals",g:"Conditioning",p:"full body",eq:"dumbbell",m:"Quads, Glutes",s:"Calves",t:"2010",d:2,c:"A stair climber you can load."},
+  {id:"kbcomplex",n:"Kettlebell Complex",g:"Conditioning",p:"full body",eq:"kettlebell",m:"Full body",s:"Core",t:"2010",d:3,c:"Swing, clean, press, squat. No rest between."},
+  {id:"dbcomplex",n:"Dumbbell Complex",g:"Conditioning",p:"full body",eq:"dumbbell",m:"Full body",s:"Core",t:"2010",d:3,c:"Pick one weight and do not put it down."},
+  {id:"jumprope_dbl",n:"Double Unders",g:"Conditioning",p:"cardio",eq:"other",m:"Calves",s:"Shoulders",t:"10X0",d:3,c:"Relax the arms. Rope speed, not jump height."}
 ];
 const TEMPO_FALLBACK={Chest:'3010',Shoulders:'2011',Arms:'2011',Back:'2011',Legs:'3010',Core:'2111',Mobility:'3030'};
 function tempoOf(exId){
   const x=LIBRARY.find(e=>e.id===exId);
   return (x&&x.t) || TEMPO_FALLBACK[(x&&x.g)||'Legs'] || '2011';
 }
+const EQUIP={barbell:'Barbell',dumbbell:'Dumbbell',kettlebell:'Kettlebell',cable:'Cable',
+  machine:'Machine',bodyweight:'Bodyweight',band:'Band',other:'Other'};
+const DIFF={1:'Straightforward',2:'Some practice needed',3:'Technical'};
+function exBlurb(x){ return x? [x.m, EQUIP[x.eq]||x.eq].filter(Boolean).join(' · ') : ''; }
 /* Tempo is shown, but the explanation only appears where a pause is actually
    doing something. On a lateral raise 2011 means little more than "do not swing
    it", and a line of prose under every row is noise. */
@@ -2369,9 +2657,11 @@ function similarTo(exId,n){
   const x=LIBRARY.find(e=>e.id===exId); if(!x) return [];
   const excluded=(S.profile&&S.profile.excluded)||[];
   const pool=LIBRARY.filter(e=>e.id!==exId&&!excluded.includes(e.id));
-  const same=pool.filter(e=>e.p===x.p);
-  const group=pool.filter(e=>e.g===x.g&&e.p!==x.p);
-  return same.concat(group).slice(0,n||3);
+  /* same movement pattern first, and within that the same muscle and kit you
+     already have to hand, since a substitute you cannot equip is no use */
+  const score=e=>(e.p===x.p?100:0)+(e.m===x.m?30:0)+(e.g===x.g?20:0)+(e.eq===x.eq?15:0)
+    -Math.abs((e.d||1)-(x.d||1))*5;
+  return pool.map(e=>({e,v:score(e)})).filter(o=>o.v>0).sort((a,b)=>b.v-a.v).map(o=>o.e).slice(0,n||3);
 }
 const exOf=id=>LIBRARY.find(x=>x.id===id)||{id,n:id,g:'Other'};
 const GROUPS=[...new Set(LIBRARY.map(x=>x.g))];
@@ -2520,6 +2810,81 @@ function exerciseStats(exId){
   return {sessions:h.length, heaviest, best1, bestVol, last:h[0]};
 }
 const setVolume=s=>(+s.kg||0)*(+s.reps||0);
+
+/* ===================== progressive overload =====================
+   Double progression, which is the method with the most support behind it and
+   the one every serious coach teaches: pick a rep range, start at the bottom,
+   add reps session to session, and when every working set reaches the top of
+   the range, add the smallest useful jump and drop back to the bottom.
+
+   The rules here, and where they come from:
+   · Double progression itself. Reps first, then cash them in for load.
+   · ACSM novice guidance: raise the load by 2 to 10% once the target is
+     exceeded by a rep or two. Our increments land inside that band.
+   · The 2 for 2 rule (NASM): two reps past the target on the last set, two
+     sessions running, means the weight is ready to go up.
+   · Increment size: the smallest that still measures. 2.5kg for barbell
+     compounds, 2kg for dumbbells, 1.25kg for isolation work.
+   · Plotkin and colleagues (2022) compared progressing load against
+     progressing reps and found much the same growth either way, with effort
+     and volume mattering more. So none of this is magic. It is bookkeeping
+     that guarantees something goes up, which is the part people actually get
+     wrong. The app says so rather than pretending the numbers are sacred. */
+function incrementFor(exId){
+  const x=exOf(exId);
+  if(S.progress&&S.progress[exId]&&S.progress[exId].inc) return S.progress[exId].inc;
+  if(!x) return 2.5;
+  const isolation=/isolation|calf|grip|elbow/.test(x.p||'');
+  if(x.eq==='barbell') return /squat|hinge/.test(x.p||'')? 5 : 2.5;
+  if(x.eq==='dumbbell') return isolation? 1.25 : 2;
+  if(x.eq==='kettlebell') return 4;
+  if(x.eq==='machine'||x.eq==='cable') return isolation? 2.5 : 5;
+  return isolation? 1.25 : 2.5;
+}
+const repRangeFor=row=>{
+  const top=+(row&&row.reps)||12;
+  const bottom=Math.max(1, +(row&&row.repMin) || Math.max(1,top-2));
+  return {bottom,top};
+};
+/* what to aim for on this exercise next time, and why */
+function nextPrescription(exId,row){
+  const range=repRangeFor(row), inc=incrementFor(exId);
+  const hist=(S.lifts&&S.lifts[exId])||[];
+  const last=hist[0];
+  if(!last||!last.sets||!last.sets.length)
+    return {kg:null,reps:range.bottom,range,inc,why:'First time on this one. Pick something you could manage a couple more reps with.',kind:'first'};
+  const working=last.sets.filter(s2=>!s2.warm&&s2.kg!==''&&s2.reps!=='');
+  if(!working.length) return {kg:null,reps:range.bottom,range,inc,why:'Nothing logged last time.',kind:'first'};
+  const topWeight=Math.max(...working.map(s2=>+s2.kg));
+  const atTop=working.filter(s2=>+s2.kg===topWeight);
+  const allHitTop=atTop.every(s2=>+s2.reps>=range.top);
+  const lastSet=atTop[atTop.length-1];
+  const twoForTwo=(+lastSet.reps>=range.top+2) &&
+    (hist[1]&&(hist[1].sets||[]).filter(s2=>!s2.warm&&+s2.kg===topWeight).some(s2=>+s2.reps>=range.top+2));
+  const tonnage=working.reduce((a,s2)=>a+setVolume(s2),0);
+  if(allHitTop||twoForTwo){
+    const kg=+(topWeight+inc).toFixed(2);
+    return {kg, reps:range.bottom, range, inc, lastTonnage:tonnage,
+      why: twoForTwo
+        ? `You went two reps past the range twice running, so the weight is ready. Up ${inc}kg and back to ${range.bottom} reps.`
+        : `You hit ${range.top} reps on every set at ${topWeight}kg, so cash it in: ${kg}kg for ${range.bottom} reps.`,
+      kind:'load'};
+  }
+  const short=atTop.find(s2=>+s2.reps<range.top);
+  const target=Math.min(range.top,(+((short||lastSet).reps))+1);
+  return {kg:topWeight, reps:target, range, inc, lastTonnage:tonnage,
+    why:`Stay at ${topWeight}kg and chase ${target} reps. The weight goes up once every set reaches ${range.top}.`,
+    kind:'reps'};
+}
+/* total load moved, which is the honest check that the week went somewhere */
+function tonnageOf(sets){ return (sets||[]).filter(s2=>!s2.warm).reduce((a,s2)=>a+setVolume(s2),0); }
+function progressLines(gym){
+  return (gym.ex||[]).map(e=>{
+    const p=nextPrescription(e.exId,{reps:e.reps,repMin:e.repMin});
+    const done=tonnageOf(e.sets);
+    return {exId:e.exId, name:exOf(e.exId).n, p, tonnage:done};
+  }).filter(x=>x.tonnage>0);
+}
 /* Finish a set and the rest of that exercise follows it: same weight, same reps.
    It only fills sets you have not touched and have not done, so anything you
    typed yourself stands, and warm ups are left alone. */
@@ -2544,16 +2909,20 @@ function setPR(exId,st){
   return null;
 }
 const exHasPR=e=>e.sets.some(st=>!!setPR(e.exId,st));
+const workingIndex=(e,j)=>e.sets.slice(0,j+1).filter(s2=>!s2.warm).length;
 
 /* ---------- the active workout ---------- */
 let GYM=null, gymTick=null, restTick=null, rest={left:0,label:''};
 function newExEntry(row){
   const rest=S.restPrefs[row.exId]!==undefined? S.restPrefs[row.exId] : (row.rest||90);
   const prev=lastSets(row.exId);
+  const rx=nextPrescription(row.exId,row);
   if(GYM){ GYM.pre=GYM.pre||{}; GYM.pre[row.exId]=exerciseStats(row.exId); }
-  return {exId:row.exId, tempo:row.tempo||tempoOf(row.exId), reps:row.reps||12, rest, note:row.note||'',
+  return {exId:row.exId, tempo:row.tempo||tempoOf(row.exId), reps:row.reps||12, repMin:row.repMin, rx, rest, note:row.note||'',
     sets:Array.from({length:row.sets||3},(_,i)=>({
-      kg: prev&&prev[i]? prev[i].kg : '', reps: prev&&prev[i]? prev[i].reps : '', warm:false, done:false}))};
+      kg: rx.kg!==null? rx.kg : (prev&&prev[i]? prev[i].kg : ''),
+      reps: rx.kg!==null? rx.reps : (prev&&prev[i]? prev[i].reps : ''),
+      warm:false, done:false}))};
 }
 function startWorkout(templateId,opts){
   opts=opts||{};
@@ -2584,19 +2953,31 @@ function drawGym(){
   $('gymSub').textContent=elapsed();
   $('gymBody').innerHTML=GYM.ex.map((e,i)=>{
     const x=exOf(e.exId), prev=lastSets(e.exId), pre=GYM.pre? GYM.pre[e.exId] : null;
+    const range=repRangeFor({reps:e.reps,repMin:e.repMin});
     return `<div class="exc" data-ex="${i}">
       <div class="exh"><div class="n">${x.n}</div>${exHasPR(e)?`<span class="pr" title="Personal record">PR</span>`:''}<button class="dots" data-exmenu="${i}" aria-label="Options">···</button></div>
-      <div class="cue">${e.sets.length} × ${e.reps}${e.tempo&&showTempo()?' @ '+e.tempo:''} · rest ${e.rest}s${prev?'':' · first time'}${pre&&pre.heaviest?` · best ${pre.heaviest}kg`:''}</div>
+      <div class="cue">${e.sets.length} × ${range.bottom===range.top? e.reps : range.bottom+' to '+range.top}${e.tempo&&showTempo()?' @ '+e.tempo:''} · rest ${e.rest}s${pre&&pre.heaviest?` · best ${pre.heaviest}kg`:''}</div>
+      ${prev&&prev.length? `<div class="prevline">Last time <b>${prev.map(p2=>p2.kg+' × '+p2.reps).join(', ')}</b></div>`:''}
+      ${e.rx? `<div class="rxline"><b>${e.rx.kind==='load'?'Weight up today':(e.rx.kind==='first'?'First time':'Chase the reps')}</b> ${e.rx.why}
+        ${e.rx.lastTonnage? `<span class="tonn">Last time you moved ${num(Math.round(e.rx.lastTonnage))}kg on this. Today so far: ${num(Math.round(tonnageOf(e.sets)))}kg.</span>`:''}</div>`:''}
       ${e.tempo&&showTempo()&&tempoMatters(e.tempo)?`<div class="tempo">${tempoWords(e.tempo)}</div>`:''}
       ${e.note?`<div class="note">${e.note}</div>`:''}
       <div class="sethead"><div>Set</div><div>Previous</div><div>kg</div><div>Reps</div><div></div></div>
-      ${e.sets.map((s,j)=>{ const pr=setPR(e.exId,s); return `<div class="setline ${s.done?'done':''} ${pr?'ispr':''}">
-        <button class="sn ${s.warm?'warm':''}" data-warm="${i}:${j}">${s.warm?'W':(j+1-e.sets.slice(0,j).filter(z=>z.warm).length)}</button>
-        <div class="prev">${prev&&prev[j]? prev[j].kg+' kg × '+prev[j].reps : '-'}</div>
-        <input type="number" inputmode="decimal" step="0.5" value="${s.kg}" data-set="${i}:${j}:kg" placeholder="${prev&&prev[j]?prev[j].kg:'0'}" aria-label="Weight">
-        <input type="number" inputmode="numeric" value="${s.reps}" data-set="${i}:${j}:reps" placeholder="${e.reps}" aria-label="Reps">
+      ${e.sets.map((s,j)=>{ const pr=setPR(e.exId,s); const inc=incrementFor(e.exId);
+        return `<div class="setline ${s.done?'done':''} ${pr?'ispr':''} ${s.warm?'warm':''}">
+        <div class="sn">${s.warm?'W':workingIndex(e,j)}</div>
+        <div class="stepper">
+          <button class="step" data-step="${i}:${j}:kg:-${inc}" aria-label="Less weight">−</button>
+          <input type="number" inputmode="decimal" step="${inc}" value="${s.kg}" data-set="${i}:${j}:kg" placeholder="${prev&&prev[j]?prev[j].kg:'kg'}" aria-label="Weight">
+          <button class="step" data-step="${i}:${j}:kg:${inc}" aria-label="More weight">+</button>
+        </div>
+        <div class="stepper">
+          <button class="step" data-step="${i}:${j}:reps:-1" aria-label="Fewer reps">−</button>
+          <input type="number" inputmode="numeric" value="${s.reps}" data-set="${i}:${j}:reps" placeholder="${e.reps}" aria-label="Reps">
+          <button class="step" data-step="${i}:${j}:reps:1" aria-label="More reps">+</button>
+        </div>
         <button class="tick" data-done="${i}:${j}" aria-label="Complete set">
-          ${pr? `<span class="prtick">PR</span>` : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg>`}</button>
+          ${pr? `<span class="prtick">PR</span>` : `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg>`}</button>
       </div>`; }).join('')}
       <div class="setbtns"><button data-addset="${i}">+ Set</button><button data-addwarm="${i}">+ Warm up</button>
         ${e.sets.length>1?`<button data-delset="${i}">Remove set</button>`:''}</div>
@@ -2636,6 +3017,22 @@ document.addEventListener('click',e=>{
     drawGym(); }
   const w=e.target.closest('[data-warm]');
   if(w){ const [i,j]=w.dataset.warm.split(':').map(Number); GYM.ex[i].sets[j].warm=!GYM.ex[i].sets[j].warm; drawGym(); }
+  const st=e.target.closest('[data-step]');
+  if(st&&GYM){
+    /* Update the number in place rather than redrawing the list. Tapping plus
+       five times in a row should not be racing a re render, and nothing should
+       flicker while you are mid set. */
+    const [i,j,k,d]=st.dataset.step.split(':');
+    const set=GYM.ex[+i].sets[+j];
+    const cur=+set[k]|| (k==='reps'? (+GYM.ex[+i].reps||0) : 0);
+    const next=Math.max(0,+(cur+ +d).toFixed(2));
+    set[k]= next;
+    set.touched=true;
+    const box=document.querySelector(`[data-set="${i}:${j}:${k}"]`);
+    if(box) box.value=next;
+    if(navigator.vibrate) navigator.vibrate(10);
+    return;
+  }
   const a=e.target.closest('[data-addset]');
   if(a){ const i=+a.dataset.addset;
     const working=GYM.ex[i].sets.filter(x=>!x.warm);
@@ -2665,6 +3062,139 @@ $('gymClose').addEventListener('click',()=>{
   if(work) toast('Session paused, nothing lost','Resume',()=>{ $('gym').classList.add('on');
     GYM.mode==='circuit'? drawCircuit() : drawGym(); });
   else clearInterval(gymTick);
+});
+
+/* ---------- food, logged in taps rather than sums ----------
+   The research on why people stop tracking is unanimous: friction. A 2023 study
+   in Appetite found people who called logging "quick and easy" were over three
+   times more likely to still be doing it at 90 days. So this is a short list of
+   things people actually eat, with a portion stepper, and your own recent items
+   at the top. It is not a 20 million item database and does not pretend to be. */
+const FOODS=[
+  {id:'egg',n:'Egg, large',u:'egg',kcal:78,p:6.3,c:0.6,f:5.3},
+  {id:'eggwhite',n:'Egg whites',u:'100g',kcal:52,p:11,c:0.7,f:0.2},
+  {id:'oats',n:'Porridge oats',u:'50g dry',kcal:190,p:6.5,c:33,f:3.5},
+  {id:'skyr',n:'Skyr or 0% Greek yoghurt',u:'150g',kcal:90,p:16,c:6,f:0.3},
+  {id:'milk',n:'Milk, semi skimmed',u:'200ml',kcal:100,p:7,c:9.6,f:3.6},
+  {id:'whey',n:'Whey protein',u:'scoop',kcal:120,p:24,c:3,f:1.5},
+  {id:'banana',n:'Banana',u:'medium',kcal:105,p:1.3,c:27,f:0.4},
+  {id:'apple',n:'Apple',u:'medium',kcal:95,p:0.5,c:25,f:0.3},
+  {id:'berries',n:'Berries',u:'100g',kcal:50,p:1,c:12,f:0.3},
+  {id:'chicken',n:'Chicken breast, cooked',u:'100g',kcal:165,p:31,c:0,f:3.6},
+  {id:'mince',n:'Beef mince, 5%',u:'100g',kcal:137,p:21,c:0,f:5},
+  {id:'salmon',n:'Salmon fillet',u:'100g',kcal:208,p:20,c:0,f:13},
+  {id:'tuna',n:'Tuna, tinned in water',u:'tin',kcal:110,p:25,c:0,f:1},
+  {id:'steak',n:'Steak, lean',u:'100g',kcal:180,p:28,c:0,f:7},
+  {id:'tofu',n:'Tofu, firm',u:'100g',kcal:144,p:17,c:3,f:8},
+  {id:'beans',n:'Baked beans',u:'half tin',kcal:150,p:9,c:26,f:0.6},
+  {id:'lentils',n:'Lentils, cooked',u:'100g',kcal:116,p:9,c:20,f:0.4},
+  {id:'rice',n:'Rice, cooked',u:'100g',kcal:130,p:2.7,c:28,f:0.3},
+  {id:'pasta',n:'Pasta, cooked',u:'100g',kcal:158,p:5.8,c:31,f:0.9},
+  {id:'potato',n:'Potatoes, boiled',u:'100g',kcal:87,p:2,c:20,f:0.1},
+  {id:'sweetpot',n:'Sweet potato',u:'100g',kcal:90,p:2,c:21,f:0.2},
+  {id:'bread',n:'Bread, wholemeal',u:'slice',kcal:90,p:4,c:15,f:1.1},
+  {id:'wrap',n:'Tortilla wrap',u:'wrap',kcal:200,p:6,c:33,f:5},
+  {id:'porridgepot',n:'Porridge pot',u:'pot',kcal:250,p:8,c:42,f:5},
+  {id:'cheese',n:'Cheddar',u:'30g',kcal:124,p:7.5,c:0.4,f:10},
+  {id:'butter',n:'Butter',u:'10g',kcal:74,p:0.1,c:0,f:8.2},
+  {id:'oil',n:'Olive oil',u:'tbsp',kcal:120,p:0,c:0,f:14},
+  {id:'peanut',n:'Peanut butter',u:'tbsp',kcal:95,p:4,c:3,f:8},
+  {id:'nuts',n:'Mixed nuts',u:'30g',kcal:180,p:5,c:6,f:16},
+  {id:'avocado',n:'Avocado',u:'half',kcal:160,p:2,c:9,f:15},
+  {id:'veg',n:'Mixed vegetables',u:'150g',kcal:60,p:3,c:10,f:0.5},
+  {id:'salad',n:'Side salad',u:'bowl',kcal:40,p:2,c:6,f:0.5},
+  {id:'soup',n:'Soup',u:'bowl',kcal:180,p:6,c:24,f:6},
+  {id:'sandwich',n:'Sandwich, shop bought',u:'pack',kcal:400,p:20,c:42,f:16},
+  {id:'chipper',n:'Takeaway, average',u:'meal',kcal:900,p:35,c:90,f:45},
+  {id:'pint',n:'Pint of beer',u:'pint',kcal:210,p:2,c:17,f:0},
+  {id:'wine',n:'Glass of wine',u:'175ml',kcal:160,p:0,c:4,f:0},
+  {id:'choc',n:'Chocolate bar',u:'bar',kcal:230,p:3,c:26,f:13},
+  {id:'crisps',n:'Crisps',u:'bag',kcal:180,p:2,c:18,f:11},
+  {id:'protbar',n:'Protein bar',u:'bar',kcal:200,p:20,c:20,f:6},
+  {id:'coffee',n:'Coffee with milk',u:'cup',kcal:40,p:2,c:3,f:2}
+];
+const foodOf=id=>FOODS.find(f=>f.id===id)||null;
+function dayFood(k){ const r=S.days[k||todayKey()]; return (r&&Array.isArray(r.food))? r.food : []; }
+function foodTotals(k){
+  return dayFood(k).reduce((t,x)=>({kcal:t.kcal+x.kcal*x.q, protein:t.protein+x.p*x.q,
+    carbs:t.carbs+x.c*x.q, fat:t.fat+x.f*x.q}),{kcal:0,protein:0,carbs:0,fat:0});
+}
+function addFood(id,q){
+  const f=foodOf(id); if(!f) return null;
+  const k=todayKey();
+  S.days[k]=S.days[k]||{};
+  S.days[k].food=(S.days[k].food||[]).concat([{id:f.id,n:f.n,u:f.u,q:q||1,kcal:f.kcal,p:f.p,c:f.c,f:f.f,at:Date.now()}]);
+  applyFoodTotals(k); save();
+  return S.days[k].food;
+}
+function removeFood(i){
+  const k=todayKey(); if(!S.days[k]||!S.days[k].food) return;
+  S.days[k].food.splice(i,1); applyFoodTotals(k); save();
+}
+function applyFoodTotals(k){
+  const t=foodTotals(k);
+  if(!dayFood(k).length) return;
+  S.days[k].kcal=Math.round(t.kcal); S.days[k].protein=Math.round(t.protein);
+  S.days[k].carbs=Math.round(t.carbs); S.days[k].fat=Math.round(t.fat);
+  if(typeof dayDraft!=='undefined'&&dayDraft&&k===todayKey()){
+    dayDraft.kcal=S.days[k].kcal; dayDraft.protein=S.days[k].protein;
+    dayDraft.carbs=S.days[k].carbs; dayDraft.fat=S.days[k].fat;
+  }
+}
+function recentFoods(){
+  const seen=[], out=[];
+  Object.keys(S.days).sort().reverse().forEach(k=>{
+    (S.days[k].food||[]).slice().reverse().forEach(x=>{ if(!seen.includes(x.id)&&out.length<6){ seen.push(x.id); out.push(x.id); } });
+  });
+  return out;
+}
+let foodQuery='', foodCameFromLog=false;
+function openFood(fromLog){
+  foodQuery='';
+  foodCameFromLog=!!fromLog || document.getElementById('dayCheck').classList.contains('on');
+  closeSheets(); drawFood(); openSheet('foodSheet');
+}
+function closeFood(){
+  closeSheets();
+  if(foodCameFromLog&&typeof openDay==='function'){ openDay(); }
+  foodCameFromLog=false;
+}
+function drawFood(){
+  const k=todayKey(), logged=dayFood(k), t=foodTotals(k), tg=S.targets||{};
+  const recents=recentFoods();
+  const q=foodQuery.toLowerCase();
+  const list=(q? FOODS.filter(f=>f.n.toLowerCase().includes(q))
+    : recents.map(foodOf).filter(Boolean).concat(FOODS.filter(f=>!recents.includes(f.id)))).slice(0,q?40:24);
+  $('foodBody').innerHTML=`
+    <div class="numline" style="margin-bottom:10px"><div><b>${num(Math.round(t.kcal))}</b> kcal${tg.kcal?' of '+num(tg.kcal):''}</div>
+      <div><b>${Math.round(t.protein)}g</b> protein${tg.protein?' of '+tg.protein:''}</div></div>
+    ${tg.kcal? `<div class="bar" style="margin-bottom:12px"><i style="width:${Math.min(100,Math.round(t.kcal/tg.kcal*100))}%;background:${t.kcal>tg.kcal*1.1?'var(--oxblood)':'var(--forest)'}"></i></div>`:''}
+    ${logged.length? `<div class="slab">Today</div>${logged.map((x,i)=>`<div class="frow">
+      <div class="txt"><div class="t">${x.n}</div><div class="s">${x.q>1?x.q+' × ':''}${x.u} · ${Math.round(x.kcal*x.q)} kcal · ${Math.round(x.p*x.q)}g protein</div></div>
+      <button class="x" data-foodrm="${i}" aria-label="Remove">×</button></div>`).join('')}`:''}
+    <div class="slab">${q? 'Matches' : (recents.length? 'Your usual, then everything else' : 'Common things')}</div>
+    <input id="foodSearch" placeholder="Search food" value="${foodQuery}" style="border:1px solid var(--line);border-radius:9px;padding:11px;width:100%;font-size:14.5px;font-weight:600;margin-bottom:10px">
+    ${list.map(f=>`<div class="frow">
+      <div class="txt"><div class="t">${f.n}</div><div class="s">${f.u} · ${f.kcal} kcal · ${f.p}g protein</div></div>
+      <button class="mini" data-foodadd="${f.id}:0.5">½</button>
+      <button class="mini go" data-foodadd="${f.id}:1">Add</button>
+      <button class="mini" data-foodadd="${f.id}:2">×2</button></div>`).join('')}
+    ${list.length?'':`<div class="note">Nothing matching. Type the calories straight into the daily log instead.</div>`}
+    <button class="sheetcta" id="foodDone">${foodCameFromLog?'Back to the log':'Done'}</button>`;
+}
+document.addEventListener('click',e=>{
+  if(e.target.closest('#foodBtn')) openFood(true);
+  if(e.target.closest('#foodDone')) closeFood();
+  const fa=e.target.closest('[data-foodadd]');
+  if(fa){ const [id,q]=fa.dataset.foodadd.split(':'); addFood(id,+q);
+    drawFood(); if(typeof drawDay==='function'&&document.getElementById('dayCheck').classList.contains('on')) drawDay(); }
+  const fr=e.target.closest('[data-foodrm]');
+  if(fr){ removeFood(+fr.dataset.foodrm); drawFood(); }
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='foodSearch'){ foodQuery=e.target.value;
+    const pos=e.target.selectionStart; drawFood();
+    const el=document.getElementById('foodSearch'); if(el){ el.focus(); el.setSelectionRange(pos,pos); } }
 });
 
 /* ---------- circuits, run for time ---------- */
@@ -2731,26 +3261,66 @@ document.addEventListener('click',e=>{
 
 /* ---------- exercise picker and per exercise menu ---------- */
 let pickerFor=null;
+let pickFilterG='', pickFilterE='';
 function openExPicker(swapIndex){
   pickerFor=swapIndex;
-  $('exSheetTitle').textContent = swapIndex===null? 'Add an exercise' : 'Swap for';
+  pickFilterG=''; pickFilterE='';
+  $('exSheetTitle').textContent = swapIndex===null? 'Add a movement' : 'Swap for';
   $('exQ').value=''; drawExList('');
   openSheet('exSheet');
 }
+/* 250 movements is only useful if you can find one in two taps, so: search
+   across the name, the muscle and the kit, then filters for body part and for
+   what you actually have. Anything you have done before floats to the top. */
 function drawExList(q){
-  const term=(q||'').trim().toLowerCase();
-  const hits=LIBRARY.filter(x=>!term||x.n.toLowerCase().includes(term)||x.g.toLowerCase().includes(term));
-  $('exList').innerHTML = GROUPS.map(g=>{
-    const rows=hits.filter(x=>x.g===g);
-    if(!rows.length) return '';
-    return `<div class="slab" style="padding:0 14px">${g}</div>`+rows.map(x=>{
-      const st=exerciseStats(x.id), out=((S.profile.excluded)||[]).includes(x.id);
-      return `<button class="exrow ${out?'excluded':''}" data-pick="${x.id}"><div class="txt"><div class="n">${x.n}${out?' · you took this out':''}</div>
-        <div class="s">${out? 'tap to put it back' : (st? st.sessions+' sessions · best '+st.heaviest+'kg' : 'tempo '+x.t+' · '+x.p)}</div></div>
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>`;
-    }).join('');
-  }).join('') || `<div class="empty">Nothing by that name.</div>`;
+  const term=(q===undefined? ($('exQ')?$('exQ').value:'') : q||'').trim().toLowerCase();
+  const done=Object.keys(S.lifts||{});
+  let hits=LIBRARY.filter(x=>{
+    if(pickFilterG&&x.g!==pickFilterG) return false;
+    if(pickFilterE&&x.eq!==pickFilterE) return false;
+    if(!term) return true;
+    return (x.n+' '+x.g+' '+x.m+' '+(x.s||'')+' '+x.p+' '+(EQUIP[x.eq]||'')).toLowerCase().includes(term);
+  });
+  const chips=`<div class="pickchips">
+    <button class="${pickFilterG?'':'on'}" data-pickg="">All ${LIBRARY.length}</button>
+    ${GROUPS.filter(g=>LIBRARY.some(x=>x.g===g)).map(g=>`<button class="${pickFilterG===g?'on':''}" data-pickg="${g}">${g}</button>`).join('')}
+  </div>
+  <div class="pickchips">
+    <button class="${pickFilterE?'':'on'}" data-picke="">Any kit</button>
+    ${Object.keys(EQUIP).filter(k=>LIBRARY.some(x=>x.eq===k)).map(k=>`<button class="${pickFilterE===k?'on':''}" data-picke="${k}">${EQUIP[k]}</button>`).join('')}
+  </div>`;
+  const row=x=>{
+    const st=exerciseStats(x.id), out=((S.profile.excluded)||[]).includes(x.id);
+    return `<button class="exrow ${out?'excluded':''}" data-pick="${x.id}">
+      <div class="txt"><div class="n">${x.n}${out?' · you took this out':''}</div>
+        <div class="s">${out? 'tap to put it back' : exBlurb(x)+(st? ' · '+st.sessions+' session'+(st.sessions===1?'':'s')+', best '+st.heaviest+'kg' : '')}</div>
+        <div class="cue2">${x.c}</div></div>
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>`;
+  };
+  if(term){
+    /* a name match beats a primary muscle match beats a mention in passing */
+    const rank=x=>(x.n.toLowerCase().startsWith(term)?400:0)+(x.n.toLowerCase().includes(term)?200:0)
+      +((x.m||'').toLowerCase().includes(term)?120:0)+((x.g||'').toLowerCase()===term?80:0)
+      +((EQUIP[x.eq]||'').toLowerCase().includes(term)?40:0)+((x.s||'').toLowerCase().includes(term)?20:0);
+    hits=hits.slice().sort((p1,p2)=>rank(p2)-rank(p1));
+  }
+  const yours=hits.filter(x=>done.includes(x.id));
+  const rest=hits.filter(x=>!done.includes(x.id));
+  const body = !hits.length
+    ? `<div class="empty">Nothing matching. Try a muscle name, or the kit you have.</div>`
+    : (yours.length? `<div class="slab" style="padding:0 14px">You have done these</div>`+yours.map(row).join('') : '')
+      + (term||pickFilterG||pickFilterE
+        ? `<div class="slab" style="padding:0 14px">${hits.length} match${hits.length===1?'':'es'}</div>`+rest.map(row).join('')
+        : GROUPS.map(g=>{ const rows=rest.filter(x=>x.g===g);
+            return rows.length? `<div class="slab" style="padding:0 14px">${g} · ${rows.length}</div>`+rows.map(row).join('') : ''; }).join(''));
+  $('exList').innerHTML=chips+body;
 }
+document.addEventListener('click',e=>{
+  const fg=e.target.closest('[data-pickg]');
+  if(fg){ pickFilterG=fg.dataset.pickg; drawExList(); }
+  const fe=e.target.closest('[data-picke]');
+  if(fe){ pickFilterE=fe.dataset.picke; drawExList(); }
+});
 $('exQ').addEventListener('input',e=>drawExList(e.target.value));
 document.addEventListener('click',e=>{
   const pk=e.target.closest('[data-pick]'); if(!pk) return;
@@ -2836,6 +3406,14 @@ function finishWorkout(){
     <div class="numline" style="margin-top:10px"><div><b>${mins}</b> min</div><div><b>${sets}</b> sets</div><div><b>${num(record.volume)}</b> kg lifted</div></div>
     ${prs.length? `<div class="slab">Records</div>${prs.map(p=>`<div class="prcard"><div class="tag"><span class="pr">PR</span> ${p.tag}</div>
       <div class="t"><b>${p.ex}</b> ${p.t}</div></div>`).join('')}` : `<div class="note">No records today. Most sessions are not record days, and that is how it should be.</div>`}
+    ${(() => { const lines=progressLines(GYM); return lines.length? `<div class="slab">Next time</div>`+
+      lines.map(l=>`<div class="nextrow ${l.p.kind==='load'?'up':''}">
+        <div class="nn">${l.name}</div>
+        <div class="nv">${l.p.kg!==null? l.p.kg+'kg × '+l.p.reps : 'your pick'}${l.p.kind==='load'? ` <span class="uparrow">+${l.p.inc}kg</span>`:''}</div>
+        <div class="nw">${l.p.why}</div>
+        <div class="nw">You moved ${num(Math.round(l.tonnage))}kg on it today.</div>
+      </div>`).join('')
+      +`<div class="note">Reps first, then the weight. That is double progression, and the trials say it grows muscle about as well as any other way of adding load, provided something goes up. These numbers are a suggestion: change them in the session if they are wrong.</div>` : ''; })()}
     <div class="setbtns" style="margin-top:16px">
       ${amended? `<button id="tplUpdate">Update the ${GYM.name} template</button>`:''}
       <button id="tplNew">Save as new template</button></div>
@@ -3130,7 +3708,8 @@ coachBrief=function(){
   return t;
 };
 
-Object.assign(window.__G,{LIBRARY,exOf,fillForward,suggestFor,openCircEdit,drawTemplates,seedTemplates,seedRunPlans,seedCircuits,circuitOf,startCircuit,finishCircuit,drawCircuit,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
+Object.assign(window.__G,{LIBRARY,EQUIP,DIFF,exBlurb,drawExList,exOf,incrementFor,repRangeFor,nextPrescription,tonnageOf,progressLines,fillForward,suggestFor,openCircEdit,drawTemplates,seedTemplates,
+  FOODS,foodOf,addFood,removeFood,dayFood,foodTotals,openFood,closeFood,drawFood,recentFoods,seedRunPlans,seedCircuits,circuitOf,startCircuit,finishCircuit,drawCircuit,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
   openExMenu,openTplEdit,drawTemplates,exerciseStats,e1RM,lastSets,gymVolume,gymSets,templateChanged,startRest,
   get GYM(){return GYM}, get tplDraft(){return tplDraft}});
 Object.defineProperties(window.__G,{

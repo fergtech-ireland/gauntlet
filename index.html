@@ -6,7 +6,7 @@
 <title>Gauntlet</title>
 <meta name="description" content="Know what to do today. The plan moves with you.">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#161618">
+<meta name="theme-color" content="#ffffff" id="themeColor">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Gauntlet">
@@ -17,8 +17,48 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Black&display=swap" rel="stylesheet">
 <style>
-:root{--paper:#fff;--canvas:#fafafa;--ink:#161618;--mute:#737373;--line:#dbdbdb;--line-soft:#efefef;
-  --marine:#1e3a6e;--oxblood:#6e1f2e;--forest:#1b4a3c;--burnt:#a8552a;--clay:#eadfcb;--marigold:#dfa33c;--grey-btn:#efefef}
+/* One palette, two themes. The accents come in two forms on purpose: the plain
+   name is the colour when it is INK, which has to lighten on a dark paper, and
+   the -bg name is the colour when it is a SURFACE, which stays dark so the white
+   sitting on it keeps working. --on-ink is whatever reads on top of --ink, and
+   --deep is a surface that is dark in both themes, for the session player and
+   anything else that is meant to be immersive.
+   The -t- tints were referenced in a dozen places and never actually defined,
+   so those pills have been rendering on nothing. They are defined now. */
+:root{
+  --paper:#fff;--canvas:#fafafa;--ink:#161618;--on-ink:#fff;--mute:#737373;
+  --line:#dbdbdb;--line-soft:#efefef;--grey-btn:#efefef;--subtle:#4a4a50;
+  --deep:#161618;--on-deep:#fff;
+  --marine:#1e3a6e;--oxblood:#6e1f2e;--forest:#1b4a3c;--burnt:#a8552a;
+  --marine-bg:#1e3a6e;--oxblood-bg:#6e1f2e;--forest-bg:#1b4a3c;
+  --clay:#eadfcb;--marigold:#dfa33c;
+  --t-marine:#eaeef6;--t-forest:#e9f1ee;--t-burnt:#f8efe7;--t-marigold:#fbf3e4;--t-oxblood:#f7ecee;
+  --warm:#fffdf6;--warm-tint:#fdf6ea;--warm-ink:#7a5f2e;--warm-line:#f0e6cf;--warm-head:#8a6a2f;
+  --burnt-bg:#fdf6ef;--burnt-ink:#7a4a35;--bad-bg:#fbeef0;--off-bg:#fdf3ef;
+  --good-bg:#f1f7f4;--good-bg2:#f2f7f5;--cool-bg:#fafbfd;--good-line:var(--good-line);
+  color-scheme:light}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#151517;--canvas:#0d0d0f;--ink:#f1f1ef;--on-ink:#151517;--mute:#9b9ba1;
+    --line:#2f2f34;--line-soft:#212124;--grey-btn:#24242a;--subtle:#c6c6cb;
+    --marine:#8fb0e4;--oxblood:#e0929c;--forest:#63c3a3;--burnt:#e39a6a;
+    --t-marine:#1b2434;--t-forest:#16241f;--t-burnt:#2a1f16;--t-marigold:#2a2317;--t-oxblood:#2a191d;
+    --warm:#1b1913;--warm-tint:#231e14;--warm-ink:#e2c592;--warm-line:#332c1d;--warm-head:#d8b877;
+    --burnt-bg:#231c14;--burnt-ink:#e8ab83;--bad-bg:#2a181c;--off-bg:#271a14;
+    --good-bg:#142019;--good-bg2:#142019;--cool-bg:#14161c;--good-line:#25352e;
+    --clay:#3c3428;
+    color-scheme:dark}
+}
+:root[data-theme="dark"]{
+  --paper:#151517;--canvas:#0d0d0f;--ink:#f1f1ef;--on-ink:#151517;--mute:#9b9ba1;
+  --line:#2f2f34;--line-soft:#212124;--grey-btn:#24242a;--subtle:#c6c6cb;
+  --marine:#8fb0e4;--oxblood:#e0929c;--forest:#63c3a3;--burnt:#e39a6a;
+  --t-marine:#1b2434;--t-forest:#16241f;--t-burnt:#2a1f16;--t-marigold:#2a2317;--t-oxblood:#2a191d;
+  --warm:#1b1913;--warm-tint:#231e14;--warm-ink:#e2c592;--warm-line:#332c1d;--warm-head:#d8b877;
+  --burnt-bg:#231c14;--burnt-ink:#e8ab83;--bad-bg:#2a181c;--off-bg:#271a14;
+  --good-bg:#142019;--good-bg2:#142019;--cool-bg:#14161c;--good-line:#25352e;
+  --clay:#3c3428;
+  color-scheme:dark}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;background:var(--canvas)}
 body{font-family:Archivo,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);font-size:14px;line-height:1.4;
@@ -43,7 +83,7 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
   width:max(100%,44px);height:max(100%,44px)}
 .iconbtn:active{opacity:.45}
 .badge{position:absolute;top:2px;right:2px;min-width:15px;height:15px;padding:0 4px;background:var(--marigold);color:#161618;
-  border-radius:9px;font-size:9.5px;font-weight:700;display:grid;place-items:center;border:2px solid #fff}
+  border-radius:9px;font-size:9.5px;font-weight:700;display:grid;place-items:center;border:2px solid var(--paper)}
 .screen{display:none}
 .screen.on{display:block}
 .lbl{font-size:10.5px;font-weight:700;color:var(--mute);letter-spacing:.12em;text-transform:uppercase}
@@ -52,13 +92,13 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .sechead{display:flex;align-items:center;padding:15px 14px 9px;border-top:1px solid var(--line)}
 .sechead h2{font-size:11px;font-weight:700;margin:0;flex:1;color:var(--mute);letter-spacing:.12em;text-transform:uppercase}
 .sechead button{font-size:13px;font-weight:700;color:var(--marine);min-height:44px;padding:0 4px}
-.cta{height:50px;border-radius:10px;background:var(--ink);color:#fff;font-weight:700;font-size:15px;
+.cta{height:50px;border-radius:10px;background:var(--ink);color:var(--on-ink);font-weight:700;font-size:15px;
   display:flex;align-items:center;justify-content:center;gap:9px;width:100%}
 .cta:active{opacity:.8}
 .cta.ghost{background:var(--grey-btn);color:var(--ink)}
 .mini{height:40px;padding:0 14px;border-radius:8px;font-weight:700;font-size:12.5px;display:inline-flex;align-items:center;gap:6px;background:var(--grey-btn);position:relative}
 .mini:after{content:"";position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:44px}
-.mini.go{background:var(--ink);color:#fff}
+.mini.go{background:var(--ink);color:var(--on-ink)}
 .note{font-size:12px;color:var(--mute);margin-top:9px}
 .empty{padding:40px 30px;text-align:center;color:var(--mute);font-size:13.5px}
 
@@ -67,7 +107,7 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .hero .kicker{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
 .hero h2{font-family:"Archivo Black";font-size:34px;letter-spacing:-.055em;margin:7px 0 4px;line-height:1}
 .hero .sub{color:var(--mute);font-size:13.5px;margin-bottom:14px}
-.why{font-size:12.5px;color:#7a5f2e;background:#fdf6ea;border-radius:8px;padding:10px 12px;margin-bottom:14px}
+.why{font-size:12.5px;color:var(--warm-ink);background:var(--warm-tint);border-radius:8px;padding:10px 12px;margin-bottom:14px}
 .why b{font-weight:700}
 .ribbon{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .ribbon button{padding:10px 0 11px;border-right:1px solid var(--line-soft);text-align:center}
@@ -84,12 +124,12 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .todo .t b{display:block;font-weight:600;font-size:13.5px}
 .todo .t span{font-size:12px;color:var(--mute)}
 .todo .tick{width:26px;height:26px;border-radius:7px;border:1.5px solid var(--line);display:grid;place-items:center;color:var(--line);flex:0 0 auto}
-.todo.done .tick{background:var(--forest);border-color:var(--forest);color:#fff}
+.todo.done .tick{background:var(--forest-bg);border-color:var(--forest-bg);color:#fff}
 .todo.done .t b{color:var(--mute)}
 
 /* plan */
 .pday{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line-soft)}
-.pday.today{background:#fffdf6}
+.pday.today{background:var(--warm)}
 .pday .dd{width:34px;font-size:11px;font-weight:700;color:var(--mute);text-align:center;flex:0 0 auto}
 .pday.today .dd{color:var(--ink)}
 .pday .txt{flex:1;min-width:0;background:none;border:0;padding:0;font:inherit;color:inherit;text-align:left;display:block}
@@ -123,10 +163,10 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .tgrid .n.under{color:var(--burnt)}
 .tgrid .n.ok{color:var(--forest)}
 .tgrid .l{font-size:10.5px;color:var(--mute);font-weight:600;margin-top:2px}
-.coach{padding:14px;border-top:1px solid var(--line);background:#fffdf6}
+.coach{padding:14px;border-top:1px solid var(--line);background:var(--warm)}
 .coach .ph{display:flex;align-items:center;margin-bottom:10px}
-.coach .ph h3{margin:0;font-size:11px;font-weight:700;flex:1;color:#8a6a2f;letter-spacing:.12em;text-transform:uppercase}
-.steer{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #f0e6cf}
+.coach .ph h3{margin:0;font-size:11px;font-weight:700;flex:1;color:var(--warm-head);letter-spacing:.12em;text-transform:uppercase}
+.steer{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm-line)}
 .steer:last-child{border-bottom:0}
 .steer .dot{width:7px;height:7px;border-radius:50%;margin-top:6px;flex:0 0 auto}
 .steer .t{font-size:13.5px;flex:1}
@@ -170,10 +210,10 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .media.light .hero2{color:var(--ink)}
 .media.light .chip{color:rgba(92,74,51,.9)}
 .playtag{position:absolute;right:14px;bottom:16px;display:flex;align-items:center;gap:7px;padding:9px 14px 9px 11px;
-  border-radius:8px;font-weight:700;font-size:13px;color:var(--ink);background:#fff}
-.media.light .playtag{background:var(--ink);color:#fff}
+  border-radius:8px;font-weight:700;font-size:13px;color:#161618;background:#fff}
+.media.light .playtag{background:var(--ink);color:var(--on-ink)}
 .acts{display:flex;align-items:center;gap:12px;padding:11px 14px 8px}
-.tryit{display:flex;align-items:center;gap:7px;height:34px;padding:0 15px 0 12px;border-radius:8px;background:var(--ink);color:#fff;font-weight:700;font-size:13px}
+.tryit{display:flex;align-items:center;gap:7px;height:34px;padding:0 15px 0 12px;border-radius:8px;background:var(--ink);color:var(--on-ink);font-weight:700;font-size:13px}
 .tryit svg{color:var(--marigold)}
 .tryit:active{opacity:.7}
 .tryit.again{background:var(--grey-btn);color:var(--ink)}
@@ -188,7 +228,7 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .prow .txt{flex:1;min-width:0}
 .prow .n{font-weight:600;font-size:13.5px}
 .prow .s{font-size:12px;color:var(--mute)}
-.follow{height:40px;padding:0 16px;border-radius:8px;background:var(--marine);color:#fff;font-weight:700;font-size:12.5px}
+.follow{height:40px;padding:0 16px;border-radius:8px;background:var(--marine-bg);color:#fff;font-weight:700;font-size:12.5px}
 .follow.on{background:var(--grey-btn);color:var(--mute)}
 
 nav.tabs{position:fixed;bottom:0;left:0;right:0;max-width:460px;margin:0 auto;z-index:50;background:var(--paper);
@@ -225,10 +265,10 @@ nav.tabs{position:fixed;bottom:0;left:0;right:0;max-width:460px;margin:0 auto;z-
 .logrow .t{font-weight:600;font-size:14px}
 .logrow .s{font-size:12px;color:var(--mute);margin-top:1px}
 .sheetcta{margin:8px 14px 6px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;
-  font-weight:700;font-size:14px;width:calc(100% - 28px);background:var(--ink);color:#fff}
+  font-weight:700;font-size:14px;width:calc(100% - 28px);background:var(--ink);color:var(--on-ink)}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
 .big-pick{height:52px;border-radius:8px;border:1px solid var(--line);font-weight:600;font-size:14px;display:grid;place-items:center}
-.big-pick.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.big-pick.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
 .field{margin-bottom:20px}
 .field .fl{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
 .field .fl .k{font-size:11px;font-weight:700;color:var(--mute);flex:1;letter-spacing:.1em;text-transform:uppercase}
@@ -241,7 +281,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .unitsw{display:flex;gap:4px}
 .unitsw button{height:34px;padding:0 11px;border-radius:6px;font-size:11px;font-weight:700;color:var(--mute);border:1px solid var(--line);position:relative}
 .unitsw button:after{content:"";position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:44px}
-.unitsw button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.unitsw button.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
 .opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:14px 2px;border-bottom:1px solid var(--line-soft)}
 .opt .txt{flex:1}
 .opt .t{font-weight:600;font-size:14.5px}
@@ -250,12 +290,12 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .opt.on .t{font-weight:700}
 .opt.on .rad{border-color:var(--ink)}
 .opt.on .rad:after{content:"";position:absolute;inset:3.5px;border-radius:50%;background:var(--ink)}
-.toast{position:fixed;bottom:84px;left:50%;transform:translate(-50%,10px);z-index:80;background:var(--ink);color:#fff;
+.toast{position:fixed;bottom:84px;left:50%;transform:translate(-50%,10px);z-index:80;background:var(--ink);color:var(--on-ink);
   border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:14px;font-size:13px;font-weight:600;
   opacity:0;pointer-events:none;transition:.18s;max-width:400px;width:calc(100% - 28px)}
 .toast.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
 .toast button{color:var(--marigold);font-weight:700;white-space:nowrap}
-.player{position:fixed;inset:0;z-index:70;color:#fff;display:none;flex-direction:column;max-width:460px;margin:0 auto;background:var(--ink)}
+.player{position:fixed;inset:0;z-index:70;color:var(--on-deep);display:none;flex-direction:column;max-width:460px;margin:0 auto;background:var(--deep)}
 .player.on{display:flex}
 .player .pbar{display:flex;align-items:center;gap:12px;padding:12px 14px}
 .player .pbar .t{flex:1;font-weight:700;font-size:14px}
@@ -274,7 +314,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .pitem .r{font-size:12.5px;opacity:.7}
 .pctl{display:flex;gap:8px;padding:12px 14px calc(16px + env(safe-area-inset-bottom))}
 .pctl .b{flex:1;height:48px;border-radius:8px;background:rgba(255,255,255,.14);display:grid;place-items:center;font-weight:700;font-size:13.5px}
-.pctl .b.main{flex:2;background:#fff;color:var(--ink)}
+.pctl .b.main{flex:2;background:#fff;color:#161618}
 .finish{text-align:center;padding:0 22px}
 .finish .n{font-family:"Archivo Black";font-size:36px;letter-spacing:-.05em}
 .finish .g{margin-top:16px;background:rgba(255,255,255,.13);border-radius:8px;padding:13px 14px;text-align:left}
@@ -289,7 +329,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .dots i.on{background:var(--ink)}
 .onb-body{flex:1;overflow:auto;padding:8px 16px 12px}
 .onb-foot{padding:10px 16px calc(16px + env(safe-area-inset-bottom));border-top:1px solid var(--line-soft)}
-.onbcta{width:100%;height:46px;border-radius:8px;background:var(--ink);color:#fff;font-weight:700;font-size:14px}
+.onbcta{width:100%;height:46px;border-radius:8px;background:var(--ink);color:var(--on-ink);font-weight:700;font-size:14px}
 .onbcta[disabled]{background:var(--grey-btn);color:var(--mute)}
 .onb h2{font-family:"Archivo Black";font-size:27px;letter-spacing:-.055em;line-height:1.03;margin:16px 0 6px}
 .onb p.lead{color:var(--mute);font-size:13.5px;margin:0 0 20px}
@@ -302,7 +342,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .prompt .mini{flex:0 0 auto}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
 .chips button{height:34px;padding:0 13px;border-radius:8px;border:1px solid var(--line);font-weight:600;font-size:13px}
-.chips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chips button.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
 .nums{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
 .nf{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
 .nf label{display:block;font-size:10.5px;font-weight:700;color:var(--mute);letter-spacing:.09em;text-transform:uppercase}
@@ -310,10 +350,10 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .nf .tg{font-size:11px;color:var(--mute);font-weight:600}
 .slab{font-size:11px;font-weight:700;color:var(--mute);letter-spacing:.09em;text-transform:uppercase;margin:14px 0 4px}
 .ta{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:13.5px;min-height:62px;outline:none;resize:vertical;margin-bottom:12px}
-.coach{padding:14px;border-top:1px solid var(--line);background:#fffdf6}
+.coach{padding:14px;border-top:1px solid var(--line);background:var(--warm)}
 .coach .ph{display:flex;align-items:center;margin-bottom:10px}
-.coach .ph h3{margin:0;font-size:11px;font-weight:700;flex:1;color:#8a6a2f;letter-spacing:.12em;text-transform:uppercase}
-.steer{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #f0e6cf}
+.coach .ph h3{margin:0;font-size:11px;font-weight:700;flex:1;color:var(--warm-head);letter-spacing:.12em;text-transform:uppercase}
+.steer{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm-line)}
 .steer:last-child{border-bottom:0}
 .steer .dot{width:7px;height:7px;border-radius:50%;margin-top:6px;flex:0 0 auto}
 .steer .t{font-size:13.5px;flex:1}
@@ -337,8 +377,8 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .gymbar .t{flex:1;min-width:0}
 .gymbar .t .n{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gymbar .t .s{font-size:11.5px;color:var(--mute);margin-top:1px}
-.gymbar .fin{height:32px;padding:0 14px;border-radius:8px;background:var(--ink);color:#fff;font-weight:700;font-size:12.5px}
-.rest{display:none;align-items:center;gap:10px;padding:10px 14px;background:var(--ink);color:#fff}
+.gymbar .fin{height:32px;padding:0 14px;border-radius:8px;background:var(--ink);color:var(--on-ink);font-weight:700;font-size:12.5px}
+.rest{display:none;align-items:center;gap:10px;padding:10px 14px;background:var(--ink);color:var(--on-ink)}
 .rest.on{display:flex}
 .rest .n{font-family:"Archivo Black";font-size:20px;letter-spacing:-.05em;min-width:56px}
 .rest .l{flex:1;font-size:12.5px;opacity:.75}
@@ -358,8 +398,8 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .setline .prev{font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .setline input{border:1px solid var(--line);border-radius:8px;padding:8px 6px;font-weight:700;font-size:14px;text-align:center;outline:none;width:100%;background:var(--paper)}
 .setline .tick{width:52px;height:52px;border-radius:12px;border:1.5px solid var(--line);display:grid;place-items:center;color:#fff;flex:0 0 auto}
-.setline.done .tick{background:var(--forest);border-color:var(--forest);color:#fff}
-.setline.done input{background:#f2f7f5;border-color:#dbe7e2}
+.setline.done .tick{background:var(--forest-bg);border-color:var(--forest-bg);color:#fff}
+.setline.done input{background:var(--good-bg2);border-color:var(--good-line)}
 .setbtns{display:flex;gap:8px;margin-top:10px}
 .setbtns button{height:30px;padding:0 11px;border-radius:8px;background:var(--grey-btn);font-weight:700;font-size:12px}
 .addex{display:flex;gap:8px;padding:14px}
@@ -376,7 +416,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .trow .n{font-weight:700;font-size:14.5px}
 .trow .s{font-size:12px;color:var(--mute);margin-top:2px}
 .trow .mini{flex:0 0 auto}
-.tedit{display:grid;grid-template-columns:1fr 42px 42px 46px 24px 24px;gap:6px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-soft)}
+.tedit{display:grid;grid-template-columns:1fr 38px 38px 38px 22px 22px 22px;gap:5px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-soft)}
 .tedit .n{font-size:13.5px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tedit input{border:1px solid var(--line);border-radius:7px;padding:6px 4px;font-weight:700;font-size:13px;text-align:center;outline:none;width:100%}
 .tedit .x{color:var(--mute);font-weight:700;text-align:center}
@@ -388,7 +428,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .prtick{font-size:8.5px;font-weight:700;color:#161618;letter-spacing:.04em}
 .prcard{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line-soft)}
 .prcard:last-child{border-bottom:0}
-.prcard .tag{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--marigold);background:#fbf3e4;padding:4px 7px;border-radius:6px}
+.prcard .tag{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--marigold);background:var(--t-marigold);padding:4px 7px;border-radius:6px}
 .prcard .t{font-size:13.5px;flex:1}
 .summary{padding:16px 14px}
 .summary .big{font-family:"Archivo Black";font-size:34px;letter-spacing:-.05em}
@@ -408,10 +448,52 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .todo .t b{display:block;font-weight:600;font-size:14.5px}
 .todo .t span{font-size:12.5px;color:var(--mute)}
 .todo .tick{width:26px;height:26px;border-radius:8px;border:1.5px solid var(--line);display:grid;place-items:center;color:#fff;flex:0 0 auto;font-size:13px}
+.todo.habit{align-items:flex-start}
+.todo .habittick{width:38px;height:38px;border-radius:10px;border:1.6px solid var(--line);display:grid;place-items:center;color:#fff;font-size:16px;flex:0 0 auto}
+.todo.habit.done .habittick{background:var(--forest-bg);border-color:var(--forest-bg)}
+.targetline{margin-top:12px;padding:11px 12px;border-radius:10px;background:var(--t-forest)}
+.targetline.late{background:var(--burnt-bg)}
+.targetline .tl-h{display:flex;align-items:baseline;gap:8px;font-size:13.5px}
+.targetline .tl-h span{margin-left:auto;font-size:11.5px;font-weight:700;color:var(--mute)}
+.targetline .bar{margin:8px 0 6px}
+.targetline .tl-s{font-size:11.5px;color:var(--mute);font-weight:600}
+.inlinebtn{font-size:11.5px;font-weight:700;color:var(--marine);text-decoration:underline;padding:0 2px;min-height:28px}
+pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Menlo,Consolas,monospace;
+  font-size:11.5px;line-height:1.5;background:var(--canvas);border:1px solid var(--line);
+  border-radius:10px;padding:12px;max-height:280px;overflow:auto;margin:0 0 10px}
+.coachout{font-size:14px;line-height:1.55;background:var(--warm);border:1px solid var(--warm-line);
+  border-radius:10px;padding:13px;margin-bottom:10px}
+.figwrap{background:var(--canvas);border:1px solid var(--line);border-radius:12px;
+  display:grid;place-items:center;padding:10px;margin-bottom:12px}
+.fig{width:100%;max-width:190px;height:auto;display:block}
+.fig .body{stroke:var(--ink)}
+.fig .kit{stroke:var(--burnt);fill:var(--burnt)}
+.fig .kit rect{fill:var(--burnt)}
+.fig .kit line{fill:none}
+.fig .floor{stroke:var(--line)}
+.movebtn{font-size:11.5px;font-weight:700;color:var(--marine);min-height:44px;padding:0 6px}
+.dlbanner{margin:10px 14px 4px;padding:12px;border-radius:10px;background:var(--t-marine);border:1px solid var(--line)}
+.dlbanner .dlh{display:flex;flex-direction:column;gap:2px;margin-bottom:8px}
+.dlbanner .dlh b{font-size:14px}
+.dlbanner .dlh span,.dlbanner .dls{font-size:12px;color:var(--mute);font-weight:600}
+.dlbanner .dlrow{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:5px 0;border-top:1px solid var(--line-soft)}
+.dlbanner .dlrow span{color:var(--mute);text-align:right}
+.dlbanner .dls{margin-top:8px}
+.dlweek{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line-soft);width:100%;text-align:left}
+.dlweek .d{flex:1}
+.dlweek .d b{display:block;font-size:13.5px}
+.dlweek .d span{font-size:11.5px;color:var(--mute);font-weight:600}
+.dlweek .tag{font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;background:var(--grey-btn);color:var(--mute)}
+.dlweek .tag.on{background:var(--marine-bg);color:#fff}
+.dots{display:flex;gap:5px;margin-top:7px}
+.dots i{width:9px;height:9px;border-radius:50%;background:var(--line);display:block}
+.dots i.on{background:var(--forest)}
+.dots i.pre{background:var(--line-soft)}
+.dots i.now{box-shadow:0 0 0 2px var(--paper),0 0 0 3.5px var(--mute)}
 .todo.done .tick{background:var(--forest);border-color:var(--forest)}
 .todo.done .t b{color:var(--mute)}
 .todo .chev{color:var(--mute);font-size:20px;line-height:1}
-.todo.auto{background:#fafbfd}
+.todo.auto{background:var(--cool-bg)}
 .autotag{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--marine);
   background:var(--t-marine);padding:5px 8px;border-radius:6px;flex:0 0 auto}
 .track{margin:2px 0 16px}
@@ -441,14 +523,14 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .change .t{flex:1;font-size:13.5px}
 .wizback{font-size:13px;font-weight:700;color:var(--marine);padding:10px 14px 0;display:inline-block}
 
-.hero-card{padding:16px 14px 18px;border-top:1px solid var(--line);background:#fffdf6}
-.hero-card.good{background:#f1f7f4}
-.hero-card.off{background:#fdf3ef}
+.hero-card{padding:16px 14px 18px;border-top:1px solid var(--line);background:var(--warm)}
+.hero-card.good{background:var(--good-bg)}
+.hero-card.off{background:var(--off-bg)}
 .hero-card .hk{font-size:10.5px;font-weight:700;color:var(--mute);letter-spacing:.12em;text-transform:uppercase}
 .hero-card .hn{font-family:"Archivo Black";font-size:42px;letter-spacing:-.055em;margin:6px 0 4px;line-height:1}
-.hero-card .hs{font-size:13.5px;color:#4a4a50}
+.hero-card .hs{font-size:13.5px;color:var(--subtle)}
 .hero-card .hmeta{font-size:11.5px;color:var(--mute);margin-top:8px}
-.hero-card .hwhy{margin-top:12px;font-size:13px;color:#7a4a35}
+.hero-card .hwhy{margin-top:12px;font-size:13px;color:var(--burnt-ink)}
 .hero-card .hwhy ul{margin:8px 0 0;padding-left:18px}
 .hero-card .hwhy li{margin-bottom:4px}
 .chart{width:100%;height:110px;display:block;margin:2px 0 4px;overflow:visible}
@@ -488,9 +570,9 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .citem .ct b{display:block;font-weight:600;font-size:14.5px}
 .citem .ct span{font-size:12px;color:var(--mute)}
 .citem .ctick{width:26px;height:26px;border-radius:8px;border:1.5px solid var(--line);display:grid;place-items:center;color:#fff;font-size:13px;flex:0 0 auto}
-.citem.done .ctick{background:var(--forest);border-color:var(--forest)}
+.citem.done .ctick{background:var(--forest-bg);border-color:var(--forest-bg)}
 .citem.done .ct b{color:var(--mute);text-decoration:line-through}
-.warn{font-size:12.5px;color:var(--oxblood);background:#fbeef0;border-radius:8px;padding:10px 12px;margin-top:10px}
+.warn{font-size:12.5px;color:var(--oxblood);background:var(--bad-bg);border-radius:8px;padding:10px 12px;margin-top:10px}
 .cidot{width:5px;height:5px;border-radius:50%;background:var(--marigold);margin:4px auto 0}
 .cichip{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--burnt);background:var(--t-marigold);padding:3px 6px;border-radius:5px;vertical-align:middle}
 .viewbtn{display:block;margin:6px auto 0;font-size:13px;font-weight:700;color:var(--marine);min-height:44px;padding:0 10px}
@@ -509,13 +591,13 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .frow .mini{flex:0 0 auto;padding:6px 9px;font-size:12px}
 .pickchips{display:flex;gap:6px;overflow-x:auto;padding:0 14px 8px;-webkit-overflow-scrolling:touch}
 .pickchips::-webkit-scrollbar{display:none}
-.pickchips button{flex:0 0 auto;padding:7px 11px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:700;color:var(--mute);background:#fff;white-space:nowrap}
-.pickchips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pickchips button{flex:0 0 auto;padding:7px 11px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:700;color:var(--mute);background:var(--paper);white-space:nowrap}
+.pickchips button.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
 .exrow .cue2{font-size:11.5px;color:var(--mute);margin-top:3px;line-height:1.4}
 .setline{display:grid;grid-template-columns:24px 1fr 1fr 52px;gap:8px;align-items:center;padding:7px 0}
 .setline .sn{font-size:12px;font-weight:700;color:var(--mute);text-align:center}
 .setline.warm .sn{color:var(--burnt)}
-.stepper{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:#fff;height:52px}
+.stepper{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--paper);height:52px}
 .stepper input{height:50px;border:0;text-align:center;font-size:17px;font-weight:700;outline:none;width:100%;background:transparent;padding:0}
 .stepper .step{height:50px;font-size:21px;font-weight:700;color:var(--mute);background:var(--canvas);display:grid;place-items:center;line-height:1}
 .stepper .step:active{background:var(--line)}
@@ -523,7 +605,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .setline.done .tick{background:var(--forest);border-color:var(--forest)}
 .setline.done .stepper{opacity:.55}
 .setline.ispr .tick{background:var(--marigold);border-color:var(--marigold)}
-.rxline{font-size:12.5px;color:#7a4a35;background:#fdf6ef;border-radius:9px;padding:9px 11px;margin-top:8px;line-height:1.45}
+.rxline{font-size:12.5px;color:var(--burnt-ink);background:var(--burnt-bg);border-radius:9px;padding:9px 11px;margin-top:8px;line-height:1.45}
 .rxline b{display:block;font-size:12px;letter-spacing:.02em;color:var(--burnt)}
 .rxline .tonn{display:block;margin-top:4px;color:var(--mute)}
 .nextrow{padding:11px 0;border-bottom:1px solid var(--line-soft)}
@@ -551,25 +633,22 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   </header>
 
   <section class="screen on" id="s-today" tabindex="-1"><div id="todayView"></div></section>
-  <section class="screen" id="s-plan" tabindex="-1"><div id="planView"></div></section>
+  <section class="screen" id="s-plan" tabindex="-1"><div id="planView"></div><div id="dashLifts"></div></section>
   <section class="screen" id="s-progress" tabindex="-1">
     <div class="h1" id="profHandle">your progress</div>
     <div class="phead">
-      <div class="av-lg" id="profAv" style="background:var(--marine)">YOU</div>
+      <button class="av-lg" id="profAv" style="background:var(--marine-bg)" aria-label="Your details and settings">YOU</button>
       <div class="stats">
         <div><b id="stSessions">0</b><span>sessions</span></div>
         <div><b id="stTried">0</b><span>tried</span></div>
         <div><b id="stPicked">0</b><span>picked up</span></div></div>
     </div>
-    <div class="seg" id="progSeg">
-      <button class="on" data-seg="week">Trends</button>
-      <button data-seg="body">Body</button>
-      <button data-seg="lifts">Lifts</button>
-    </div>
     <div class="dash" id="dash"></div>
-    <div class="dash" id="dashBody" hidden></div>
-    <div class="dash" id="dashLifts" hidden></div>
-    <div class="sechead" id="sessHead"><h2>Sessions</h2></div>
+    <div class="sechead" id="sessHead"><h2>Sessions</h2><button id="youBtn">You and your settings</button></div>
+  <button class="todo" id="coachBtn" style="margin-bottom:6px">
+    <span class="ic" style="background:var(--t-marine);color:var(--marine)">?</span>
+    <span class="t"><b>Ask about all this</b><span>your whole record, in plain English, ready to hand to anyone</span></span>
+    <span class="chev">›</span></button>
     <div class="grid" id="grid"></div>
   </section>
   <section class="screen" id="s-feed" tabindex="-1"><div id="feed"></div></section>
@@ -584,6 +663,18 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
   <button class="tab" role="tab" aria-selected="false" data-go="feed"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M17 11.5a3 3 0 1 0-2-5.3"/><path d="M18 20a6 6 0 0 0-3-5.2"/></svg><span>Feed</span></button>
 </nav>
 <div class="scrim" id="scrim"></div>
+
+<div class="sheet" id="coachSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>Your coach</h3>
+  <p class="sub">Everything the app knows about you, in plain English, and somewhere to ask about it.</p>
+  <div id="coachBody"></div>
+</div>
+
+<div class="sheet" id="youSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>You</h3>
+  <p class="sub">Your body, your tracker, your account and how the app behaves.</p>
+  <div class="dash" id="dashBody"></div>
+</div>
 
 <div class="sheet" id="logSheet" role="dialog" aria-modal="true" tabindex="-1">
   <div class="grab"></div><h3>Log something</h3>
@@ -762,6 +853,66 @@ const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
+/* The plan has been saying "one food habit this week and nothing else: protein
+   at breakfast" since the first version, and then nothing tracked it, showed it
+   or ever asked about it. A promise made and dropped in the same sentence.
+   One habit at a time is the whole design. Not a list, not a grid, not five
+   things to fail at: one, with seven dots, and the app will not let a second one
+   start until the first is either sticking or abandoned. */
+const HABITS=[
+  {id:'protein_am', t:'Protein at breakfast', s:'Thirty grams before you leave the house', tag:'food'},
+  {id:'veg_lunch',  t:'Something green at lunch', s:'Any vegetable, any amount', tag:'food'},
+  {id:'water_am',   t:'A pint of water on waking', s:'Before the coffee', tag:'food'},
+  {id:'walk_after', t:'Ten minutes after dinner', s:'Out the door, around the block', tag:'move'},
+  {id:'stairs',     t:'Stairs, not the lift', s:'Every time, no negotiating', tag:'move'},
+  {id:'phone_out',  t:'Phone out of the bedroom', s:'Charges somewhere else', tag:'sleep'},
+  {id:'lights_out', t:'Same lights out time', s:'Within half an hour of it, anyway', tag:'sleep'},
+  {id:'no_screen',  t:'No screen for the last half hour', s:'A book, a shower, anything else', tag:'sleep'}
+];
+const habitOf=id=>HABITS.find(h=>h.id===id)||null;
+const currentHabit=()=>{ const h=S.habit; return h&&h.id&&!h.retired? h : null; };
+function startHabit(id){
+  const h=habitOf(id); if(!h) return null;
+  S.habit={id,started:todayKey(),days:{},retired:false};
+  save(); return S.habit;
+}
+function retireHabit(){ if(S.habit) S.habit.retired=true; save(); }
+function toggleHabitDay(k){
+  const h=currentHabit(); if(!h) return;
+  h.days=h.days||{};
+  if(h.days[k]) delete h.days[k]; else h.days[k]=true;
+  save();
+}
+/* Seven dots, oldest on the left, today on the right. */
+function habitWeek(){
+  const h=currentHabit(); if(!h) return [];
+  const out=[];
+  for(let i=6;i>=0;i--){ const k=addDays(todayKey(),-i);
+    out.push({k,done:!!(h.days&&h.days[k]),today:i===0,before:k<h.started}); }
+  return out;
+}
+function habitStreak(){
+  const h=currentHabit(); if(!h) return 0;
+  let n=0, k=todayKey();
+  if(!(h.days&&h.days[k])) k=addDays(k,-1);
+  while(h.days&&h.days[k]){ n++; k=addDays(k,-1); }
+  return n;
+}
+function habitRate(){
+  const h=currentHabit(); if(!h) return null;
+  const days=Math.max(1,Math.round((dateOf(todayKey())-dateOf(h.started))/864e5)+1);
+  return Object.keys(h.days||{}).length/Math.min(days,28);
+}
+/* Which habit the app suggests, given what the check in actually said. */
+function suggestHabit(){
+  const c=S.checkins[0];
+  if(c && typeof c.proteinHit==='number' && c.proteinHit<=4) return habitOf('protein_am');
+  const sleep=avg7('sleep',{real:true});
+  if(sleep!==null && sleep<6.5) return habitOf('phone_out');
+  const steps=avg7('steps',{real:true});
+  if(steps!==null && steps<6000) return habitOf('walk_after');
+  return habitOf('veg_lunch');
+}
 const AIMS=[
   {id:'lose',   t:'Lose fat',     s:'Move often, eat a bit less'},
   {id:'build',  t:'Build muscle', s:'Lift, and lift heavier'},
@@ -770,6 +921,53 @@ const AIMS=[
   {id:'eat',    t:'Eat better',   s:'Cook more than you order'}
 ];
 const aimOf=id=>AIMS.find(a=>a.id===id)||AIMS[0];
+/* An aim with no destination is a mood. The forecast had nothing to count down
+   to and Progress had nothing to mark, because "lose fat" never said how much or
+   by when. A target is optional, and it is one line. */
+const TARGET_KINDS={
+  weight:{unit:'kg', t:'A weight'},
+  runkm: {unit:'km', t:'A distance in one run'},
+  lift:  {unit:'kg', t:'A lift'},
+  sessions:{unit:'a week', t:'Sessions a week'}
+};
+function targetOf(){ const t=S.target; return t&&t.kind&&!t.hit? t : (t&&t.hit? t : null); }
+function setTarget(kind,value,by,exId){
+  S.target={kind,value:+value,by,exId:exId||null,set:todayKey(),hit:null};
+  save(); return S.target;
+}
+function clearTarget(){ S.target=null; save(); }
+function targetNow(){
+  const t=S.target; if(!t) return null;
+  if(t.kind==='weight') return S.weights.length? S.weights[S.weights.length-1].kg : null;
+  if(t.kind==='runkm'){
+    const runs=S.mine.filter(p=>p.kind==='run'&&p.km); 
+    return runs.length? Math.max(...runs.map(p=>+p.km)) : null;
+  }
+  if(t.kind==='lift'){
+    /* the heaviest single set ever logged for that movement */
+    const hist=(S.lifts&&S.lifts[t.exId])||[];
+    const kgs=hist.flatMap(e=>(e.sets||[]).map(x=>+x.kg||0)).filter(x=>x>0);
+    return kgs.length? Math.max(...kgs) : null;
+  }
+  if(t.kind==='sessions'){
+    const wk=mondayKey();
+    return S.mine.filter(p=>p.d>=wk&&p.kind!=='meal').length;
+  }
+  return null;
+}
+function targetProgress(){
+  const t=S.target; if(!t) return null;
+  const now=targetNow(); if(now===null) return null;
+  const start=t.from!==undefined? t.from : (t.kind==='weight'&&S.weights.length? S.weights[0].kg : 0);
+  const falling=t.kind==='weight'&&t.value<start;
+  const span=Math.abs(t.value-start)||1;
+  const moved=falling? (start-now) : (now-start);
+  const pct=Math.max(0,Math.min(100,Math.round(moved/span*100)));
+  const hit=falling? now<=t.value : now>=t.value;
+  const daysLeft=t.by? Math.round((dateOf(t.by)-dateOf(todayKey()))/864e5) : null;
+  return {now,start,pct,hit,daysLeft,unit:TARGET_KINDS[t.kind].unit,
+    remaining:+(falling? now-t.value : t.value-now).toFixed(1)};
+}
 /* Four runs a week, one of them hard and one of them long: the 80/20 shape. */
 const PATTERNS={
   lose:  ['t_push','walk','t_lower','r_easy','t_pull','walk','checkin'],
@@ -856,7 +1054,7 @@ function freshState(){
     v:4,
     profile:{onboarded:false,handle:'',aim:'lose',detailsSet:false,checkinDay:6,excluded:[],showTempo:true,liftDays:null,cardioDays:null,kit:null,
       sex:'',age:34,height:178,weight:82,units:'metric',activity:'mod'},
-    plan:null, goal:{kind:'any',target:4,unit:'sessions',label:'Move 4 times',now:0},
+    plan:null, habit:null, goal:{kind:'any',target:4,unit:'sessions',label:'Move 4 times',now:0},
     mine:[], tries:[], pickups:[], tryCounts:{}, weights:[],
     days:{}, checkins:[], lifts:{}, health:{connected:false},
     cycle:{tracking:false,lastPeriod:null,length:28,periodLen:5}, forecasts:{},
@@ -966,8 +1164,229 @@ function avg7(key,opts){
   return out.length? out.reduce((a,b)=>a+b,0)/out.length : null;
 }
 const simulatedHealth=()=>!!(S.health&&S.health.connected&&S.health.simulated);
-const bmrOf=p=>10*p.weight+6.25*p.height-5*p.age+(p.sex==='m'?5:-161);
+/* Mifflin St Jeor (1990). The sex term is +5 for men and -161 for women.
+   "Rather not say" used to fall through to the women's constant while the
+   screen promised the average, which quietly under-counted anyone who picked
+   it by 166 kcal if they were male. It uses the midpoint now, -78, as the
+   screen says. */
+const SEX_TERM={m:5,f:-161};
+const sexTerm=s=>SEX_TERM[s]!==undefined? SEX_TERM[s] : -78;
+const bmrOf=p=>10*(+p.weight)+6.25*(+p.height)-5*(+p.age)+sexTerm(p.sex);
 const tdeeOf=p=>Math.round(bmrOf(p)*actOf(p.activity).mult);
+/* Onboarding re-renders while somebody is still typing. Without this, a
+   height of "18" on the way to "180" produced a maintenance figure of about
+   1,300 kcal and showed it as an answer. Nothing is shown until every number
+   is one a real adult could have. */
+const plausibleBody=p=>!!p&&+p.age>=14&&+p.age<=100&&+p.height>=120&&+p.height<=230&&+p.weight>=30&&+p.weight<=350;
+
+/* ---------- steps, and what they are worth ----------
+   The step target now drives the estimate. It replaces the activity
+   multiplier rather than sitting on top of it: the multiplier already
+   included walking and training, so adding steps to it would count the same
+   activity twice.
+   The build, which is the same arithmetic the forecast already used for
+   tracked steps, now applied to the target as well:
+     resting burn x 1.2   the sedentary baseline, a day with next to no
+                          deliberate movement
+     + walking            steps above 2,500 a day, at 3 METs for every 100
+                          steps a minute, net of rest. The first 2,500 are
+                          left out because the sedentary baseline already
+                          contains them: under 2,500 a day is what
+                          Tudor-Locke and colleagues (2009) class as basal
+                          activity. Using that threshold as the baseline is a
+                          judgement, and the method sheet says so.
+     + lifting            the sessions in the plan, at 4 METs net of rest,
+                          for as long as the templates say they take
+   Running is counted within steps, which slightly under-counts it. Physical
+   work a step count cannot see is missed too. Both are exactly what three
+   weeks of logged food and weigh ins corrects, and that figure replaces this
+   one as soon as it exists. */
+const BASAL_STEPS=2500;
+const DEFAULT_STEPS=8000;
+const STEP_BANDS=[
+  {n:5000,  t:'Low active',      s:'5,000 to 7,499 a day'},
+  {n:7500,  t:'Somewhat active', s:'7,500 to 9,999'},
+  {n:10000, t:'Active',          s:'10,000 to 12,499'},
+  {n:12500, t:'Highly active',   s:'12,500 and over'}];
+const validSteps=v=>+v>=1000&&+v<=40000;
+function stepTarget(p){
+  const v=+((p||S.profile||{}).stepTarget);
+  return validSteps(v)? Math.round(v) : DEFAULT_STEPS;
+}
+/* kcal a day from walking, net of rest and of the basal steps */
+function stepKcal(steps,kg){
+  if(!steps||!kg) return 0;
+  const net=Math.max(0,+steps-BASAL_STEPS);
+  return (3.0-1)*3.5*(+kg)/200*(net/100);
+}
+/* kcal a day from lifting, net of rest */
+function liftNetKcal(minPerDay,kg){ return (4.0-1)*3.5*(+kg)/200*(+minPerDay||0); }
+/* How long a template actually takes: every set, its rest, and about forty
+   seconds of work, plus five minutes to get going. */
+function sessionMinutes(tpl){
+  if(!tpl||!tpl.ex||!tpl.ex.length) return 0;
+  return Math.round(5+tpl.ex.reduce((a,r)=>a+(+r.sets||3)*((+r.rest||90)+40),0)/60);
+}
+/* Planned lifting, spread across the week. From the built plan when there is
+   one, otherwise from the number of lifting days asked for. */
+function plannedLiftMinPerDay(p){
+  const tpls=S.templates||[];
+  const byId=id=>tpls.find(t=>t.id===id);
+  if(S.plan&&S.plan.days&&S.plan.days.some(d=>d.templateId)&&!(p&&p.__preview)){
+    return S.plan.days.filter(d=>d.templateId).reduce((a,d)=>a+sessionMinutes(byId(d.templateId)),0)/7;
+  }
+  const days=+((p||S.profile||{}).liftDays)||0;
+  const core=['t_push','t_pull','t_lower'].map(byId).filter(Boolean);
+  const avg=core.length? core.reduce((a,t)=>a+sessionMinutes(t),0)/core.length : 50;
+  return days*avg/7;
+}
+/* The planned figure, and its parts, for anyone asking where it came from. */
+function plannedTdee(p,kgOverride){
+  const kg=+(kgOverride||p.weight);
+  const rmr=bmrOf(Object.assign({},p,{weight:kg}));
+  const steps=stepTarget(p);
+  const base=rmr*1.2, walk=stepKcal(steps,kg), lift=liftNetKcal(plannedLiftMinPerDay(p),kg);
+  return {kcal:Math.round(base+walk+lift), rmr:Math.round(rmr), base:Math.round(base),
+    walk:Math.round(walk), lift:Math.round(lift), steps,
+    per1000:Math.round(stepKcal(BASAL_STEPS+1000,kg))};
+}
+
+/* ---------- one maintenance figure, used everywhere ----------
+   There were two. Onboarding, the You sheet and the calorie target used
+   Mifflin St Jeor times the activity multiplier the person chose. The forecast
+   used Mifflin times 1.2, the "mostly sitting" figure, plus whatever steps and
+   lifting it could measure. With no step tracker it measured nothing, so an
+   active 95 kg man was told 2,930 kcal at onboarding and 2,268 by the forecast,
+   660 apart, with nothing on screen saying why.
+   Now there is one answer, from the best evidence available, in this order:
+     1. Observed: what they actually ate, minus what the scale says they
+        stored, over three weeks. The intake balance method; validates against
+        doubly labelled water to within about 200 kcal a day at group level.
+     2. Measured: resting burn times 1.2, plus walking from real tracker steps
+        and lifting from logged sessions. Activity counted, not guessed.
+     3. Estimated: resting burn times the multiplier they chose. The multiplier
+        already includes exercise, so nothing is added on top.
+   The label always says which one it is. */
+function maintenance(){
+  const p=S.profile;
+  if(!p||!p.detailsSet||!plausibleBody(p)) return null;
+  if(typeof tdeeObserved==='function'){
+    const obs=tdeeObserved(21);
+    if(obs) return {kcal:obs.tdee, source:'observed',
+      label:'from what you ate and what the scale did over '+obs.days+' days'};
+  }
+  if(typeof weeklyHistory==='function'){
+    const recent=weeklyHistory(3).map(w=>w.steps).filter(v=>typeof v==='number'&&v>0);
+    if(recent.length){
+      const steps=recent.reduce((a,b)=>a+b,0)/recent.length;
+      const kg=+p.weight;
+      const w21=(S.workouts||[]).filter(x=>x.d>=(typeof addDays==='function'? addDays(todayKey(),-21) : '0'));
+      const liftMin=w21.length? w21.reduce((a,x)=>a+(x.minutes||0),0)/21 : plannedLiftMinPerDay(p);
+      const kcal=Math.round(bmrOf(p)*1.2+stepKcal(steps,kg)+liftNetKcal(liftMin,kg));
+      return {kcal, source:'measured', steps:Math.round(steps),
+        label:'resting burn plus the '+num(Math.round(steps))+' steps a day your tracker counted and your sessions'};
+    }
+  }
+  const pt=plannedTdee(p);
+  return Object.assign({source:'planned',
+    label:'resting burn plus your '+num(pt.steps)+' step target and the sessions in your plan'},pt);
+}
+
+/* ---------- the calorie target, from where they are going ----------
+   The target used to BE maintenance, for everyone, including people whose aim
+   was to lose fat. Nothing in the app set a deficit at all.
+   Now the target comes from a rate, and the rate comes from their goal:
+     losing     0.5 to 1% of bodyweight a week, the range for keeping muscle
+                while dieting (Helms, Aragon and Fitschen, 2014). A goal date
+                that needs more than 1% a week is capped at 1% and the app
+                says when they will actually get there. With no date, 0.75%.
+     gaining    0.25 to 0.5% a week, about 10 to 20% above maintenance
+                (Iraki, Fitschen, Espinar and Helms, 2019). Capped at 0.5%
+                and at 20% over maintenance. With no date, 0.375%.
+   Energy per kilo is the same 7,700 kcal the forecast uses, with the same
+   caveat: early weeks are partly water, so week one runs ahead of it.
+   Floors: never below 1,500 kcal for men or 1,200 for women, the low end of
+   what the 2013 AHA/ACC/TOS obesity guideline prescribes for supervised
+   weight loss; 1,350 for anyone who has not said. If the floor binds, the rate
+   is slower than asked and the app says so. */
+const RATE={lose:{min:0.005,max:0.010,def:0.0075}, gain:{min:0.0025,max:0.005,def:0.00375}};
+const KCAL_FLOOR={m:1500,f:1200};
+const kcalFloor=s=>KCAL_FLOOR[s]||1350;
+const SURPLUS_CAP=0.20;
+function currentKg(){
+  if(typeof trendNow==='function'){ const t=trendNow(); if(t) return t; }
+  const w=S.weights&&S.weights.length? S.weights[S.weights.length-1].kg : null;
+  return w||+S.profile.weight||null;
+}
+/* Which way they are going: an explicit weight target wins over the aim. */
+function goalDirection(){
+  const t=S.target, kg=currentKg();
+  /* Reaching the goal weight ends the diet, whatever the aim still says. The
+     app tells them, and they can set the next goal from there. */
+  if(t&&t.kind==='weight'&&t.hit) return 'hold';
+  if(t&&t.kind==='weight'&&!t.hit&&kg){
+    if(t.value<kg-0.2) return 'lose';
+    if(t.value>kg+0.2) return 'gain';
+    return 'hold';
+  }
+  const aim=S.profile&&S.profile.aim;
+  return aim==='lose'? 'lose' : (aim==='build'? 'gain' : 'hold');
+}
+function calorieTarget(over){
+  const m=maintenance(); if(!m) return null;
+  const kg=currentKg();
+  const dir=(over&&over.dir)||goalDirection();
+  const out={maintenance:m.kcal, source:m.source, sourceLabel:m.label, dir,
+    kcal:m.kcal, rateKg:0, ratePct:0, capped:false, floored:false, eta:null, asked:null};
+  if(dir==='hold'||!kg) return out;
+  const R=RATE[dir];
+  const t=(over&&over.target)||S.target;
+  let pct=R.def;
+  /* A date the app worked out for them is a consequence of the default rate,
+     not a request, so it never feeds back into the rate. Only a date the
+     person chose does. Rounding the weeks up and reading the rate back used to
+     make onboarding and the You sheet disagree by about 50 kcal. */
+  if(t&&t.kind==='weight'&&t.by&&!t.hit&&!t.autoDated){
+    const weeks=Math.max(1,(dateOf(t.by)-dateOf(todayKey()))/(7*864e5));
+    const need=Math.abs(t.value-kg)/weeks/kg;
+    out.asked=+(need*100).toFixed(2);
+    pct=Math.min(need,R.max);
+    if(need>R.max) out.capped=true;
+  }
+  let rateKg=kg*pct;
+  let delta=rateKg*(typeof SCI!=='undefined'? SCI.kcalPerKg : 7700)/7;
+  if(dir==='lose'){
+    let kcal=Math.round(m.kcal-delta);
+    const floor=kcalFloor(S.profile.sex);
+    if(kcal<floor){ kcal=floor; out.floored=true; delta=m.kcal-floor; rateKg=Math.max(0,delta*7/7700); }
+    out.kcal=kcal;
+  } else {
+    const capped=Math.min(delta,m.kcal*SURPLUS_CAP);
+    if(capped<delta){ delta=capped; rateKg=delta*7/7700; out.capped=true; }
+    out.kcal=Math.round(m.kcal+delta);
+  }
+  out.rateKg=+rateKg.toFixed(2);
+  out.ratePct=+(rateKg/kg*100).toFixed(2);
+  if(t&&t.kind==='weight'&&!t.hit&&rateKg>0){
+    const weeks=Math.ceil(Math.abs(t.value-kg)/rateKg);
+    out.eta=(typeof addDays==='function'? addDays(todayKey(),weeks*7) : null);
+    out.etaWeeks=weeks;
+  }
+  return out;
+}
+/* One sentence for wherever the target is shown. */
+function calorieLine(ct){
+  if(!ct) return '';
+  const stepNote = ct.source==='planned'? ` That assumes you hit ${num(stepTarget())} steps. Each 1,000 more is about ${plannedTdee(S.profile).per1000} kcal.` : '';
+  if(ct.dir==='hold') return `Eat around maintenance, ${num(ct.maintenance)} kcal.`+stepNote;
+  const verb=ct.dir==='lose'? 'lose' : 'gain';
+  let s=`${num(ct.kcal)} kcal to ${verb} about ${ct.rateKg} kg a week (${ct.ratePct}% of your weight).`;
+  if(ct.capped&&ct.dir==='lose') s+=` Your date needs ${ct.asked}% a week, faster than the 1% that keeps muscle, so this is capped.`;
+  if(ct.capped&&ct.dir==='gain') s+=` Capped at the top of the range for lean gain, so most of it is muscle rather than fat.`;
+  if(ct.floored) s+=` This is the floor. Going lower is a job for a clinician, not an app.`;
+  if(ct.eta) s+=` At that rate, around ${prettyDate(ct.eta)}.`;
+  return s+stepNote;
+}
 /* 1.8 g per kilo, of a sensible reference weight rather than whatever the scale
    says. At a high body fat, total bodyweight overshoots badly: fat mass has no
    protein requirement. Above a BMI of about 30 the figure is taken from the
@@ -1035,6 +1454,8 @@ const artFor=p=>p.kind==='run'?runArt():p.kind==='meal'?mealArt(p.macros):p.kind
    swapping SOURCES for a real bridge is the only change needed.
    ============================================================= */
 const SOURCES=[{id:'apple',n:'Apple Health'},{id:'google',n:'Health Connect'},{id:'garmin',n:'Garmin'}];
+/* Kept for anything outside that still reads it. The live figure is
+   stepTarget(), which is the person's own. */
 const STEP_TARGET=8000;
 function hashDay(k){ let h=0; for(let i=0;i<k.length;i++) h=(h*31+k.charCodeAt(i))>>>0; return h; }
 function stubDay(k){
@@ -1108,23 +1529,134 @@ function weekPattern(){
   while(mixed.length<slots.length) mixed.push(filler);
   return mixed.slice(0,7);
 }
-/* A planned back-off week. The app already drops a set when a check in says
-   recovery is poor, which is reaction, not a plan. Nothing in it ever scheduled
-   a light week, so twelve weeks of double progression ran with no let-up, and
-   that is what breaks people rather than any single session.
-   Every fourth week is the common default in block programming. It is a default,
-   not a finding: DELOAD_EVERY is one number and the user can move it. */
-const DELOAD_EVERY=4;
+/* ---------- easy weeks ----------
+   What the evidence actually says, which is less than the fitness industry
+   implies and is written into the sheet the user sees:
+   - Planned deloads usually sit every 4 to 8 weeks and last about a week (Bell,
+     Darragh, Travis, Rogerson and Nolan, Strength and Conditioning Journal,
+     2025).
+   - In a survey of 246 competitive strength and physique athletes the typical
+     gap was 5.6 weeks, give or take 2.3, lasting 6.4 days (Rogerson and
+     colleagues, Sports Medicine Open, 2024).
+   - A week off at the midpoint of a 9-week block made no difference to muscle
+     growth, but the group that trained straight through gained a little more
+     strength (Coleman and colleagues, PeerJ, 2024). That was a week of no
+     training at all, not a lighter one, and the same researchers describe a
+     planned deload as a checkpoint rather than a compulsion.
+   So: six weeks by default, the middle of the range and closest to what people
+   who lift for sport actually do. Every week is the user's to change: they can
+   move the cadence, switch it off, skip a scheduled one, or add one to any week.
+   The week counts from the last easy week, so an added one resets the clock and
+   a skipped one starts it again.
+
+   How an easy week is built, from the same 2025 recommendations: one step down
+   at the start of the week, the same days and the same exercises, about 10%
+   lighter on the bar, and less total work. How much less depends on how
+   recovered the person says they are:
+     low recovery needs       25 to 45% less volume
+     moderate                 40 to 60% less
+     high                     60 to 90% less, and accessories come out
+
+   And the rule the user asked for explicitly: an easy week never sets the next
+   week's weights. Those sessions are kept on the record, marked, and skipped by
+   everything that works out what to lift next, so the week after picks up
+   exactly where the week before the deload left off. */
+const DELOAD_EVERY=6;
+/* This block runs during boot, before the forecast script that defines
+   addDays() has loaded, so it carries its own. */
+const plusDays=(k,n)=>{ const d=dateOf(k); d.setDate(d.getDate()+n); return keyOf(d); };
+const DELOAD_RANGE=[4,5,6,7,8];
+const DELOAD_TIERS={
+  low:     {id:'low',      t:'Light',    band:'25 to 45%', load:0.10, sets:n=>Math.max(1,n-1),              reps:'mid'},
+  moderate:{id:'moderate', t:'Moderate', band:'40 to 60%', load:0.10, sets:n=>Math.max(1,n-1),              reps:'bottom'},
+  high:    {id:'high',     t:'Deep',     band:'60 to 90%', load:0.10, sets:n=>Math.max(1,Math.round(n*0.4)), reps:'bottom', dropAccessories:true}
+};
 function weeksTraining(){
   const first=S.profile.firstWeek;
   if(!first) return 0;
   return Math.max(0,Math.round((dateOf(mondayKey())-dateOf(first))/(7*864e5)));
 }
-function deloadDue(){
-  if(S.profile.deload===false) return false;
-  const every=+S.profile.deloadEvery||DELOAD_EVERY;
-  const n=weeksTraining();
-  return n>0 && every>0 && (n%every===0);
+const deloadMarks=()=>(S.deloadWeeks&&typeof S.deloadWeeks==='object')? S.deloadWeeks : {};
+const weeksApart=(a,b)=>Math.round((dateOf(b)-dateOf(a))/(7*864e5));
+/* Walk the calendar a week at a time from the start, applying the cadence and
+   the user's own changes, so a week that went by without the app being opened
+   is still counted the same way. Returns one entry per week from the start to
+   `ahead` weeks past this one. */
+function deloadSchedule(ahead){
+  const every=+S.profile.deloadEvery||DELOAD_EVERY, auto=S.profile.deload!==false;
+  const marks=deloadMarks(), cur=mondayKey();
+  const firsts=[S.profile.firstWeek].concat(Object.keys(marks)).filter(Boolean).sort();
+  const origin=firsts.length? firsts[0] : cur;
+  let anchor=plusDays(origin,-7);
+  const out=[], end=plusDays(cur,7*(ahead||0));
+  for(let wk=origin, guard=0; wk<=end && guard<600; wk=plusDays(wk,7), guard++){
+    const m=marks[wk];
+    let kind='work', why='';
+    if(m==='added'){ kind='deload'; why='added'; anchor=wk; }
+    else if(m==='skipped'){ kind='work'; why='skipped'; anchor=wk; }
+    else if(auto && S.profile.firstWeek && wk>=S.profile.firstWeek && weeksApart(anchor,wk)>=every){
+      kind='deload'; why='scheduled'; anchor=wk; }
+    out.push({wk,kind,why,n:weeksApart(anchor,wk)});
+  }
+  return out;
+}
+function deloadInfo(wk){
+  const k=wk||mondayKey();
+  const row=deloadSchedule(Math.max(0,weeksApart(mondayKey(),k))).find(r=>r.wk===k);
+  return row||{wk:k,kind:'work',why:'',n:0};
+}
+function deloadDue(wk){ return deloadInfo(wk).kind==='deload'; }
+function nextDeload(){
+  const ahead=deloadSchedule(12).filter(r=>r.wk>mondayKey()&&r.kind==='deload');
+  return ahead.length? ahead[0].wk : null;
+}
+function setDeloadMark(wk,mark){
+  S.deloadWeeks=Object.assign({},deloadMarks());
+  if(mark) S.deloadWeeks[wk]=mark; else delete S.deloadWeeks[wk];
+  save();
+}
+/* How deep this one goes: what the user picked, or what their last check in
+   says about recovery. */
+function deloadTier(){
+  const pick=S.profile.deloadDepth;
+  if(pick&&DELOAD_TIERS[pick]) return DELOAD_TIERS[pick];
+  const c=S.checkins&&S.checkins[0];
+  if(c&&typeof c.recovery==='number'){
+    if(c.recovery>=7) return DELOAD_TIERS.low;
+    if(c.recovery<=3) return DELOAD_TIERS.high;
+  }
+  return DELOAD_TIERS.moderate;
+}
+/* The weights to lift. Built from the last WORKING session only, so it is 10%
+   under what they were actually lifting, not 10% under last week's easy week. */
+function deloadPrescription(exId,row,tier){
+  const T=tier||deloadTier(), range=repRangeFor(row);
+  const normalSets=row.sets||3;
+  const mid=Math.round((range.bottom+range.top)/2);
+  const sets=T.sets(normalSets);
+  const reps=T.reps==='bottom'? range.bottom : mid;
+  const hist=exHistory(exId);
+  const last=hist[0];
+  const working=last&&last.sets? last.sets.filter(s2=>!s2.warm&&+s2.kg>0) : [];
+  const work=working.length? Math.max(...working.map(s2=>+s2.kg)) : null;
+  /* Round to the nearest weight that can actually be loaded, not down to the
+     progression step. Rounding down to a 5kg squat step turned "10% lighter"
+     into anything up to 15%. */
+  const eq=exOf(exId).eq;
+  const step={barbell:2.5,dumbbell:2,kettlebell:4,machine:2.5,cable:2.5}[eq]||2.5;
+  let kg=null;
+  if(work){
+    kg=Math.round((work*(1-T.load))/step)*step;
+    if(kg>=work) kg=work-step;
+    kg=+kg.toFixed(2);
+    if(eq==='barbell'&&kg<BAR_KG) kg=Math.min(work,BAR_KG);
+    if(kg<=0) kg=null;
+  }
+  const cut=Math.max(0,Math.round((1-(sets*reps)/(normalSets*mid))*100));
+  return {sets,reps,kg,work,cut,tier:T.id,
+    why: work
+      ? `${sets} × ${reps} at ${kg}kg. Your working weight is ${work}kg and it will be there next week.`
+      : `${sets} × ${reps}, and keep it comfortably short of hard. Nothing logged yet to take 10% off.`};
 }
 function composePlan(c,swaps){
   const pattern=weekPattern();
@@ -1149,6 +1681,10 @@ function buildPlan(swaps){
   S.plan=composePlan(S.checkins[0],swaps);
   const training=S.plan.days.filter(d=>d.type&&d.slot!=='walk').length;
   S.goal={kind:'any',target:training,unit:'sessions',label:'Move '+training+' times',now:S.goal?S.goal.now:0};
+  if(S.target&&!S.target.hit){ const pr=targetProgress(); if(pr&&pr.hit) S.target.hit=todayKey(); }
+  /* maintenance moves from estimated to measured to observed as data arrives,
+     and a met target returns the calories to maintenance */
+  if(typeof ownTargets==='function') S.targets=ownTargets();
   return S.plan;
 }
 function adaptPlan(days,c){
@@ -1170,13 +1706,24 @@ function adaptPlan(days,c){
     why.push(`<b>${c.pain.join(', ')}</b> stays out of every session until you say otherwise.`
       +(subs.some(s=>/instead/.test(s))? ' Suggested stand ins: '+subs.filter(s=>/instead/.test(s)).join('; ')+'.' : ''));
   }
-  if(c && typeof c.proteinHit==='number' && c.proteinHit<=4)
-    why.push('Protein came in well under target, so there is one food habit this week and nothing else: protein at breakfast.');
+  if(c && typeof c.proteinHit==='number' && c.proteinHit<=4){
+    const h=(typeof currentHabit==='function')&&currentHabit();
+    why.push(h
+      ? `Protein came in well under target. Your habit stays as it is: <b>${habitOf(h.id).t.toLowerCase()}</b>, and nothing else added on top of it.`
+      : 'Protein came in well under target, so there is one food habit this week and nothing else. Pick it on Today.');
+  }
   if(steps!==null && steps<5000 && !days.some(d=>d.slot==='walk'))
     why.push('Steps have been low, so a walk is in the week.');
   if(typeof deloadDue==='function' && deloadDue()){
-    days.forEach(d=>{ if(d.templateId) d.setDelta=(d.setDelta||0)-1; });
-    why.unshift(`<b>Planned easy week.</b> Week ${weeksTraining()}, so a set comes off every lift and you keep the weights where they are. Not a reward for a bad week: it is scheduled, and the next one is the point of it.`);
+    const info=deloadInfo(), T=deloadTier();
+    /* the reactive lighter week does not stack on top of a planned one */
+    days.forEach(d=>{ if(d.templateId){ d.deload=T.id; d.setDelta=0; } });
+    const c0=S.checkins&&S.checkins[0];
+    const flying=c0&&c0.recovery>=8&&c0.motivation>=7&&info.why==='scheduled';
+    why.unshift(`<b>${info.why==='added'?'Easy week, because you asked for one.':'Planned easy week.'}</b> `
+      +`Same days, same movements, about 10% lighter and ${T.band} less work. `
+      +`Next week picks up from the weights you were lifting before this one, not from these.`
+      +(flying? ` Your last check in says you are recovering well, so skipping this one is a fair call. It is on Plan.` : ''));
   }
   if(!why.length) why.push('Nothing flagged last week, so this is last week again, with a little more weight where you earned it.');
   return why;
@@ -1332,7 +1879,7 @@ function restorePlan(snap,msg){
 }
 function startPlanDay(day){
   if(!day) return null;
-  if(day.templateId) return startWorkout(day.templateId,{exclude:day.exclude,setDelta:day.setDelta});
+  if(day.templateId) return startWorkout(day.templateId,{exclude:day.exclude,setDelta:day.setDelta,deload:day.deload});
   if(day.circuitId&&typeof startCircuit==='function') return startCircuit(day.circuitId);
   if(day.runId){ const sess=runSession(day.runId); if(sess) return startSession(sess); }
   if(day.slot==='rest'){ toast('Rest is part of it. Nothing owed today.'); return null; }
@@ -1343,7 +1890,7 @@ function startPlanDay(day){
 
 /* ===================== today ===================== */
 function dayDone(i){ return (S.week[i]&&S.week[i].done.length>0); }
-function walkDone(){ const st=stepsToday(); return st!==null && st>=STEP_TARGET; }
+function walkDone(){ const st=stepsToday(); return st!==null && st>=stepTarget(); }
 const checkinDone=()=>!!S.checkins.find(c=>c.weekOf===mondayKey());
 const checkinDayName=()=>DAYS[S.profile.checkinDay===undefined?6:S.profile.checkinDay];
 function checkinRow(){
@@ -1359,22 +1906,62 @@ function checkinRow(){
     <span class="t"><b>Check in, it is ${checkinDayName()}</b><span>mostly filled in already. Two minutes.</span></span>
     <span class="chev">›</span></button>`;
 }
+/* The destination, if there is one, and how far off it is. */
+function targetLine(){
+  const t=S.target;
+  if(!t) return `<button class="skipbtn" id="setTarget">Give this a target</button>`;
+  const pr=targetProgress();
+  const k=TARGET_KINDS[t.kind];
+  if(t.hit) return `<div class="why"><b>Target met.</b> ${t.value}${k.unit==='a week'?' sessions a week':' '+k.unit}, on ${prettyDate(t.hit)}. <button class="inlinebtn" id="setTarget">Set the next one</button></div>`;
+  if(!pr) return `<button class="skipbtn" id="setTarget">${t.value}${k.unit==='a week'?' a week':' '+k.unit} by ${prettyDate(t.by)} · nothing logged against it yet</button>`;
+  const late=pr.daysLeft!==null&&pr.daysLeft<0;
+  return `<div class="targetline ${late?'late':''}">
+    <div class="tl-h"><b>${t.value}${k.unit==='a week'?' sessions a week':' '+k.unit}</b>
+      <span>${pr.daysLeft===null? '' : (late? Math.abs(pr.daysLeft)+' days past' : pr.daysLeft+' days left')}</span></div>
+    <div class="bar"><i style="width:${pr.pct}%;background:${late?'var(--burnt)':'var(--forest-bg)'}"></i></div>
+    <div class="tl-s">${pr.now}${k.unit==='a week'?'':' '+k.unit} now · ${Math.abs(pr.remaining)}${k.unit==='a week'?'':' '+k.unit} to go
+      <button class="inlinebtn" id="setTarget">change</button></div></div>`;
+}
+
+/* One row, seven dots, and an honest line under it. */
+function habitRow(){
+  const h=currentHabit();
+  if(!h){
+    const s=suggestHabit();
+    if(!s) return '';
+    return `<button class="todo" data-habitpick="${s.id}">
+      <span class="ic" style="background:var(--t-forest);color:var(--forest)">1</span>
+      <span class="t"><b>Pick one habit</b><span>${s.t.toLowerCase()}, or choose another. One at a time, on purpose</span></span>
+      <span class="chev">›</span></button>`;
+  }
+  const meta=habitOf(h.id), week=habitWeek(), streak=habitStreak(), rate=habitRate();
+  const doneToday=week[week.length-1].done;
+  return `<div class="todo habit ${doneToday?'done':''}">
+    <span class="ic" style="background:var(--t-forest);color:var(--forest)">${streak||'1'}</span>
+    <span class="t"><b>${meta.t}</b><span>${
+      streak>1? streak+' days running' : (streak===1? 'started today' : 'missed yesterday, which is what today is for')
+    }${rate!==null&&rate<0.5&&Object.keys(h.days||{}).length>=4? ' · sticking about '+Math.round(rate*100)+'% of days' : ''}</span>
+      <span class="dots">${week.map(d=>`<i class="${d.done?'on':''} ${d.before?'pre':''} ${d.today?'now':''}"></i>`).join('')}</span></span>
+    <button class="tick habittick" data-habittoggle="1" aria-label="${doneToday?'Undo today':'Mark today done'}">${doneToday?'✓':''}</button>
+  </div>`;
+}
 function renderToday(){
   const plan=ensurePlan(), d=todayPlan(), i=dowIdx(), logged=S.days[todayKey()];
   const weighedToday=S.weights.length && S.weights[S.weights.length-1].d===todayKey();
   const st=stepsToday(), done=dayDone(i), hue=HUE[d.kind]||HUE.any;
   const isWalk=d.slot==='walk';
-  const walkPct=st!==null? Math.min(100,Math.round(st/STEP_TARGET*100)) : 0;
+  const walkPct=st!==null? Math.min(100,Math.round(st/stepTarget()*100)) : 0;
   $('todayView').innerHTML=`
   <div class="hero">
     <div class="kicker" style="color:${hue.deep}">${DAYS[i]}</div>
     <h2>${dayLabel(d)}</h2>
     <div class="sub">${daySub(d)}${d.mins&&!isWalk?' · about '+d.mins+' minutes':''}${d.setDelta?' · one set lighter than usual':''}</div>
     ${isWalk&&st!==null
-      ? `<div class="track"><div class="tnum">${num(st)}<small> of ${num(STEP_TARGET)} steps</small></div>
+      ? `<div class="track"><div class="tnum">${num(st)}<small> of ${num(stepTarget())} steps</small></div>
           <div class="bar"><i style="width:${walkPct}%;background:${hue.deep}"></i></div>
           <div class="tsrc">Counted by ${sourceName()}. Nothing to log.</div></div>`
       : ''}
+    ${targetLine()}
     ${plan.why[0]?`<div class="why"><b>Why today looks like this.</b> ${plan.why[0]}</div>`:''}
     ${d.slot==='rest'
       ? `<button class="cta ghost" data-go="plan">See the week</button>`
@@ -1406,6 +1993,7 @@ function renderToday(){
     : `<button class="todo" id="connectBtn"><span class="ic" style="background:var(--t-marine);color:var(--marine)">⌚</span>
         <span class="t"><b>Connect your watch or phone</b><span>Steps and sleep fill themselves in. You never log them.</span></span>
         <span class="chev">›</span></button>`}
+  ${habitRow()}
   ${checkinRow()}
   ${(typeof painToReview==='function'? painToReview() : []).map(n=>`<div class="todo">
       <span class="ic" style="background:var(--t-burnt);color:var(--burnt)">?</span>
@@ -1441,10 +2029,14 @@ function openDayDetail(n,opts){
       <button class="mini" data-runswap="${n}">Change this run</button></div>`:''}
     ${tpl? `<div style="padding:2px 14px 10px">${tpl.ex.map(r=>`<button class="move" ${ro?'':`data-dayswap="${r.exId}"`} style="display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line-soft);font-size:13.5px;width:100%;text-align:left">
         <span style="flex:1;font-weight:600">${exOf(r.exId).n}</span>
-        <span style="color:var(--mute);font-size:12.5px">${typeof repText==='function'? repText(r) : r.sets+' × '+r.reps}</span>
+        <span style="color:var(--mute);font-size:12.5px">${d.deload&&typeof deloadPrescription==='function'
+          ? (p=>p.sets+' × '+p.reps+(p.kg!==null?' at '+p.kg+'kg':''))(deloadPrescription(r.exId,r,DELOAD_TIERS[d.deload]))
+          : (typeof repText==='function'? repText(r) : r.sets+' × '+r.reps)}</span>
+        <button class="movebtn" data-showmove="${r.exId}">show me</button>
         ${ro?'':'<span style="color:var(--marine);font-weight:700;font-size:12.5px">Change</span>'}</button>`).join('')}
       ${d.exclude&&d.exclude.length?`<div class="note">Leaving out ${d.exclude.join(', ')}.</div>`:''}
-      ${d.setDelta?`<div class="note">One set lighter than the template this week.</div>`:''}</div>`
+      ${d.deload?`<div class="note">Easy week: ${DELOAD_TIERS[d.deload].band} less work and about 10% lighter. Next week goes back to your working weights.</div>`
+        : (d.setDelta?`<div class="note">One set lighter than the template this week.</div>`:'')}</div>`
       : `<div class="note" style="padding:0 14px 12px">${d.slot==='rest'?'Nothing owed. Rest is part of it.':(d.slot==='walk'?'Counted by your tracker. Nothing to press.':'')}</div>`}
     ${d.type&&d.slot!=='walk'? `<button class="sheetcta" data-startday="${n}">Start this ${n===dowIdx()?'now':'day'}</button>`:''}
     ${ro? '' : `<button class="sheetcta" style="background:var(--grey-btn);color:var(--ink)" data-swap="${n}">Change this day</button>
@@ -1459,6 +2051,11 @@ function renderPlan(){
   <div class="h1">Your week</div>
   <div class="sect" style="border-bottom:0;padding-bottom:6px">
     <div class="numline"><div>Aim <b>${aim.t}</b></div><div>Training days <b>${plan.days.filter(d=>d.type&&d.slot!=='walk').length}</b></div></div>
+    ${(()=>{ const due=deloadDue(), nx=nextDeload();
+      return `<button class="dlweek" id="planDeload" style="border-top:0;padding-bottom:0">
+        <div class="d"><b>${due? 'This is an easy week' : (nx? 'Next easy week: '+prettyDate(nx) : 'No easy weeks scheduled')}</b>
+        <span>${due? DELOAD_TIERS[deloadTier().id].band+' less work, about 10% lighter. Tap to change.' : 'Tap to see the next ten weeks, or add one.'}</span></div>
+        <span class="tag ${due?'on':''}">${due?'Easy':'Change'}</span></button>`; })()}
   </div>
   <div class="sect">
     <h2>Why this week looks like this</h2>
@@ -1470,10 +2067,15 @@ function renderPlan(){
     <button class="mini" data-swap="${n}">Change</button>
     ${d.type&&d.slot!=='walk'?`<button class="mini go" data-startday="${n}">Start</button>`:''}
   </div>`).join('')}
-  <div class="sechead"><h2>Templates</h2><button data-tplopen="1">Open</button></div>
+  <div class="sechead"><h2>What your days are made of</h2><button data-tplopen="1">All of them</button></div>
+  ${(S.templates||[]).slice(0,4).map(t=>`<div class="trow">
+    <div class="txt"><div class="n">${t.name}</div>
+      <div class="s">${t.ex.length} movements · ${t.ex.map(r=>exOf(r.exId).n.split(' ')[0]).slice(0,3).join(', ')}${t.ex.length>3?'...':''}</div></div>
+    <button class="mini" data-tpledit="${t.id}">Edit</button>
+    <button class="mini go" data-tplstart="${t.id}">Start</button></div>`).join('')}
   <div class="sect" style="border-bottom:0">
-    <div class="note" style="margin:0">Every lifting day comes from a template. Change the sets, reps, rest or the movements themselves and the plan follows.</div>
-    <div style="display:flex;gap:8px;margin-top:12px">
+    <div class="note" style="margin:0">Every lifting day comes from one of these. Change the sets, the rep range, the rest or the movements themselves and the plan follows.</div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
       <button class="mini" id="changeAim">Change aim</button>
       <button class="mini" id="rebuild">Rebuild the week</button></div>
   </div>`;
@@ -1540,19 +2142,25 @@ function renderProgress(){
   </div>
   <div class="panel">
     <div class="ph"><h3>Coaching detail</h3></div>
-    <div class="numline" style="margin-bottom:10px"><div>Tempo guidance <b>${showTempoSafe()?'on':'off'}</b></div></div>
+    <div class="numline" style="margin-bottom:10px"><div>Tempo guidance <b>${showTempoSafe()?'on':'off'}</b></div>
+      <div>Theme <b>${(THEMES.find(t=>t[0]===((S.profile&&S.profile.theme)||'auto'))||THEMES[0])[1].toLowerCase()}</b></div></div>
+    <div class="chips" style="margin-bottom:10px">${THEMES.map(([id,label])=>`<button class="${((S.profile&&S.profile.theme)||'auto')===id?'on':''}" data-theme="${id}">${label}</button>`).join('')}</div>
     <div class="numline" style="margin-bottom:10px"><div>Kit you train with <b>${kitOf().length===ALL_KIT.length?'everything':kitOf().length+' of '+ALL_KIT.length}</b></div>
-      <div>Easy week <b>${S.profile.deload===false? 'off' : 'every '+(+S.profile.deloadEvery||DELOAD_EVERY)}</b></div></div>
+      <div>Easy week <b>${S.profile.deload===false? 'when you add one' : 'every '+(+S.profile.deloadEvery||DELOAD_EVERY)}</b></div></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini" id="tempoSetting">${showTempoSafe()?'Turn tempo off':'Turn tempo on'}</button>
       <button class="mini" id="tempoWhat">What is tempo?</button>
       <button class="mini" id="kitBtn">Change your kit</button>
-      <button class="mini" id="deloadBtn">Easy weeks</button></div>
+      <button class="mini" id="deloadBtn">Easy weeks</button>
+      <button class="mini" id="nudgeBtn">${nudgeState()==='on'?'Reminders on':'Remind me to check in'}</button>
+      <button class="mini" id="habitChange">${currentHabit()?'Change your habit':'Pick a habit'}</button></div>
     <div class="note">The four digits beside your sets. Off leaves your programme exactly as it is.</div>
   </div>
   <div class="panel">
     <div class="ph"><h3>Your numbers</h3>${p.detailsSet?`<button id="detailsBtn">Edit</button>`:''}</div>
     ${p.detailsSet
-      ? `<div class="numline"><div>Maintenance <b>${num(tdeeOf(p))}</b> kcal</div><div>Protein <b>${proteinOf(p)}g</b>${proteinBasis(p).adjusted?' *':''}</div>
+      ? `${(()=>{ const ct=calorieTarget(); return ct? `<div class="numline"><div>Maintenance <b>${num(ct.maintenance)}</b> kcal</div><div>Eat <b>${num(ct.kcal)}</b> kcal</div><div>Steps <b>${num(stepTarget())}</b></div></div>
+        <div class="note" style="margin:4px 0 10px">${ct.source==='observed'?'Maintenance ':'Maintenance is '}${ct.sourceLabel}. ${calorieLine(ct)}</div>` : ''; })()}
+        <div class="numline"><div>Protein <b>${proteinOf(p)}g</b>${proteinBasis(p).adjusted?' *':''}</div>
           <div>${showH(p.height,imp)}</div><div>${p.age} years</div></div>
          <div class="note">A rough reference, not a daily target. Gauntlet does not count your food and never will.${proteinBasis(p).adjusted?' * Protein is worked from an adjusted reference weight rather than the scale, because fat mass has no protein requirement.':''}</div>`
       : `<button class="mini" id="detailsBtn">Work out my maintenance</button>
@@ -1574,16 +2182,16 @@ function renderProgress(){
     : `<div class="empty">Your sessions show up here once you have done a few.</div>`;
   updateBadge();
 }
+/* Progress used to be three screens hiding behind a segmented control, with the
+   coach steer appended to one of them and the account panel injected into
+   another. It is one screen now: the trends, and the sessions. Lifting sits on
+   Plan beside the templates it comes from, and everything about you and your
+   settings is one sheet away. */
 let progSeg='week';
-function showSeg(name){
-  progSeg=name;
-  $('dash').hidden=name!=='week'; $('dashBody').hidden=name!=='body'; $('dashLifts').hidden=name!=='lifts';
-  $('sessHead').hidden=name!=='week'; $('grid').hidden=name!=='week';
-  document.querySelectorAll('#progSeg [data-seg]').forEach(b=>b.classList.toggle('on',b.dataset.seg===name));
-}
+function showSeg(){ /* the switch is gone; kept so old callers do nothing */ }
+function openYou(){ renderProgress(); openSheet('youSheet'); }
 document.addEventListener('click',e=>{
-  const sg=e.target.closest('#progSeg [data-seg]');
-  if(sg) showSeg(sg.dataset.seg);
+  if(e.target.closest('#youBtn')||e.target.closest('#profAv')) openYou();
 });
 function showTempoSafe(){ return !(S.profile&&S.profile.showTempo===false); }
 function signedInSafe(){ try{ return !!(window.__CLOUD&&window.__CLOUD.signedIn()); }catch(e){ return false; } }
@@ -1610,7 +2218,7 @@ function cardHTML(p){
     <div class="acts">
       <button class="tryit ${p.mine?'again':''}" data-try="${p.id}">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2.5 21 6l-4 3.5"/><path d="M21 6H8a4 4 0 0 0-4 4v1"/><path d="M7 21.5 3 18l4-3.5"/><path d="M3 18h13a4 4 0 0 0 4-4v-1"/></svg>${p.mine?'Again':'Try it'}</button>
-      <div class="tries" data-tries="${p.id}">${num(triesOf(p))} tried this</div></div>
+      <div class="tries">${num(triesOf(p))} tried this</div></div>
     <div class="body"><div class="cap"><b>${u.n}</b> ${p.cap}</div>
       ${p.mine&&p.origin?`<div class="credit">Picked up from <b>@${who(p.origin.by).n}</b></div>`:''}</div></article>`;
 }
@@ -1812,6 +2420,23 @@ document.addEventListener('click',e=>{
   if(e.target.closest('#changeAim')){ drawAimSheet(); openSheet('aimSheet'); }
   const am=e.target.closest('[data-aim]');
   if(am){ setAim(am.dataset.aim); closeSheets(); toast('Aim changed. The week rebuilt around it.'); }
+  const hp=e.target.closest('[data-habitpick]');
+  if(hp&&!e.target.closest('#habitSheet')){ openHabitSheet(); return; }
+  if(e.target.closest('[data-habittoggle]')){
+    const before=habitWeek().slice(-1)[0].done;
+    toggleHabitDay(todayKey()); renderAll();
+    toast(before? 'Unmarked' : (habitStreak()>1? habitStreak()+' days running' : 'Marked'));
+    return; }
+  const hc=e.target.closest('[data-habitchoose]');
+  if(hc){ const h=startHabit(hc.dataset.habitchoose); closeSheets(); renderAll();
+    toast(h? habitOf(h.id).t+' it is. One thing.' : 'Could not start that'); return; }
+  if(e.target.closest('#habitRetire')){
+    const meta=currentHabit()? habitOf(currentHabit().id) : null;
+    const snapshot=JSON.parse(JSON.stringify(S.habit||null));
+    retireHabit(); closeSheets(); renderAll();
+    toast((meta? meta.t : 'Habit')+' put down','Undo',()=>{ S.habit=snapshot; save(); renderAll(); });
+    return; }
+  if(e.target.closest('#habitChange')){ openHabitSheet(); return; }
   const pok=e.target.closest('[data-painok]');
   if(pok){ const n=pok.dataset.painok; clearPain(n); toast(n+' is back in the plan'); }
   const pso=e.target.closest('[data-painsore]');
@@ -1821,6 +2446,25 @@ document.addEventListener('click',e=>{
     const alt=(typeof painAlternative==='function')? painAlternative(n) : null;
     toast(alt? n+' stays out. '+alt.n+' trains the same thing if you want it in.'
             : n+' stays out. If it keeps up, that is a physio question.'); }
+  if(e.target.closest('#setTarget')){ openTargetSheet(); return; }
+  const tk=e.target.closest('[data-targetkind]');
+  if(tk){ targetDraft.kind=tk.dataset.targetkind; drawTargetSheet(); return; }
+  const tw=e.target.closest('[data-targetweeks]');
+  if(tw){ targetDraft.weeks=+tw.dataset.targetweeks; drawTargetSheet(); return; }
+  if(e.target.closest('#targetSave')){
+    const v=+((document.getElementById('targetValue')||{}).value||0);
+    if(!v){ toast('Put a number on it'); return; }
+    const by=addDays(todayKey(),targetDraft.weeks*7);
+    const t=setTarget(targetDraft.kind,v,by,targetDraft.exId);
+    t.from=targetNow()!==null? targetNow() : 0;
+    S.targets=ownTargets(); save();
+    closeSheets(); renderAll();
+    const ct=t.kind==='weight'? calorieTarget() : null;
+    toast(ct&&ct.dir!=='hold'? v+'kg: eat '+num(ct.kcal)+' kcal'+(ct.capped?', capped to a safe rate':'') : v+' by '+prettyDate(by)); return; }
+  if(e.target.closest('#targetClear')){
+    const was=JSON.parse(JSON.stringify(S.target||null));
+    clearTarget(); S.targets=ownTargets(); save(); closeSheets(); renderAll();
+    toast('Target cleared','Undo',()=>{ S.target=was; save(); renderAll(); }); return; }
   if(e.target.closest('#todoWeigh')) openWeigh();
   if(e.target.closest('#todoDay')) openDay();
   if(e.target.closest('#todoCheck')) openWeek();
@@ -1832,6 +2476,15 @@ document.addEventListener('click',e=>{
   if(e.target.closest('#detailsBtn')) openDetails();
   if(e.target.closest('#tempoSetting')){ S.profile.showTempo=!showTempoSafe(); save(); renderProgress();
     if(typeof GYM!=='undefined'&&GYM) drawGym(); toast(showTempoSafe()?'Tempo shown':'Tempo hidden'); }
+  if(e.target.closest('#nudgeBtn')){
+    const st=nudgeState();
+    if(st==='on') disableNudges();
+    else if(st==='blocked') toast('Your browser is blocking notifications for this site');
+    else if(st==='unsupported') toast('This browser cannot do reminders');
+    else enableNudges();
+    return; }
+  const th=e.target.closest('[data-theme]');
+  if(th){ setTheme(th.dataset.theme); toast('Theme: '+(THEMES.find(x=>x[0]===th.dataset.theme)||[])[1]); }
   if(e.target.closest('#tempoWhat')&&typeof openTempoHelp==='function') openTempoHelp();
 });
 $('findBtn').addEventListener('click',()=>{renderPeople();openSheet('findSheet')});
@@ -1850,7 +2503,8 @@ function openLog(){
     +row('food','Log food',dayFood(k).length? dayFood(k).length+' things so far':'tap from a list','var(--burnt)')
     +row('day','How did today go?',logged&&logged.wb? 'you said '+logged.wb+' out of 10':'one slider','var(--marine)')
     +row('week','Weekly check in',checkinDone()?'done for this week':'two minutes, and next week is built from it','var(--marigold)')
-    +row('templates','Start something else','any template, circuit or run');
+    +row('templates','Start something else','any template, circuit or run')
+    +row('coach','Ask about your record','everything the app knows, in plain English','var(--marine-bg)');
   openSheet('logSheet');
 }
 document.addEventListener('click',e=>{
@@ -1863,6 +2517,7 @@ document.addEventListener('click',e=>{
   if(what==='day') openDay();
   if(what==='week') openWeek();
   if(what==='templates'&&typeof drawTemplates==='function'){ drawTemplates(); openSheet('tplSheet'); }
+  if(what==='coach'&&typeof openCoach==='function') openCoach();
 });
 function drawAimSheet(){
   $('aimBody').innerHTML=AIMS.map(a=>`<button class="opt ${S.profile.aim===a.id?'on':''}" data-aim="${a.id}">
@@ -1892,6 +2547,7 @@ function drawDetails(){
   $('detailsBody').innerHTML=`<div class="pair">
       <button class="big-pick ${draft.sex==='f'?'on':''}" data-set="sex" data-val="f">Female</button>
       <button class="big-pick ${draft.sex==='m'?'on':''}" data-set="sex" data-val="m">Male</button></div>
+    <button class="big-pick ${draft.sex==='x'?'on':''}" data-set="sex" data-val="x" style="width:100%;margin-top:8px">Rather not say</button>
     <div class="field"><div class="fl"><div class="k">Age</div><div class="v" id="outage">${draft.age}</div>
       <div class="unitsw"><button class="${!imp?'on':''}" data-units="metric">cm, kg</button><button class="${imp?'on':''}" data-units="imperial">ft, lb</button></div></div>
       <input type="range" min="14" max="90" value="${draft.age}" data-range="age" aria-label="Age"></div>
@@ -1899,8 +2555,10 @@ function drawDetails(){
       <input type="range" min="135" max="215" value="${draft.height}" data-range="height" aria-label="Height"></div>
     <div class="field"><div class="fl"><div class="k">Weight</div><div class="v" id="outweight">${showW(draft.weight,imp)}</div></div>
       <input type="range" min="38" max="200" step="0.5" value="${draft.weight}" data-range="weight" aria-label="Weight"></div>
-    ${ACTIVITY.map(a=>`<button class="opt ${draft.activity===a.id?'on':''}" data-set="activity" data-val="${a.id}">
-      <div class="txt"><div class="t">${a.t}</div><div class="s">${a.s}</div></div><div class="rad"></div></button>`).join('')}`;
+    <div class="field"><div class="fl"><div class="k">Daily step target</div><div class="v" id="outstepTarget">${num(stepTarget(draft))}</div></div>
+      <input type="range" min="2000" max="25000" step="500" value="${stepTarget(draft)}" data-range="stepTarget" aria-label="Daily step target"></div>
+    <div class="note" id="stepsWorth">${(()=>{ const pt=plausibleBody(draft)? plannedTdee(Object.assign({},draft,{detailsSet:true})) : null;
+      return pt? 'Each 1,000 steps is about '+pt.per1000+' kcal a day for you, and this moves your calorie target by the same amount.' : ''; })()}</div>`;
 }
 document.addEventListener('click',e=>{
   const set=e.target.closest('[data-set]');
@@ -1910,7 +2568,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{
   if(e.target.id==='onbPeriod'&&onbDraft){ onbDraft.lastPeriod=e.target.value; }
-  if(onbDraft&&['onbAge','onbHeight','onbWeight'].includes(e.target.id)){
+  if(onbDraft&&['onbAge','onbHeight','onbWeight','onbGoal','onbSteps'].includes(e.target.id)){
     const k=e.target.id.replace('onb','').toLowerCase();
     onbDraft[k]= e.target.value===''? null : +e.target.value;
     clearTimeout(onbDraft._t);
@@ -1921,7 +2579,8 @@ document.addEventListener('input',e=>{
   const r=e.target.closest('[data-range]'); if(!r||!draft) return;
   const k=r.dataset.range; draft[k]=+r.value;
   const out=$('out'+k);
-  if(out) out.textContent = k==='age'? draft.age : (k==='height'? showH(draft.height,draft.units==='imperial') : showW(draft.weight,draft.units==='imperial'));
+  if(out) out.textContent = k==='stepTarget'? num(draft.stepTarget)
+    : (k==='age'? draft.age : (k==='height'? showH(draft.height,draft.units==='imperial') : showW(draft.weight,draft.units==='imperial')));
 });
 $('saveDetails').addEventListener('click',()=>{
   if(!draft.sex){ toast('Pick one so the sums work'); return; }
@@ -1929,7 +2588,8 @@ $('saveDetails').addEventListener('click',()=>{
   if(typeof ownTargets==='function') S.targets=ownTargets();
   if(!S.weights.length) S.weights.push({d:todayKey(),kg:S.profile.weight});
   save(); closeSheets(); renderProgress();
-  toast('Maintenance is about '+num(tdeeOf(S.profile))+' kcal');
+  const ct=calorieTarget();
+  toast(ct? 'Maintenance '+num(ct.maintenance)+', eating '+num(ct.kcal)+' kcal' : 'Saved');
 });
 /* ===================== player ===================== */
 const player=$('player');
@@ -2043,10 +2703,28 @@ function onbRender(){
   }
   if(step===2){
     const sex=onbDraft.sex||'';
-    const p=Object.assign({},S.profile,{sex:sex==='x'?'':sex,age:onbDraft.age,height:onbDraft.height,
-      weight:onbDraft.weight,activity:onbDraft.activity||'mod'});
-    const ready=sex&&onbDraft.age&&onbDraft.height&&onbDraft.weight;
-    const kcal=ready? tdeeOf(p) : null, pro=ready? proteinOf(p) : null;
+    if(onbDraft.steps===undefined) onbDraft.steps=DEFAULT_STEPS;
+    const stepsOk=validSteps(onbDraft.steps);
+    const p=Object.assign({},S.profile,{sex,age:onbDraft.age,height:onbDraft.height,
+      weight:onbDraft.weight,stepTarget:stepsOk? +onbDraft.steps : DEFAULT_STEPS,
+      liftDays:(onbDraft.liftDays===undefined||onbDraft.liftDays===null)
+        ? (AIM_DEFAULTS[onbDraft.aim]||AIM_DEFAULTS.lose).lift : onbDraft.liftDays,
+      detailsSet:true,__preview:true});
+    const entered=sex&&onbDraft.age&&onbDraft.height&&onbDraft.weight;
+    const ready=entered&&plausibleBody(p);
+    const pt=ready? plannedTdee(p) : null;
+    const kcal=pt? pt.kcal : null, pro=ready? proteinOf(p) : null;
+    /* what the goal weight would mean, worked out the same way the app will */
+    const goal=+onbDraft.goal||null;
+    const preview=(()=>{ if(!ready) return null;
+      const keep={profile:S.profile,target:S.target,weights:S.weights};
+      keep.plan=S.plan; S.plan=null;
+      S.profile=p; S.weights=[]; S.target= goal? {kind:'weight',value:goal,by:null,from:+p.weight} : null;
+      const dir= goal? (goal<+p.weight-0.2?'lose':(goal>+p.weight+0.2?'gain':'hold'))
+        : (onbDraft.aim==='lose'?'lose':(onbDraft.aim==='build'?'gain':'hold'));
+      let ct=null; try{ ct=calorieTarget({dir}); }catch(err){}
+      S.profile=keep.profile; S.target=keep.target; S.weights=keep.weights; S.plan=keep.plan;
+      return ct; })();
     b.innerHTML=`<h2>Your numbers.</h2>
       <p class="lead">Used for one thing: working out roughly what you burn in a day, so the calorie and protein targets are yours rather than somebody else's. Skip any of it and fill it in later.</p>
       <div class="slab">Sex</div>
@@ -2059,13 +2737,24 @@ function onbRender(){
       <div class="twoup" style="gap:10px">
         <div class="nf"><label>Age</label><input id="onbAge" type="number" inputmode="numeric" value="${onbDraft.age||''}" placeholder="36"></div>
         <div class="nf"><label>Height, cm</label><input id="onbHeight" type="number" inputmode="numeric" value="${onbDraft.height||''}" placeholder="178"></div></div>
-      <div class="nf" style="margin-top:10px"><label>Weight, kg</label><input id="onbWeight" type="number" inputmode="decimal" step="0.1" value="${onbDraft.weight||''}" placeholder="82"></div>
-      <div class="slab">How much you move outside training</div>
-      ${ACTIVITY.map(a=>`<button class="opt ${(onbDraft.activity||'mod')===a.id?'on':''}" data-onbact="${a.id}">
-        <div class="txt"><div class="t">${a.t}</div><div class="s">${a.s}</div></div><div class="rad"></div></button>`).join('')}
+      <div class="twoup" style="gap:10px;margin-top:10px">
+        <div class="nf"><label>Weight now, kg</label><input id="onbWeight" type="number" inputmode="decimal" step="0.1" value="${onbDraft.weight||''}" placeholder="82"></div>
+        <div class="nf"><label>Goal weight, kg</label><input id="onbGoal" type="number" inputmode="decimal" step="0.1" value="${onbDraft.goal||''}" placeholder="optional"></div></div>
+      ${entered&&!ready? `<div class="warn" style="margin-top:10px">One of those does not look like a real number yet. Keep going.</div>`:''}
+      <div class="slab">Daily step target</div>
+      <div class="nf"><label>Steps a day you are aiming for</label>
+        <input id="onbSteps" type="number" inputmode="numeric" step="500" min="1000" max="40000" value="${onbDraft.steps||''}" placeholder="8000"></div>
+      <div class="chips" style="margin-top:8px">${STEP_BANDS.map(b=>`<button class="${+onbDraft.steps===b.n?'on':''}" data-onbsteps="${b.n}">${num(b.n)}</button>`).join('')}</div>
+      <div class="note">${stepsOk
+        ? (()=>{ const b=STEP_BANDS.slice().reverse().find(x=>+onbDraft.steps>=x.n);
+            return (b? b.t+' ('+b.s+'). ' : 'Under 5,000 is classed as sedentary. ')
+              +'Count everything your phone or watch would, runs included. This sets your calories, so aim for what you will actually do rather than what you would like to do.'; })()
+        : 'Somewhere between 1,000 and 40,000.'}</div>
       ${ready? `<div class="revday" style="margin-top:14px"><div class="revhead">What that gives you <span>an estimate</span></div>
-        <div class="revrow" style="pointer-events:none"><div class="txt"><div class="t">${num(kcal)} kcal a day</div>
-          <div class="s">Maintenance, by Mifflin St Jeor. Replaced by your own numbers once you have logged a couple of weeks.</div></div></div>
+        <div class="revrow" style="pointer-events:none"><div class="txt"><div class="t">${num(kcal)} kcal a day to stay where you are</div>
+          <div class="s">Resting burn ${num(pt.rmr)}${sex==='x'?' (midpoint of the male and female equations)':''}, a sedentary day ${num(pt.base)}, plus ${num(pt.walk)} for ${num(pt.steps)} steps and ${num(pt.lift)} for your lifting. Each 1,000 steps is about ${pt.per1000} kcal for you. Replaced by your own numbers once you have logged about three weeks.</div></div></div>
+        ${preview&&preview.dir!=='hold'? `<div class="revrow" style="pointer-events:none"><div class="txt"><div class="t">${num(preview.kcal)} kcal a day to eat</div>
+          <div class="s">${calorieLine(preview)}</div></div></div>`:''}
         <div class="revrow" style="pointer-events:none"><div class="txt"><div class="t">${pro}g protein a day</div>
           <div class="s">1.8g per kilo, mid range of what the research supports.</div></div></div></div>`
         : `<div class="note" style="margin-top:14px">Fill those in and I will show you what they work out to.</div>`}
@@ -2215,27 +2904,127 @@ function applyKitChange(){
 }
 function openDeloadSheet(){
   const every=+S.profile.deloadEvery||DELOAD_EVERY, off=S.profile.deload===false;
+  const T=deloadTier(), depth=S.profile.deloadDepth||'auto';
+  const weeks=deloadSchedule(10).filter(r=>r.wk>=mondayKey()).slice(0,10);
+  const nx=nextDeload();
   document.getElementById('altTitle').textContent='Easy weeks';
-  document.getElementById('altSub').textContent='A scheduled back-off, so the hard weeks have somewhere to go.';
+  document.getElementById('altSub').textContent='A scheduled step back, so the hard weeks have somewhere to go.';
   document.getElementById('altBody').innerHTML=`
     <div style="padding:0 14px 6px">
-      <div class="method"><b>What happens</b><span>A set comes off every lifting day and the weights stay where they are. Running and walking are untouched.</span></div>
-      <div class="method"><b>Where the number comes from</b><span>Every fourth week is the ordinary default in block programming, not a finding from a trial. Move it, or turn it off, if your own experience says otherwise.</span></div>
-      <div class="method"><b>Where you are</b><span>${S.profile.firstWeek? 'Week '+weeksTraining()+' since you started. '+(deloadDue()? 'This one is an easy week.' : 'Next easy week is in '+(every-(weeksTraining()%every))+'.') : 'Starts counting from your first full week.'}</span></div>
+      <div class="slab">The next ten weeks</div>
+      <div class="note" style="margin-top:0">Tap a week to make it easy or put it back to normal. Changing one moves the ones after it, because the count starts again from your last easy week.</div>
+      ${weeks.map(r=>{
+        const isNow=r.wk===mondayKey();
+        const label=r.kind==='deload'? (r.why==='added'?'easy, added by you':'easy, scheduled') : (r.why==='skipped'?'skipped, back to normal':'normal');
+        return `<button class="dlweek" data-dlweek="${r.wk}">
+          <div class="d"><b>${isNow?'This week':'Week of '+prettyDate(r.wk)}</b><span>${label}</span></div>
+          <span class="tag ${r.kind==='deload'?'on':''}">${r.kind==='deload'?'Easy':'Normal'}</span></button>`;
+      }).join('')}
+
       <div class="slab">How often</div>
-      <div class="chips">${[3,4,5,6].map(n=>`<button class="${!off&&every===n?'on':''}" data-deload="${n}">Every ${n}</button>`).join('')}
-        <button class="${off?'on':''}" data-deload="off">Never</button></div>
+      <div class="chips">${DELOAD_RANGE.map(n=>`<button class="${!off&&every===n?'on':''}" data-deload="${n}">Every ${n}${n===DELOAD_EVERY?' ·':''}</button>`).join('')}
+        <button class="${off?'on':''}" data-deload="off">Only when I add one</button></div>
+      <div class="note">${off? 'Nothing is scheduled. Any week you tap above still becomes an easy week.'
+        : 'An easy week every '+every+' weeks'+(nx?', next on '+prettyDate(nx):'')+'.'}</div>
+
+      <div class="slab">How easy</div>
+      <div class="chips">
+        <button class="${depth==='auto'?'on':''}" data-dldepth="auto">From my check in</button>
+        ${Object.keys(DELOAD_TIERS).map(k=>`<button class="${depth===k?'on':''}" data-dldepth="${k}">${DELOAD_TIERS[k].t}</button>`).join('')}</div>
+      <div class="note">${depth==='auto'? 'Right now that is '+T.t.toLowerCase()+': ' : ''}${T.band} less work than a normal week, about 10% lighter on the bar${T.dropAccessories?', and the accessory work comes out':''}.</div>
+
+      <div class="slab">Where these numbers come from</div>
+      <div class="method"><b>How often</b><span>Planned deloads usually sit every 4 to 8 weeks and last about a week (Bell and colleagues, Strength and Conditioning Journal, 2025). In a survey of 246 competitive strength and physique athletes the typical gap was about every five and a half weeks (Rogerson and colleagues, Sports Medicine Open, 2024). Six is the default here because it is the middle of that range and closest to what people who lift for sport actually do.</span></div>
+      <div class="method"><b>Why not more often</b><span>In a 2024 trial, a week off at the midpoint of a nine-week block made no difference to muscle growth, but the group that trained straight through gained a little more strength (Coleman and colleagues, PeerJ). That week was no training at all rather than a lighter one, and the same researchers describe a planned deload as a checkpoint, not a compulsion. If you feel good when one comes round, skipping it is a reasonable call.</span></div>
+      <div class="method"><b>What changes in the week</b><span>One step down at the start of the week. Same days, same movements. About 10% lighter, and 25 to 45%, 40 to 60% or 60 to 90% less work depending on how recovered you are. That is the 2025 recommendation, applied as written.</span></div>
+      <div class="method"><b>What does not change</b><span>Your working weights. Easy-week sessions stay on your record, marked, but nothing uses them to decide what you lift next. The week after picks up from where the week before left off.</span></div>
     </div>`;
   openSheet('altSheet');
 }
 document.addEventListener('click',e=>{
-  if(e.target.closest('#deloadBtn')) openDeloadSheet();
+  if(e.target.closest('#deloadBtn')||e.target.closest('#planDeload')) { openDeloadSheet(); return; }
+  const dw=e.target.closest('[data-dlweek]');
+  if(dw){
+    const wk=dw.dataset.dlweek, now=deloadInfo(wk), marks=deloadMarks();
+    const beforeMarks=JSON.parse(JSON.stringify(marks));
+    /* flip the week: an easy week becomes a normal one and the other way round,
+       and a mark that only restates what the schedule would do anyway is removed */
+    if(now.kind==='deload'){ setDeloadMark(wk, now.why==='added'? null : 'skipped'); }
+    else { setDeloadMark(wk, now.why==='skipped'? null : 'added'); }
+    if(deloadInfo(wk).kind===now.kind) setDeloadMark(wk, now.kind==='deload'? 'skipped' : 'added');
+    buildPlan(); save(); openDeloadSheet(); renderAll();
+    toast((wk===mondayKey()?'This week':'Week of '+prettyDate(wk))+' is now '+(deloadDue(wk)?'an easy week':'a normal week'),
+      'Undo',()=>{ S.deloadWeeks=beforeMarks; buildPlan(); save(); renderAll(); });
+    return; }
   const dl=e.target.closest('[data-deload]');
   if(dl){ const v=dl.dataset.deload;
     if(v==='off') S.profile.deload=false; else { S.profile.deload=true; S.profile.deloadEvery=+v; }
     buildPlan(); save(); openDeloadSheet(); renderAll();
-    toast(v==='off'? 'Easy weeks off' : 'An easy week every '+v); }
+    toast(v==='off'? 'Only the easy weeks you add' : 'An easy week every '+v+' weeks'); return; }
+  const dd=e.target.closest('[data-dldepth]');
+  if(dd){ const v=dd.dataset.dldepth;
+    S.profile.deloadDepth = v==='auto'? null : v;
+    buildPlan(); save(); openDeloadSheet(); renderAll();
+    toast(v==='auto'? 'Depth follows your check in' : DELOAD_TIERS[v].t+' easy weeks'); return; }
 });
+let targetDraft={kind:'weight',weeks:12,exId:null};
+/* Works the target out exactly as saving it would, without saving it. */
+function targetKcalPreview(){
+  const el=document.getElementById('targetValue');
+  const v=+(el&&el.value || (S.target&&S.target.kind==='weight'? S.target.value : 0));
+  if(!v) return 'Put a weight in and this shows the calories it takes to get there.';
+  const t={kind:'weight',value:v,by:addDays(todayKey(),targetDraft.weeks*7),hit:null};
+  const kg=currentKg();
+  const dir=v<kg-0.2?'lose':(v>kg+0.2?'gain':'hold');
+  const ct=calorieTarget({dir,target:t});
+  return ct? calorieLine(ct) : 'Add your age, height and weight in You first, so there is something to work from.';
+}
+function openTargetSheet(){
+  const cur=S.target;
+  targetDraft={kind:cur?cur.kind:(S.profile.aim==='endure'?'runkm':'weight'),
+    weeks:12, exId:cur?cur.exId:null};
+  drawTargetSheet(); openSheet('altSheet');
+}
+function drawTargetSheet(){
+  const k=targetDraft.kind, now=(()=>{ const save_=S.target; S.target={kind:k,exId:targetDraft.exId};
+    const v=targetNow(); S.target=save_; return v; })();
+  const by=addDays(todayKey(),targetDraft.weeks*7);
+  document.getElementById('altTitle').textContent='What are you actually after?';
+  document.getElementById('altSub').textContent='A number and a date. Everything else in here already knows how to count.';
+  document.getElementById('altBody').innerHTML=`
+    <div style="padding:0 14px 6px">
+      <div class="slab">What kind</div>
+      <div class="chips">${Object.keys(TARGET_KINDS).map(id=>`<button class="${k===id?'on':''}" data-targetkind="${id}">${TARGET_KINDS[id].t}</button>`).join('')}</div>
+      <div class="nf" style="margin:12px 0 10px"><label>${TARGET_KINDS[k].t} of</label>
+        <input id="targetValue" type="number" inputmode="decimal" step="0.1"
+          value="${S.target&&S.target.kind===k? S.target.value : ''}"
+          placeholder="${now!==null? now : ''}"></div>
+      <div class="slab">By when</div>
+      <div class="chips">${[6,12,16,26,52].map(n=>`<button class="${targetDraft.weeks===n?'on':''}" data-targetweeks="${n}">${n} weeks</button>`).join('')}</div>
+      <div class="note">${now!==null? 'Right now that reads '+now+' '+TARGET_KINDS[k].unit+'. ' : 'Nothing logged against this yet. '}That would put the date at ${prettyDate(by)}.</div>
+      ${k==='weight'? `<div class="method" id="targetKcal"><b>What that means for food</b><span>${targetKcalPreview()}</span></div>` : ''}
+      <button class="sheetcta" id="targetSave">Set it</button>
+      ${S.target? `<button class="skipbtn" id="targetClear">Take the target off</button>`:''}
+    </div>`;
+}
+function openHabitSheet(){
+  const cur=currentHabit(), s=suggestHabit();
+  document.getElementById('altTitle').textContent= cur? 'Change your habit' : 'One habit';
+  document.getElementById('altSub').textContent='One at a time. A second one is how both of them stop.';
+  const group=tag=>HABITS.filter(h=>h.tag===tag);
+  const label={food:'Eating',move:'Moving',sleep:'Sleeping'};
+  document.getElementById('altBody').innerHTML=`
+    <div style="padding:0 14px 6px">
+      ${cur? `<div class="method"><b>Where you are</b><span>${habitOf(cur.id).t}, started ${prettyDate(cur.started)}. ${habitStreak()>1? habitStreak()+' days running.' : ''} Changing it now resets the count.</span></div>`:''}
+      <div class="method"><b>Why only one</b><span>Doing one thing until it is boring beats doing five badly. When this one stops needing a tick, pick the next.</span></div>
+      ${['food','move','sleep'].map(tag=>`<div class="slab">${label[tag]}</div>`
+        +group(tag).map(h=>`<button class="opt ${cur&&cur.id===h.id?'on':''}" data-habitchoose="${h.id}">
+          <div class="txt"><div class="t">${h.t}${s&&s.id===h.id&&!cur?' <span class="cichip">suggested</span>':''}</div>
+          <div class="s">${h.s}</div></div><div class="rad"></div></button>`).join('')).join('')}
+      ${cur? `<button class="skipbtn" id="habitRetire">Put this one down for now</button>`:''}
+    </div>`;
+  openSheet('altSheet');
+}
 function openTempoHelp(){
   document.getElementById('altTitle').textContent='Tempo';
   document.getElementById('altSub').textContent='Four numbers, in seconds, in this order.';
@@ -2267,6 +3056,8 @@ document.addEventListener('click',e=>{
     onbDraft.liftDays=d.lift; onbDraft.cardioDays=d.cardio; onbRender(); }
   const ac=e.target.closest('[data-onbact]');
   if(ac){ onbDraft.activity=ac.dataset.onbact; onbRender(); }
+  const sc=e.target.closest('[data-onbsteps]');
+  if(sc){ onbDraft.steps=+sc.dataset.onbsteps; onbRender(); }
   const sx=e.target.closest('[data-onbsex]');
   if(sx){ onbDraft.sex=sx.dataset.onbsex; if(onbDraft.sex!=='f') onbDraft.cycle=false; onbRender(); }
   const cy=e.target.closest('[data-onbcycle]');
@@ -2311,15 +3102,25 @@ $('onbNext').addEventListener('click',async()=>{
 $('onbBack').addEventListener('click',()=>{ if(step>0){ step--; onbRender(); } });
 function finishOnboarding(keepOpen){
   S.profile=Object.assign({},S.profile,{handle:onbDraft.handle,aim:onbDraft.aim,checkinDay:onbDraft.checkinDay,
-    sex:onbDraft.sex&&onbDraft.sex!=='x'? onbDraft.sex : (onbDraft.sex==='x'? '' : S.profile.sex),
+    sex:onbDraft.sex||S.profile.sex,
     liftDays:onbDraft.liftDays, cardioDays:onbDraft.cardioDays,
     kit: (onbDraft.kit&&onbDraft.kit.length)? onbDraft.kit.slice() : ALL_KIT.slice(),
     sexAnswered:!!onbDraft.sex,
     age:onbDraft.age||S.profile.age, height:onbDraft.height||S.profile.height,
     weight:onbDraft.weight||S.profile.weight, activity:onbDraft.activity||S.profile.activity,
-    detailsSet: !!(onbDraft.sex&&onbDraft.age&&onbDraft.height&&onbDraft.weight) || S.profile.detailsSet,
+    stepTarget: validSteps(onbDraft.steps)? Math.round(+onbDraft.steps) : (S.profile.stepTarget||DEFAULT_STEPS),
+    detailsSet: !!(onbDraft.sex&&onbDraft.age&&onbDraft.height&&onbDraft.weight
+      &&plausibleBody({age:onbDraft.age,height:onbDraft.height,weight:onbDraft.weight})) || S.profile.detailsSet,
     excluded:S.profile.excluded||[],onboarded:true,
     firstWeek:S.profile.firstWeek||mondayKey()});
+  /* the goal weight becomes a weight target, dated by the healthy rate */
+  if(+onbDraft.goal&&S.profile.detailsSet){
+    if(!S.weights.length) S.weights.push({d:todayKey(),kg:+S.profile.weight});
+    const g=+onbDraft.goal, kg=+S.profile.weight;
+    S.target={kind:'weight',value:g,by:null,exId:null,set:todayKey(),hit:null,from:kg,autoDated:true};
+    const ct=calorieTarget();
+    if(ct&&ct.eta) S.target.by=ct.eta;
+  }
   if(typeof ownTargets==='function') S.targets=ownTargets();
   if(onbDraft.cycle){ S.cycle=Object.assign({},S.cycle,{tracking:true,lastPeriod:onbDraft.lastPeriod||S.cycle.lastPeriod}); }
   /* Fit the templates to the room before the week is built from them. */
@@ -2334,6 +3135,22 @@ function finishOnboarding(keepOpen){
 }
 
 /* ===================== colophon, install, worker ===================== */
+/* Auto follows the phone. The override is stored, because plenty of people run
+   their phone light and want this dark at six in the morning. */
+const THEMES=[['auto','Follow my phone'],['light','Always light'],['dark','Always dark']];
+function applyTheme(){
+  const t=(S.profile&&S.profile.theme)||'auto';
+  const root=document.documentElement;
+  if(t==='auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme',t);
+  const dark = t==='dark' || (t==='auto' && window.matchMedia
+    && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const m=document.getElementById('themeColor');
+  if(m) m.setAttribute('content', dark? '#151517' : '#ffffff');
+}
+function setTheme(t){ S.profile.theme=t; save(); applyTheme(); renderAll(); }
+if(window.matchMedia){
+  try{ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme); }catch(e){}
+}
 function mountColophons(){
   document.querySelectorAll('.screen').forEach(sc=>{
     if(sc.querySelector('.colophon')) return;
@@ -2343,6 +3160,64 @@ function mountColophons(){
 }
 let deferredPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredPrompt=e; });
+/* A check in that rebuilds the plan, and nothing that ever asks for it. When it
+   is missed the plan quietly stops adapting, which is the entire product, so
+   this is the one thing the app is allowed to interrupt you for.
+   Permission is asked once, on a tap, never on load. Everything is local: a
+   scheduled notification while the tab is alive, and a banner when it is not. */
+const NUDGE_KEY='gauntlet.nudge';
+function nudgeOn(){ return !!(S.profile&&S.profile.nudge); }
+function canNudge(){ return typeof Notification!=='undefined'; }
+function nudgeState(){
+  if(!canNudge()) return 'unsupported';
+  if(Notification.permission==='denied') return 'blocked';
+  if(!nudgeOn()) return 'off';
+  return Notification.permission==='granted'? 'on' : 'pending';
+}
+async function enableNudges(){
+  if(!canNudge()){ toast('This browser cannot do reminders'); return false; }
+  let perm=Notification.permission;
+  if(perm==='default'){ try{ perm=await Notification.requestPermission(); }catch(e){ perm='denied'; } }
+  if(perm!=='granted'){ toast('Reminders are blocked in your browser settings'); return false; }
+  S.profile.nudge=true; save(); scheduleNudge(); renderAll();
+  toast('You will get one nudge a week, on '+checkinDayName());
+  return true;
+}
+function disableNudges(){ S.profile.nudge=false; save(); clearNudge(); renderAll(); toast('Reminders off'); }
+/* the next check in day, at 7pm local */
+function nextNudgeAt(){
+  const ci=S.profile.checkinDay===undefined?6:S.profile.checkinDay;
+  const now=new Date(), d=new Date(now.getFullYear(),now.getMonth(),now.getDate(),19,0,0);
+  let delta=(ci-now.getDay()+7)%7;
+  if(delta===0 && now.getTime()>d.getTime()) delta=7;
+  d.setDate(d.getDate()+delta);
+  return d;
+}
+let nudgeTimer=null;
+function clearNudge(){ if(nudgeTimer) clearTimeout(nudgeTimer); nudgeTimer=null; }
+function scheduleNudge(){
+  clearNudge();
+  if(nudgeState()!=='on') return;
+  const at=nextNudgeAt(), ms=at.getTime()-Date.now();
+  /* setTimeout is unreliable past a day or so, so it re-arms rather than
+     trying to hold a week-long timer. */
+  const step=Math.min(ms,6*3600e3);
+  nudgeTimer=setTimeout(()=>{
+    if(Date.now()>=nextNudgeAt().getTime()-60e3 && !checkinDone()) fireNudge();
+    scheduleNudge();
+  }, Math.max(1000,step));
+}
+function fireNudge(){
+  if(nudgeState()!=='on'||checkinDone()) return;
+  const last=(()=>{ try{ return +localStorage.getItem(NUDGE_KEY)||0; }catch(e){ return 0; } })();
+  if(Date.now()-last < 20*3600e3) return;
+  try{ localStorage.setItem(NUDGE_KEY,String(Date.now())); }catch(e){}
+  try{
+    new Notification('Two minutes, and next week builds itself',
+      {body:'Your check in is due. Skip it and the plan stops adapting.', tag:'gauntlet-checkin'});
+  }catch(e){}
+}
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) scheduleNudge(); });
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
   window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 }
@@ -2351,12 +3226,12 @@ window.__G={
   bmrOf,tdeeOf,proteinOf,showH,showW,todayKey,mondayKey,dowIdx,
   buildPlan,ensurePlan,adaptPlan,composePlan,previewPlan,planDiff,todayPlan,startPlanDay,slotFor,openSwap,setAim,
   pushPlanDay,dropPlanDay,openRestChoice,absorberFor,nextSlots,dayCounts,weekPattern,AIM_DEFAULTS,
-  deloadDue,weeksTraining,DELOAD_EVERY,painAlternative,painToReview,painSince,clearPain,proteinBasis,openDeloadSheet,
+  deloadDue,weeksTraining,DELOAD_EVERY,DELOAD_RANGE,DELOAD_TIERS,deloadSchedule,deloadInfo,nextDeload,setDeloadMark,deloadTier,deloadPrescription,painAlternative,painToReview,painSince,clearPain,proteinBasis,openDeloadSheet,
   weekStats,openRunSwap,checkinDone,checkinDayName,healthOn,connectHealth,disconnectHealth,healthSync,stubDay,sourceName,openConnect,openDayDetail,dayLabel,daySub,showSeg,walkDone,stepsToday,
   SOURCES,STEP_TARGET,
   toggleFollow,startSessionFromPost,startSession,nextStep,prevStep,finishSession,closePlayer,
   logSession,openWeigh,openDetails,renderAll,renderToday,renderPlan,renderProgress,renderFeed,renderPeople,
-  go,openSheet,closeSheets,topLayer,notYet,openLog,who,snapshotPlan,restorePlan,updateBadge,mountColophons,startOnboarding,onbRender,finishOnboarding,openTempoHelp,showTempoSafe,
+  go,openSheet,closeSheets,topLayer,notYet,openLog,bmrOf,tdeeOf,sexTerm,plausibleBody,maintenance,calorieTarget,calorieLine,goalDirection,currentKg,RATE,kcalFloor,stepTarget,stepKcal,liftNetKcal,sessionMinutes,plannedLiftMinPerDay,plannedTdee,BASAL_STEPS,DEFAULT_STEPS,STEP_BANDS,validSteps,applyTheme,setTheme,THEMES,openYou,who,snapshotPlan,restorePlan,updateBadge,mountColophons,startOnboarding,onbRender,finishOnboarding,openTempoHelp,showTempoSafe,
   get __cloudReady(){ try{ return typeof cloudReady==='function'&&cloudReady(); }catch(e){ return false; } },
   SEED_POSTS,people,AIMS,ACTIVITY,PATTERNS,SLOTS,HUE,DAYS,STORE_KEY,APP_VERSION
 };
@@ -2386,11 +3261,15 @@ const TRAIN_DAYS=[['push','Push'],['pull','Pull'],['lower','Lower'],['cardio','C
 const DEFAULT_TARGETS={kcal:null,protein:null,carbs:null,fat:null,fibre:30,steps:8000,sleep:7};
 function ownTargets(){
   const p=S.profile;
-  if(!p||!p.detailsSet) return Object.assign({},DEFAULT_TARGETS);
-  const kcal=tdeeOf(p), protein=proteinOf(p);
+  if(!p||!p.detailsSet||!plausibleBody(p)) return Object.assign({},DEFAULT_TARGETS,{steps:stepTarget(p)});
+  const ct=calorieTarget();
+  const kcal=ct? ct.kcal : plannedTdee(p).kcal, protein=proteinOf(p);
   const fat=Math.round(kcal*0.28/9);
   return Object.assign({},DEFAULT_TARGETS,{kcal,protein,fat,
-    carbs:Math.max(0,Math.round((kcal-protein*4-fat*9)/4))});
+    carbs:Math.max(0,Math.round((kcal-protein*4-fat*9)/4)),
+    steps: stepTarget(p),
+    maintenance: ct? ct.maintenance : kcal, kcalSource: ct? ct.source : 'planned',
+    rateKg: ct? ct.rateKg : 0, dir: ct? ct.dir : 'hold'});
 }
 
 /* ---------- schema repair, so old saves keep working ---------- */
@@ -2438,6 +3317,9 @@ function steers(){
     out.push({tone:'warn',t:`<b>Protein is averaging ${round(pro)}g against ${t.protein}.</b> Eating more of it while losing weight helps hold onto muscle, which is one of the better supported things in this app.`});
   else if(pro!==null)
     out.push({tone:'good',t:`<b>Protein is holding at ${round(pro)}g.</b> Leave it alone and change something else.`});
+  const stress=avg(rows,'stress');
+  if(stress!==null && stress>=7)
+    out.push({tone:'warn',t:`<b>Stress is averaging ${round(stress,1)} out of 10.</b> It is the same recovery budget as training, spent elsewhere. A week to hold volume rather than add to it.`});
   if(sleep!==null && sleep<6.5)
     out.push({tone:'warn',t:`<b>Sleep is averaging ${round(sleep,1)} hours.</b> Short sleep is associated with worse recovery and performance, so this is a poor week to add volume to.`});
   if(steps!==null && steps < t.steps*0.7)
@@ -2471,7 +3353,31 @@ function coachBrief(){
   L.push(`Aim: ${S.profile.aim}. Weekly goal: ${S.goal.label}, at ${fmt(S.goal.now)} of ${S.goal.target}.`);
   L.push(`Days logged in the last 7: ${rows.length}`);
   L.push(`Averages: ${a('kcal')} kcal (target ${t.kcal}), protein ${a('protein')}g (target ${t.protein}), carbs ${a('carbs')}g, fat ${a('fat')}g, fibre ${a('fibre')}g`);
-  L.push(`Steps ${a('steps')} (target ${t.steps}), sleep ${a('sleep',1)}h, wellbeing ${a('wb',1)}/10`);
+  L.push(`Steps ${a('steps')} (target ${t.steps}), sleep ${a('sleep',1)}h, wellbeing ${a('wb',1)}/10, stress ${a('stress',1)}/10`);
+  if(typeof calorieTarget==='function'){
+    const ct=calorieTarget();
+    if(ct) L.push(`Calories: maintenance ${ct.maintenance} (${ct.source}, ${ct.sourceLabel}). Target ${ct.kcal}`
+      +(ct.dir==='hold'? ', holding steady.' : ` to ${ct.dir} ${ct.rateKg} kg a week (${ct.ratePct}%)${ct.capped?', capped':''}${ct.floored?', at the floor':''}.`));
+  }
+  if(typeof deloadDue==='function'){
+    const nx=nextDeload();
+    L.push(deloadDue()? `This is a planned easy week (${deloadTier().t.toLowerCase()}). Working weights resume next week.`
+      : (S.profile.deload===false? 'Easy weeks: only when they add one.' : `Easy week every ${+S.profile.deloadEvery||DELOAD_EVERY} weeks${nx?', next on '+nx:''}.`));
+  }
+  if(S.target){
+    const pr=targetProgress(), k=TARGET_KINDS[S.target.kind];
+    L.push(`Target: ${S.target.value} ${k.unit} by ${S.target.by}.`
+      +(S.target.hit? ` Met on ${S.target.hit}.`
+        : pr? ` Currently ${pr.now}, ${Math.abs(pr.remaining)} to go, ${pr.daysLeft} days left.` : ' Nothing logged against it yet.'));
+  }
+  if(typeof currentHabit==='function'&&currentHabit()){
+    const h=currentHabit();
+    L.push(`Habit: ${habitOf(h.id).t}, since ${h.started}. ${habitStreak()} day streak, kept on ${Object.keys(h.days||{}).length} days so far.`);
+  }
+  /* Their own words, which is the richest thing in here and the one part no
+     number can stand in for. */
+  const notes=rows.filter(r=>r.note).slice(0,5).map(r=>`  ${r.d}: ${r.note}`);
+  if(notes.length) L.push('What they said about the days:\n'+notes.join('\n'));
   const w=rows.filter(r=>typeof r.w==='number');
   if(w.length) L.push(`Bodyweight: ${w.map(r=>r.w).join(', ')} kg`);
   const sessions=rows.filter(r=>r.training&&r.training!=='rest').map(r=>r.training);
@@ -2496,7 +3402,7 @@ function coachBrief(){
     L.push('Recent lifts:');
     lifted.forEach(id=>{
       const e=S.lifts[id][0];
-      L.push(`  ${id}: ${e.sets.map(x=>x.kg+'kg × '+x.reps).join(', ')} (${e.d})`);
+      L.push(`  ${id}: ${e.sets.map(x=>x.kg+'kg × '+x.reps).join(', ')} (${e.d}${e.deload?', easy week':''})`);
     });
   }
   return L.join('\n');
@@ -2506,7 +3412,7 @@ function coachBrief(){
 let dayDraft=null;
 function openDay(){
   const prev=today()||{};
-  dayDraft=Object.assign({training:'rest',sleep:7,wb:6},prev);
+  dayDraft=Object.assign({training:'rest',sleep:7,wb:6,stress:5,note:''},prev);
   drawDay(); openSheet('dayCheck');
 }
 function drawDay(){
@@ -2517,6 +3423,9 @@ function drawDay(){
   $('dayBody').innerHTML=`
     <div class="field"><div class="fl"><div class="k">How did today go?</div><div class="v" id="outwb">${d.wb} / 10</div></div>
       <input type="range" min="1" max="10" step="1" value="${d.wb}" data-dayrange="wb" aria-label="How today went"></div>
+    <div class="field"><div class="fl"><div class="k">How stressed</div><div class="v" id="outstress">${d.stress} / 10</div></div>
+      <input type="range" min="1" max="10" step="1" value="${d.stress}" data-dayrange="stress" aria-label="How stressed you were"></div>
+    <textarea class="ta" data-daynote="1" placeholder="A line about the day, if there is one. This is the bit a coach actually reads.">${(d.note||'').replace(/</g,'&lt;')}</textarea>
     <div class="slab">What you did</div>
     <div class="chips">${TRAIN_DAYS.map(([k,l])=>`<button class="${d.training===k?'on':''}" data-train="${k}">${l}</button>`).join('')}</div>
     ${auto
@@ -2549,15 +3458,19 @@ document.addEventListener('click',e=>{
 document.addEventListener('input',e=>{
   const r=e.target.closest('[data-dayrange]');
   if(r&&dayDraft){ const k=r.dataset.dayrange; dayDraft[k]=+r.value;
-    const o=$('out'+k); if(o) o.textContent = k==='sleep'? dayDraft.sleep+' h' : dayDraft.wb+' / 10'; }
+    const o=$('out'+k); if(o) o.textContent = k==='sleep'? dayDraft.sleep+' h' : dayDraft[k]+' / 10'; }
+  const dn=e.target.closest('[data-daynote]');
+  if(dn&&dayDraft) dayDraft.note=dn.value;
   const nfld=e.target.closest('[data-day]');
   if(nfld&&dayDraft){ const k=nfld.dataset.day; dayDraft[k]= nfld.value===''? undefined : +nfld.value; }
 });
 $('saveDay').addEventListener('click',()=>{
   const k=todayKey(), d={};
-  ['training','sleep','wb','w','kcal','protein','carbs','fat','fibre'].forEach(f=>{
+  ['training','sleep','wb','stress','w','kcal','protein','carbs','fat','fibre'].forEach(f=>{
     if(dayDraft[f]!==undefined&&dayDraft[f]!==null&&!Number.isNaN(dayDraft[f])) d[f]=dayDraft[f];
   });
+  if(dayDraft.note&&String(dayDraft.note).trim()) d.note=String(dayDraft.note).trim();
+  if(S.days[k]&&Array.isArray(S.days[k].food)) d.food=S.days[k].food;
   S.days[k]=Object.assign({}, S.days[k]&&S.days[k].auto? {auto:S.days[k].auto}:{}, d);
   if(typeof d.w==='number'){
     const last=S.weights[S.weights.length-1];
@@ -2690,6 +3603,10 @@ function copyBrief(){
 renderProgress();
 Object.assign(window.__G,{TRAIN_DAYS,DEFAULT_TARGETS,ownTargets,allMovements,drawWeekStep,
   lastNDays,avg,steers,coachBrief,openDay,openWeek,
+  HABITS,habitOf,currentHabit,startHabit,retireHabit,toggleHabitDay,habitWeek,habitStreak,habitRate,suggestHabit,openHabitSheet,habitRow,
+  TARGET_KINDS,setTarget,clearTarget,targetNow,targetProgress,openTargetSheet,targetLine,
+  nudgeState,nextNudgeAt,scheduleNudge,enableNudges,disableNudges,
+
   get dayDraft(){return dayDraft}, get weekDraft(){return weekDraft}});
 Object.defineProperties(window.__G,{
   dayDraft:{get:()=>dayDraft,set:v=>{dayDraft=v},configurable:true},
@@ -3213,6 +4130,9 @@ function seedTemplates(){
 S.templates=Array.isArray(S.templates)&&S.templates.length? S.templates : seedTemplates();
 S.workouts=Array.isArray(S.workouts)? S.workouts : [];
 S.restPrefs=S.restPrefs&&typeof S.restPrefs==='object'? S.restPrefs : {};
+S.habit=(S.habit&&typeof S.habit==='object')? S.habit : null;
+S.deloadWeeks=(S.deloadWeeks&&typeof S.deloadWeeks==='object')? S.deloadWeeks : {};
+S.target=(S.target&&typeof S.target==='object')? S.target : null;
 S.customFoods=Array.isArray(S.customFoods)? S.customFoods : [];
 S.savedMeals=Array.isArray(S.savedMeals)? S.savedMeals : [];
 const _fresh2=freshState;
@@ -3220,7 +4140,13 @@ freshState=function(){ const f=_fresh2(); f.templates=seedTemplates(); f.runPlan
 
 /* ---------- history and records ---------- */
 const e1RM=(kg,reps)=>reps>0? Math.round(kg*(1+reps/30)) : 0;
-function exHistory(exId){ return (S.lifts[exId]||[]); }
+/* Working sessions only, unless asked. Easy-week sessions stay on the record
+   but never decide what to lift next, never become the "last time" and never
+   drag the progression back to deload weights. */
+function exHistory(exId,opts){
+  const all=(S.lifts&&S.lifts[exId])||[];
+  return (opts&&opts.all)? all : all.filter(e=>!e.deload);
+}
 function lastSets(exId){ const h=exHistory(exId); return h.length? h[0].sets : null; }
 function exerciseStats(exId){
   const h=exHistory(exId);
@@ -3276,7 +4202,7 @@ const repRangeFor=row=>{
 /* what to aim for on this exercise next time, and why */
 function nextPrescription(exId,row){
   const range=repRangeFor(row), inc=incrementFor(exId);
-  const hist=(S.lifts&&S.lifts[exId])||[];
+  const hist=exHistory(exId);
   const last=hist[0];
   if(!last||!last.sets||!last.sets.length)
     return {kg:null,reps:range.bottom,range,inc,why:'First time on this one. Pick something you could manage a couple more reps with.',kind:'first'};
@@ -3391,6 +4317,15 @@ function newExEntry(row){
   const prev=lastSets(row.exId);
   const rx=nextPrescription(row.exId,row);
   if(GYM){ GYM.pre=GYM.pre||{}; GYM.pre[row.exId]=exerciseStats(row.exId); }
+  /* On an easy week the sets and the weight come from the deload prescription.
+     The normal prescription is kept alongside it, untouched, so the finish
+     screen can say exactly what next week goes back to. */
+  if(GYM&&GYM.deload){
+    const dp=deloadPrescription(row.exId,row,DELOAD_TIERS[GYM.deload]);
+    return {exId:row.exId, tempo:row.tempo||tempoOf(row.exId), reps:row.reps||12, repMin:row.repMin,
+      rx, dp, rest, note:row.note||'',
+      sets:Array.from({length:dp.sets},()=>({kg: dp.kg!==null? dp.kg : '', reps: dp.reps, warm:false, done:false}))};
+  }
   return {exId:row.exId, tempo:row.tempo||tempoOf(row.exId), reps:row.reps||12, repMin:row.repMin, rx, rest, note:row.note||'',
     sets:Array.from({length:row.sets||3},(_,i)=>({
       kg: rx.kg!==null? rx.kg : (prev&&prev[i]? prev[i].kg : ''),
@@ -3402,9 +4337,14 @@ function startWorkout(templateId,opts){
   const tpl=S.templates.find(t=>t.id===templateId)||null;
   let rows=tpl? tpl.ex.slice() : [];
   if(opts.exclude&&opts.exclude.length) rows=rows.filter(r=>!opts.exclude.includes(exOf(r.exId).n));
-  if(opts.setDelta) rows=rows.map(r=>Object.assign({},r,{sets:Math.max(1,(r.sets||3)+opts.setDelta)}));
+  if(opts.setDelta&&!opts.deload) rows=rows.map(r=>Object.assign({},r,{sets:Math.max(1,(r.sets||3)+opts.setDelta)}));
+  const T=opts.deload? (DELOAD_TIERS[opts.deload]||deloadTier()) : null;
+  if(T&&T.dropAccessories){
+    const keep=rows.filter(r=>['isolation','core','hold'].indexOf(rxClass(r.exId))<0);
+    if(keep.length) rows=keep;
+  }
   GYM={name: opts.name || (tpl? tpl.name : 'Workout'), templateId: tpl?tpl.id:null, started:Date.now(),
-    ex:[], pre:{}, done:false};
+    ex:[], pre:{}, done:false, deload: T? T.id : null};
   rows.forEach(r=>{ GYM.pre[r.exId]=exerciseStats(r.exId); });
   GYM.ex=rows.map(newExEntry);
   closeSheets();
@@ -3420,11 +4360,20 @@ function elapsed(){
 }
 function gymVolume(){ return GYM.ex.reduce((a,e)=>a+e.sets.filter(s=>s.done&&!s.warm).reduce((b,s)=>b+setVolume(s),0),0); }
 function gymSets(){ return GYM.ex.reduce((a,e)=>a+e.sets.filter(s=>s.done).length,0); }
+function deloadBanner(){
+  if(!GYM||!GYM.deload) return '';
+  const T=DELOAD_TIERS[GYM.deload];
+  const rows=GYM.ex.filter(e=>e.dp).map(e=>`<div class="dlrow"><b>${exOf(e.exId).n}</b>
+    <span>${e.dp.sets} × ${e.dp.reps}${e.dp.kg!==null?' at '+e.dp.kg+'kg':''}${e.dp.work?' · normally '+e.dp.work+'kg':''}</span></div>`).join('');
+  return `<div class="dlbanner"><div class="dlh"><b>Easy week, ${T.t.toLowerCase()}</b><span>${T.band} less work, about 10% lighter</span></div>
+    ${rows}
+    <div class="dls">These should feel easy. Stop each set with plenty left. Next week goes back to your working weights, not these.</div></div>`;
+}
 function drawGym(){
   if(!GYM) return;
   $('gymName').textContent=GYM.name;
   $('gymSub').textContent=elapsed();
-  $('gymBody').innerHTML=GYM.ex.map((e,i)=>{
+  $('gymBody').innerHTML=deloadBanner()+GYM.ex.map((e,i)=>{
     const x=exOf(e.exId), prev=lastSets(e.exId), pre=GYM.pre? GYM.pre[e.exId] : null;
     const range=repRangeFor({reps:e.reps,repMin:e.repMin});
     return `<div class="exc" data-ex="${i}">
@@ -3785,6 +4734,8 @@ document.addEventListener('click',e=>{
       applyFoodTotals(k); save(); drawFood(); renderAll(); }); }
 });
 document.addEventListener('input',e=>{
+  if(e.target.id==='targetValue'){ const el=document.getElementById('targetKcal');
+    if(el){ const sp=el.querySelector('span'); if(sp) sp.textContent=targetKcalPreview(); } }
   /* Only the results redraw, so the input keeps its focus, its cursor and its
      composition state on its own. */
   if(e.target.id==='foodSearch'){ foodQuery=e.target.value; drawFoodList(); }
@@ -3979,6 +4930,12 @@ function finishWorkout(){
     const done=e.sets.filter(s=>s.done&&!s.warm&&s.kg!==''&&s.reps!=='');
     if(!done.length) return;
     const before=exerciseStats(e.exId);
+    if(GYM.deload){ done.forEach(s=>{ volume+=setVolume(s); sets++; });
+      S.lifts[e.exId]=S.lifts[e.exId]||[];
+      const dEntry={d:k,deload:GYM.deload,sets:done.map(s=>({kg:+s.kg,reps:+s.reps}))};
+      const top=S.lifts[e.exId][0];
+      if(top&&top.d===k&&top.deload) S.lifts[e.exId][0]=dEntry; else S.lifts[e.exId].unshift(dEntry);
+      return; }
     done.forEach(s=>{ volume+=setVolume(s); sets++; });
     const heaviest=Math.max(...done.map(s=>+s.kg));
     const best1=Math.max(...done.map(s=>e1RM(s.kg,s.reps)));
@@ -3989,10 +4946,15 @@ function finishWorkout(){
     }
     S.lifts[e.exId]=S.lifts[e.exId]||[];
     const entry={d:k,sets:done.map(s=>({kg:+s.kg,reps:+s.reps}))};
-    if(S.lifts[e.exId][0]&&S.lifts[e.exId][0].d===k) S.lifts[e.exId][0]=entry; else S.lifts[e.exId].unshift(entry);
+    if(GYM.deload) entry.deload=GYM.deload;
+    /* same-day replace only touches an entry of the same kind, so an easy
+       session can never overwrite a working one or the other way round */
+    const top=S.lifts[e.exId][0];
+    if(top&&top.d===k&&!!top.deload===!!entry.deload) S.lifts[e.exId][0]=entry; else S.lifts[e.exId].unshift(entry);
   });
   const mins=Math.max(1,Math.round((Date.now()-GYM.started)/60000));
   const record={id:'w'+Date.now(),d:k,name:GYM.name,templateId:GYM.templateId,minutes:mins,volume:Math.round(volume),sets,
+    deload:GYM.deload||null,
     ex:GYM.ex.map(e=>({exId:e.exId,sets:e.sets.filter(s=>s.done).map(s=>({kg:+s.kg||0,reps:+s.reps||0,warm:!!s.warm}))}))};
   S.workouts.unshift(record);
   GYM.done=true; clearInterval(gymTick); clearInterval(restTick); $('restBar').classList.remove('on');
@@ -4244,12 +5206,13 @@ function drawTplEdit(){
     <div class="nf" style="margin-bottom:12px"><label>Name</label>
       <input id="tplName" value="${tplDraft.name}" style="font-family:Archivo;font-size:15px;font-weight:700"></div>
     <div class="tedit" style="font-size:10px;color:var(--mute);font-weight:700;letter-spacing:.1em;text-transform:uppercase">
-      <div>Movement</div><div>Sets</div><div>Low</div><div>High</div><div></div><div></div></div>
+      <div>Movement</div><div>Sets</div><div>Low</div><div>High</div><div></div><div></div><div></div></div>
     ${tplDraft.ex.map((r,i)=>`<div class="tedit">
       <div class="n">${exOf(r.exId).n}</div>
       <input type="number" inputmode="numeric" value="${r.sets}" data-tpl="${i}:sets" aria-label="Sets">
       <input type="number" inputmode="numeric" value="${r.repMin||Math.max(1,r.reps-2)}" data-tpl="${i}:repMin" aria-label="Bottom of the rep range">
       <input type="number" inputmode="numeric" value="${r.reps}" data-tpl="${i}:reps" aria-label="Top of the rep range">
+      <button class="x" data-showmove="${r.exId}" aria-label="See ${exOf(r.exId).n}">?</button>
       <button class="x" data-tplswap="${r.exId}" aria-label="Change this movement">⇄</button>
       <button class="x" data-tpldel="${i}" aria-label="Remove">×</button></div>
       <div class="tempoline">rest ${r.rest}s · ${rxClass(r.exId)}${showTempo()?` · tempo ${r.tempo||tempoOf(r.exId)}${tempoMatters(r.tempo||tempoOf(r.exId))?', '+tempoWords(r.tempo||tempoOf(r.exId)):''}`:''}</div>`).join('')}
@@ -4286,7 +5249,7 @@ renderProgress=function(){
   const vol=S.workouts.filter(x=>Date.now()-dateOf(x.d).getTime()<7*864e5).reduce((a,x)=>a+x.volume,0);
   $('dashLifts').innerHTML=(`
     <div class="panel">
-      <div class="ph"><h3>Lifting</h3><button data-tplopen="1">Templates</button></div>
+      <div class="ph"><h3>Lifting, last few weeks</h3><button data-tplopen="1">Templates</button></div>
       ${w.length? `<div class="numline" style="margin-bottom:10px"><div>This week <b>${num(vol)} kg</b></div>
           <div>Sessions <b>${S.workouts.length}</b></div></div>`+
         w.map(x=>`<div class="actrow"><div class="txt"><div class="t"><b>${x.name}</b> · ${x.sets} sets · ${num(x.volume)} kg</div>
@@ -4307,7 +5270,7 @@ coachBrief=function(){
   return t;
 };
 
-Object.assign(window.__G,{LIBRARY,EQUIP,DIFF,exBlurb,drawExList,exOf,rxClass,prescribe,repText,RX_CLASS,warmSetsFor,platesFor,plateLine,fitToKit,fitTemplatesToKit,kitOf,hasKit,KIT,KIT_PRESETS,ALL_KIT,openKitSheet,applyKitChange,loggedMealMacros,mealArt,simulatedHealth,keyOf,dateOf,incrementFor,repRangeFor,nextPrescription,tonnageOf,progressLines,fillForward,suggestFor,openCircEdit,drawTemplates,seedTemplates,
+Object.assign(window.__G,{LIBRARY,EQUIP,DIFF,exBlurb,drawExList,exOf,exHistory,nextPrescription,rxClass,prescribe,repText,RX_CLASS,warmSetsFor,platesFor,plateLine,fitToKit,fitTemplatesToKit,kitOf,hasKit,KIT,KIT_PRESETS,ALL_KIT,openKitSheet,applyKitChange,loggedMealMacros,mealArt,simulatedHealth,keyOf,dateOf,incrementFor,repRangeFor,nextPrescription,tonnageOf,progressLines,fillForward,suggestFor,openCircEdit,drawTemplates,seedTemplates,
   FOODS,foodOf,addFood,removeFood,dayFood,foodTotals,openFood,closeFood,drawFood,drawFoodList,drawFoodNew,recentFoods,MEALS,slotNow,repeatYesterday,addCustomFood,saveMealAs,addSavedMeal,allFoods,customFoods,savedMeals,seedRunPlans,seedCircuits,circuitOf,startCircuit,finishCircuit,drawCircuit,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
   openExMenu,openTplEdit,drawTemplates,exerciseStats,e1RM,lastSets,gymVolume,gymSets,templateChanged,startRest,
   get GYM(){return GYM}, get tplDraft(){return tplDraft}});
@@ -4321,6 +5284,8 @@ Object.defineProperties(window.__G,{
 <script>
 /* boot, once everything is defined */
 if(S.profile.onboarded){ ME.n=S.profile.handle; ME.full=S.profile.handle.replace(/[._]/g,' '); }
+if(typeof applyTheme==='function') applyTheme();
+if(typeof scheduleNudge==='function') scheduleNudge();
 S.week.forEach((d,i)=>{ d.today = i===dowIdx(); });
 ensurePlan();
 mountColophons();
@@ -4444,12 +5409,17 @@ const SCI={kcalPerKg:7700, walkMET:3.0, walkCadence:100, liftMET:4.0, sedentaryP
   maxLossFraction:0.01, defaultBand:0.45, ewmaAlpha:0.25};
 
 const bodyAt=kg=>Object.assign({},S.profile,{weight:kg});
-function walkKcal(steps,kg){ if(!steps||!kg) return 0;
-  return (SCI.walkMET-1)*3.5*kg/200*(steps/SCI.walkCadence); }
+/* Same allowance as the maintenance figure: the first 2,500 steps are already
+   inside the sedentary baseline, so only the steps above them are added. */
+function walkKcal(steps,kg){ return stepKcal(steps,kg); }
 function liftKcal(minutes,kg){ if(!minutes||!kg) return 0;
   return (SCI.liftMET-1)*3.5*kg/200*minutes; }
 function tdeeEstimate(kg,stepsPerDay,liftMinPerDay){
   if(!S.profile.detailsSet) return null;
+  /* No tracker means no measured activity, so fall back to the multiplier the
+     person chose rather than assuming they sit all day. The multiplier already
+     includes exercise, so lifting is not added on top of it. */
+  if(!stepsPerDay) return plannedTdee(S.profile,kg).kcal;
   return Math.round(bmrOf(bodyAt(kg))*SCI.sedentaryPAL + walkKcal(stepsPerDay,kg) + liftKcal(liftMinPerDay,kg));
 }
 /* exponentially weighted trend, so one heavy morning does not become a direction */
@@ -4772,6 +5742,9 @@ function openHow(){
     <div class="method"><b>Movement</b><span>ACSM: kcal per minute = METs × 3.5 × kg ÷ 200. Walking is taken at 3 METs, since 100 steps a minute is the established threshold for moderate intensity. Lifting at 4 METs. Both counted net of resting burn so it is not double counted.</span></div>
     <div class="method"><b>Your expenditure</b><span>${obs? `Measured, not guessed: over the last ${obs.days} days you averaged ${num(obs.intake)} kcal and your trend weight moved, so your expenditure works out at about ${num(obs.tdee)} kcal a day. This is the intake balance method, which agrees with doubly labelled water to within roughly 200 kcal a day across a group. For one person it can be further out.` : 'Estimated from your details and your tracker until there are ten days of food logs and two weigh ins, at which point it gets measured from your own data instead. That measurement, the intake balance method, agrees with doubly labelled water to within roughly 200 kcal a day across a group, and can be further out for one person.'}</span></div>
     <div class="method"><b>Protein</b><span>1.8 g per kilo. The meta-analysis on protein and resistance training supports roughly 1.6 to 2.2 g/kg, so this sits in the middle, and eating more of it while losing weight helps hold onto muscle. ${(()=>{const b=proteinBasis(S.profile); return b.adjusted? `Above a BMI of about 30 the kilo is an adjusted reference weight, ${b.kg} kg in your case rather than ${S.profile.weight} kg, because fat mass carries no protein requirement and total bodyweight would overshoot.` : 'Above a BMI of about 30 it is taken from an adjusted reference weight instead, since fat mass carries no protein requirement.';})()}</span></div>
+    <div class="method"><b>Maintenance</b><span>One figure, from the best evidence the app has. To start: resting burn by Mifflin St Jeor, times 1.2 for a sedentary day, plus your step target and the lifting in your plan. Walking is 3 METs for every 100 steps a minute, net of rest, counted above 2,500 a day because a sedentary day already contains those (under 2,500 is what Tudor-Locke and colleagues class as basal activity; using it as the baseline is a judgement). Lifting is 4 METs for as long as your templates take. Once a tracker is connected, your real steps replace the target. Once you have about three weeks of food and weigh ins, what you actually ate minus what the scale says you stored replaces both, and that is the most accurate of the three. Running is counted as steps, which under-counts it a little; physical work a step count cannot see is missed; the three-week figure catches both.</span></div>
+    <div class="method"><b>Your calorie target</b><span>Losing: 0.5 to 1% of your bodyweight a week, the range that keeps muscle while dieting (Helms and colleagues, 2014); 0.75% unless your goal date asks for something slower, and never above 1% however soon the date. Gaining: 0.25 to 0.5% a week, about 10 to 20% over maintenance (Iraki and colleagues, 2019). Never below 1,500 kcal for men or 1,200 for women, the low end of the 2013 AHA/ACC/TOS guideline for supervised weight loss. When you reach your goal weight, the target goes back to maintenance.</span></div>
+    <div class="method"><b>Easy weeks</b><span>Every ${+S.profile.deloadEvery||DELOAD_EVERY} weeks by default, from the 4 to 8 week range in Bell and colleagues' 2025 recommendations and the roughly five and a half week gap reported by 246 competitive lifters (Rogerson and colleagues, 2024). About 10% lighter and 25 to 90% less work depending on recovery. Easy-week sessions never set your next weights.</span></div>
     <div class="method"><b>Fat and carbohydrate</b><span>Fat at 28% of your calories, which sits inside the 20 to 35% the dietary guidelines give, and carbohydrate is simply what is left once protein and fat are paid for. Neither is a finding: protein and total calories are the two that have evidence behind them, and the split of the rest is largely preference. Move it if you train better on more of one.</span></div>
     <div class="method"><b>Energy per kilo</b><span>7700 kcal per kg. A long run average. Early weight change is mostly water and carries far less energy, so the first fortnight usually moves faster than the maths.</span></div>
     <div class="method"><b>Beyond this week</b><span>Recalculated week by week with your new weight rather than drawn in a straight line. A lighter body burns less, and the old 3500 kcal rule overestimates because it ignores that.</span></div>
@@ -5205,6 +6178,326 @@ window.__CLOUD={get C(){return C},set C(v){C=v}, CLOUD_CONFIG, cloudReady, setBu
   refreshSession,ensureSession,signOut,api,upsert,pushState,pullState,loadRemote,publishPost,recordTry,
   toggleRemoteFollow,ensureProfile,cloudStatus,renderCloudPanel,personFor,CLOUD_KEY,
   exportPayload,downloadData,eraseEverything,openData};
+</script>
+
+<script>
+/* ---------- what the movement actually looks like ----------
+   The library had coaching cues and nothing else. "Chest up, elbows inside the
+   knees" is no use to anyone who has not already done the movement, and for a
+   beginner that is an injury exposure as much as a usability one.
+   Photographs of 252 movements is a different kind of project. What this does
+   instead is honest about what it is: a figure moving between the start and the
+   end of the pattern, drawn from the library's own p: field, so every movement
+   in the app gets one without anybody drawing 252 pictures. It shows the SHAPE
+   of the lift. It is not a form check and the sheet says so.
+   Poses are joint positions in a 100 x 140 box: head, neck, pelvis, knee,
+   ankle, elbow, wrist, and optionally a second leg for split stances. The two
+   poses are interpolated by SVG's own animation, so there is nothing to load
+   and nothing to run on a timer. */
+const FIG_W=100, FIG_H=140, GROUND=132;
+/* h n p k a e w  [k2 a2] */
+const POSES={
+  'squat':        {v:'side',a:[50,16,50,28,50,70,50,100,50,130,43,40,39,30],
+                            b:[41,31,43,43,41,85,61,104,52,130,35,53,31,43]},
+  'hinge':        {v:'side',a:[50,16,50,28,50,70,50,100,50,130,50,50,50,72],
+                            b:[35,35,39,45,53,70,55,100,51,130,43,67,43,89]},
+  'horizontal push':{v:'lie',a:[24,64,34,66,62,68,78,80,84,112,28,56,34,58],
+                            b:[24,64,34,66,62,68,78,80,84,112,32,50,34,34]},
+  'vertical push':{v:'side',a:[50,17,50,29,50,70,50,100,50,130,40,41,42,29],
+                            b:[50,21,50,31,50,70,50,100,50,130,45,26,47,7]},
+  'horizontal pull':{v:'side',a:[30,33,36,43,56,68,58,100,54,130,38,63,36,87],
+                            b:[30,33,36,43,56,68,58,100,54,130,29,61,38,65]},
+  'vertical pull': {v:'side',a:[50,40,50,52,50,92,52,118,44,136,50,26,50,8],
+                            b:[50,20,50,32,50,74,54,100,46,120,39,16,50,8]},
+  'lunge':        {v:'side',a:[50,16,50,28,50,70,50,100,50,130,46,48,44,70,50,100,50,130],
+                            b:[48,22,48,34,48,76,30,104,24,130,44,54,42,76,66,104,72,130]},
+  'shoulder isolation':{v:'front',m:1,a:[50,16,50,28,50,72,50,102,50,132,42,50,40,70],
+                            b:[50,16,50,28,50,72,50,102,50,132,30,40,16,32]},
+  'chest isolation':{v:'lie',a:[24,64,34,66,62,68,78,80,84,112,30,50,22,44],
+                            b:[24,64,34,66,62,68,78,80,84,112,32,48,34,36]},
+  'elbow flexion':{v:'front',m:1,a:[50,16,50,28,50,72,50,102,50,132,42,52,42,74],
+                            b:[50,16,50,28,50,72,50,102,50,132,42,52,46,32]},
+  'elbow extension':{v:'front',m:1,a:[50,16,50,28,50,72,50,102,50,132,45,50,44,38],
+                            b:[50,16,50,28,50,72,50,102,50,132,45,52,44,72]},
+  'hip isolation':{v:'side',a:[26,56,36,60,62,96,82,84,84,124,32,72,30,86],
+                            b:[26,56,36,60,64,72,84,78,84,124,32,72,30,86]},
+  'knee isolation':{v:'side',a:[34,26,38,38,42,78,70,78,74,110,34,54,36,74],
+                            b:[34,26,38,38,42,78,70,78,96,74,34,54,36,74]},
+  'calf':         {v:'side',a:[50,20,50,32,50,74,50,102,50,130,44,52,44,74],
+                            b:[50,12,50,24,50,66,50,96,52,126,44,44,44,66]},
+  'trunk flexion':{v:'side',a:[22,86,32,88,62,90,78,70,92,92,28,76,26,66],
+                            b:[31,70,39,78,62,90,78,70,92,92,35,62,33,56]},
+  'anti-extension':{v:'side',a:[20,66,30,70,58,75,80,81,96,88,28,84,24,98],
+                            b:[20,68,30,72,58,78,80,83,96,89,28,85,24,99]},
+  'anti-rotation':{v:'side',a:[50,18,50,30,50,72,50,102,50,132,44,46,44,56],
+                            b:[50,18,50,30,50,72,50,102,50,132,52,46,66,54]},
+  'carry':        {v:'side',a:[50,16,50,28,50,70,50,100,50,130,50,50,50,74,50,100,50,130],
+                            b:[50,14,50,26,50,68,44,100,38,128,50,48,50,72,58,98,64,128]},
+  'grip':         {v:'side',a:[50,17,50,29,50,70,50,100,50,130,50,50,50,74],
+                            b:[50,16,50,28,50,69,50,99,50,130,50,49,50,73]},
+  'mobility':     {v:'side',a:[22,62,32,66,66,66,78,90,92,94,32,88,30,110],
+                            b:[24,74,33,76,66,56,78,88,92,94,32,88,30,110]},
+  'cardio':       {v:'side',a:[50,16,50,28,50,70,62,96,72,120,42,52,34,64],
+                            b:[50,14,50,26,50,68,40,100,34,126,58,50,64,62]},
+  'full body':    {v:'side',a:[50,16,50,28,50,70,50,100,50,130,46,44,46,28],
+                            b:[38,34,42,44,52,72,56,100,52,130,40,62,40,84]}
+};
+const POSE_FALLBACK='full body';
+function poseFor(exId){
+  const x=(typeof exOf==='function')? exOf(exId) : null;
+  return POSES[(x&&x.p)||'']||POSES[POSE_FALLBACK];
+}
+/* Pull a joint out of a flat pose array. */
+const J={h:0,n:2,p:4,k:6,a:8,e:10,w:12,k2:14,a2:16};
+const jx=(arr,k)=>arr[J[k]], jy=(arr,k)=>arr[J[k]+1];
+const has2=arr=>arr.length>14;
+
+const reduced=()=>{ try{ return window.matchMedia
+  && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } };
+
+function seg(A,B,k1,k2,dur,mirror){
+  const f=(arr,k,ax)=>{ const v=(ax==='x')? jx(arr,k) : jy(arr,k);
+    return (mirror&&ax==='x')? (FIG_W-v) : v; };
+  const at=(arr)=>[f(arr,k1,'x'),f(arr,k1,'y'),f(arr,k2,'x'),f(arr,k2,'y')];
+  const a=at(A), b=at(B);
+  if(reduced()) return `<line x1="${a[0]}" y1="${a[1]}" x2="${a[2]}" y2="${a[3]}"/>`;
+  const an=(name,i)=>`<animate attributeName="${name}" dur="${dur}s" repeatCount="indefinite"
+    values="${a[i]};${b[i]};${a[i]}" keyTimes="0;0.5;1" calcMode="spline"
+    keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/>`;
+  return `<line x1="${a[0]}" y1="${a[1]}" x2="${a[2]}" y2="${a[3]}">
+    ${an('x1',0)}${an('y1',1)}${an('x2',2)}${an('y2',3)}</line>`;
+}
+function head(A,B,dur,mirror){
+  const f=(arr,ax)=>{ const v=(ax==='x')? jx(arr,'h') : jy(arr,'h');
+    return (mirror&&ax==='x')? (FIG_W-v) : v; };
+  const a=[f(A,'x'),f(A,'y')], b=[f(B,'x'),f(B,'y')];
+  if(reduced()) return `<circle cx="${a[0]}" cy="${a[1]}" r="8.5" fill="none"/>`;
+  const an=(name,i)=>`<animate attributeName="${name}" dur="${dur}s" repeatCount="indefinite"
+    values="${a[i]};${b[i]};${a[i]}" keyTimes="0;0.5;1" calcMode="spline"
+    keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/>`;
+  return `<circle cx="${a[0]}" cy="${a[1]}" r="8.5" fill="none">${an('cx',0)}${an('cy',1)}</circle>`;
+}
+/* What is in their hands, drawn at the wrist and moving with it. */
+function implement(A,B,eq,dur,mirror){
+  const f=(arr,ax)=>{ const v=(ax==='x')? jx(arr,'w') : jy(arr,'w');
+    return (mirror&&ax==='x')? (FIG_W-v) : v; };
+  const a=[f(A,'x'),f(A,'y')], b=[f(B,'x'),f(B,'y')];
+  const anim=(name,i)=> reduced()? '' : `<animate attributeName="${name}" dur="${dur}s" repeatCount="indefinite"
+    values="${a[i]};${b[i]};${a[i]}" keyTimes="0;0.5;1" calcMode="spline"
+    keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/>`;
+  const move=(name,i)=>anim(name,i);
+  if(eq==='barbell') return `<g class="kit"><line x1="${a[0]-17}" y1="${a[1]}" x2="${a[0]+17}" y2="${a[1]}" stroke-width="2.6">
+      ${reduced()?'':`<animate attributeName="y1" dur="${dur}s" repeatCount="indefinite" values="${a[1]};${b[1]};${a[1]}" keyTimes="0;0.5;1"/>
+      <animate attributeName="y2" dur="${dur}s" repeatCount="indefinite" values="${a[1]};${b[1]};${a[1]}" keyTimes="0;0.5;1"/>
+      <animate attributeName="x1" dur="${dur}s" repeatCount="indefinite" values="${a[0]-17};${b[0]-17};${a[0]-17}" keyTimes="0;0.5;1"/>
+      <animate attributeName="x2" dur="${dur}s" repeatCount="indefinite" values="${a[0]+17};${b[0]+17};${a[0]+17}" keyTimes="0;0.5;1"/>`}
+    </line>
+    <circle cx="${a[0]-17}" cy="${a[1]}" r="5.5">${move('cx',0)}${move('cy',1)}</circle>
+    <circle cx="${a[0]+17}" cy="${a[1]}" r="5.5">${move('cx',0)}${move('cy',1)}</circle></g>`;
+  if(eq==='dumbbell'||eq==='kettlebell')
+    return `<g class="kit"><rect x="${a[0]-5}" y="${a[1]-4}" width="10" height="8" rx="2">
+      ${reduced()?'':`<animate attributeName="x" dur="${dur}s" repeatCount="indefinite" values="${a[0]-5};${b[0]-5};${a[0]-5}" keyTimes="0;0.5;1"/>
+      <animate attributeName="y" dur="${dur}s" repeatCount="indefinite" values="${a[1]-4};${b[1]-4};${a[1]-4}" keyTimes="0;0.5;1"/>`}</rect></g>`;
+  if(eq==='cable'||eq==='band')
+    return `<g class="kit"><line x1="96" y1="${a[1]}" x2="${a[0]}" y2="${a[1]}" stroke-width="1.8"
+      stroke-dasharray="${eq==='band'?'4 3':'0'}">
+      ${reduced()?'':`<animate attributeName="x2" dur="${dur}s" repeatCount="indefinite" values="${a[0]};${b[0]};${a[0]}" keyTimes="0;0.5;1"/>
+      <animate attributeName="y1" dur="${dur}s" repeatCount="indefinite" values="${a[1]};${b[1]};${a[1]}" keyTimes="0;0.5;1"/>
+      <animate attributeName="y2" dur="${dur}s" repeatCount="indefinite" values="${a[1]};${b[1]};${a[1]}" keyTimes="0;0.5;1"/>`}</line></g>`;
+  if(eq==='machine')
+    return `<g class="kit"><rect x="86" y="40" width="12" height="60" rx="2" stroke-width="2"/></g>`;
+  return '';
+}
+function figureSVG(exId,opts){
+  const o=opts||{}, pose=poseFor(exId);
+  const x=(typeof exOf==='function')? exOf(exId) : {};
+  const A=pose.a, B=pose.b, dur=o.dur||2.8, mir=!!pose.m;
+  const arms=(m)=>seg(A,B,'n','e',dur,m)+seg(A,B,'e','w',dur,m);
+  const legs=(m)=>seg(A,B,'p','k',dur,m)+seg(A,B,'k','a',dur,m);
+  const lying=pose.v==='lie';
+  return `<svg class="fig" viewBox="0 0 ${FIG_W} ${FIG_H}" role="img"
+    aria-label="A figure moving through a ${(x.p||'full body')} pattern"
+    xmlns="http://www.w3.org/2000/svg">
+    ${lying? `<line class="floor" x1="18" y1="74" x2="72" y2="74" stroke-width="3"/>`
+           : `<line class="floor" x1="6" y1="${GROUND+3}" x2="94" y2="${GROUND+3}" stroke-width="2"/>`}
+    <g class="body" fill="none" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
+      ${head(A,B,dur,false)}
+      ${seg(A,B,'n','p',dur,false)}
+      ${legs(false)}
+      ${has2(A)&&has2(B)? seg(A,B,'p','k2',dur,false)+seg(A,B,'k2','a2',dur,false):''}
+      ${mir? legs(true):''}
+      ${arms(false)}
+      ${mir? arms(true):''}
+    </g>
+    ${implement(A,B,x.eq,dur,false)}
+    ${mir? implement(A,B,x.eq,dur,true):''}
+  </svg>`;
+}
+/* The sheet you get when you tap a movement you do not know. */
+function openMove(exId){
+  const x=exOf(exId);
+  const el=document.getElementById('altBody');
+  document.getElementById('altTitle').textContent=x.n;
+  document.getElementById('altSub').textContent=
+    [x.g,x.eq&&x.eq!=='bodyweight'? EQUIP[x.eq]||x.eq : 'Bodyweight', DIFF[x.d||1]].filter(Boolean).join(' · ');
+  const cues=x.c||'';
+  el.innerHTML=`
+    <div style="padding:0 14px 6px">
+      <div class="figwrap">${figureSVG(exId)}</div>
+      <div class="note" style="margin-top:0">This shows the shape of the movement, start to finish. It is not a form check, and it will not tell you if your own is safe. If something hurts, that is a physio question rather than an app one.</div>
+      ${cues? `<div class="slab">What to hold onto</div><div class="method"><span>${cues}</span></div>`:''}
+      ${typeof exBlurb==='function'&&exBlurb(x)? `<div class="slab">Where it lands</div><div class="method"><span>${exBlurb(x)}${x.s?'. Also asks something of: '+x.s.toLowerCase():''}</span></div>`:''}
+      <div class="slab">How it would be prescribed</div>
+      <div class="method"><span>${(()=>{ const r=(typeof rxOf==='function'&&typeof rxClass==='function')? rxOf(rxClass(exId)) : null;
+        return r? `${r.sets} sets of ${r.repMin} to ${r.reps}, about ${r.rest} seconds between them. That is the ${rxClass(exId)} range, not a rule for you.` : 'Sets and reps come from the template.'; })()}</span></div>
+      ${(typeof similarTo==='function')? `<div class="slab">Trains much the same thing</div>
+        ${similarTo(exId,3).map(o=>`<button class="opt" data-showmove="${o.id}">
+          <div class="txt"><div class="t">${o.n}</div><div class="s">${EQUIP[o.eq]||o.eq||''}</div></div>
+          <div class="rad"></div></button>`).join('')}`:''}
+    </div>`;
+  openSheet('altSheet');
+}
+document.addEventListener('click',e=>{
+  const sm=e.target.closest('[data-showmove]');
+  if(sm){ openMove(sm.dataset.showmove); }
+});
+Object.assign(window.__G||{},{figureSVG,openMove,POSES,poseFor});
+</script>
+
+<script>
+/* ---------- the coach ----------
+   coachBrief() has been the most valuable function in this app since the first
+   version and the least used: a structured, portable, longitudinal record of one
+   person's training, eating, sleeping and moods, in plain English. Everything
+   before this point exists to make sure the record is true. This is what it is
+   for.
+   Two deliberate constraints:
+   1. There is no API key in this file, and there never will be. A key shipped in
+      a static page is a key anybody can read and spend. The app posts to an
+      endpoint YOU run, which holds the key and talks to whichever model you
+      choose. Until you set one, this sheet does what it always did: shows the
+      brief and lets you copy it into whatever you already use.
+   2. The model gets the record and the app's own reasoning, and it is told
+      plainly what it may not do: invent numbers, diagnose, or override the
+      forecast's own uncertainty. The whole point of the brief is that it does
+      not make things up, and handing it to something that does would undo the
+      lot. */
+const COACH_SYS = [
+'You are reading a training record produced by an app called Gauntlet, for the person who wrote it. Talk to them directly, as a coach would.',
+'',
+'What the app is: it builds one week of training at a time, rebuilds it from a weekly check in, forecasts bodyweight from calorie balance, and then scores its own forecasts against what happened and widens its own error bars when it gets things wrong. It shows its workings for every number. It does not count food for people and it does not pretend to certainty it has not got.',
+'',
+'Rules, in order of importance:',
+'1. Never invent a number. If the record does not contain something, say it is not in the record. Do not estimate body fat, one rep maxes, or calories that are not there.',
+'2. The record marks which figures were reported by the person and which the app derived from their logs. Keep that distinction when you talk about them.',
+'3. Do not diagnose anything, and do not give medical advice. Pain that persists is a physiotherapist or a doctor, and say so plainly rather than working around it.',
+'4. The forecast comes with a range for a reason. Do not narrow it, do not promise an outcome, and do not treat the midpoint as the answer.',
+'5. Nothing about weight loss rate, restriction, or appearance that you would not say to someone who might be unwell. No calorie targets below what the record already sets.',
+'6. Be short. Lead with the answer. Two or three things at most, the most important first. No preamble and no summary of what they just told you.',
+'7. If the honest answer is that the plan is fine and they should do another week of it, say that. Most weeks that is the answer.'
+].join('\n');
+
+const coachCfg=()=>Object.assign({endpoint:'',model:'',on:false},S.coach||{});
+const coachReady=()=>{ const c=coachCfg(); return !!(c.on&&c.endpoint); };
+function setCoach(patch){ S.coach=Object.assign(coachCfg(),patch); save(); }
+
+const COACH_ASKS=[
+  'What should I change this week, if anything?',
+  'Is the weight coming off at a sensible rate?',
+  'Am I doing too much, or not enough?',
+  'What is the one thing holding me back?',
+  'Read my last four weeks and tell me what I am not seeing.'
+];
+
+let coachThread=[];
+async function askCoach(question){
+  const c=coachCfg();
+  if(!coachReady()) throw new Error('no endpoint');
+  const body={model:c.model||undefined, system:COACH_SYS,
+    messages:coachThread.concat([{role:'user',
+      content:'Here is my record.\n\n'+coachBrief()+'\n\nMy question: '+question}])};
+  const r=await fetch(c.endpoint,{method:'POST',
+    headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  if(!r.ok) throw new Error('the endpoint returned '+r.status);
+  const data=await r.json();
+  /* Accept the two shapes anybody's proxy is likely to hand back. */
+  const text = typeof data==='string'? data
+    : (Array.isArray(data.content)? data.content.filter(x=>x.type==='text').map(x=>x.text).join('\n')
+    : (data.text || data.reply || (data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content) || ''));
+  if(!text) throw new Error('the endpoint sent nothing readable back');
+  coachThread=coachThread.concat([{role:'user',content:question},{role:'assistant',content:text}]);
+  return text;
+}
+
+let coachBusy=false, coachLast='', coachErr='';
+function openCoach(){ coachErr=''; drawCoach(); openSheet('coachSheet'); }
+function drawCoach(){
+  const c=coachCfg(), ready=coachReady();
+  document.getElementById('coachBody').innerHTML=`
+    ${ready? `
+      <div class="slab">Ask it something</div>
+      <div class="chips" style="margin-bottom:10px">${COACH_ASKS.map((q,i)=>`<button data-coachask="${i}">${q}</button>`).join('')}</div>
+      <textarea class="ta" id="coachQ" placeholder="Or your own question. It has your whole record already."></textarea>
+      <button class="sheetcta" id="coachGo" ${coachBusy?'disabled':''}>${coachBusy?'Reading your record...':'Ask'}</button>
+      ${coachErr? `<div class="warn" style="margin-top:12px">${coachErr}</div>`:''}
+      ${coachLast? `<div class="slab">What it said</div><div class="coachout">${coachLast.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>
+        <div class="note">It only knows what is in the brief below. It cannot see your form, your life, or anything you have not logged.</div>`:''}
+      ${coachThread.length? `<button class="skipbtn" id="coachClear">Start a fresh conversation</button>`:''}
+    ` : `
+      <div class="method"><b>Nothing is connected</b><span>The brief below is the whole record in plain English. Copy it into whatever you already use, or point this at an endpoint of your own and ask questions here instead.</span></div>
+      <div class="method"><b>Why there is no key in the app</b><span>This page is a single file that anybody who has it can read. A key in it is a key they can spend. So the app posts to a URL you run, that URL holds the key, and it talks to whichever model you like.</span></div>
+      <div class="method"><b>What your endpoint receives</b><span>A JSON POST with <code>system</code>, <code>messages</code> and optionally <code>model</code>. Send back either the provider's own response, or <code>{"text": "..."}</code>. Both are handled.</span></div>
+      <button class="sheetcta" id="coachSetup">Point it at an endpoint</button>
+    `}
+    <div class="slab">The brief itself</div>
+    <div class="note" style="margin-bottom:8px">Everything that would be sent. Nothing else leaves the app.</div>
+    <pre class="brief" id="coachBriefText">${coachBrief().replace(/&/g,'&amp;').replace(/</g,'&lt;')}</pre>
+    <button class="mini" id="coachCopy">Copy the brief</button>`;
+}
+function drawCoachSetup(){
+  const c=coachCfg();
+  document.getElementById('coachBody').innerHTML=`
+    <div class="nf" style="margin-bottom:10px"><label>Your endpoint</label>
+      <input id="coachUrl" value="${(c.endpoint||'').replace(/"/g,'&quot;')}"
+        placeholder="https://something-you-run.example/coach"
+        style="font-family:Archivo;font-size:14px;font-weight:600"></div>
+    <div class="nf" style="margin-bottom:10px"><label>Model, if your endpoint wants one</label>
+      <input id="coachModel" value="${(c.model||'').replace(/"/g,'&quot;')}" placeholder="optional"
+        style="font-family:Archivo;font-size:14px;font-weight:600"></div>
+    <div class="method"><b>What it has to do</b><span>Accept a JSON POST of <code>{system, messages, model}</code>, add your API key, call the model, and return the response. Twenty lines of anything. It must send CORS headers back to this origin or the browser will refuse the reply.</span></div>
+    <div class="method"><b>What goes over the wire</b><span>Your brief: weights, sessions, check ins, habits, target, and any lines you wrote about your days. Send it somewhere you trust, and nowhere else.</span></div>
+    <button class="sheetcta" id="coachSave">Save it</button>
+    <button class="skipbtn" id="coachBack">Back</button>`;
+}
+document.addEventListener('click',async e=>{
+  if(e.target.closest('#coachBtn')||e.target.closest('#briefBtn')){ openCoach(); return; }
+  if(e.target.closest('#coachSetup')){ drawCoachSetup(); return; }
+  if(e.target.closest('#coachBack')){ drawCoach(); return; }
+  if(e.target.closest('#coachSave')){
+    const url=(document.getElementById('coachUrl')||{}).value||'';
+    const model=(document.getElementById('coachModel')||{}).value||'';
+    if(url&&!/^https:\/\//.test(url.trim())){ toast('It has to be an https address'); return; }
+    setCoach({endpoint:url.trim(),model:model.trim(),on:!!url.trim()});
+    drawCoach(); renderAll(); toast(url.trim()? 'Connected' : 'Endpoint cleared'); return; }
+  if(e.target.closest('#coachClear')){ coachThread=[]; coachLast=''; coachErr=''; drawCoach(); return; }
+  if(e.target.closest('#coachCopy')){
+    const text=coachBrief();
+    try{ await navigator.clipboard.writeText(text); toast('Brief copied'); }
+    catch(err){ toast('Select it and copy by hand'); }
+    return; }
+  const qa=e.target.closest('[data-coachask]');
+  if(qa){ const box=document.getElementById('coachQ'); if(box){ box.value=COACH_ASKS[+qa.dataset.coachask]; box.focus(); } return; }
+  if(e.target.closest('#coachGo')){
+    const box=document.getElementById('coachQ');
+    const q=(box&&box.value||'').trim();
+    if(!q){ toast('Ask it something first'); return; }
+    coachBusy=true; coachErr=''; drawCoach();
+    try{ coachLast=await askCoach(q); }
+    catch(err){ coachErr='That did not come back: '+(err&&err.message||'no connection')+'. The brief is still below, and copying it still works.'; }
+    coachBusy=false; drawCoach();
+    return; }
+});
+Object.assign(window.__G||{},{COACH_SYS,coachCfg,coachReady,setCoach,askCoach,openCoach,COACH_ASKS,ownTargets,targetKcalPreview});
 </script>
 </body>
 </html>

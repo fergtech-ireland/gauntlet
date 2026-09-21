@@ -1,0 +1,15 @@
+{
+  "name": "gauntlet",
+  "private": true,
+  "description": "Gauntlet: the app is index.html. Everything else here is for testing.",
+  "scripts": {
+    "test": "node test.js",
+    "test:regression": "node test.js regression",
+    "test:cta": "node test.js cta",
+    "test:uat": "node test.js uat",
+    "test:sw": "node test.js sw"
+  },
+  "devDependencies": {
+    "jsdom": "^30.1.0"
+  }
+}

@@ -38,7 +38,7 @@
   --good-bg:#f1f7f4;--good-bg2:#f2f7f5;--cool-bg:#fafbfd;--good-line:var(--good-line);
   color-scheme:light}
 @media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
+  :root[data-theme="auto"]{
     --paper:#151517;--canvas:#0d0d0f;--ink:#f1f1ef;--on-ink:#151517;--mute:#9b9ba1;
     --line:#2f2f34;--line-soft:#212124;--grey-btn:#24242a;--subtle:#c6c6cb;
     --marine:#8fb0e4;--oxblood:#e0929c;--forest:#63c3a3;--burnt:#e39a6a;
@@ -118,29 +118,21 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .ribbon .m.done{box-shadow:inset 0 0 0 2px var(--ink)}
 .ribbon button.today{box-shadow:inset 0 -3px 0 var(--ink)}
 .ribbon button.today .d{color:var(--ink)}
-.todo{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line-soft);width:100%;text-align:left}
+
 .todo .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
-.todo .t{flex:1}
-.todo .t b{display:block;font-weight:600;font-size:13.5px}
-.todo .t span{font-size:12px;color:var(--mute)}
-.todo .tick{width:26px;height:26px;border-radius:7px;border:1.5px solid var(--line);display:grid;place-items:center;color:var(--line);flex:0 0 auto}
-.todo.done .tick{background:var(--forest-bg);border-color:var(--forest-bg);color:#fff}
-.todo.done .t b{color:var(--mute)}
+
+.todo.done .tick{color:#fff}
 
 /* plan */
 .pday{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line-soft)}
 .pday.today{background:var(--warm)}
-.pday .dd{width:34px;font-size:11px;font-weight:700;color:var(--mute);text-align:center;flex:0 0 auto}
+
 .pday.today .dd{color:var(--ink)}
 .pday .txt{flex:1;min-width:0;background:none;border:0;padding:0;font:inherit;color:inherit;text-align:left;display:block}
-.pday .dd{background:none;border:0;padding:0;font:inherit}
+.pday .dd{width:34px;font-size:11px;font-weight:700;color:var(--mute);text-align:center;flex:0 0 auto;background:none;border:0;padding:0;font:inherit}
 .pday .txt b{display:block;font-weight:600;font-size:14px}
 .pday .txt span{font-size:12px;color:var(--mute)}
 .pday .sq{width:8px;height:34px;border-radius:4px;flex:0 0 auto}
-.trow{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line-soft)}
-.trow .txt{flex:1;min-width:0}
-.trow .n{font-weight:700;font-size:14px}
-.trow .s{font-size:12px;color:var(--mute);margin-top:2px}
 
 /* progress */
 .panel{padding:14px;border-top:1px solid var(--line)}
@@ -157,20 +149,7 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .spark{width:100%;height:60px;display:block;margin-top:8px}
 .numline{display:flex;gap:16px;font-size:12.5px;color:var(--mute);font-weight:600;flex-wrap:wrap}
 .numline b{color:var(--ink);font-weight:700}
-.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-soft);border:1px solid var(--line-soft)}
-.tgrid div{background:var(--paper);padding:11px 12px}
-.tgrid .n{font-family:"Archivo Black";font-size:19px;letter-spacing:-.05em}
-.tgrid .n.under{color:var(--burnt)}
-.tgrid .n.ok{color:var(--forest)}
-.tgrid .l{font-size:10.5px;color:var(--mute);font-weight:600;margin-top:2px}
-.coach{padding:14px;border-top:1px solid var(--line);background:var(--warm)}
-.coach .ph{display:flex;align-items:center;margin-bottom:10px}
-.coach .ph h3{margin:0;font-size:11px;font-weight:700;flex:1;color:var(--warm-head);letter-spacing:.12em;text-transform:uppercase}
-.steer{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--warm-line)}
-.steer:last-child{border-bottom:0}
-.steer .dot{width:7px;height:7px;border-radius:50%;margin-top:6px;flex:0 0 auto}
-.steer .t{font-size:13.5px;flex:1}
-.steer .t b{font-weight:700}
+
 .actrow{display:flex;gap:12px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line-soft)}
 .actrow:last-child{border-bottom:0}
 .actrow .txt{flex:1;min-width:0}
@@ -182,7 +161,7 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .twoup .n{font-family:"Archivo Black";font-size:24px;letter-spacing:-.055em}
 .twoup .l{font-size:11px;color:var(--mute);font-weight:600;margin-top:3px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5px;padding:0 0 4px}
-.gcell{aspect-ratio:1;display:grid;place-items:center;color:#fff;font-family:"Archivo Black";font-size:14px;letter-spacing:-.04em;text-align:center;padding:6px}
+.gcell{border:0;font:inherit;text-align:left;cursor:pointer;width:100%;aspect-ratio:1;display:grid;place-items:center;color:#fff;font-family:"Archivo Black";font-size:14px;letter-spacing:-.04em;text-align:center;padding:6px}
 .gcell small{display:block;font-family:Archivo;font-weight:600;font-size:10px;opacity:.72;margin-top:3px;letter-spacing:0}
 .phead{display:flex;gap:20px;align-items:center;padding:2px 14px 16px}
 .av-lg{width:70px;height:70px;border-radius:50%;display:grid;place-items:center;color:#fff;font-family:"Archivo Black";font-size:24px}
@@ -258,7 +237,7 @@ nav.tabs{position:fixed;bottom:0;left:0;right:0;max-width:460px;margin:0 auto;z-
 .sheet.on{transform:translateY(0)}
 .grab{width:36px;height:4px;border-radius:4px;background:var(--line);margin:8px auto 6px}
 .sheet h3{font-size:15px;font-weight:700;margin:6px 14px 2px;text-align:center}
-.sheet .sub{margin:0 14px 14px;color:var(--mute);font-size:12.5px;text-align:center;padding-bottom:12px;border-bottom:1px solid var(--line-soft)}
+
 .logrow{display:flex;align-items:center;gap:13px;padding:13px 14px;border-bottom:1px solid var(--line-soft);width:100%;text-align:left}
 .logrow .sq{width:38px;height:38px;border-radius:8px;display:grid;place-items:center}
 .logrow .txt{flex:1}
@@ -290,6 +269,31 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .opt.on .t{font-weight:700}
 .opt.on .rad{border-color:var(--ink)}
 .opt.on .rad:after{content:"";position:absolute;inset:3.5px;border-radius:50%;background:var(--ink)}
+.ysgroup{margin:14px 14px 4px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--paper)}
+.yshead{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);padding:12px 14px 6px}
+.ysrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:11px 14px;min-height:56px;border-top:1px solid var(--line-soft)}
+.ysrow:first-of-type{border-top:0}
+.ysrow .sic{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;flex:0 0 auto}
+.ysrow .stx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ysrow .stx b{font-size:14px}
+.ysrow .stx .sv{font-size:12.5px;color:var(--mute);font-weight:600;line-height:1.35}
+.ysrow .stx small{font-size:11.5px;color:var(--mute);line-height:1.35;margin-top:2px}
+.ysrow .chev{color:var(--mute);font-size:20px}
+.sessex{padding:10px 0;border-top:1px solid var(--line-soft)}
+.sessex .sxh{display:flex;align-items:center;gap:8px}
+.sessex .sxh b{flex:1;font-size:14px}
+.sessex .sxs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.sessex .sxs span{font-size:12.5px;font-weight:600;padding:5px 9px;border-radius:7px;background:var(--grey-btn)}
+.sessex .sxs span.warm{color:var(--mute)}
+.sessex .sxs span.best{background:var(--t-forest);color:var(--forest)}
+.updatebar{position:fixed;left:50%;bottom:calc(72px + env(safe-area-inset-bottom,0px));transform:translate(-50%,12px);
+  width:calc(100% - 24px);max-width:436px;z-index:75;display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;
+  border-radius:12px;background:var(--marine-bg);color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.18);
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+.updatebar.on{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+.updatebar .msg{flex:1;display:flex;flex-direction:column;gap:2px;font-size:13px}
+.updatebar .msg span{font-size:11.5px;opacity:.85}
+.updatebar button{min-height:44px;padding:0 16px;border-radius:9px;background:#fff;color:#161618;font-weight:700;font-size:13px}
 .toast{position:fixed;bottom:84px;left:50%;transform:translate(-50%,10px);z-index:80;background:var(--ink);color:var(--on-ink);
   border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:14px;font-size:13px;font-weight:600;
   opacity:0;pointer-events:none;transition:.18s;max-width:400px;width:calc(100% - 28px)}
@@ -341,7 +345,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .prompt .s{font-size:12px;color:var(--mute);margin-top:2px}
 .prompt .mini{flex:0 0 auto}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
-.chips button{height:34px;padding:0 13px;border-radius:8px;border:1px solid var(--line);font-weight:600;font-size:13px}
+
 .chips button.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
 .nums{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
 .nf{border:1px solid var(--line);border-radius:8px;padding:8px 10px}
@@ -392,13 +396,12 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .exc .note{font-size:12px;color:var(--burnt);margin-top:6px}
 .sethead,.setline{display:grid;grid-template-columns:34px 1fr 62px 62px 34px;gap:6px;align-items:center}
 .sethead{margin-top:10px;font-size:10px;font-weight:700;color:var(--mute);letter-spacing:.1em;text-transform:uppercase}
-.setline{margin-top:6px}
-.setline .sn{font-weight:700;font-size:13px;color:var(--mute);text-align:center}
+
 .setline .sn.warm{color:var(--burnt)}
 .setline .prev{font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .setline input{border:1px solid var(--line);border-radius:8px;padding:8px 6px;font-weight:700;font-size:14px;text-align:center;outline:none;width:100%;background:var(--paper)}
-.setline .tick{width:52px;height:52px;border-radius:12px;border:1.5px solid var(--line);display:grid;place-items:center;color:#fff;flex:0 0 auto}
-.setline.done .tick{background:var(--forest-bg);border-color:var(--forest-bg);color:#fff}
+
+.setline.done .tick{color:#fff}
 .setline.done input{background:var(--good-bg2);border-color:var(--good-line)}
 .setbtns{display:flex;gap:8px;margin-top:10px}
 .setbtns button{height:30px;padding:0 11px;border-radius:8px;background:var(--grey-btn);font-weight:700;font-size:12px}
@@ -423,7 +426,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .pr{display:inline-grid;place-items:center;height:16px;padding:0 5px;border-radius:4px;background:var(--marigold);
   color:#161618;font-size:9px;font-weight:700;letter-spacing:.08em;margin-right:6px;vertical-align:middle}
 .exh .pr{margin-right:4px}
-.setline.ispr .tick{background:var(--marigold);border-color:var(--marigold)}
+
 .setline.ispr input{border-color:var(--marigold)}
 .prtick{font-size:8.5px;font-weight:700;color:#161618;letter-spacing:.04em}
 .prcard{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line-soft)}
@@ -439,7 +442,6 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .search{height:38px;border-radius:8px;background:var(--grey-btn);display:flex;align-items:center;gap:9px;padding:0 12px;color:var(--mute)}
 .search input{flex:1;font-size:13.5px;color:var(--ink);background:none;outline:none;min-width:0}
 .sheet .sub{margin:0 14px 14px;color:var(--mute);font-size:12.5px;text-align:center;padding-bottom:12px;border-bottom:1px solid var(--line-soft)}
-
 
 /* today: quick bits, tracker rows */
 .todo{display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid var(--line-soft);width:100%;text-align:left}
@@ -485,11 +487,16 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 .dlweek .d span{font-size:11.5px;color:var(--mute);font-weight:600}
 .dlweek .tag{font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;background:var(--grey-btn);color:var(--mute)}
 .dlweek .tag.on{background:var(--marine-bg);color:#fff}
-.dots{display:flex;gap:5px;margin-top:7px}
-.dots i{width:9px;height:9px;border-radius:50%;background:var(--line);display:block}
-.dots i.on{background:var(--forest)}
-.dots i.pre{background:var(--line-soft)}
-.dots i.now{box-shadow:0 0 0 2px var(--paper),0 0 0 3.5px var(--mute)}
+.habitdots{display:flex;gap:5px;margin-top:7px}
+.habitdots i{width:9px;height:9px;border-radius:50%;background:var(--line);display:block}
+.habitdots i.on{background:var(--forest)}
+.habitdots i.pre{background:var(--line-soft)}
+.ownrow{display:flex;gap:8px;align-items:center;margin-top:6px}
+.ownrow input{flex:1;min-width:0;min-height:44px;border:1px solid var(--line);border-radius:9px;padding:0 12px;
+  font:inherit;font-size:14px;font-weight:600;background:var(--paper);color:var(--ink)}
+.habitdots i.off{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line)}
+.todo .habittick:disabled{opacity:.35}
+.habitdots i.now{box-shadow:0 0 0 2px var(--paper),0 0 0 3.5px var(--mute)}
 .todo.done .tick{background:var(--forest);border-color:var(--forest)}
 .todo.done .t b{color:var(--mute)}
 .todo .chev{color:var(--mute);font-size:20px;line-height:1}
@@ -563,7 +570,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 .revrow .chg{font-size:12.5px;font-weight:700;color:var(--marine);flex:0 0 auto}
 .tempo{font-size:11.5px;color:var(--mute);margin-top:3px}
 .tempoline{font-size:11px;color:var(--mute);padding:0 0 9px;margin-top:-4px}
-.skipbtn{display:block;margin:10px auto 0;font-size:13px;font-weight:700;color:var(--mute);text-decoration:underline}
+
 .citem{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line-soft);width:100%;text-align:left}
 .citem .cn{font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);width:52px;flex:0 0 auto}
 .citem .ct{flex:1;min-width:0}
@@ -576,10 +583,10 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 .cidot{width:5px;height:5px;border-radius:50%;background:var(--marigold);margin:4px auto 0}
 .cichip{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--burnt);background:var(--t-marigold);padding:3px 6px;border-radius:5px;vertical-align:middle}
 .viewbtn{display:block;margin:6px auto 0;font-size:13px;font-weight:700;color:var(--marine);min-height:44px;padding:0 10px}
-.skipbtn{min-height:44px;padding:0 10px}
+.skipbtn{display:block;margin:10px auto 0;font-size:13px;font-weight:700;color:var(--mute);text-decoration:underline;min-height:44px;padding:0 10px}
 .howbtn{min-height:44px}
-.chips button{min-height:40px}
-.pickchips button{min-height:40px}
+.chips button{height:34px;padding:0 13px;border-radius:8px;border:1px solid var(--line);font-weight:600;font-size:13px;min-height:40px}
+
 .why-row{font-size:11.5px;color:var(--burnt);margin-top:4px}
 .cedit{display:grid;grid-template-columns:38px 1fr 26px 26px;gap:6px;align-items:center;padding:8px 0 0}
 .cedit input{border:1px solid var(--line);border-radius:7px;padding:7px 8px;font-size:13.5px;font-weight:600;outline:none;width:100%}
@@ -591,17 +598,17 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 .frow .mini{flex:0 0 auto;padding:6px 9px;font-size:12px}
 .pickchips{display:flex;gap:6px;overflow-x:auto;padding:0 14px 8px;-webkit-overflow-scrolling:touch}
 .pickchips::-webkit-scrollbar{display:none}
-.pickchips button{flex:0 0 auto;padding:7px 11px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:700;color:var(--mute);background:var(--paper);white-space:nowrap}
+.pickchips button{min-height:40px;flex:0 0 auto;padding:7px 11px;border-radius:999px;border:1px solid var(--line);font-size:12px;font-weight:700;color:var(--mute);background:var(--paper);white-space:nowrap}
 .pickchips button.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
 .exrow .cue2{font-size:11.5px;color:var(--mute);margin-top:3px;line-height:1.4}
-.setline{display:grid;grid-template-columns:24px 1fr 1fr 52px;gap:8px;align-items:center;padding:7px 0}
+.setline{margin-top:6px;display:grid;grid-template-columns:24px 1fr 1fr 52px;gap:8px;align-items:center;padding:7px 0}
 .setline .sn{font-size:12px;font-weight:700;color:var(--mute);text-align:center}
 .setline.warm .sn{color:var(--burnt)}
 .stepper{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--paper);height:52px}
 .stepper input{height:50px;border:0;text-align:center;font-size:17px;font-weight:700;outline:none;width:100%;background:transparent;padding:0}
 .stepper .step{height:50px;font-size:21px;font-weight:700;color:var(--mute);background:var(--canvas);display:grid;place-items:center;line-height:1}
 .stepper .step:active{background:var(--line)}
-.setline .tick{height:52px;width:52px;border-radius:12px;border:1.5px solid var(--line);display:grid;place-items:center;color:#fff}
+.setline .tick{flex:0 0 auto;height:52px;width:52px;border-radius:12px;border:1.5px solid var(--line);display:grid;place-items:center;color:#fff}
 .setline.done .tick{background:var(--forest);border-color:var(--forest)}
 .setline.done .stepper{opacity:.55}
 .setline.ispr .tick{background:var(--marigold);border-color:var(--marigold)}
@@ -643,13 +650,11 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
         <div><b id="stTried">0</b><span>tried</span></div>
         <div><b id="stPicked">0</b><span>picked up</span></div></div>
     </div>
+    <div id="settingsList"></div>
     <div class="dash" id="dash"></div>
-    <div class="sechead" id="sessHead"><h2>Sessions</h2><button id="youBtn">You and your settings</button></div>
-  <button class="todo" id="coachBtn" style="margin-bottom:6px">
-    <span class="ic" style="background:var(--t-marine);color:var(--marine)">?</span>
-    <span class="t"><b>Ask about all this</b><span>your whole record, in plain English, ready to hand to anyone</span></span>
-    <span class="chev">›</span></button>
+    <div class="sechead" id="sessHead"><h2>Sessions</h2><button id="allSess">See all</button></div>
     <div class="grid" id="grid"></div>
+    <div id="settingsMore"></div>
   </section>
   <section class="screen" id="s-feed" tabindex="-1"><div id="feed"></div></section>
 </div>
@@ -657,12 +662,18 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 <nav class="tabs" role="tablist" aria-label="Sections">
   <button class="tab on" role="tab" aria-selected="true" data-go="today"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg><span>Today</span></button>
   <button class="tab" role="tab" aria-selected="false" data-go="plan"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg><span>Plan</span></button>
-  <button class="tab" role="tab" aria-selected="false" data-go="progress"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18V9M10 18V5M16 18v-6M22 18H2"/></svg><span>Progress</span><i class="badge" id="youBadge">0</i></button>
   <button class="tab mid" id="logBtn" aria-label="Log something">
     <span class="plus"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span><span>Log</span></button>
+  <button class="tab" role="tab" aria-selected="false" data-go="progress"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>You</span><i class="badge" id="youBadge">0</i></button>
   <button class="tab" role="tab" aria-selected="false" data-go="feed"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M17 11.5a3 3 0 1 0-2-5.3"/><path d="M18 20a6 6 0 0 0-3-5.2"/></svg><span>Feed</span></button>
 </nav>
 <div class="scrim" id="scrim"></div>
+
+<div class="sheet" id="sessSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3 id="sessTitle">Session</h3>
+  <p class="sub" id="sessSub"></p>
+  <div id="sessBody"></div>
+</div>
 
 <div class="sheet" id="coachSheet" role="dialog" aria-modal="true" tabindex="-1">
   <div class="grab"></div><h3>Your coach</h3>
@@ -671,8 +682,8 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 </div>
 
 <div class="sheet" id="youSheet" role="dialog" aria-modal="true" tabindex="-1">
-  <div class="grab"></div><h3>You</h3>
-  <p class="sub">Your body, your tracker, your account and how the app behaves.</p>
+  <div class="grab"></div><h3>Weight, tracker and account</h3>
+  <p class="sub">Your weigh ins, what your tracker sends, your numbers, and signing in.</p>
   <div class="dash" id="dashBody"></div>
 </div>
 
@@ -839,6 +850,10 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
   <button class="sheetcta" id="saveCycle">Save</button>
 </div>
 
+<div class="updatebar" id="updateBar" role="status" aria-live="polite">
+  <div class="msg"><b>A new version of Gauntlet is ready.</b><span>Your data stays exactly as it is.</span></div>
+  <button id="updateNow">Update</button>
+</div>
 <div class="toast" id="toast" role="status" aria-live="polite"><div class="msg"></div><div style="flex:1"></div><button id="toastAct">Undo</button></div>
 <script>
 /* =====================================================================
@@ -849,59 +864,125 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='20';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='21';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
-/* The plan has been saying "one food habit this week and nothing else: protein
-   at breakfast" since the first version, and then nothing tracked it, showed it
-   or ever asked about it. A promise made and dropped in the same sentence.
-   One habit at a time is the whole design. Not a list, not a grid, not five
-   things to fail at: one, with seven dots, and the app will not let a second one
-   start until the first is either sticking or abandoned. */
+/* ---------- habits ----------
+   One to start and one to stop, at most. The plan used to promise "one food
+   habit this week and nothing else" and then track nothing; the first version
+   of this fixed that with a single habit. People also want to stop things, so
+   there is now one slot for each, and still no more than that: doing one thing
+   until it is boring beats doing five badly.
+   A habit to stop is ticked the same way as one to start. A tick means the day
+   went the way you wanted, which for a stop habit means you went without.
+   Some only apply on certain days, like "no alcohol on weeknights". Those skip
+   the days that do not count, so a weekend never breaks a streak.
+   For expectations: in the best-known study, a new habit took a median of 66
+   days to become automatic, anywhere from 18 to 254, and missing a single day
+   did not undo it (Lally and colleagues, 2010). */
 const HABITS=[
-  {id:'protein_am', t:'Protein at breakfast', s:'Thirty grams before you leave the house', tag:'food'},
-  {id:'veg_lunch',  t:'Something green at lunch', s:'Any vegetable, any amount', tag:'food'},
-  {id:'water_am',   t:'A pint of water on waking', s:'Before the coffee', tag:'food'},
-  {id:'walk_after', t:'Ten minutes after dinner', s:'Out the door, around the block', tag:'move'},
-  {id:'stairs',     t:'Stairs, not the lift', s:'Every time, no negotiating', tag:'move'},
-  {id:'phone_out',  t:'Phone out of the bedroom', s:'Charges somewhere else', tag:'sleep'},
-  {id:'lights_out', t:'Same lights out time', s:'Within half an hour of it, anyway', tag:'sleep'},
-  {id:'no_screen',  t:'No screen for the last half hour', s:'A book, a shower, anything else', tag:'sleep'}
+  {id:'protein_am', kind:'start', t:'Protein at breakfast', s:'Thirty grams before you leave the house', tag:'food'},
+  {id:'veg_lunch',  kind:'start', t:'Something green at lunch', s:'Any vegetable, any amount', tag:'food'},
+  {id:'water_am',   kind:'start', t:'A pint of water on waking', s:'Before the coffee', tag:'food'},
+  {id:'lunch_prep', kind:'start', t:"Make tomorrow's lunch tonight", s:'So the easy option is the one you made', tag:'food'},
+  {id:'walk_after', kind:'start', t:'Ten minutes after dinner', s:'Out the door, around the block', tag:'move'},
+  {id:'stairs',     kind:'start', t:'Stairs, not the lift', s:'Every time, no negotiating', tag:'move'},
+  {id:'stretch',    kind:'start', t:'Five minutes of stretching', s:'Any time, any five minutes', tag:'move'},
+  {id:'phone_out',  kind:'start', t:'Phone out of the bedroom', s:'Charges somewhere else', tag:'sleep'},
+  {id:'lights_out', kind:'start', t:'Same lights out time', s:'Within half an hour of it, anyway', tag:'sleep'},
+  {id:'no_screen',  kind:'start', t:'No screen for the last half hour', s:'A book, a shower, anything else', tag:'sleep'},
+  {id:'daylight',   kind:'start', t:'Ten minutes of daylight before noon', s:'Outside, not through a window', tag:'sleep'},
+  {id:'breathe',    kind:'start', t:'Two minutes of slow breathing', s:'In for four, out for six', tag:'mind'},
+
+  {id:'no_sugary_drinks', kind:'stop', t:'No sugary drinks', s:'Water, tea, coffee and sugar-free drinks are all fine', tag:'food'},
+  {id:'no_takeaway_wk',   kind:'stop', t:'No takeaway on weeknights', s:'Monday to Thursday. Weekends are yours', tag:'food', days:[1,2,3,4]},
+  {id:'no_alcohol_wk',    kind:'stop', t:'No alcohol on weeknights', s:'Monday to Thursday', tag:'food', days:[1,2,3,4]},
+  {id:'no_caffeine_pm',   kind:'stop', t:'No caffeine after 2pm', s:'Coffee, tea, energy drinks and colas before 2 only', tag:'sleep'},
+  {id:'no_snooze',        kind:'stop', t:'No snooze button', s:'Putting the alarm across the room helps', tag:'sleep'},
+  {id:'no_phone_am',      kind:'stop', t:'No phone for the first 30 minutes', s:'Up, water, then the phone', tag:'mind'},
+  {id:'no_screens_meals', kind:'stop', t:'No screens at meals', s:'Phone face down, or in another room', tag:'mind'},
+  {id:'no_smoking',       kind:'stop', t:'Stop smoking or vaping', s:'Quitting with support works better than going it alone: quit.ie in Ireland, or your GP or pharmacist', tag:'health'}
 ];
-const habitOf=id=>HABITS.find(h=>h.id===id)||null;
-const currentHabit=()=>{ const h=S.habit; return h&&h.id&&!h.retired? h : null; };
-function startHabit(id){
-  const h=habitOf(id); if(!h) return null;
-  S.habit={id,started:todayKey(),days:{},retired:false};
-  save(); return S.habit;
+const HABIT_TAGS={food:'Eating and drinking',move:'Moving',sleep:'Sleep',mind:'Headspace',health:'Health',own:'Your own'};
+/* Whatever someone personally wants to start or stop. Kept as they wrote it,
+   shown escaped, and never judged: it is their habit. */
+const OWN_MAX=60;
+const ownHabits=()=>Array.isArray(S.customHabits)? S.customHabits : [];
+const escHabit=t=>String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function addOwnHabit(kind,text){
+  const t=String(text||'').replace(/\s+/g,' ').trim();
+  if(!t) return {error:'Write the habit first.'};
+  if(t.length>OWN_MAX) return {error:'Keep it under '+OWN_MAX+' characters.'};
+  const k= kind==='stop'? 'stop' : 'start';
+  const dup=ownHabits().find(h=>h.kind===k&&h.t.toLowerCase()===t.toLowerCase());
+  if(dup) return {habit:dup};
+  const h={id:'own_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),kind:k,t,s:'Your own',tag:'own'};
+  /* The twenty most recent are kept, so the list stays usable, but never at
+     the cost of one someone is tracking right now. Trimming by age alone used
+     to drop an active habit and wipe it from Today. */
+  const all=ownHabits().concat([h]);
+  const inUse=new Set(['start','stop'].map(k=>S.habits&&S.habits[k]&&S.habits[k].id).filter(Boolean));
+  const keep=all.filter(x=>inUse.has(x.id));
+  const rest=all.filter(x=>!inUse.has(x.id)).slice(-(20-keep.length));
+  S.customHabits=all.filter(x=>keep.includes(x)||rest.includes(x));
+  save(); return {habit:h};
 }
-function retireHabit(){ if(S.habit) S.habit.retired=true; save(); }
-function toggleHabitDay(k){
-  const h=currentHabit(); if(!h) return;
+const DAY_NAMES=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+/* The habit row is drawn during startup, before the script that defines
+   addDays() has loaded. Using addDays here threw on every open for anyone with
+   a habit, and stopped the rest of startup running. This helper exists from
+   the first line. */
+const habitDay=(k,n)=>{ const d=dateOf(k); d.setDate(d.getDate()+n); return keyOf(d); };
+const habitOf=id=>HABITS.find(h=>h.id===id)||ownHabits().find(h=>h.id===id)||null;
+function habitSlots(){ if(!S.habits||typeof S.habits!=='object') S.habits={}; return S.habits; }
+const currentHabit=slot=>{ const h=habitSlots()[slot||'start']; return h&&h.id&&!h.retired&&habitOf(h.id)? h : null; };
+function startHabit(id){
+  const m=habitOf(id); if(!m) return null;
+  habitSlots()[m.kind]={id,started:todayKey(),days:{},retired:false};
+  save(); return habitSlots()[m.kind];
+}
+function retireHabit(slot){ const h=habitSlots()[slot||'start']; if(h) h.retired=true; save(); }
+/* does this habit count on this day? */
+function habitApplies(meta,k){ return !meta||!meta.days||meta.days.indexOf(dateOf(k).getDay())>=0; }
+function toggleHabitDay(k,slot){
+  const h=currentHabit(slot); if(!h) return;
+  if(!habitApplies(habitOf(h.id),k)) return;
   h.days=h.days||{};
   if(h.days[k]) delete h.days[k]; else h.days[k]=true;
   save();
 }
 /* Seven dots, oldest on the left, today on the right. */
-function habitWeek(){
-  const h=currentHabit(); if(!h) return [];
-  const out=[];
-  for(let i=6;i>=0;i--){ const k=addDays(todayKey(),-i);
-    out.push({k,done:!!(h.days&&h.days[k]),today:i===0,before:k<h.started}); }
+function habitWeek(slot){
+  const h=currentHabit(slot); if(!h) return [];
+  const meta=habitOf(h.id), out=[];
+  for(let i=6;i>=0;i--){ const k=habitDay(todayKey(),-i);
+    out.push({k,done:!!(h.days&&h.days[k]),today:i===0,before:k<h.started,off:!habitApplies(meta,k)}); }
   return out;
 }
-function habitStreak(){
-  const h=currentHabit(); if(!h) return 0;
+/* Counts back from today over the days the habit applies to. Today only breaks
+   the run once it is over, so an unticked today starts the count at yesterday. */
+function habitStreak(slot){
+  const h=currentHabit(slot); if(!h) return 0;
+  const meta=habitOf(h.id), has=k=>!!(h.days&&h.days[k]);
   let n=0, k=todayKey();
-  if(!(h.days&&h.days[k])) k=addDays(k,-1);
-  while(h.days&&h.days[k]){ n++; k=addDays(k,-1); }
+  if(!habitApplies(meta,k)||!has(k)) k=habitDay(k,-1);
+  for(let guard=0; guard<400 && k>=h.started; guard++){
+    if(!habitApplies(meta,k)){ k=habitDay(k,-1); continue; }
+    if(!has(k)) break;
+    n++; k=habitDay(k,-1);
+  }
   return n;
 }
-function habitRate(){
-  const h=currentHabit(); if(!h) return null;
-  const days=Math.max(1,Math.round((dateOf(todayKey())-dateOf(h.started))/864e5)+1);
-  return Object.keys(h.days||{}).length/Math.min(days,28);
+/* share of the days it applied to, over the last four weeks, that went to plan */
+function habitRate(slot){
+  const h=currentHabit(slot); if(!h) return null;
+  const meta=habitOf(h.id); let days=0, kept=0;
+  for(let i=0;i<28;i++){ const k=habitDay(todayKey(),-i);
+    if(k<h.started) break;
+    if(!habitApplies(meta,k)) continue;
+    days++; if(h.days&&h.days[k]) kept++; }
+  return days? kept/days : null;
 }
 /* Which habit the app suggests, given what the check in actually said. */
 function suggestHabit(){
@@ -913,6 +994,7 @@ function suggestHabit(){
   if(steps!==null && steps<6000) return habitOf('walk_after');
   return habitOf('veg_lunch');
 }
+/* only habits to start are ever suggested; what someone wants to stop is theirs to say */
 const AIMS=[
   {id:'lose',   t:'Lose fat',     s:'Move often, eat a bit less'},
   {id:'build',  t:'Build muscle', s:'Lift, and lift heavier'},
@@ -1138,6 +1220,14 @@ function dateOf(k){ if(k instanceof Date) return new Date(k.getTime());
 function keyOf(d){ const x=(d instanceof Date)? d : dateOf(d);
   return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0'); }
 const todayKey=()=>keyOf(new Date());
+/* The everyday date helpers. They used to be defined in a later script, so
+   anything drawn during startup that used them threw before that script
+   loaded: the habit row, and the next-easy-week line on Plan, which broke
+   startup for nearly everyone who had onboarded. They live here now, first. */
+function weekOfDate(d){ const x=dateOf(d); const i=(x.getDay()===0?6:x.getDay()-1); x.setDate(x.getDate()-i); return keyOf(x); }
+function addDays(k,n){ const d=dateOf(k); d.setDate(d.getDate()+n); return keyOf(d); }
+function prettyDate(k){ const d=dateOf(k); return d.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]; }
+
 const dowIdx=()=>{const d=new Date().getDay();return d===0?6:d-1;};
 const todayIdx=dowIdx;
 function mondayKey(){ const d=new Date(); d.setDate(d.getDate()-dowIdx()); return keyOf(d); }
@@ -1313,6 +1403,37 @@ const RATE={lose:{min:0.005,max:0.010,def:0.0075}, gain:{min:0.0025,max:0.005,de
 const KCAL_FLOOR={m:1500,f:1200};
 const kcalFloor=s=>KCAL_FLOOR[s]||1350;
 const SURPLUS_CAP=0.20;
+/* Three limits on a deficit, and whichever is tightest wins.
+   1. RATE: 0.75% of bodyweight a week, or what a goal date asks for up to 1%
+      (Helms, Aragon and Fitschen, 2014). Evidence from lean, trained people.
+   2. CAP: 750 kcal a day. The 2013 AHA/ACC/TOS guideline prescribes a 500 or
+      750 kcal deficit; NICE's standard is 600. A percentage of bodyweight
+      keeps growing with size and these do not, so without this a 120 kg person
+      was asked for nearly 1,000.
+   3. FAT: about 69 kcal per kilo of body fat per day, Alpert's (2005) estimate
+      of the most energy the fat store can supply (290 +/- 25 kJ/kg/day); past
+      that, his model says the shortfall comes from lean tissue. It is a
+      theoretical model built largely on the Minnesota semi-starvation data from
+      lean young men, not a tested prescription, so it is used only as a ceiling.
+      In practice it only binds for lean people asking for a fast goal date. */
+const DEFICIT_CAP=750;
+const FAT_KCAL_PER_KG=69.3;
+/* Body fat: theirs if they gave it, otherwise Deurenberg, Weststrate and
+   Seidell (1991): 1.20 x BMI + 0.23 x age - 10.8 x sex - 5.4, sex 1 for men and
+   0 for women. Explains 79% of the variance with an error of about 4 points,
+   and cannot tell muscle from fat, which is why a measured figure wins. Adult
+   equation, so only from 16. "Rather not say" uses 0.5, the same midpoint the
+   resting-burn equation uses. */
+const validBodyFat=v=>v!==null&&v!==''&&+v>=3&&+v<=70;
+function bodyFatPct(p,kg){
+  if(!p) return null;
+  if(validBodyFat(p.bodyFat)) return {pct:+p.bodyFat, source:'entered'};
+  const h=+p.height/100, w=+(kg||p.weight), a=+p.age;
+  if(!(h>0&&w>0&&a>=16)) return null;
+  const sx=p.sex==='m'?1:(p.sex==='f'?0:0.5);
+  const est=1.2*(w/(h*h))+0.23*a-10.8*sx-5.4;
+  return {pct:Math.max(3,Math.min(70,+est.toFixed(1))), source:'estimated'};
+}
 function currentKg(){
   if(typeof trendNow==='function'){ const t=trendNow(); if(t) return t; }
   const w=S.weights&&S.weights.length? S.weights[S.weights.length-1].kg : null;
@@ -1333,11 +1454,18 @@ function goalDirection(){
   return aim==='lose'? 'lose' : (aim==='build'? 'gain' : 'hold');
 }
 function calorieTarget(over){
-  const m=maintenance(); if(!m) return null;
+  /* over.m lets a preview insist on one maintenance figure, so what it shows
+     is built from exactly the numbers it prints beside it */
+  const m=(over&&over.m)||maintenance(); if(!m) return null;
   const kg=currentKg();
   const dir=(over&&over.dir)||goalDirection();
+  const p=S.profile||{};
+  const KPK=(typeof SCI!=='undefined'? SCI.kcalPerKg : 7700);
   const out={maintenance:m.kcal, source:m.source, sourceLabel:m.label, dir,
-    kcal:m.kcal, rateKg:0, ratePct:0, capped:false, floored:false, eta:null, asked:null};
+    kcal:m.kcal, rateKg:0, ratePct:0, capped:false, floored:false, eta:null, asked:null,
+    limit:null, deficit:0, bf:bodyFatPct(p,kg),
+    /* carried with the result so nothing downstream re-reads a different profile */
+    steps:stepTarget(p), per1000:Math.round(stepKcal(BASAL_STEPS+1000,+p.weight||kg||0))};
   if(dir==='hold'||!kg) return out;
   const R=RATE[dir];
   const t=(over&&over.target)||S.target;
@@ -1347,23 +1475,39 @@ function calorieTarget(over){
      person chose does. Rounding the weeks up and reading the rate back used to
      make onboarding and the You sheet disagree by about 50 kcal. */
   if(t&&t.kind==='weight'&&t.by&&!t.hit&&!t.autoDated){
-    const weeks=Math.max(1,(dateOf(t.by)-dateOf(todayKey()))/(7*864e5));
+    /* whole days first: a summer-time change inside the window makes the raw
+       gap an hour short or long, which moved the pace in Auckland and Sydney */
+    const weeks=Math.max(1,Math.round((dateOf(t.by)-dateOf(todayKey()))/864e5)/7);
     const need=Math.abs(t.value-kg)/weeks/kg;
     out.asked=+(need*100).toFixed(2);
     pct=Math.min(need,R.max);
     if(need>R.max) out.capped=true;
   }
   let rateKg=kg*pct;
-  let delta=rateKg*(typeof SCI!=='undefined'? SCI.kcalPerKg : 7700)/7;
+  let delta=rateKg*KPK/7;
   if(dir==='lose'){
-    let kcal=Math.round(m.kcal-delta);
-    const floor=kcalFloor(S.profile.sex);
-    if(kcal<floor){ kcal=floor; out.floored=true; delta=m.kcal-floor; rateKg=Math.max(0,delta*7/7700); }
-    out.kcal=kcal;
+    const cands=[{k:out.asked!==null?'date':'rate', v:delta},{k:'cap', v:DEFICIT_CAP}];
+    if(out.bf) cands.push({k:'fat', v:FAT_KCAL_PER_KG*kg*out.bf.pct/100});
+    const best=cands.reduce((a,b)=>b.v<a.v? b : a);
+    let kcal=Math.round(m.kcal-best.v), limit=best.k;
+    const floor=kcalFloor(p.sex);
+    if(kcal<floor){ kcal=floor; limit='floor'; out.floored=true; }
+    /* The floor must never turn a diet into a surplus. If maintenance is
+       already under it there is simply no deficit to set. */
+    if(kcal>m.kcal){ kcal=m.kcal; limit='nofloor'; }
+    out.kcal=kcal; out.limit=limit;
+    /* everything below is derived from the rounded figures actually shown, so
+       the deficit, the rate and the split always agree to the kcal */
+    out.deficit=m.kcal-kcal;
+    rateKg=out.deficit*7/KPK;
+    if(out.asked!==null && rateKg/kg*100 < out.asked-0.005) out.capped=true;
   } else {
     const capped=Math.min(delta,m.kcal*SURPLUS_CAP);
-    if(capped<delta){ delta=capped; rateKg=delta*7/7700; out.capped=true; }
+    if(capped<delta){ delta=capped; out.capped=true; out.limit='surplus'; }
+    else out.limit= out.asked!==null? 'date' : 'rate';
     out.kcal=Math.round(m.kcal+delta);
+    out.deficit=m.kcal-out.kcal;
+    rateKg=(out.kcal-m.kcal)*7/KPK;
   }
   out.rateKg=+rateKg.toFixed(2);
   out.ratePct=+(rateKg/kg*100).toFixed(2);
@@ -1377,15 +1521,107 @@ function calorieTarget(over){
 /* One sentence for wherever the target is shown. */
 function calorieLine(ct){
   if(!ct) return '';
-  const stepNote = ct.source==='planned'? ` That assumes you hit ${num(stepTarget())} steps. Each 1,000 more is about ${plannedTdee(S.profile).per1000} kcal.` : '';
+  /* Uses the step figures carried on ct, so an onboarding preview quotes the
+     steps being typed, not whatever the saved profile says. */
+  const atFloor=ct.limit==='floor';
+  const stepNote = ct.source!=='planned'? ''
+    : ` That assumes you hit ${num(ct.steps)} steps. `
+      +(atFloor? `Each 1,000 more adds about ${ct.per1000} kcal to your deficit, because your food is already at the floor.`
+               : `Each 1,000 more lets you eat about ${ct.per1000} kcal more at the same rate.`);
   if(ct.dir==='hold') return `Eat around maintenance, ${num(ct.maintenance)} kcal.`+stepNote;
   const verb=ct.dir==='lose'? 'lose' : 'gain';
-  let s=`${num(ct.kcal)} kcal to ${verb} about ${ct.rateKg} kg a week (${ct.ratePct}% of your weight).`;
-  if(ct.capped&&ct.dir==='lose') s+=` Your date needs ${ct.asked}% a week, faster than the 1% that keeps muscle, so this is capped.`;
+  if(ct.dir==='lose'&&ct.limit==='nofloor')
+    return `Your maintenance is ${num(ct.maintenance)}, already under the ${num(kcalFloor(S.profile.sex))} kcal floor, so there is no deficit an app should set. That is a conversation for a GP or dietitian.`;
+  let s=`${num(ct.kcal)} kcal to ${verb} about ${(+ct.rateKg).toFixed(2)} kg a week (${(+ct.ratePct).toFixed(2)}% of your weight).`;
+  if(ct.dir==='lose'){
+    if(ct.asked!==null&&ct.asked>1) s+=` Your goal date needs ${ct.asked}% a week.`;
+    if(ct.limit==='rate') s+=` That is 0.75% of your weight a week, the middle of the 0.5 to 1% range for keeping muscle.`;
+    if(ct.limit==='date') s+= ct.asked>1? ` Held at 1%, the top of the range for keeping muscle.` : ` That is the pace your goal date needs.`;
+    if(ct.limit==='cap') s+=` Held at a ${DEFICIT_CAP} kcal deficit, the top of what clinical guidelines prescribe. A percentage of your weight would ask for more.`;
+    if(ct.limit==='fat') s+=` Held back because at about ${ct.bf.pct}% body fat${ct.bf.source==='estimated'?' (estimated)':''}, a bigger deficit would start coming from muscle rather than fat.`;
+    if(atFloor) s+=` This is the floor. Going lower is a job for a clinician, not an app.`;
+  }
   if(ct.capped&&ct.dir==='gain') s+=` Capped at the top of the range for lean gain, so most of it is muscle rather than fat.`;
-  if(ct.floored) s+=` This is the floor. Going lower is a job for a clinician, not an app.`;
   if(ct.eta) s+=` At that rate, around ${prettyDate(ct.eta)}.`;
   return s+stepNote;
+}
+
+/* ---------- what the steps are worth ----------
+   Steps are part of what you burn, so they are already inside maintenance.
+   This splits the deficit into the part food makes and the part the steps
+   make. For a planned or tracked figure the maintenance is literally built
+   from those parts, so the split is exact and the two always add up to the
+   whole deficit. A figure observed from real intake and weigh ins cannot be
+   taken apart, and the text says so rather than pretending. */
+function recentRealSteps(days){
+  const out=[];
+  for(let i=0;i<days;i++){ const d=new Date(); d.setDate(d.getDate()-i);
+    const r=S.days[keyOf(d)]; if(!r) continue;
+    const v=(r.auto&&!r.auto.sim&&typeof r.auto.steps==='number')? r.auto.steps : r.steps;
+    if(typeof v==='number'&&v>0) out.push(v); }
+  return out.length? Math.round(out.reduce((a,b)=>a+b,0)/out.length) : null;
+}
+function stepSplit(ct,m,p){
+  if(!ct||!m||!p) return null;
+  const kg=+p.weight, KPK=(typeof SCI!=='undefined'? SCI.kcalPerKg : 7700);
+  let steps=null, walk=null;
+  if(m.source==='planned'){ steps=m.steps; walk=m.walk; }
+  else if(m.source==='measured'){ steps=m.steps; walk=Math.round(stepKcal(m.steps,kg)); }
+  else { steps=recentRealSteps(21); }
+  const target=stepTarget(p);
+  const out={source:m.source, dir:ct.dir, steps, walk, target, maintenance:ct.maintenance,
+    eat:ct.kcal, deficit:ct.maintenance-ct.kcal, rateKg:+(+ct.rateKg).toFixed(2),
+    per1000:Math.round(stepKcal(BASAL_STEPS+1000,kg)), belowBasal: steps!==null&&steps<=BASAL_STEPS};
+  if(walk!==null){
+    out.food=out.deficit-walk;
+    out.withoutKg=+(Math.max(0,out.food)*7/KPK).toFixed(2);
+  }
+  if(m.source!=='planned'&&steps!==null){
+    out.extra=Math.round(stepKcal(target,kg)-stepKcal(steps,kg));
+    out.extraKg=+(Math.max(0,out.extra)*7/KPK).toFixed(2);
+  }
+  return out;
+}
+function splitText(sp){
+  if(!sp) return '';
+  const k=n=>num(n);
+  const per=`Each 1,000 steps is about ${sp.per1000} kcal a day for you.`;
+  if(sp.source==='observed'){
+    let s=`Your maintenance comes from what you actually ate and what the scale did, so your steps are already inside it and cannot be split out.`;
+    if(sp.steps!==null&&sp.extra>0) s+=` You have been averaging ${k(sp.steps)} steps. Reaching ${k(sp.target)} would burn about ${k(sp.extra)} kcal more a day, about ${sp.extraKg.toFixed(2)} kg a week faster at the same food.`;
+    else if(sp.steps!==null&&sp.extra<=0) s+=` You are already averaging ${k(sp.steps)} steps, at or above your ${k(sp.target)} target.`;
+    return s+' '+per;
+  }
+  const whose= sp.source==='planned'? `your ${k(sp.steps)} step target` : `the ${k(sp.steps)} steps a day your tracker counted`;
+  if(sp.belowBasal) return `At ${k(sp.steps)} steps, walking adds nothing on top of a sedentary day, which already contains about 2,500. ${per}`;
+  let s='';
+  if(sp.dir==='lose'&&sp.deficit>0){
+    s+=`You burn about ${k(sp.maintenance)} a day, ${k(sp.walk)} of it from ${whose}. You eat ${k(sp.eat)}, a ${k(sp.deficit)} kcal deficit: `;
+    if(sp.food>0){
+      s+=`${k(sp.food)} from eating less than you burn without walking, plus ${k(sp.walk)} burned by the steps. `
+        +`Skip the steps and at the same food you would lose about ${sp.withoutKg.toFixed(2)} kg a week instead of ${sp.rateKg.toFixed(2)}.`;
+    } else {
+      s+=`the steps make all of it. You are eating ${k(-sp.food)} kcal ${sp.food===0?'':'more than '}${sp.food===0?'exactly':''} what you burn without walking${sp.food===0?'':','} so skip them and you would stop losing.`;
+    }
+  } else {
+    s+=`Your steps burn about ${k(sp.walk)} a day, and that is already counted in your maintenance of ${k(sp.maintenance)}.`;
+  }
+  if(sp.source==='measured'){
+    s+=` Your calories follow what the tracker counts, not the target.`;
+    if(sp.extra>0) s+=` Reaching ${k(sp.target)} would burn about ${k(sp.extra)} kcal more a day, about ${sp.extraKg.toFixed(2)} kg a week faster at the same food.`;
+    else s+=` You are already at or above your ${k(sp.target)} target.`;
+  }
+  return s+' '+per;
+}
+/* Run something against a profile that is not saved yet, and always put the
+   real one back. */
+function withProfile(p,fn,opts){
+  const keep={profile:S.profile,plan:S.plan,weights:S.weights,target:S.target};
+  try{
+    S.profile=p;
+    if(opts&&opts.fresh){ S.plan=null; S.weights=[]; S.target=opts.target||null; }
+    return fn();
+  } finally { S.profile=keep.profile; S.plan=keep.plan; S.weights=keep.weights; S.target=keep.target; }
 }
 /* 1.8 g per kilo, of a sensible reference weight rather than whatever the scale
    says. At a high body fat, total bodyweight overshoots badly: fat mass has no
@@ -1709,7 +1945,7 @@ function adaptPlan(days,c){
   if(c && typeof c.proteinHit==='number' && c.proteinHit<=4){
     const h=(typeof currentHabit==='function')&&currentHabit();
     why.push(h
-      ? `Protein came in well under target. Your habit stays as it is: <b>${habitOf(h.id).t.toLowerCase()}</b>, and nothing else added on top of it.`
+      ? `Protein came in well under target. Your habit stays as it is: <b>${escHabit(habitOf(h.id).t.toLowerCase())}</b>, and nothing else added on top of it.`
       : 'Protein came in well under target, so there is one food habit this week and nothing else. Pick it on Today.');
   }
   if(steps!==null && steps<5000 && !days.some(d=>d.slot==='walk'))
@@ -1923,27 +2159,36 @@ function targetLine(){
       <button class="inlinebtn" id="setTarget">change</button></div></div>`;
 }
 
-/* One row, seven dots, and an honest line under it. */
-function habitRow(){
-  const h=currentHabit();
-  if(!h){
-    const s=suggestHabit();
-    if(!s) return '';
-    return `<button class="todo" data-habitpick="${s.id}">
-      <span class="ic" style="background:var(--t-forest);color:var(--forest)">1</span>
-      <span class="t"><b>Pick one habit</b><span>${s.t.toLowerCase()}, or choose another. One at a time, on purpose</span></span>
-      <span class="chev">›</span></button>`;
-  }
-  const meta=habitOf(h.id), week=habitWeek(), streak=habitStreak(), rate=habitRate();
-  const doneToday=week[week.length-1].done;
-  return `<div class="todo habit ${doneToday?'done':''}">
-    <span class="ic" style="background:var(--t-forest);color:var(--forest)">${streak||'1'}</span>
-    <span class="t"><b>${meta.t}</b><span>${
-      streak>1? streak+' days running' : (streak===1? 'started today' : 'missed yesterday, which is what today is for')
-    }${rate!==null&&rate<0.5&&Object.keys(h.days||{}).length>=4? ' · sticking about '+Math.round(rate*100)+'% of days' : ''}</span>
-      <span class="dots">${week.map(d=>`<i class="${d.done?'on':''} ${d.before?'pre':''} ${d.today?'now':''}"></i>`).join('')}</span></span>
-    <button class="tick habittick" data-habittoggle="1" aria-label="${doneToday?'Undo today':'Mark today done'}">${doneToday?'✓':''}</button>
+/* One row per habit, seven dots, and an honest line under each. */
+function habitRowFor(slot){
+  const h=currentHabit(slot); if(!h) return '';
+  const meta=habitOf(h.id), week=habitWeek(slot), streak=habitStreak(slot), rate=habitRate(slot);
+  const today=week[week.length-1], stop=slot==='stop';
+  const unit=n=> stop? (n===1? '1 day without' : n+' days without') : (n===1? '1 day so far' : n+' days running');
+  let line;
+  if(today.off) line='not one of its days'+(streak? ' · '+unit(streak) : '');
+  else if(streak>0) line=unit(streak);
+  else if(h.started===todayKey()) line='starts today';
+  else line= stop? 'today is day one again, which is fine' : 'missed yesterday, which is what today is for';
+  if(rate!==null&&rate<0.5&&Object.keys(h.days||{}).length>=4) line+=' · about '+Math.round(rate*100)+'% of days so far';
+  const label= today.off? 'Not one of its days' : (today.done? 'Undo today' : (stop? 'Mark today: went without' : 'Mark today done'));
+  return `<div class="todo habit ${stop?'stop':''} ${today.done?'done':''}">
+    <span class="ic" style="background:${stop?'var(--t-oxblood)':'var(--t-forest)'};color:${stop?'var(--oxblood)':'var(--forest)'}">${stop?'×':(streak||'1')}</span>
+    <span class="t"><b>${stop?'Stop: ':''}${escHabit(meta.t)}</b><span>${line}</span>
+      <span class="habitdots">${week.map(d=>`<i class="${d.done?'on':''} ${d.before?'pre':''} ${d.today?'now':''} ${d.off?'off':''}"></i>`).join('')}</span></span>
+    <button class="tick habittick" data-habittoggle="${slot}" aria-label="${label}"${today.off?' disabled':''}>${today.done?'✓':''}</button>
   </div>`;
+}
+function habitRow(){
+  let out='';
+  if(!currentHabit('start')){
+    const s=suggestHabit();
+    if(s) out+=`<button class="todo" data-habitpick="${s.id}">
+      <span class="ic" style="background:var(--t-forest);color:var(--forest)">1</span>
+      <span class="t"><b>Pick a habit</b><span>${s.t.toLowerCase()}, or choose another. One to start and one to stop, at most</span></span>
+      <span class="chev">›</span></button>`;
+  } else out+=habitRowFor('start');
+  return out+habitRowFor('stop');
 }
 function renderToday(){
   const plan=ensurePlan(), d=todayPlan(), i=dowIdx(), logged=S.days[todayKey()];
@@ -2141,21 +2386,6 @@ function renderProgress(){
          <div class="note">Steps and sleep come from your watch or phone. Until then they are simply missing, not zero.</div>`}
   </div>
   <div class="panel">
-    <div class="ph"><h3>Coaching detail</h3></div>
-    <div class="numline" style="margin-bottom:10px"><div>Tempo guidance <b>${showTempoSafe()?'on':'off'}</b></div>
-      <div>Theme <b>${(THEMES.find(t=>t[0]===((S.profile&&S.profile.theme)||'auto'))||THEMES[0])[1].toLowerCase()}</b></div></div>
-    <div class="chips" style="margin-bottom:10px">${THEMES.map(([id,label])=>`<button class="${((S.profile&&S.profile.theme)||'auto')===id?'on':''}" data-theme="${id}">${label}</button>`).join('')}</div>
-    <div class="numline" style="margin-bottom:10px"><div>Kit you train with <b>${kitOf().length===ALL_KIT.length?'everything':kitOf().length+' of '+ALL_KIT.length}</b></div>
-      <div>Easy week <b>${S.profile.deload===false? 'when you add one' : 'every '+(+S.profile.deloadEvery||DELOAD_EVERY)}</b></div></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="mini" id="tempoSetting">${showTempoSafe()?'Turn tempo off':'Turn tempo on'}</button>
-      <button class="mini" id="tempoWhat">What is tempo?</button>
-      <button class="mini" id="kitBtn">Change your kit</button>
-      <button class="mini" id="deloadBtn">Easy weeks</button>
-      <button class="mini" id="nudgeBtn">${nudgeState()==='on'?'Reminders on':'Remind me to check in'}</button>
-      <button class="mini" id="habitChange">${currentHabit()?'Change your habit':'Pick a habit'}</button></div>
-    <div class="note">The four digits beside your sets. Off leaves your programme exactly as it is.</div>
-  </div>
-  <div class="panel">
     <div class="ph"><h3>Your numbers</h3>${p.detailsSet?`<button id="detailsBtn">Edit</button>`:''}</div>
     ${p.detailsSet
       ? `${(()=>{ const ct=calorieTarget(); return ct? `<div class="numline"><div>Maintenance <b>${num(ct.maintenance)}</b> kcal</div><div>Eat <b>${num(ct.kcal)}</b> kcal</div><div>Steps <b>${num(stepTarget())}</b></div></div>
@@ -2176,10 +2406,16 @@ function renderProgress(){
       : `<div class="note" style="margin:0">Try someone's session from the feed and it shows here, with their name on it.</div>`}
   </div>`;
 
-  const cells=S.mine.map(m=>[m.kind,m.title,(m.unit||'').split(',')[0]]).slice(0,12);
+  /* each tile is a button that opens the session. They used to be plain boxes
+     with nothing listening, so tapping one did nothing at all. */
+  const cells=S.mine.slice(0,12);
   $('grid').innerHTML= cells.length
-    ? cells.map(([k,a,b])=>`<div class="gcell" style="background:${k==='meal'?CLAY:HUE[k].deep};color:${k==='meal'?'#161618':'#fff'}">${a}<small>${b}</small></div>`).join('')
+    ? cells.map(m=>{ const k=m.kind, hue=HUE[k]||HUE.any;
+        return `<button class="gcell" data-sess="${m.id}" aria-label="${(m.title||'Session').replace(/"/g,'&quot;')}, ${prettyDateSafe(m.d)}"
+          style="background:${k==='meal'?CLAY:hue.deep};color:${k==='meal'?'#161618':'#fff'}">${m.title}<small>${(m.unit||'').split(',')[0]}</small></button>`; }).join('')
     : `<div class="empty">Your sessions show up here once you have done a few.</div>`;
+  const all=document.getElementById('allSess');
+  if(all) all.style.display= S.mine.length? '' : 'none';
   updateBadge();
 }
 /* Progress used to be three screens hiding behind a segmented control, with the
@@ -2190,6 +2426,7 @@ function renderProgress(){
 let progSeg='week';
 function showSeg(){ /* the switch is gone; kept so old callers do nothing */ }
 function openYou(){ renderProgress(); openSheet('youSheet'); }
+const prettyDateSafe=k=>{ try{ return typeof prettyDate==='function'&&k? prettyDate(k) : (k||''); }catch(e){ return k||''; } };
 document.addEventListener('click',e=>{
   if(e.target.closest('#youBtn')||e.target.closest('#profAv')) openYou();
 });
@@ -2235,7 +2472,8 @@ function renderPeople(){
     ? 'Nobody else has signed in yet. You are first.'
     : 'Make an account and anyone else using your copy of Gauntlet shows up here.'}</div>`;
 }
-function renderAll(){ renderToday(); renderPlan(); renderFeed(); renderPeople(); renderProgress(); }
+function renderAll(){ renderToday(); renderPlan(); renderFeed(); renderPeople(); renderProgress();
+  if(typeof mountColophons==='function') mountColophons(); }
 
 /* ===================== chrome and actions ===================== */
 const scrim=$('scrim');
@@ -2422,19 +2660,39 @@ document.addEventListener('click',e=>{
   if(am){ setAim(am.dataset.aim); closeSheets(); toast('Aim changed. The week rebuilt around it.'); }
   const hp=e.target.closest('[data-habitpick]');
   if(hp&&!e.target.closest('#habitSheet')){ openHabitSheet(); return; }
-  if(e.target.closest('[data-habittoggle]')){
-    const before=habitWeek().slice(-1)[0].done;
-    toggleHabitDay(todayKey()); renderAll();
-    toast(before? 'Unmarked' : (habitStreak()>1? habitStreak()+' days running' : 'Marked'));
+  const ht=e.target.closest('[data-habittoggle]');
+  if(ht){
+    const slot=ht.dataset.habittoggle==='stop'? 'stop' : 'start';
+    const wk=habitWeek(slot); if(!wk.length) return;
+    const before=wk[wk.length-1].done;
+    toggleHabitDay(todayKey(),slot); renderAll();
+    const n=habitStreak(slot);
+    toast(before? 'Unmarked' : (slot==='stop'? (n>1? n+' days without' : 'Marked: went without') : (n>1? n+' days running' : 'Marked')));
     return; }
   const hc=e.target.closest('[data-habitchoose]');
-  if(hc){ const h=startHabit(hc.dataset.habitchoose); closeSheets(); renderAll();
-    toast(h? habitOf(h.id).t+' it is. One thing.' : 'Could not start that'); return; }
-  if(e.target.closest('#habitRetire')){
-    const meta=currentHabit()? habitOf(currentHabit().id) : null;
-    const snapshot=JSON.parse(JSON.stringify(S.habit||null));
-    retireHabit(); closeSheets(); renderAll();
-    toast((meta? meta.t : 'Habit')+' put down','Undo',()=>{ S.habit=snapshot; save(); renderAll(); });
+  if(hc){ const beforeH=JSON.parse(JSON.stringify(habitSlots()));
+    const h=startHabit(hc.dataset.habitchoose); const meta=h? habitOf(h.id) : null;
+    closeSheets(); renderAll();
+    toast(meta? (meta.kind==='stop'? meta.t+'. One day at a time.' : meta.t+' it is. One thing.') : 'Could not start that',
+      meta? 'Undo' : undefined, meta? ()=>{ S.habits=beforeH; save(); renderAll(); } : undefined);
+    return; }
+  const ho=e.target.closest('[data-habitown]');
+  if(ho){
+    const kind=ho.dataset.habitown==='stop'? 'stop' : 'start';
+    const box=document.getElementById('own_'+kind), msg=document.getElementById('ownmsg_'+kind);
+    const r=addOwnHabit(kind,box? box.value : '');
+    if(r.error){ if(msg) msg.textContent=r.error; if(box) box.focus(); return; }
+    const beforeH=JSON.parse(JSON.stringify(habitSlots()));
+    startHabit(r.habit.id); closeSheets(); renderAll();
+    toast((kind==='stop'? 'Stop: ' : '')+r.habit.t+(kind==='stop'? '. One day at a time.' : '. One thing.'),'Undo',()=>{ S.habits=beforeH; save(); renderAll(); });
+    return; }
+  const hr=e.target.closest('[data-habitretire]');
+  if(hr){
+    const slot=hr.dataset.habitretire==='stop'? 'stop' : 'start';
+    const cur=currentHabit(slot), meta=cur? habitOf(cur.id) : null;
+    const snapshot=JSON.parse(JSON.stringify(habitSlots()));
+    retireHabit(slot); closeSheets(); renderAll();
+    toast((meta? meta.t : 'Habit')+' put down','Undo',()=>{ S.habits=snapshot; save(); renderAll(); });
     return; }
   if(e.target.closest('#habitChange')){ openHabitSheet(); return; }
   const pok=e.target.closest('[data-painok]');
@@ -2480,11 +2738,18 @@ document.addEventListener('click',e=>{
     const st=nudgeState();
     if(st==='on') disableNudges();
     else if(st==='blocked') toast('Your browser is blocking notifications for this site');
-    else if(st==='unsupported') toast('This browser cannot do reminders');
+    else if(st==='unsupported') toast(onIOS()&&!installed()? 'Add Gauntlet to your Home Screen first, then turn reminders on' : 'This browser cannot do reminders');
     else enableNudges();
     return; }
-  const th=e.target.closest('[data-theme]');
-  if(th){ setTheme(th.dataset.theme); toast('Theme: '+(THEMES.find(x=>x[0]===th.dataset.theme)||[])[1]); }
+  /* The page itself carries data-theme once a theme is chosen, so a picker
+     that also used data-theme matched the whole page: every tap anywhere
+     re-ran setTheme, redrew everything, and replaced any Undo toast with
+     "Theme: ...". The picker has its own attribute now. */
+  const th=e.target.closest('[data-themepick]');
+  /* A single choice: make it, close the sheet, say so once. The sheet used to
+     stay open with the old option still ticked while the app had changed. */
+  if(th){ const v=th.dataset.themepick;
+    if(v!==themeOf()){ setTheme(v); closeSheets(); toast('Theme: '+(THEMES.find(x=>x[0]===v)||[])[1]); } }
   if(e.target.closest('#tempoWhat')&&typeof openTempoHelp==='function') openTempoHelp();
 });
 $('findBtn').addEventListener('click',()=>{renderPeople();openSheet('findSheet')});
@@ -2557,9 +2822,29 @@ function drawDetails(){
       <input type="range" min="38" max="200" step="0.5" value="${draft.weight}" data-range="weight" aria-label="Weight"></div>
     <div class="field"><div class="fl"><div class="k">Daily step target</div><div class="v" id="outstepTarget">${num(stepTarget(draft))}</div></div>
       <input type="range" min="2000" max="25000" step="500" value="${stepTarget(draft)}" data-range="stepTarget" aria-label="Daily step target"></div>
-    <div class="note" id="stepsWorth">${(()=>{ const pt=plausibleBody(draft)? plannedTdee(Object.assign({},draft,{detailsSet:true})) : null;
-      return pt? 'Each 1,000 steps is about '+pt.per1000+' kcal a day for you, and this moves your calorie target by the same amount.' : ''; })()}</div>`;
+    <div class="nf" style="margin:12px 0 4px"><label>Body fat %, if you know it</label>
+      <input id="detBf" type="number" inputmode="decimal" step="0.1" value="${draft.bodyFat||''}" placeholder="blank, and it is estimated"></div>
+    <div class="note" id="stepsWorth">${detailsSplitText()}</div>`;
 }
+/* The same figures the app will use once saved, worked out from the unsaved
+   draft, so the person sees the consequence before they commit to it. */
+function detailsSplitText(){
+  if(!draft||!plausibleBody(draft)) return '';
+  const p=Object.assign({},S.profile,draft,{detailsSet:true});
+  if(p.bodyFat!==null&&p.bodyFat!==''&&!validBodyFat(p.bodyFat)) return 'Body fat should be between 3 and 70%. Leave it blank and it will be estimated.';
+  return withProfile(p,()=>{
+    const m=maintenance(); if(!m) return '';
+    const ct=calorieTarget({m});
+    const sp=stepSplit(ct,m,p);
+    return `<b>${num(ct.kcal)} kcal a day</b> once saved. `+splitText(sp);
+  });
+}
+document.addEventListener('input',e=>{
+  if(e.target.id==='detBf'&&draft){
+    draft.bodyFat= e.target.value===''? null : +e.target.value;
+    const n=document.getElementById('stepsWorth'); if(n) n.innerHTML=detailsSplitText();
+  }
+});
 document.addEventListener('click',e=>{
   const set=e.target.closest('[data-set]');
   if(set&&draft){ draft[set.dataset.set]=set.dataset.val; drawDetails(); }
@@ -2568,7 +2853,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{
   if(e.target.id==='onbPeriod'&&onbDraft){ onbDraft.lastPeriod=e.target.value; }
-  if(onbDraft&&['onbAge','onbHeight','onbWeight','onbGoal','onbSteps'].includes(e.target.id)){
+  if(onbDraft&&['onbAge','onbHeight','onbWeight','onbGoal','onbSteps','onbBf'].includes(e.target.id)){
     const k=e.target.id.replace('onb','').toLowerCase();
     onbDraft[k]= e.target.value===''? null : +e.target.value;
     clearTimeout(onbDraft._t);
@@ -2581,6 +2866,8 @@ document.addEventListener('input',e=>{
   const out=$('out'+k);
   if(out) out.textContent = k==='stepTarget'? num(draft.stepTarget)
     : (k==='age'? draft.age : (k==='height'? showH(draft.height,draft.units==='imperial') : showW(draft.weight,draft.units==='imperial')));
+  /* every slider can move the answer, so the split follows all of them */
+  const sw=document.getElementById('stepsWorth'); if(sw&&typeof detailsSplitText==='function') sw.innerHTML=detailsSplitText();
 });
 $('saveDetails').addEventListener('click',()=>{
   if(!draft.sex){ toast('Pick one so the sums work'); return; }
@@ -2707,6 +2994,7 @@ function onbRender(){
     const stepsOk=validSteps(onbDraft.steps);
     const p=Object.assign({},S.profile,{sex,age:onbDraft.age,height:onbDraft.height,
       weight:onbDraft.weight,stepTarget:stepsOk? +onbDraft.steps : DEFAULT_STEPS,
+      bodyFat:validBodyFat(onbDraft.bf)? +onbDraft.bf : null,
       liftDays:(onbDraft.liftDays===undefined||onbDraft.liftDays===null)
         ? (AIM_DEFAULTS[onbDraft.aim]||AIM_DEFAULTS.lose).lift : onbDraft.liftDays,
       detailsSet:true,__preview:true});
@@ -2716,15 +3004,16 @@ function onbRender(){
     const kcal=pt? pt.kcal : null, pro=ready? proteinOf(p) : null;
     /* what the goal weight would mean, worked out the same way the app will */
     const goal=+onbDraft.goal||null;
-    const preview=(()=>{ if(!ready) return null;
-      const keep={profile:S.profile,target:S.target,weights:S.weights};
-      keep.plan=S.plan; S.plan=null;
-      S.profile=p; S.weights=[]; S.target= goal? {kind:'weight',value:goal,by:null,from:+p.weight} : null;
+    /* Onboarding is always the planned figure, built from the numbers on this
+       screen, so the preview forces that one maintenance rather than letting
+       any older logged data in. */
+    const pm= pt? Object.assign({source:'planned',label:'resting burn plus your step target and the sessions in your plan'},pt) : null;
+    const preview= !ready? null : withProfile(p,()=>{
       const dir= goal? (goal<+p.weight-0.2?'lose':(goal>+p.weight+0.2?'gain':'hold'))
         : (onbDraft.aim==='lose'?'lose':(onbDraft.aim==='build'?'gain':'hold'));
-      let ct=null; try{ ct=calorieTarget({dir}); }catch(err){}
-      S.profile=keep.profile; S.target=keep.target; S.weights=keep.weights; S.plan=keep.plan;
-      return ct; })();
+      const ct=calorieTarget({dir,m:pm});
+      return ct? Object.assign(ct,{split:stepSplit(ct,pm,p)}) : null;
+    },{fresh:true,target: goal? {kind:'weight',value:goal,by:null,from:+p.weight} : null});
     b.innerHTML=`<h2>Your numbers.</h2>
       <p class="lead">Used for one thing: working out roughly what you burn in a day, so the calorie and protein targets are yours rather than somebody else's. Skip any of it and fill it in later.</p>
       <div class="slab">Sex</div>
@@ -2740,6 +3029,9 @@ function onbRender(){
       <div class="twoup" style="gap:10px;margin-top:10px">
         <div class="nf"><label>Weight now, kg</label><input id="onbWeight" type="number" inputmode="decimal" step="0.1" value="${onbDraft.weight||''}" placeholder="82"></div>
         <div class="nf"><label>Goal weight, kg</label><input id="onbGoal" type="number" inputmode="decimal" step="0.1" value="${onbDraft.goal||''}" placeholder="optional"></div></div>
+      <div class="nf" style="margin-top:10px"><label>Body fat %, if you know it</label>
+        <input id="onbBf" type="number" inputmode="decimal" step="0.1" value="${onbDraft.bf||''}" placeholder="optional, from a scan or scale"></div>
+      ${onbDraft.bf&&!validBodyFat(onbDraft.bf)? `<div class="warn" style="margin-top:8px">Body fat should be between 3 and 70%. Leave it blank and it will be estimated.</div>`:''}
       ${entered&&!ready? `<div class="warn" style="margin-top:10px">One of those does not look like a real number yet. Keep going.</div>`:''}
       <div class="slab">Daily step target</div>
       <div class="nf"><label>Steps a day you are aiming for</label>
@@ -2755,6 +3047,8 @@ function onbRender(){
           <div class="s">Resting burn ${num(pt.rmr)}${sex==='x'?' (midpoint of the male and female equations)':''}, a sedentary day ${num(pt.base)}, plus ${num(pt.walk)} for ${num(pt.steps)} steps and ${num(pt.lift)} for your lifting. Each 1,000 steps is about ${pt.per1000} kcal for you. Replaced by your own numbers once you have logged about three weeks.</div></div></div>
         ${preview&&preview.dir!=='hold'? `<div class="revrow" style="pointer-events:none"><div class="txt"><div class="t">${num(preview.kcal)} kcal a day to eat</div>
           <div class="s">${calorieLine(preview)}</div></div></div>`:''}
+        ${preview&&preview.split? `<div class="revrow" id="onbSplit" style="pointer-events:none"><div class="txt"><div class="t">${preview.dir==='lose'&&preview.split.deficit>0?'Where the deficit comes from':'What your steps are worth'}</div>
+          <div class="s">${splitText(preview.split)}</div></div></div>`:''}
         <div class="revrow" style="pointer-events:none"><div class="txt"><div class="t">${pro}g protein a day</div>
           <div class="s">1.8g per kilo, mid range of what the research supports.</div></div></div></div>`
         : `<div class="note" style="margin-top:14px">Fill those in and I will show you what they work out to.</div>`}
@@ -3008,20 +3302,35 @@ function drawTargetSheet(){
     </div>`;
 }
 function openHabitSheet(){
-  const cur=currentHabit(), s=suggestHabit();
-  document.getElementById('altTitle').textContent= cur? 'Change your habit' : 'One habit';
-  document.getElementById('altSub').textContent='One at a time. A second one is how both of them stop.';
-  const group=tag=>HABITS.filter(h=>h.tag===tag);
-  const label={food:'Eating',move:'Moving',sleep:'Sleeping'};
+  const s=suggestHabit();
+  document.getElementById('altTitle').textContent='Habits';
+  document.getElementById('altSub').textContent='One to start and one to stop, at most. Doing one thing until it is boring beats doing five badly.';
+  const section=(kind,title)=>{
+    const cur=currentHabit(kind), list=HABITS.filter(h=>h.kind===kind);
+    const tags=[...new Set(list.map(h=>h.tag))];
+    return `<div class="slab" style="font-size:13px;color:var(--ink)">${title}</div>
+      ${cur? `<div class="method"><b>Now: ${escHabit(habitOf(cur.id).t)}</b><span>Since ${prettyDate(cur.started)}. ${habitStreak(kind)? habitStreak(kind)+(kind==='stop'?' days without in a row.':' days running.') : ''} Choosing another resets the count.</span></div>
+        <button class="skipbtn" data-habitretire="${kind}">Put this one down for now</button>` : ''}
+      ${tags.map(tag=>`<div class="slab">${HABIT_TAGS[tag]||tag}</div>`
+        +list.filter(h=>h.tag===tag).map(h=>`<button class="opt ${cur&&cur.id===h.id?'on':''}" data-habitchoose="${h.id}">
+          <div class="txt"><div class="t">${escHabit(h.t)}${kind==='start'&&s&&s.id===h.id&&!cur?' <span class="cichip">suggested</span>':''}</div>
+          <div class="s">${h.s}${h.days? ' · counts '+h.days.map(d=>DAY_NAMES[d].slice(0,3)).join(', ') : ''}</div></div><div class="rad"></div></button>`).join('')).join('')}
+      <div class="slab">Your own</div>
+      ${ownHabits().filter(h=>h.kind===kind).map(h=>`<button class="opt ${cur&&cur.id===h.id?'on':''}" data-habitchoose="${h.id}">
+          <div class="txt"><div class="t">${escHabit(h.t)}</div><div class="s">Your own</div></div><div class="rad"></div></button>`).join('')}
+      <div class="ownrow">
+        <input id="own_${kind}" type="text" maxlength="${OWN_MAX}" autocomplete="off"
+          placeholder="${kind==='stop'?'Something you want to stop':'Something you want to start'}"
+          aria-label="${kind==='stop'?'A habit of your own to stop':'A habit of your own to start'}">
+        <button class="mini go" data-habitown="${kind}">${kind==='stop'?'Stop this':'Start this'}</button>
+      </div>
+      <div class="note" id="ownmsg_${kind}" role="status"></div>`;
+  };
   document.getElementById('altBody').innerHTML=`
     <div style="padding:0 14px 6px">
-      ${cur? `<div class="method"><b>Where you are</b><span>${habitOf(cur.id).t}, started ${prettyDate(cur.started)}. ${habitStreak()>1? habitStreak()+' days running.' : ''} Changing it now resets the count.</span></div>`:''}
-      <div class="method"><b>Why only one</b><span>Doing one thing until it is boring beats doing five badly. When this one stops needing a tick, pick the next.</span></div>
-      ${['food','move','sleep'].map(tag=>`<div class="slab">${label[tag]}</div>`
-        +group(tag).map(h=>`<button class="opt ${cur&&cur.id===h.id?'on':''}" data-habitchoose="${h.id}">
-          <div class="txt"><div class="t">${h.t}${s&&s.id===h.id&&!cur?' <span class="cichip">suggested</span>':''}</div>
-          <div class="s">${h.s}</div></div><div class="rad"></div></button>`).join('')).join('')}
-      ${cur? `<button class="skipbtn" id="habitRetire">Put this one down for now</button>`:''}
+      ${section('start','Start something')}
+      ${section('stop','Stop something')}
+      <div class="method" style="margin-top:14px"><b>How long it takes</b><span>In the best-known study, a new habit took a median of 66 days to become automatic, anywhere from 18 to 254, and missing a single day did not undo it (Lally and colleagues, 2010). A miss is a miss, not a reset.</span></div>
     </div>`;
   openSheet('altSheet');
 }
@@ -3109,6 +3418,7 @@ function finishOnboarding(keepOpen){
     age:onbDraft.age||S.profile.age, height:onbDraft.height||S.profile.height,
     weight:onbDraft.weight||S.profile.weight, activity:onbDraft.activity||S.profile.activity,
     stepTarget: validSteps(onbDraft.steps)? Math.round(+onbDraft.steps) : (S.profile.stepTarget||DEFAULT_STEPS),
+    bodyFat: validBodyFat(onbDraft.bf)? +onbDraft.bf : (validBodyFat(S.profile.bodyFat)? S.profile.bodyFat : null),
     detailsSet: !!(onbDraft.sex&&onbDraft.age&&onbDraft.height&&onbDraft.weight
       &&plausibleBody({age:onbDraft.age,height:onbDraft.height,weight:onbDraft.weight})) || S.profile.detailsSet,
     excluded:S.profile.excluded||[],onboarded:true,
@@ -3137,11 +3447,15 @@ function finishOnboarding(keepOpen){
 /* ===================== colophon, install, worker ===================== */
 /* Auto follows the phone. The override is stored, because plenty of people run
    their phone light and want this dark at six in the morning. */
-const THEMES=[['auto','Follow my phone'],['light','Always light'],['dark','Always dark']];
+/* Light unless they choose otherwise. The stylesheet defaults to light too,
+   so a phone in dark mode never flashes dark before this script runs. */
+const THEMES=[['light','Light'],['dark','Dark'],['auto','Follow my phone']];
+const DEFAULT_THEME='light';
+const themeOf=()=>{ const t=S.profile&&S.profile.theme; return THEMES.some(x=>x[0]===t)? t : DEFAULT_THEME; };
 function applyTheme(){
-  const t=(S.profile&&S.profile.theme)||'auto';
+  const t=themeOf();
   const root=document.documentElement;
-  if(t==='auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme',t);
+  if(t==='light') root.removeAttribute('data-theme'); else root.setAttribute('data-theme',t);
   const dark = t==='dark' || (t==='auto' && window.matchMedia
     && window.matchMedia('(prefers-color-scheme: dark)').matches);
   const m=document.getElementById('themeColor');
@@ -3151,11 +3465,21 @@ function setTheme(t){ S.profile.theme=t; save(); applyTheme(); renderAll(); }
 if(window.matchMedia){
   try{ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme); }catch(e){}
 }
+/* The footer said "Your week lives on this device and nowhere else" to
+   everyone, including people whose week is synced to their account. It now
+   says which is true, and is refreshed whenever the app redraws. */
+function colophonText(){
+  const synced=typeof signedInSafe==='function'&&signedInSafe();
+  return 'Gauntlet, build '+APP_VERSION+'.<br>'+(synced
+    ? 'Your week lives on this device, with a copy in your account so it reaches your other devices.'
+    : 'Your week lives on this device and nowhere else.');
+}
 function mountColophons(){
   document.querySelectorAll('.screen').forEach(sc=>{
-    if(sc.querySelector('.colophon')) return;
+    const have=sc.querySelector('.colophon .sub');
+    if(have){ have.innerHTML=colophonText(); return; }
     sc.insertAdjacentHTML('beforeend',`<div class="colophon"><div class="fx">FERG<i>TECH</i></div>
-      <div class="sub">Gauntlet, build ${APP_VERSION}.<br>Your week lives on this device and nowhere else.</div></div>`);
+      <div class="sub">${colophonText()}</div></div>`);
   });
 }
 let deferredPrompt=null;
@@ -3168,6 +3492,21 @@ window.addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredP
 const NUDGE_KEY='gauntlet.nudge';
 function nudgeOn(){ return !!(S.profile&&S.profile.nudge); }
 function canNudge(){ return typeof Notification!=='undefined'; }
+/* iPhone and iPad only give web apps notifications once the app is on the
+   Home Screen, and Safari in a tab does not expose them at all. Saying so
+   beats "this browser cannot do reminders", which is true but useless. */
+function onIOS(){
+  const ua=navigator.userAgent||'';
+  return /iPad|iPhone|iPod/.test(ua) || (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+}
+function installed(){
+  try{ return window.navigator.standalone===true
+    || (window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches); }catch(e){ return false; }
+}
+function nudgeHelp(){
+  if(onIOS()&&!installed()) return 'On iPhone and iPad, reminders only work once Gauntlet is on your Home Screen: tap Share, then Add to Home Screen, and open it from there.';
+  return 'One reminder a week, at 7pm on your check in day. It comes from the app itself rather than a server, so it can only arrive while Gauntlet is open or running in the background. If it is closed at 7pm, the check in waits for you on Today instead.';
+}
 function nudgeState(){
   if(!canNudge()) return 'unsupported';
   if(Notification.permission==='denied') return 'blocked';
@@ -3175,12 +3514,12 @@ function nudgeState(){
   return Notification.permission==='granted'? 'on' : 'pending';
 }
 async function enableNudges(){
-  if(!canNudge()){ toast('This browser cannot do reminders'); return false; }
+  if(!canNudge()){ toast(onIOS()&&!installed()? 'Add Gauntlet to your Home Screen first, then turn reminders on' : 'This browser cannot do reminders'); return false; }
   let perm=Notification.permission;
   if(perm==='default'){ try{ perm=await Notification.requestPermission(); }catch(e){ perm='denied'; } }
   if(perm!=='granted'){ toast('Reminders are blocked in your browser settings'); return false; }
   S.profile.nudge=true; save(); scheduleNudge(); renderAll();
-  toast('You will get one nudge a week, on '+checkinDayName());
+  toast('One reminder a week, 7pm '+checkinDayName()+', while the app is open');
   return true;
 }
 function disableNudges(){ S.profile.nudge=false; save(); clearNudge(); renderAll(); toast('Reminders off'); }
@@ -3207,20 +3546,107 @@ function scheduleNudge(){
     scheduleNudge();
   }, Math.max(1000,step));
 }
-function fireNudge(){
-  if(nudgeState()!=='on'||checkinDone()) return;
+/* Chrome on Android refuses new Notification() from a page and only allows
+   it through a service worker. The old version used the refused call,
+   swallowed the error, and had already recorded the reminder as sent, so on
+   Android it silently never arrived. It now goes through the service worker
+   where there is one, falls back to the page, and only records a reminder as
+   sent once one actually was. */
+async function fireNudge(){
+  if(nudgeState()!=='on'||checkinDone()) return false;
   const last=(()=>{ try{ return +localStorage.getItem(NUDGE_KEY)||0; }catch(e){ return 0; } })();
-  if(Date.now()-last < 20*3600e3) return;
-  try{ localStorage.setItem(NUDGE_KEY,String(Date.now())); }catch(e){}
+  if(Date.now()-last < 20*3600e3) return false;
+  const title='Two minutes, and next week builds itself';
+  const opts={body:'Your check in is due. Skip it and the plan stops adapting.', tag:'gauntlet-checkin'};
+  let sent=false;
   try{
-    new Notification('Two minutes, and next week builds itself',
-      {body:'Your check in is due. Skip it and the plan stops adapting.', tag:'gauntlet-checkin'});
+    if('serviceWorker' in navigator&&navigator.serviceWorker.getRegistration){
+      const reg=await navigator.serviceWorker.getRegistration();
+      if(reg&&reg.showNotification){ await reg.showNotification(title,opts); sent=true; }
+    }
   }catch(e){}
+  if(!sent){ try{ new Notification(title,opts); sent=true; }catch(e){} }
+  if(sent){ try{ localStorage.setItem(NUDGE_KEY,String(Date.now())); }catch(e){} }
+  return sent;
 }
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) scheduleNudge(); });
 if('serviceWorker' in navigator && location.protocol.startsWith('http')){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+  /* updateViaCache 'none': always fetch sw.js itself fresh, never from the
+     browser's own cache, so a changed service worker is seen straight away */
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{}));
 }
+/* ---------- getting new versions onto phones ----------
+   The service worker loads the page network first, so any fresh open while
+   online gets whatever was published last. This covers the other case: an
+   app left open in the background, which never reloads on its own.
+   When the app is opened or brought back to the front, it asks the server for
+   the page, compares it with the version it is running, and if they differ
+   shows a banner. It never reloads by itself, and it waits until nobody is in
+   the middle of a workout, onboarding, or a half-filled form. */
+const UPDATE_CHECK_MS=30*60e3;
+const upd={base:null,last:0,ready:false,checking:false,timer:null};
+function pageHash(t){
+  /* FNV-1a: cheap, and only needs to notice that the text changed */
+  let h=0x811c9dc5;
+  for(let i=0;i<t.length;i++){ h^=t.charCodeAt(i); h=Math.imul(h,0x01000193); }
+  return (h>>>0).toString(16);
+}
+const appUrl=()=>location.href.split('#')[0];
+async function fetchPageHash(){
+  const r=await fetch(appUrl(),{cache:'no-cache',credentials:'same-origin'});
+  if(!r||!r.ok) throw new Error('status '+(r&&r.status));
+  return pageHash(await r.text());
+}
+/* With no signal, the page being run is the copy the service worker saved. */
+async function savedPageHash(){
+  if(typeof caches==='undefined') return null;
+  try{
+    const res=await caches.match(new URL('./index.html',location.href).href);
+    return res? pageHash(await res.text()) : null;
+  }catch(e){ return null; }
+}
+function appBusy(){
+  /* a finished session stays in memory for its summary; only one still in
+     progress counts, or the banner never shows after the first workout */
+  try{ if(typeof GYM!=='undefined'&&GYM&&!GYM.done) return true; }catch(e){}
+  const on=id=>{ const el=document.getElementById(id); return !!(el&&el.classList.contains('on')); };
+  return on('player')||on('onb')||on('gym')||!!document.querySelector('.sheet.on');
+}
+function showUpdateBar(){
+  const bar=document.getElementById('updateBar'); if(!bar) return;
+  const show=upd.ready&&!appBusy();
+  bar.classList.toggle('on',show);
+  /* keep looking while an update is waiting for a quiet moment */
+  if(upd.ready&&!show&&!upd.timer) upd.timer=setInterval(showUpdateBar,15000);
+  if((show||!upd.ready)&&upd.timer){ clearInterval(upd.timer); upd.timer=null; }
+}
+async function checkForUpdate(force){
+  if(!location.protocol.startsWith('http')||upd.checking||upd.ready) return;
+  if(!force&&Date.now()-upd.last<UPDATE_CHECK_MS) return;
+  upd.checking=true; upd.last=Date.now();
+  try{
+    if('serviceWorker' in navigator&&navigator.serviceWorker.getRegistration){
+      try{ const reg=await navigator.serviceWorker.getRegistration(); if(reg&&reg.update) reg.update().catch(()=>{}); }catch(e){}
+    }
+    const h=await fetchPageHash();
+    if(upd.base===null) upd.base=h;
+    else if(h!==upd.base) upd.ready=true;
+  }catch(e){
+    /* offline: at least know which version is running, so the first check
+       once back online can tell whether it is out of date */
+    if(upd.base===null){ const saved=await savedPageHash(); if(saved) upd.base=saved; }
+  }finally{
+    upd.checking=false; showUpdateBar();
+  }
+}
+function reloadApp(){ (window.__reload||location.reload.bind(location))(); }
+document.addEventListener('click',e=>{
+  if(e.target.closest('#updateNow')){ reloadApp(); }
+});
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) checkForUpdate(false); });
+window.addEventListener('online',()=>checkForUpdate(true));
+window.addEventListener('load',()=>setTimeout(()=>checkForUpdate(true),3000));
+
 window.__G={
   freshState,load,save,migrate,normalise,fmt,num,pct,ago,triesOf,allPosts,postById,goalCredit,avg7,
   bmrOf,tdeeOf,proteinOf,showH,showW,todayKey,mondayKey,dowIdx,
@@ -3231,7 +3657,7 @@ window.__G={
   SOURCES,STEP_TARGET,
   toggleFollow,startSessionFromPost,startSession,nextStep,prevStep,finishSession,closePlayer,
   logSession,openWeigh,openDetails,renderAll,renderToday,renderPlan,renderProgress,renderFeed,renderPeople,
-  go,openSheet,closeSheets,topLayer,notYet,openLog,bmrOf,tdeeOf,sexTerm,plausibleBody,maintenance,calorieTarget,calorieLine,goalDirection,currentKg,RATE,kcalFloor,stepTarget,stepKcal,liftNetKcal,sessionMinutes,plannedLiftMinPerDay,plannedTdee,BASAL_STEPS,DEFAULT_STEPS,STEP_BANDS,validSteps,applyTheme,setTheme,THEMES,openYou,who,snapshotPlan,restorePlan,updateBadge,mountColophons,startOnboarding,onbRender,finishOnboarding,openTempoHelp,showTempoSafe,
+  go,openSheet,closeSheets,topLayer,notYet,openLog,toast,checkForUpdate,showUpdateBar,pageHash,appBusy,upd,reloadApp,bmrOf,tdeeOf,sexTerm,plausibleBody,maintenance,calorieTarget,calorieLine,goalDirection,currentKg,RATE,kcalFloor,stepTarget,stepKcal,liftNetKcal,bodyFatPct,validBodyFat,DEFICIT_CAP,FAT_KCAL_PER_KG,stepSplit,splitText,recentRealSteps,withProfile,sessionMinutes,plannedLiftMinPerDay,plannedTdee,BASAL_STEPS,DEFAULT_STEPS,STEP_BANDS,validSteps,applyTheme,setTheme,THEMES,openYou,who,snapshotPlan,restorePlan,updateBadge,mountColophons,startOnboarding,onbRender,finishOnboarding,openTempoHelp,showTempoSafe,
   get __cloudReady(){ try{ return typeof cloudReady==='function'&&cloudReady(); }catch(e){ return false; } },
   SEED_POSTS,people,AIMS,ACTIVITY,PATTERNS,SLOTS,HUE,DAYS,STORE_KEY,APP_VERSION
 };
@@ -3348,16 +3774,25 @@ function steers(){
 /* What a model would be handed. Kept as text so it can be pasted anywhere. */
 function coachBrief(){
   const rows=lastNDays(7), c=lastCheckin(), t=S.targets, a=(k,dp)=>round(avg(rows,k),dp);
+  /* Nothing logged is said as nothing logged. A fresh install used to print
+     "null kcal (target null), protein nullg" to whoever was reading. */
+  const has=x=>x!==null&&x!==undefined&&x!==''&&!Number.isNaN(+x);
+  const v=(k,dp,unit)=>{ const x=a(k,dp); return has(x)? num(x)+unit : 'not logged'; };
+  const tg=(x,unit)=>has(x)? num(x)+unit : 'not set';
   const L=[];
   L.push(`Handle: @${S.profile.handle||'unknown'}`);
   L.push(`Aim: ${S.profile.aim}. Weekly goal: ${S.goal.label}, at ${fmt(S.goal.now)} of ${S.goal.target}.`);
   L.push(`Days logged in the last 7: ${rows.length}`);
-  L.push(`Averages: ${a('kcal')} kcal (target ${t.kcal}), protein ${a('protein')}g (target ${t.protein}), carbs ${a('carbs')}g, fat ${a('fat')}g, fibre ${a('fibre')}g`);
-  L.push(`Steps ${a('steps')} (target ${t.steps}), sleep ${a('sleep',1)}h, wellbeing ${a('wb',1)}/10, stress ${a('stress',1)}/10`);
+  if(!rows.length){
+    L.push(`Nothing logged in the last 7 days. Targets: ${tg(t.kcal,' kcal')}, ${tg(t.protein,'g protein')}, ${tg(t.steps,' steps')}.`);
+  } else {
+    L.push(`Averages: ${v('kcal',0,' kcal')} (target ${tg(t.kcal,' kcal')}), protein ${v('protein',0,'g')} (target ${tg(t.protein,'g')}), carbs ${v('carbs',0,'g')}, fat ${v('fat',0,'g')}, fibre ${v('fibre',0,'g')}`);
+    L.push(`Steps ${v('steps',0,'')} (target ${tg(t.steps,'')}), sleep ${v('sleep',1,'h')}, wellbeing ${v('wb',1,'/10')}, stress ${v('stress',1,'/10')}`);
+  }
   if(typeof calorieTarget==='function'){
     const ct=calorieTarget();
     if(ct) L.push(`Calories: maintenance ${ct.maintenance} (${ct.source}, ${ct.sourceLabel}). Target ${ct.kcal}`
-      +(ct.dir==='hold'? ', holding steady.' : ` to ${ct.dir} ${ct.rateKg} kg a week (${ct.ratePct}%)${ct.capped?', capped':''}${ct.floored?', at the floor':''}.`));
+      +(ct.dir==='hold'? ', holding steady.' : ` to ${ct.dir} ${(+ct.rateKg).toFixed(2)} kg a week (${(+ct.ratePct).toFixed(2)}%), set by the ${ct.limit} limit${ct.bf?', body fat '+ct.bf.pct+'% '+ct.bf.source:''}.`));
   }
   if(typeof deloadDue==='function'){
     const nx=nextDeload();
@@ -3370,9 +3805,10 @@ function coachBrief(){
       +(S.target.hit? ` Met on ${S.target.hit}.`
         : pr? ` Currently ${pr.now}, ${Math.abs(pr.remaining)} to go, ${pr.daysLeft} days left.` : ' Nothing logged against it yet.'));
   }
-  if(typeof currentHabit==='function'&&currentHabit()){
-    const h=currentHabit();
-    L.push(`Habit: ${habitOf(h.id).t}, since ${h.started}. ${habitStreak()} day streak, kept on ${Object.keys(h.days||{}).length} days so far.`);
+  if(typeof currentHabit==='function'){
+    const hs=currentHabit('start'), hx=currentHabit('stop');
+    if(hs) L.push(`Habit: ${habitOf(hs.id).t}, since ${hs.started}. ${habitStreak('start')} day streak, kept on ${Object.keys(hs.days||{}).length} days so far.`);
+    if(hx) L.push(`Habit to stop: ${habitOf(hx.id).t}, since ${hx.started}. ${habitStreak('stop')} days without in a row, ${Object.keys(hx.days||{}).length} days without so far.`);
   }
   /* Their own words, which is the richest thing in here and the one part no
      number can stand in for. */
@@ -3603,9 +4039,9 @@ function copyBrief(){
 renderProgress();
 Object.assign(window.__G,{TRAIN_DAYS,DEFAULT_TARGETS,ownTargets,allMovements,drawWeekStep,
   lastNDays,avg,steers,coachBrief,openDay,openWeek,
-  HABITS,habitOf,currentHabit,startHabit,retireHabit,toggleHabitDay,habitWeek,habitStreak,habitRate,suggestHabit,openHabitSheet,habitRow,
+  HABITS,habitOf,currentHabit,startHabit,retireHabit,toggleHabitDay,habitWeek,habitStreak,habitRate,suggestHabit,openHabitSheet,habitRow,habitRowFor,habitApplies,habitSlots,addOwnHabit,ownHabits,escHabit,OWN_MAX,colophonText,
   TARGET_KINDS,setTarget,clearTarget,targetNow,targetProgress,openTargetSheet,targetLine,
-  nudgeState,nextNudgeAt,scheduleNudge,enableNudges,disableNudges,
+  nudgeState,nextNudgeAt,scheduleNudge,enableNudges,disableNudges,fireNudge,nudgeHelp,onIOS,installed,NUDGE_KEY,
 
   get dayDraft(){return dayDraft}, get weekDraft(){return weekDraft}});
 Object.defineProperties(window.__G,{
@@ -4130,7 +4566,11 @@ function seedTemplates(){
 S.templates=Array.isArray(S.templates)&&S.templates.length? S.templates : seedTemplates();
 S.workouts=Array.isArray(S.workouts)? S.workouts : [];
 S.restPrefs=S.restPrefs&&typeof S.restPrefs==='object'? S.restPrefs : {};
-S.habit=(S.habit&&typeof S.habit==='object')? S.habit : null;
+S.habits=(S.habits&&typeof S.habits==='object')? S.habits : {};
+S.customHabits=Array.isArray(S.customHabits)? S.customHabits : [];
+/* the single habit from the earlier version becomes the habit to start */
+if(S.habit&&typeof S.habit==='object'&&S.habit.id&&!S.habits.start) S.habits.start=S.habit;
+S.habit=null;
 S.deloadWeeks=(S.deloadWeeks&&typeof S.deloadWeeks==='object')? S.deloadWeeks : {};
 S.target=(S.target&&typeof S.target==='object')? S.target : null;
 S.customFoods=Array.isArray(S.customFoods)? S.customFoods : [];
@@ -4956,9 +5396,11 @@ function finishWorkout(){
   const record={id:'w'+Date.now(),d:k,name:GYM.name,templateId:GYM.templateId,minutes:mins,volume:Math.round(volume),sets,
     deload:GYM.deload||null,
     ex:GYM.ex.map(e=>({exId:e.exId,sets:e.sets.filter(s=>s.done).map(s=>({kg:+s.kg||0,reps:+s.reps||0,warm:!!s.warm}))}))};
+  /* which movements set a personal best, kept so the session can show it later */
+  try{ record.prs=GYM.ex.filter(e=>typeof exHasPR==='function'&&exHasPR(e)).map(e=>e.exId); }catch(err){ record.prs=[]; }
   S.workouts.unshift(record);
   GYM.done=true; clearInterval(gymTick); clearInterval(restTick); $('restBar').classList.remove('on');
-  logSession({title:GYM.name,type:'workout',adds:1,steps:GYM.ex.map(e=>({n:exOf(e.exId).n,r:''}))});
+  logSession({title:GYM.name,type:'workout',adds:1,workoutId:record.id,steps:GYM.ex.map(e=>({n:exOf(e.exId).n,r:''}))});
   const amended = GYM.templateId && templateChanged(GYM.templateId, GYM);
   $('gymBody').innerHTML=`<div class="summary">
     <div class="big">${record.name} done.</div>
@@ -5303,9 +5745,8 @@ if(!S.profile.onboarded) startOnboarding();
    the thing people stop trusting first.
    ===================================================================== */
 const WEEK_MS=7*864e5;
-function weekOfDate(d){ const x=dateOf(d); const i=(x.getDay()===0?6:x.getDay()-1); x.setDate(x.getDate()-i); return keyOf(x); }
-function addDays(k,n){ const d=dateOf(k); d.setDate(d.getDate()+n); return keyOf(d); }
-function prettyDate(k){ const d=dateOf(k); return d.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]; }
+/* weekOfDate, addDays and prettyDate now live beside dateOf and keyOf in the
+   first script: the startup render uses them before this script has loaded. */
 const mean=a=>a.length? a.reduce((x,y)=>x+y,0)/a.length : null;
 
 /* ---------- weekly history, built from what is already logged ---------- */
@@ -5743,7 +6184,8 @@ function openHow(){
     <div class="method"><b>Your expenditure</b><span>${obs? `Measured, not guessed: over the last ${obs.days} days you averaged ${num(obs.intake)} kcal and your trend weight moved, so your expenditure works out at about ${num(obs.tdee)} kcal a day. This is the intake balance method, which agrees with doubly labelled water to within roughly 200 kcal a day across a group. For one person it can be further out.` : 'Estimated from your details and your tracker until there are ten days of food logs and two weigh ins, at which point it gets measured from your own data instead. That measurement, the intake balance method, agrees with doubly labelled water to within roughly 200 kcal a day across a group, and can be further out for one person.'}</span></div>
     <div class="method"><b>Protein</b><span>1.8 g per kilo. The meta-analysis on protein and resistance training supports roughly 1.6 to 2.2 g/kg, so this sits in the middle, and eating more of it while losing weight helps hold onto muscle. ${(()=>{const b=proteinBasis(S.profile); return b.adjusted? `Above a BMI of about 30 the kilo is an adjusted reference weight, ${b.kg} kg in your case rather than ${S.profile.weight} kg, because fat mass carries no protein requirement and total bodyweight would overshoot.` : 'Above a BMI of about 30 it is taken from an adjusted reference weight instead, since fat mass carries no protein requirement.';})()}</span></div>
     <div class="method"><b>Maintenance</b><span>One figure, from the best evidence the app has. To start: resting burn by Mifflin St Jeor, times 1.2 for a sedentary day, plus your step target and the lifting in your plan. Walking is 3 METs for every 100 steps a minute, net of rest, counted above 2,500 a day because a sedentary day already contains those (under 2,500 is what Tudor-Locke and colleagues class as basal activity; using it as the baseline is a judgement). Lifting is 4 METs for as long as your templates take. Once a tracker is connected, your real steps replace the target. Once you have about three weeks of food and weigh ins, what you actually ate minus what the scale says you stored replaces both, and that is the most accurate of the three. Running is counted as steps, which under-counts it a little; physical work a step count cannot see is missed; the three-week figure catches both.</span></div>
-    <div class="method"><b>Your calorie target</b><span>Losing: 0.5 to 1% of your bodyweight a week, the range that keeps muscle while dieting (Helms and colleagues, 2014); 0.75% unless your goal date asks for something slower, and never above 1% however soon the date. Gaining: 0.25 to 0.5% a week, about 10 to 20% over maintenance (Iraki and colleagues, 2019). Never below 1,500 kcal for men or 1,200 for women, the low end of the 2013 AHA/ACC/TOS guideline for supervised weight loss. When you reach your goal weight, the target goes back to maintenance.</span></div>
+    <div class="method"><b>Your calorie target</b><span>Losing: three limits, and the tightest wins. 0.75% of your bodyweight a week, or what your goal date needs up to 1%, the range that keeps muscle while dieting (Helms and colleagues, 2014). A deficit of no more than 750 kcal a day, the top of what the 2013 AHA/ACC/TOS guideline prescribes, because a percentage keeps growing with size and clinical guidance does not. And about 69 kcal a day per kilo of body fat, Alpert's (2005) estimate of the most the fat store can supply; a theoretical model rather than a tested rule, so it is only a ceiling, and in practice it only matters for lean people asking for a fast date. Body fat is yours if you give it, otherwise estimated from BMI, age and sex by the Deurenberg equation, which is about 4 points out either way and cannot tell muscle from fat. Gaining: 0.25 to 0.5% a week, about 10 to 20% over maintenance (Iraki and colleagues, 2019). Never below 1,500 kcal for men or 1,200 for women, and never above maintenance while losing. When you reach your goal weight, the target goes back to maintenance.</span></div>
+    <div class="method"><b>What your steps are worth</b><span>Steps are part of what you burn, so they are already inside your maintenance. The deficit splits into the part food makes, eating less than you burn without walking, and the part the steps make, and the two add up to the whole. That is why skipping the steps at the same food slows the loss by exactly what they were burning.</span></div>
     <div class="method"><b>Easy weeks</b><span>Every ${+S.profile.deloadEvery||DELOAD_EVERY} weeks by default, from the 4 to 8 week range in Bell and colleagues' 2025 recommendations and the roughly five and a half week gap reported by 246 competitive lifters (Rogerson and colleagues, 2024). About 10% lighter and 25 to 90% less work depending on recovery. Easy-week sessions never set your next weights.</span></div>
     <div class="method"><b>Fat and carbohydrate</b><span>Fat at 28% of your calories, which sits inside the 20 to 35% the dietary guidelines give, and carbohydrate is simply what is left once protein and fat are paid for. Neither is a finding: protein and total calories are the two that have evidence behind them, and the split of the rest is largely preference. Move it if you train better on more of one.</span></div>
     <div class="method"><b>Energy per kilo</b><span>7700 kcal per kg. A long run average. Early weight change is mostly water and carries far less energy, so the first fortnight usually moves faster than the maths.</span></div>
@@ -6042,31 +6484,57 @@ function downloadData(){
     toast('Downloaded. That is everything.');
   }catch(err){ toast('Could not save the file here'); }
 }
-async function eraseEverything(){
-  /* Local first, so it is gone from the device even if the network is not there
-     to take the remote copy with it. */
-  let remote='not signed in';
-  if(signedIn()){
+/* Everything this person put in the database, not just some of it. The app
+   writes to four tables: state (their saved data), profiles (handle and aim),
+   posts (the feed) and follows (both directions). The first version only
+   cleared two of them.
+   Two rules make this honest:
+   1. A delete the database's rules refuse still answers 204 with nothing
+      removed, so every table is checked afterwards rather than trusted.
+   2. If anything is left in the database, nothing is removed from this device
+      either. Wiping the device first would sign them out and leave them with no
+      way to retry, holding data they had asked to be destroyed. */
+const ERASE_TABLES=[
+  ['your feed posts','posts','user_id'],
+  ['who you follow','follows','follower'],
+  ['who follows you','follows','followee'],
+  ['your profile','profiles','user_id'],
+  ['your saved data','state','user_id']];
+async function eraseRemote(){
+  if(!signedIn()) return {done:true,left:[]};
+  const me=encodeURIComponent(myId()), left=[];
+  for(const [label,table,col] of ERASE_TABLES){
+    const q=table+'?'+col+'=eq.'+me;
     try{
-      const r=await fetch(base()+'/rest/v1/state?user_id=eq.'+encodeURIComponent(myId()),
-        {method:'DELETE',headers:authHeaders()});
-      remote = r.ok? 'deleted' : 'failed, status '+r.status;
-    }catch(e){ remote='failed, no connection'; }
-    try{ await fetch(base()+'/rest/v1/posts?user_id=eq.'+encodeURIComponent(myId()),
-      {method:'DELETE',headers:authHeaders()}); }catch(e){}
+      await fetch(base()+'/rest/v1/'+q,{method:'DELETE',headers:authHeaders()});
+      const chk=await fetch(base()+'/rest/v1/'+q+'&select='+col+'&limit=1',{headers:authHeaders()});
+      const rows=chk.ok? await chk.json() : null;
+      if(!Array.isArray(rows)) left.push(label+' (could not be checked)');
+      else if(rows.length) left.push(label);
+    }catch(e){ left.push(label+' (no connection)'); }
   }
+  return {done:!left.length,left};
+}
+function eraseLocal(){
   try{ localStorage.removeItem(STORE_KEY); localStorage.removeItem(CLOUD_KEY);
-    ['gauntlet.v3','gauntlet.v2','gauntlet.v1'].forEach(k=>localStorage.removeItem(k)); }catch(e){}
-  return remote;
+    ['gauntlet.v3','gauntlet.v2','gauntlet.v1',NUDGE_KEY].forEach(k=>localStorage.removeItem(k)); }catch(e){}
+}
+async function eraseEverything(){
+  const r=await eraseRemote();
+  if(!r.done) return {ok:false,left:r.left};
+  eraseLocal();
+  return {ok:true,left:[]};
 }
 function openData(){
   const signed=signedIn();
   document.getElementById('cloudBody').innerHTML=`
-    <div class="method"><b>What is held, and where</b><span>Your week, your weigh ins, your food, your lifts and your check ins live in this browser's own storage on this device.${signed? ' Because you are signed in, a copy is also kept in the project database under your account, so it reaches your other devices. Only your row is readable by you; that is enforced by the database, not by this page.' : ' Nothing leaves this device unless you make an account.'}</span></div>
+    <div class="method"><b>What is held, and where</b><span>Your week, your weigh ins, your food, your lifts and your check ins live in this browser's own storage on this device.${signed? ' Because you are signed in, a copy is also kept in the project database so it reaches your other devices. That copy is readable only by you, which the database enforces, not this page. Your handle, your aim and anything you post to the feed are different: other people using the app can see those, because that is what the feed is.' : ' Nothing leaves this device unless you make an account.'}</span></div>
     <div class="method"><b>What is never held</b><span>No advertising identifiers, no third party analytics, no location. The only thing that leaves this device on its own is the request that fetches the typeface.</span></div>
     <div class="method"><b>Take it with you</b><span>One file, plain JSON, everything in it. Readable in any text editor and not locked to this app.</span></div>
     <button class="sheetcta" id="dlData">Download everything</button>
-    <div class="method" style="margin-top:14px"><b>Delete it all</b><span>Wipes this device${signed?' and your row in the database':''} and starts you again from the first screen. It cannot be undone, so take the download first if you want a copy.</span></div>
+    <div class="method" style="margin-top:14px"><b>Delete it all</b><span>${signed
+      ? 'Deletes your saved data, profile, feed posts and follows from the database, checks each one is really gone, then wipes this device and starts you again from the first screen. If the database refuses any of it, nothing is wiped here, so you can try again. Your sign-in itself stays; the person running the project can remove that.'
+      : 'Wipes this device and starts you again from the first screen.'} It cannot be undone, so take the download first if you want a copy.</span></div>
     <button class="sheetcta" id="wipeData" style="background:var(--oxblood)">Delete everything</button>
     <div class="note" id="wipeNote"></div>`;
   openSheet('cloudSheet');
@@ -6074,6 +6542,7 @@ function openData(){
 document.addEventListener('click',async e=>{
   if(e.target.closest('#dataBtn')) openData();
   if(e.target.closest('#dlData')) downloadData();
+  if(e.target.closest('#wipeLocalOnly')){ eraseLocal(); location.reload(); return; }
   if(e.target.closest('#wipeData')){
     const b=e.target.closest('#wipeData'), note=document.getElementById('wipeNote');
     if(b.dataset.armed!=='1'){
@@ -6084,9 +6553,17 @@ document.addEventListener('click',async e=>{
       return;
     }
     if(note) note.textContent='Deleting...';
-    const remote=await eraseEverything();
-    if(note) note.textContent='Local data gone. Remote: '+remote+'. Reloading.';
-    setTimeout(()=>location.reload(),1200);
+    b.disabled=true;
+    const r=await eraseEverything();
+    if(r.ok){
+      if(note) note.textContent='Everything is gone. Starting again.';
+      setTimeout(()=>location.reload(),1200);
+    } else {
+      b.disabled=false; b.dataset.armed=''; b.textContent='Try again';
+      if(note) note.innerHTML='Still in the database: '+r.left.join(', ')+'. Nothing has been removed from this device, so you can try again. '
+        +'If it keeps failing, the database is not set up to allow deletion yet, which the person running the project needs to fix. '
+        +'<button class="inlinebtn" id="wipeLocalOnly">Wipe this device only</button>';
+    }
   }
 });
 
@@ -6166,7 +6643,7 @@ renderProgress=function(){
     await loadRemote(); renderAll();
   }
 })();
-Object.assign(window.__G,{renderFeed,renderPeople,logSession,renderProgress,exportPayload,downloadData,eraseEverything,openData,cardHTML:typeof cardHTML==='function'?cardHTML:undefined});
+Object.assign(window.__G,{renderFeed,renderPeople,logSession,renderProgress,exportPayload,downloadData,eraseEverything,eraseRemote,eraseLocal,ERASE_TABLES,openData,cardHTML:typeof cardHTML==='function'?cardHTML:undefined});
 /* onboarding may already be on screen from the boot script above, and it rendered
    before this file existed, so give it the chance to recount its steps */
 (function(){ const onb=document.getElementById('onb');
@@ -6177,7 +6654,7 @@ window.__CLOUD={get C(){return C},set C(v){C=v}, CLOUD_CONFIG, cloudReady, setBu
   loadCloud,saveCloud,configured,signedIn,myId,base,authHeaders,sendMagicLink,readAuthHash,fetchUser,
   refreshSession,ensureSession,signOut,api,upsert,pushState,pullState,loadRemote,publishPost,recordTry,
   toggleRemoteFollow,ensureProfile,cloudStatus,renderCloudPanel,personFor,CLOUD_KEY,
-  exportPayload,downloadData,eraseEverything,openData};
+  exportPayload,downloadData,eraseEverything,eraseRemote,eraseLocal,ERASE_TABLES,openData};
 </script>
 
 <script>
@@ -6498,6 +6975,193 @@ document.addEventListener('click',async e=>{
     return; }
 });
 Object.assign(window.__G||{},{COACH_SYS,coachCfg,coachReady,setCoach,askCoach,openCoach,COACH_ASKS,ownTargets,targetKcalPreview});
+</script>
+
+<script>
+/* ---------- You: the settings, where people can find them ----------
+   Settings used to live in a panel called "Coaching detail", inside a sheet,
+   behind a small text link at the bottom of the Progress screen. The things
+   people check most (goal, calories, steps, habits, easy weeks) now sit at the
+   top of their own screen, each row showing its current value, and the app's
+   own settings sit at the bottom, where people look for them in every app. */
+const SET_ICON={
+  aim:'<path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="8"/>',
+  goal:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.8"/>',
+  body:'<path d="M5 20l2-8h10l2 8M9 12V8a3 3 0 0 1 6 0v4"/>',
+  steps:'<path d="M8 20c-2 0-3-2-2-5l1-4c1-3 5-3 5 1 0 3-2 8-4 8zM16 13c-2 0-3-2-2-5l1-3c1-2 4-2 4 1 0 3-1 7-3 7z"/>',
+  habits:'<path d="M5 12l4 4 10-10"/>',
+  deload:'<path d="M4 17h4v-4h4V9h4V5h4"/>',
+  kit:'<path d="M3 10v4M21 10v4M6 8v8M18 8v8M6 12h12"/>',
+  cycle:'<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16"/>',
+  records:'<path d="M4 19V9M10 19V5M16 19v-6M22 19H2"/>',
+  coach:'<path d="M4 5h16v11H9l-5 4z"/>',
+  data:'<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+  theme:'<path d="M20 14A8 8 0 1 1 10 4a6 6 0 0 0 10 10z"/>',
+  tempo:'<circle cx="12" cy="13" r="7"/><path d="M12 13V9M10 3h4"/>',
+  nudge:'<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20h4"/>',
+  account:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  how:'<circle cx="12" cy="12" r="9"/><path d="M12 17v-5M12 8v.5"/>'
+};
+const TONE={
+  marine:{bg:'var(--t-marine)',fg:'var(--marine)'}, forest:{bg:'var(--t-forest)',fg:'var(--forest)'},
+  burnt:{bg:'var(--t-burnt)',fg:'var(--burnt)'}, oxblood:{bg:'var(--t-oxblood)',fg:'var(--oxblood)'},
+  marigold:{bg:'var(--t-marigold)',fg:'var(--burnt)'}, grey:{bg:'var(--grey-btn)',fg:'var(--mute)'}
+};
+function setRow(key,tone,label,value,sub,id,subId){
+  return `<button class="ysrow" data-setting="${key}"${id?` id="${id}"`:''}>
+    <span class="sic" style="background:${TONE[tone].bg};color:${TONE[tone].fg}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${SET_ICON[key]||''}</svg></span>
+    <span class="stx"><b>${label}</b><span class="sv">${value}</span>${sub?`<small${subId?` id="${subId}"`:''}>${sub}</small>`:''}</span>
+    <span class="chev" aria-hidden="true">›</span></button>`;
+}
+function renderSettings(){
+  const top=document.getElementById('settingsList'), more=document.getElementById('settingsMore');
+  if(!top||!more) return;
+  const p=S.profile||{};
+  const aim=(typeof aimOf==='function')? aimOf(p.aim) : {t:p.aim||''};
+  let ct=null; try{ ct=p.detailsSet? calorieTarget() : null; }catch(e){}
+  const tg=S.target, TK=(typeof TARGET_KINDS!=='undefined')? TARGET_KINDS : {};
+  const goal= !tg? 'Not set'
+    : (tg.hit? 'Met on '+prettyDateSafe(tg.hit)
+      : tg.value+(tg.kind==='sessions'?' a week':(TK[tg.kind]? ' '+TK[tg.kind].unit : ''))+(tg.by? ' by '+prettyDateSafe(tg.by) : ''));
+  const hs=currentHabit('start'), hx=currentHabit('stop');
+  const habits=[hs? escHabit(habitOf(hs.id).t)+(habitStreak('start')? ' · '+habitStreak('start')+' days' : '') : '',
+                hx? 'Stop: '+escHabit(habitOf(hx.id).t)+(habitStreak('stop')? ' · '+habitStreak('stop')+' days' : '') : ''].filter(Boolean);
+  let nx=null; try{ nx=nextDeload(); }catch(e){}
+  const dl= typeof deloadDue==='function'&&deloadDue()? 'This week is an easy week'
+    : (p.deload===false? 'Only when you add one' : 'Every '+(+p.deloadEvery||DELOAD_EVERY)+' weeks'+(nx? ', next '+prettyDateSafe(nx) : ''));
+  const kit=kitOf().length===ALL_KIT.length? 'Everything' : KIT.filter(k=>kitOf().indexOf(k.id)>=0).map(k=>k.t).join(', ');
+  const ns=nudgeState();
+  const nudgeVal= ns==='on'? 'On, 7pm '+checkinDayName() : (ns==='blocked'? 'Blocked by your browser' : 'Off');
+  const signed=signedInSafe();
+  const showCycle= p.sex==='f'||(S.cycle&&S.cycle.tracking);
+
+  top.innerHTML=`<div class="ysgroup"><div class="yshead">Your plan</div>
+    ${setRow('aim','marine','Aim and training days', aim.t+' · '+(+p.liftDays||0)+' lifting, '+(+p.cardioDays||0)+' cardio')}
+    ${setRow('goal','forest','Goal', goal)}
+    ${setRow('body','burnt','Calories and body', p.detailsSet&&ct? 'Eat '+num(ct.kcal)+' kcal · maintenance '+num(ct.maintenance) : 'Add your details to work these out')}
+    ${setRow('steps','marine','Daily steps', num(stepTarget())+' a day')}
+    ${setRow('habits','forest','Habits', habits.length? habits.join('<br>') : 'None yet. One to start, one to stop')}
+    ${setRow('deload','marigold','Easy weeks', dl)}
+    ${setRow('kit','grey','Kit you train with', kit)}
+  </div>`;
+
+  more.innerHTML=`<div class="ysgroup"><div class="yshead">Your records</div>
+    ${setRow('records','marine','Weight, tracker and numbers', S.weights.length? S.weights.length+' weigh ins' : 'No weigh ins yet')}
+    ${setRow('coach','forest','Coach and weekly brief', coachReady&&coachReady()? 'Connected' : 'Your whole record in plain English')}
+    ${setRow('data','grey','Your data', 'Download it, or delete it')}
+  </div>
+  <div class="ysgroup"><div class="yshead">Settings</div>
+    ${setRow('theme','grey','Theme', (THEMES.find(t=>t[0]===themeOf())||THEMES[0])[1])}
+    ${setRow('tempo','grey','Tempo guidance', showTempoSafe()? 'On' : 'Off', 'The four digits beside your sets. Off leaves your programme exactly as it is.')}
+    ${setRow('nudge','grey','Check in reminder', nudgeVal, nudgeHelp(), 'nudgeBtn', 'nudgeNote')}
+    ${showCycle? setRow('cycle','oxblood','Cycle', S.cycle&&S.cycle.tracking? 'Tracking' : 'Off') : ''}
+    ${setRow('account','grey','Account and sync', signed? 'Signed in' : 'On this device only')}
+    ${setRow('how','grey','How the numbers are worked out', 'Every formula, and where it comes from')}
+  </div>`;
+}
+function openThemeSheet(){
+  const desc={light:'The default', dark:'Easier in a dark gym or late at night', auto:'Light or dark, whatever your phone is set to'};
+  document.getElementById('altTitle').textContent='Theme';
+  document.getElementById('altSub').textContent='Light unless you choose otherwise.';
+  document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 6px" id="themeOpts">
+    ${THEMES.map(([id,label])=>`<button class="opt ${themeOf()===id?'on':''}" data-themepick="${id}">
+      <div class="txt"><div class="t">${label}</div><div class="s">${desc[id]||''}</div></div><div class="rad"></div></button>`).join('')}
+  </div>`;
+  openSheet('altSheet');
+}
+document.addEventListener('click',e=>{
+  const r=e.target.closest('[data-setting]'); if(!r) return;
+  const k=r.dataset.setting;
+  if(k==='aim'){ drawAimSheet(); openSheet('aimSheet'); }
+  else if(k==='goal') openTargetSheet();
+  else if(k==='body'||k==='steps') openDetails();
+  else if(k==='habits') openHabitSheet();
+  else if(k==='deload') openDeloadSheet();
+  else if(k==='kit') openKitSheet();
+  else if(k==='cycle') openCycle();
+  else if(k==='records') openYou();
+  else if(k==='coach') openCoach();
+  else if(k==='data') openData();
+  else if(k==='theme') openThemeSheet();
+  else if(k==='tempo'){ S.profile.showTempo=!showTempoSafe(); save(); renderAll();
+    toast(showTempoSafe()? 'Tempo guidance on' : 'Tempo guidance off. Your programme is unchanged.'); }
+  else if(k==='account'){ openYou(); setTimeout(()=>{ const cp=document.getElementById('cloudPanel');
+    if(cp&&cp.scrollIntoView) cp.scrollIntoView({block:'start',behavior:'smooth'}); },80); }
+  else if(k==='how') openHow();
+  /* 'nudge' is handled by its own existing handler, through id="nudgeBtn" */
+});
+/* the settings list redraws whenever the rest of the You screen does */
+const _renderProgressYou=renderProgress;
+renderProgress=function(){ _renderProgressYou(); renderSettings(); };
+
+/* ---------- a past session, opened ---------- */
+const KIND_LABEL={workout:'Workout',run:'Run',meal:'Meal',fast:'Fast',circuit:'Circuit',walk:'Walk'};
+function workoutFor(post){
+  if(!post) return null;
+  const s=post.session||{};
+  if(s.workoutId){ const w=(S.workouts||[]).find(x=>x.id===s.workoutId); if(w) return w; }
+  /* sessions logged before posts carried the link: same day, same name */
+  if(post.kind==='workout') return (S.workouts||[]).find(x=>x.d===post.d&&x.name===post.title)||null;
+  return null;
+}
+function setText(s){
+  const kg=+s.kg||0, reps=+s.reps||0;
+  return (kg? num(kg)+'kg × ' : '× ')+reps;
+}
+function openSession(id){
+  const post=S.mine.find(m=>m.id===id); if(!post) return;
+  const w=workoutFor(post);
+  document.getElementById('sessTitle').textContent=post.title||'Session';
+  document.getElementById('sessSub').textContent=[KIND_LABEL[post.kind]||'Session', prettyDateSafe(post.d)].filter(Boolean).join(' · ');
+  let body='';
+  if(w){
+    const prs=w.prs||[];
+    body+=`<div class="numline" style="margin-bottom:12px"><div><b>${w.minutes}</b> min</div><div><b>${w.sets}</b> sets</div><div><b>${num(w.volume)}</b> kg lifted</div></div>`;
+    if(w.deload) body+=`<div class="note" style="margin:-4px 0 12px">An easy week session. It is on your record, but it never set the weights that followed it.</div>`;
+    body+=(w.ex||[]).filter(e=>e.sets&&e.sets.length).map(e=>{
+      const x=exOf(e.exId);
+      const work=e.sets.filter(s=>!s.warm), best=work.reduce((a,s)=>(+s.kg||0)>(+a.kg||0)? s : a, work[0]||{});
+      return `<div class="sessex">
+        <div class="sxh"><b>${x.n}</b>${prs.indexOf(e.exId)>=0?'<span class="pr" title="Personal record">PR</span>':''}
+          <button class="movebtn" data-showmove="${e.exId}">show me</button></div>
+        <div class="sxs">${e.sets.map(s=>`<span class="${s.warm?'warm':''} ${s===best?'best':''}">${s.warm?'warm up ':''}${setText(s)}</span>`).join('')}</div></div>`;
+    }).join('');
+    if(w.templateId&&(S.templates||[]).some(t=>t.id===w.templateId))
+      body+=`<button class="sheetcta" data-redo="${w.templateId}">Do this again</button>`;
+  } else if(post.kind==='workout'){
+    body+=`<div class="note">The set by set detail for this one was not kept. Every session from now on keeps it.</div>`;
+  } else {
+    if(post.chips&&post.chips.length) body+=`<div class="chips" style="pointer-events:none;margin-bottom:10px">${post.chips.map(c=>`<button>${c}</button>`).join('')}</div>`;
+    if(post.unit) body+=`<div class="method"><b>${post.title}</b><span>${post.unit}</span></div>`;
+    if(post.macros&&(post.macros.p+post.macros.c+post.macros.f)>0)
+      body+=`<div class="numline" style="margin:10px 0"><div><b>${post.macros.p}g</b> protein</div><div><b>${post.macros.c}g</b> carbs</div><div><b>${post.macros.f}g</b> fat</div></div>`;
+    const steps=(post.session&&post.session.steps)||[];
+    if(steps.length) body+=`<div class="slab">What was in it</div>`+steps.map(s=>`<div class="revrow" style="pointer-events:none"><div class="txt"><div class="t">${s.n}</div>${s.r?`<div class="s">${s.r}</div>`:''}</div></div>`).join('');
+    if(post.cap) body+=`<div class="note">${post.cap}</div>`;
+  }
+  document.getElementById('sessBody').innerHTML=`<div style="padding:0 14px 6px">${body}</div>`;
+  openSheet('sessSheet');
+}
+function openAllSessions(){
+  const byMonth={};
+  S.mine.forEach(m=>{ const key=(m.d||'').slice(0,7); (byMonth[key]=byMonth[key]||[]).push(m); });
+  const monthName=k=>{ try{ return dateOf(k+'-01').toLocaleDateString('en-GB',{month:'long',year:'numeric'}); }catch(e){ return k; } };
+  document.getElementById('sessTitle').textContent='All sessions';
+  document.getElementById('sessSub').textContent=S.mine.length+' logged';
+  document.getElementById('sessBody').innerHTML=`<div style="padding:0 14px 6px">${Object.keys(byMonth).sort().reverse().map(k=>
+    `<div class="slab">${monthName(k)}</div>`+byMonth[k].map(m=>`<button class="revrow" data-sess="${m.id}">
+      <div class="txt"><div class="t">${m.title}</div><div class="s">${KIND_LABEL[m.kind]||'Session'} · ${prettyDateSafe(m.d)}</div></div>
+      <span class="chev">›</span></button>`).join('')).join('')}</div>`;
+  openSheet('sessSheet');
+}
+document.addEventListener('click',e=>{
+  const sc=e.target.closest('[data-sess]');
+  if(sc){ openSession(sc.dataset.sess); return; }
+  if(e.target.closest('#allSess')){ openAllSessions(); return; }
+  const rd=e.target.closest('[data-redo]');
+  if(rd){ const id=rd.dataset.redo; closeSheets(); startWorkout(id); }
+});
+Object.assign(window.__G||{},{renderSettings,openThemeSheet,openSession,openAllSessions,workoutFor,setRow,prettyDateSafe});
 </script>
 </body>
 </html>

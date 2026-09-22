@@ -1122,13 +1122,15 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     t('21 · tapping it opens the session', sheet.classList.contains('on') && d.getElementById('sessTitle').textContent === 'Push');
     t('21 · labelled as a workout with its date', /^Workout · /.test(d.getElementById('sessSub').textContent), d.getElementById('sessSub').textContent);
     const w0 = S.workouts[0];
+    const grid = [...body.querySelectorAll('.sgrid > div')].map(x => x.querySelector('b').textContent.trim() + ' ' + x.querySelector('span').textContent.trim());
     t('21 · it shows minutes, sets and kilos lifted',
-      body.textContent.indexOf(w0.minutes + ' min') > -1 && body.textContent.indexOf(w0.sets + ' sets') > -1
-      && body.textContent.indexOf(w0.volume.toLocaleString('en-GB') + ' kg lifted') > -1, body.textContent.slice(0, 80));
+      grid[0] === w0.minutes + (w0.minutes === 1 ? ' minute' : ' minutes') && grid[1].indexOf(w0.sets + ' working sets') === 0
+      && grid[3] === w0.volume.toLocaleString('en-GB') + ' kg lifted', JSON.stringify(grid));
     t('21 · every movement is listed', w0.ex.filter(e => e.sets.length).every(e => body.textContent.indexOf(G.exOf(e.exId).n) > -1));
     t('21 · every set, with its weight and reps', /60kg × 8/.test(body.textContent) && /62\.5kg × 8/.test(body.textContent), body.textContent.slice(0, 200));
-    t('21 · warm ups are marked as warm ups', /warm up 40kg × 8/.test(body.textContent));
-    t('21 · the heaviest working set stands out', /62\.5kg × 8/.test((body.querySelector('.sxs span.best') || {}).textContent || ''));
+    t('21 · warm ups are marked as warm ups', [...body.querySelectorAll('.srow.warm')].some(r => /^W\s*40kg × 8/.test(r.textContent.trim())));
+    t('21 · the heaviest working set stands out', /62\.5kg × 8/.test((body.querySelector('.srow.best') || {}).textContent || '')
+      && !!body.querySelector('.srow.best .stag'));
     t('21 · each movement can be shown', body.querySelectorAll('[data-showmove]').length === w0.ex.filter(e => e.sets.length).length);
     d.querySelector('[data-redo]').click();
     t('21 · "Do this again" starts the same session', !!G.GYM && G.GYM.templateId === 't_push' && !G.GYM.done);
@@ -1346,7 +1348,7 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
 
     /* ---- footer ---- */
     const foot = () => txt(d.querySelector('#s-progress .colophon .sub'));
-    t('24 · the footer shows build 21', /build 21\./.test(foot()), foot());
+    t('24 · the footer shows the build number', foot().indexOf('build ' + G.APP_VERSION + '.') > -1, foot());
     t('24 · signed out, it says the week stays on this device', /on this device and nowhere else/.test(foot()));
     t('24 · every screen has exactly one footer', ['today', 'plan', 'progress', 'feed'].every(s => d.querySelectorAll('#s-' + s + ' .colophon').length === 1));
     const signed = await boot({ before: w2 => w2.localStorage.setItem('gauntlet.cloud', JSON.stringify({
@@ -1354,7 +1356,8 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     allErrs.push(...signed.errs); onboard(signed.G); signed.G.renderAll();
     const sfoot = txt(signed.d.querySelector('#s-today .colophon .sub'));
     t('24 · signed in, it no longer claims the week is only on this device', !/nowhere else/.test(sfoot) && /copy in your account/.test(sfoot), sfoot);
-    t('24 · the export carries the new build number', G.exportPayload().version === '21');
+    t('24 · the export carries the build number', G.exportPayload().version === G.APP_VERSION);
+    t('24 · and this release is build 22', G.APP_VERSION === '22');
 
     /* ---- your own habits ---- */
     G.openHabitSheet();
@@ -1402,6 +1405,362 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     const again = await boot({ before: w2 => { for (const k of Object.keys(w.localStorage)) w2.localStorage.setItem(k, w.localStorage.getItem(k)); } });
     allErrs.push(...again.errs);
     t('24 · after reopening the app, your own habits are still there', again.G.ownHabits().length === 20 && !!again.G.currentHabit('start'));
+    G.closeSheets();
+  }
+
+  /* ---------------------------------------------------------- 25 */
+  journey(25, 'Exact weigh ins, one place for each day, full session detail, an editor you can use');
+  {
+    const { w, d, G, errs, source } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    const fire = (el, type) => el.dispatchEvent(new w.Event(type, { bubbles: true }));
+    const type = (el, v) => { el.value = v; fire(el, 'input'); };
+
+    /* ================= weigh in ================= */
+    S.weights = [{ d: G.addDays(G.todayKey(), -3), kg: 91.4 }]; G.save();
+    G.openWeigh();
+    const body = d.getElementById('weighBody'), inp = () => d.getElementById('weighInput');
+    const minus = () => d.querySelector('[data-wstep="weigh:-1"]'), plus = () => d.querySelector('[data-wstep="weigh:1"]');
+    const save = () => d.getElementById('saveWeight');
+    t('25 · the weigh in has no slider', !body.querySelector('input[type="range"]'));
+    t('25 · it has a number to type, a minus, a plus and four quick jumps', !!inp() && !!minus() && !!plus() && body.querySelectorAll('[data-wjump]').length === 4);
+    t('25 · the minus and plus are big enough for a thumb', /\.wbtn\{width:60px;height:60px/.test(source) && /\.wjumps button\{flex:1;min-height:44px/.test(source));
+    t('25 · the number box brings up a number keypad', inp().getAttribute('inputmode') === 'decimal');
+    t('25 · it opens at the last weigh in', inp().value === '91.4');
+    t('25 · and says when that was', /Last time 91\.4 kg, 3 days ago/.test(txt(d.getElementById('weighHint'))), txt(d.getElementById('weighHint')));
+    minus().click(); minus().click();
+    t('25 · each tap of minus is 0.1 kg', inp().value === '91.2', inp().value);
+    t('25 · and the change since last time is shown', /Down 0\.2 kg/.test(txt(d.getElementById('weighHint'))));
+    plus().click();
+    t('25 · plus goes the other way', inp().value === '91.3');
+    /* a real tap: finger down, finger up, then the browser's click */
+    fire(minus(), 'pointerdown'); fire(minus(), 'pointerup'); minus().click();
+    t('25 · a finger tap steps once, not twice', inp().value === '91.2', inp().value);
+    d.querySelector('[data-wjump="weigh:-1"]').click();
+    t('25 · the quick jumps move a whole kilo', inp().value === '90.2');
+    d.querySelector('[data-wjump="weigh:0.5"]').click();
+    t('25 · or half a kilo', inp().value === '90.7');
+    fire(plus(), 'pointerdown'); await sleep(900); fire(plus(), 'pointerup');
+    const held = +inp().value;
+    t('25 · holding plus keeps going', held >= 91.0, String(held));
+    await sleep(300);
+    t('25 · and letting go stops it', +inp().value === held);
+    /* a long press that ends without a click, as a cancelled press does on a phone */
+    fire(plus(), 'pointerdown'); fire(plus(), 'pointercancel');
+    const afterCancel = +inp().value;
+    plus().click();
+    t('25 · a cancelled press never swallows the next tap', Math.round((+inp().value - afterCancel) * 10) === 1, afterCancel + ' -> ' + inp().value);
+    minus().click();
+    type(inp(), '88.8');
+    t('25 · an exact weight can be typed', save().disabled === false);
+    type(inp(), '88,8');
+    t('25 · a comma works as the decimal point', save().disabled === false);
+    type(inp(), '9');
+    t('25 · a mistyped weight blocks saving', save().disabled === true && /between 30 and 350 kg/.test(txt(d.getElementById('weighMsg'))));
+    type(inp(), 'abc');
+    t('25 · so does something that is not a number', save().disabled === true);
+    type(inp(), '90.25'); fire(inp(), 'focusout');
+    t('25 · leaving the box shows exactly what will be saved', inp().value === '90.3', inp().value);
+    save().click();
+    t('25 · it saves that weight', S.weights[S.weights.length - 1].kg === 90.3 && S.weights[S.weights.length - 1].d === G.todayKey());
+    G.openWeigh();
+    t('25 · weighing in again the same day says it will replace it', /Saving replaces it/.test(txt(d.getElementById('weighBody'))));
+    type(inp(), '90.1'); save().click();
+    t('25 · and it does, with no duplicate', S.weights.filter(x => x.d === G.todayKey()).length === 1 && S.weights[S.weights.length - 1].kg === 90.1);
+    G.openWeigh();
+    for (let k = 0; k < 4000; k++) G.nudgeW('weigh', -0.1);
+    t('25 · it cannot go below 30 kg', inp().value === '30.0', inp().value);
+    G.closeSheets();
+    /* pounds */
+    S.profile.units = 'imperial'; G.save();
+    G.openWeigh();
+    t('25 · in pounds it opens in pounds, to one decimal', inp().value === (Math.round(90.1 * 2.20462 * 10) / 10).toFixed(1) && /lb/.test(txt(body)));
+    plus().click();
+    t('25 · a tap in pounds is 0.2 lb', inp().value === (Math.round(90.1 * 2.20462 * 10) / 10 + 0.2).toFixed(1));
+    type(inp(), '200'); save().click();
+    const lbKg = S.weights[S.weights.length - 1].kg;
+    t('25 · 200 lb is stored in kilos, precisely', lbKg === 90.72, String(lbKg));
+    t('25 · and shows back as exactly 200 lb', G.toShown(lbKg, true) === 200);
+    t('25 · pounds are shown to a tenth, not rounded to the whole pound',
+      G.showW(90.18, true) === '198.8 lb' && G.showW(90.1, true) === '198.6 lb' && G.showW(90.1, false) === '90.1 kg',
+      G.showW(90.18, true) + ' / ' + G.showW(90.1, true));
+    t('25 · and the confirmation says what was saved', /Logged at 200 lb/.test(txt(d.getElementById('toast'))), txt(d.getElementById('toast')));
+    S.profile.units = 'metric'; G.save();
+    /* the details editor uses the same control */
+    G.openDetails();
+    const db = d.getElementById('detailsBody');
+    t('25 · the details editor has no weight slider either', !db.querySelector('[data-range="weight"]') && !!d.getElementById('detInput'));
+    const before = txt(d.getElementById('stepsWorth'));
+    d.querySelector('[data-wjump="det:-1"]').click();
+    t('25 · changing weight there updates the calories at once', txt(d.getElementById('stepsWorth')) !== before);
+    type(d.getElementById('detInput'), '400');
+    t('25 · and a mistyped weight blocks saving there too', d.getElementById('saveDetails').disabled === true);
+    type(d.getElementById('detInput'), '88');
+    d.getElementById('saveDetails').click();
+    t('25 · saving the details keeps the typed weight', S.profile.weight === 88);
+    G.closeSheets();
+
+    /* ================= this week ================= */
+    G.go('plan');
+    const pv = () => d.getElementById('planView');
+    t('25 · the reasons and the days are one section, called This week',
+      /<h2>This week<\/h2>/.test(pv().innerHTML) && !/Why this week looks like this/.test(pv().innerHTML));
+    const cards = () => [...pv().querySelectorAll('.daycard')];
+    t('25 · every day is a card', cards().length === 7);
+    const ti = G.dowIdx();
+    t('25 · today\'s card is open by itself, and only today\'s', cards()[ti].classList.contains('open') && cards().filter(c => c.classList.contains('open')).length === 1);
+    t('25 · closed cards carry no buttons of their own', cards().filter(c => !c.classList.contains('open')).every(c => c.querySelectorAll('button').length === 1));
+    t('25 · open and closed are announced', cards()[ti].querySelector('.dch').getAttribute('aria-expanded') === 'true');
+    const push = S.plan.days.findIndex(x => x.templateId === 't_push');
+    pv().querySelector('[data-planopen="' + push + '"]').click();
+    const open = () => pv().querySelector('.daycard.open');
+    t('25 · tapping another day opens it and closes today', cards()[push].classList.contains('open') && cards().filter(c => c.classList.contains('open')).length === 1);
+    const tpl = S.templates.find(x => x.id === 't_push');
+    t('25 · the open day shows the whole workout', tpl.ex.every(r => txt(open()).indexOf(G.exOf(r.exId).n) > -1)
+      && open().querySelectorAll('[data-showmove]').length === tpl.ex.length);
+    t('25 · with sets and reps for each movement', /4 × 5 to 8/.test(txt(open())));
+    const acts = [...open().querySelectorAll('button')].map(b => txt(b));
+    t('25 · and every action in one place', ['Edit workout', 'Change day', 'Cannot do it'].every(a => acts.includes(a)) && acts.some(a => /^Start/.test(a)), acts.join(' | '));
+    pv().querySelector('[data-planopen="' + push + '"]').click();
+    t('25 · tapping an open day closes it', !pv().querySelector('.daycard.open'));
+    pv().querySelector('[data-planopen="' + push + '"]').click();
+    /* editing carries forward */
+    const past = JSON.parse(JSON.stringify(S.workouts));
+    open().querySelector('[data-tpledit="t_push"]').click();
+    t('25 · Edit workout opens that workout', d.getElementById('tplEdit').classList.contains('on') && d.getElementById('tplName').value === 'Push');
+    t('25 · and says the change carries to every future day', /every Push day from now on/.test(txt(d.getElementById('tplEditBody'))) && /already done stay exactly as they were/.test(txt(d.getElementById('tplEditBody'))));
+    type(d.querySelector('[data-tpl="0:sets"]'), '5');
+    type(d.querySelector('[data-tpl="0:rest"]'), '200');
+    d.getElementById('tplSave').click();
+    t('25 · saving says so', /Push saved, for every Push day from now on/.test(txt(d.getElementById('toast'))), txt(d.getElementById('toast')));
+    t('25 · the day card shows the change', /5 × 5 to 8/.test(txt(pv().querySelector('.daycard.open'))));
+    G.startPlanDay(S.plan.days[push]);
+    const benchRow = G.GYM.ex.find(e => e.exId === tpl.ex[0].exId);
+    t('25 · and the next session is built from it', G.GYM.name === 'Push' && benchRow.sets.length === 5 && benchRow.rest === 200, benchRow.sets.length + ' sets, ' + benchRow.rest + 's');
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+    t('25 · sessions already done are untouched', JSON.stringify(S.workouts) === JSON.stringify(past));
+    /* start from the card */
+    G.go('plan'); pv().querySelector('[data-planopen="' + push + '"]').click();
+    if (!pv().querySelector('.daycard.open')) pv().querySelector('[data-planopen="' + push + '"]').click();
+    pv().querySelector('.daycard.open [data-startday]').click();
+    t('25 · Start on the card starts that day', !!G.GYM && G.GYM.name === 'Push');
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+    /* other kinds of day */
+    G.go('plan');
+    const rest = S.plan.days.findIndex(x => x.slot === 'rest');
+    pv().querySelector('[data-planopen="' + rest + '"]').click();
+    t('25 · a rest day offers only Change day', !pv().querySelector('.daycard.open [data-startday]') && !pv().querySelector('.daycard.open [data-restday]') && !!pv().querySelector('.daycard.open [data-swap]'));
+    const run = S.plan.days.findIndex(x => x.runId);
+    if (run > -1) { pv().querySelector('[data-planopen="' + run + '"]').click();
+      t('25 · a run day shows its steps and Change run', !!pv().querySelector('.daycard.open [data-runswap]') && pv().querySelectorAll('.daycard.open .dmove').length > 0); }
+    const c0 = S.circuits[0];
+    S.plan.days[rest] = Object.assign({}, S.plan.days[rest], { slot: c0.id, circuitId: c0.id, templateId: null, runId: null, type: 'workout', label: c0.name });
+    G.renderPlan(); pv().querySelector('[data-planopen="' + rest + '"]').click();
+    if (!pv().querySelector('.daycard.open [data-circedit]')) pv().querySelector('[data-planopen="' + rest + '"]').click();
+    t('25 · a circuit day lists its stations and Edit circuit', !!pv().querySelector('.daycard.open [data-circedit]')
+      && pv().querySelectorAll('.daycard.open .dmove').length === (c0.items || []).length && /run/.test(txt(pv().querySelector('.daycard.open .dmoves'))));
+    /* from Today */
+    S.plan.days[ti] = Object.assign({}, S.plan.days[push], { dow: ti });
+    G.go('today'); G.renderAll();
+    t('25 · Today has View or edit beside Start', !!d.getElementById('todayViewEdit') && !!d.getElementById('startToday'));
+    d.getElementById('todayViewEdit').click();
+    t('25 · which opens today\'s card on the plan', d.getElementById('s-plan').classList.contains('on') && cards()[ti].classList.contains('open'));
+    G.go('today');
+    d.querySelector('.ribbon [data-planday="' + ti + '"]').click();
+    t('25 · the day sheet from the ribbon has Edit this workout too', !!d.querySelector('#dayDetail [data-tpledit]'));
+    G.closeSheets();
+
+    /* ================= a finished session in full ================= */
+    const runPush = (top, rest, reps, warm) => {
+      G.startWorkout('t_push');
+      G.GYM.ex.forEach((e, i) => { if (warm && i === 0) e.sets.unshift({ kg: 40, reps: 8, warm: true, done: false });
+        let n = 0; e.sets.forEach(s => { if (s.warm) { s.done = true; return; } s.kg = n === 0 ? top : rest; s.reps = reps; s.done = true; n++; }); });
+      G.GYM.started = w.Date.now() - 52 * 60000;   /* the app's clock, not the test's */
+      G.finishWorkout(); d.getElementById('gym').classList.remove('on'); G.closeSheets();
+    };
+    runPush(60, 57.5, 6, false);
+    const lastWeek = G.addDays(G.todayKey(), -7);
+    S.workouts[0].d = lastWeek; S.mine.forEach(m => { if (m.d === G.todayKey()) m.d = lastWeek; });
+    Object.values(S.lifts).forEach(h => h.forEach(e => { if (e.d === G.todayKey()) e.d = lastWeek; }));
+    runPush(62.5, 60, 8, true);
+    const wk = S.workouts[0];
+    G.go('progress'); G.renderAll();
+    d.querySelector('#grid [data-sess]').click();
+    const sb = d.getElementById('sessBody'), sub = txt(d.getElementById('sessSub'));
+    t('25 · the session says when it started and finished', /\d\d:\d\d to \d\d:\d\d$/.test(sub), sub);
+    const g = [...sb.querySelectorAll('.sgrid > div')].map(x => txt(x.querySelector('b')) + ' ' + txt(x.querySelector('span')));
+    const workSets = wk.ex.reduce((a, e) => a + e.sets.filter(s => !s.warm).length, 0);
+    const reps = wk.ex.reduce((a, e) => a + e.sets.filter(s => !s.warm).reduce((b, s) => b + s.reps, 0), 0);
+    t('25 · minutes, working sets and warm ups, reps and kilos, all from what was logged',
+      g[0] === '52 minutes' && g[1] === workSets + ' working sets + 1 warm up' && g[2] === reps + ' reps' && g[3] === wk.volume.toLocaleString('en-GB') + ' kg lifted', JSON.stringify(g));
+    const prevVol = S.workouts[1].volume, pct = Math.round((wk.volume - prevVol) / prevVol * 100);
+    t('25 · compared with the last Push, to the percent', txt(sb).indexOf(Math.abs(pct) + '% ' + (pct > 0 ? 'more' : 'less') + ' in total than your last Push') > -1, String(pct));
+    const mg = [...sb.querySelectorAll('.mgrid span')].map(txt);
+    t('25 · what it worked, by working sets, adding up to the total', mg.length >= 2 && mg.reduce((a, s) => a + +(s.match(/(\d+) sets?$/) || [0, 0])[1], 0) === workSets, JSON.stringify(mg));
+    const first = sb.querySelector('.sessex'), ex0 = wk.ex[0], xn = G.exOf(ex0.exId).n;
+    const rows = [...first.querySelectorAll('.srow')].map(txt);
+    t('25 · sets are numbered, with the warm up marked W', /^W\s*40kg × 8/.test(rows[0]) && /^1\s*62\.5kg × 8/.test(rows[1]) && /^2\s*60kg × 8/.test(rows[2]), JSON.stringify(rows.slice(0, 3)));
+    t('25 · the best set is tagged', /best$/.test(rows[1]));
+    const e1 = Math.round(62.5 * (1 + 8 / 30));
+    t('25 · with an estimated one-rep max by the Epley formula, labelled as an estimate', txt(first).indexOf('About ' + e1 + ' kg estimated one-rep max (Epley formula') > -1, String(e1));
+    t('25 · it says whether the planned range was hit', /Planned \d+ × 5 to 8 reps.*Top of the range on every set/.test(txt(first)), txt(first).slice(0, 300));
+    t('25 · and exactly what changed since last time', txt(first).indexOf('Against ' + G.prettyDate(lastWeek) + ': +2.5 kg on the top set, +10 reps') > -1, txt(first));
+    t('25 · every movement is there', wk.ex.every(e => txt(sb).indexOf(G.exOf(e.exId).n) > -1));
+    G.closeSheets();
+    /* an older session without the new detail still opens */
+    delete wk.started; delete wk.finished; wk.ex.forEach(e => delete e.plan);
+    d.querySelector('#grid [data-sess]').click();
+    t('25 · an older session without the new detail still opens', d.getElementById('sessSheet').classList.contains('on')
+      && !/Planned/.test(txt(d.getElementById('sessBody')))
+      && /^\d+$/.test(txt(d.querySelector('#sessBody .sgrid > div:nth-child(2) b')))
+      && /^working sets/.test(txt(d.querySelector('#sessBody .sgrid > div:nth-child(2) span'))));
+    G.closeSheets();
+    t('25 · a bodyweight movement gets reps, not a made-up one-rep max', (() => {
+      const e = { exId: 'plank', sets: [{ kg: 0, reps: 45, warm: false }] };
+      const X = G.exerciseDetail(e, wk); return X.e1 === null && !X.weighted; })());
+
+    /* ================= the editor ================= */
+    G.openTplEdit('t_pull');
+    const eb = () => d.getElementById('tplEditBody');
+    const pull = S.templates.find(x => x.id === 't_pull');
+    t('25 · every movement is its own card', eb().querySelectorAll('.tcard').length === pull.ex.length);
+    t('25 · with four labelled boxes, rest included', [...eb().querySelectorAll('.tcard')].every(c => c.querySelectorAll('.tf').length === 4)
+      && /Rest, s/.test(txt(eb().querySelector('.tcard'))) && eb().querySelectorAll('[data-tpl$=":rest"]').length === pull.ex.length);
+    t('25 · the old cramped row and its tiny symbols are gone', !eb().querySelector('.tedit') && !/\.tedit/.test(source) && !/22px 22px 22px/.test(source));
+    const firstActs = [...eb().querySelector('.tcard').querySelectorAll('.tact')];
+    t('25 · actions say what they do', ['How to', 'Swap', 'Remove'].every(a => firstActs.some(b => txt(b) === a)));
+    t('25 · the arrows are labelled for screen readers', firstActs.filter(b => b.classList.contains('icon')).every(b => /Move .+ (up|down)/.test(b.getAttribute('aria-label'))));
+    t('25 · every action is at least 44px tall', /\.tact\{min-height:44px/.test(source) && /\.tact\.icon\{min-width:44px/.test(source) && /\.tf input\{min-height:44px/.test(source));
+    t('25 · the first cannot move up and the last cannot move down', eb().querySelector('[data-tplmove="0:-1"]').disabled && eb().querySelector('[data-tplmove="' + (pull.ex.length - 1) + ':1"]').disabled);
+    const n0 = G.exOf(pull.ex[0].exId).n, n1 = G.exOf(pull.ex[1].exId).n;
+    eb().querySelector('[data-tplmove="0:1"]').click();
+    t('25 · moving down swaps it with the next one', txt(eb().querySelectorAll('.tcard')[0].querySelector('.tt b')) === n1 && txt(eb().querySelectorAll('.tcard')[1].querySelector('.tt b')) === n0);
+    t('25 · and focus follows the card that moved', d.activeElement && d.activeElement.closest('.tcard') === eb().querySelectorAll('.tcard')[1]);
+    const cases = [['0:sets', '', 'Sets should be'], ['0:sets', '0', 'Sets should be'], ['0:sets', '11', 'Sets should be'],
+      ['0:repMin', String(pull.ex[0].reps + 1), 'cannot be below the bottom'], ['0:rest', '700', 'Rest should be']];
+    let allCaught = true, why = '';
+    cases.forEach(([f, v, msg]) => {
+      G.openTplEdit('t_pull');
+      type(d.querySelector('[data-tpl="' + f + '"]'), v);
+      d.getElementById('tplSave').click();
+      const shown = txt(eb().querySelector('.warn'));
+      if (!d.getElementById('tplEdit').classList.contains('on') || shown.indexOf(msg) < 0) { allCaught = false; why = f + '=' + v + ' → ' + shown; }
+    });
+    t('25 · blank, zero, too many sets, an upside down range and too much rest are all refused', allCaught, why);
+    t('25 · nothing was saved by any of them', S.templates.find(x => x.id === 't_pull').ex[0].sets === pull.ex[0].sets);
+    t('25 · the bad box is marked', !!eb().querySelector('.tf.bad'));
+    type(d.querySelector('[data-tpl="0:rest"]'), '90');
+    t('25 · and unmarks as soon as it is fixed', !eb().querySelector('.tf.bad'));
+    type(d.getElementById('tplName'), '   ');
+    d.getElementById('tplSave').click();
+    t('25 · a blank name is refused', /Give it a name/.test(txt(eb().querySelector('.warn'))));
+    type(d.getElementById('tplName'), 'Pull');
+    const count = S.templates.find(x => x.id === 't_pull').ex.length;
+    eb().querySelector('[data-tpldel="0"]').click();
+    t('25 · Remove takes it out, with Undo', eb().querySelectorAll('.tcard').length === count - 1 && /Undo/.test(txt(d.getElementById('toast'))));
+    d.getElementById('toastAct').click();
+    t('25 · and Undo puts it back', eb().querySelectorAll('.tcard').length === count);
+    G.closeSheets();
+  }
+
+  /* ---------------------------------------------------------- 26 */
+  journey(26, 'Planned means what was planned, even when the session changes');
+  {
+    const { d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const row = S.templates.find(x => x.id === 't_push').ex[0];
+    row.sets = 5; G.save();
+    const run = mutate => {
+      G.startWorkout('t_push');
+      const e = G.GYM.ex[0];
+      mutate(e);
+      G.GYM.ex.forEach(x => x.sets.forEach(st => { if (st.kg === '') st.kg = 50; st.reps = 8; st.done = true; }));
+      G.finishWorkout(); d.getElementById('gym').classList.remove('on'); G.closeSheets();
+      G.go('progress'); G.renderAll();
+      d.querySelector('#grid [data-sess]').click();
+      const body = d.getElementById('sessBody').textContent.replace(/\s+/g, ' ');
+      G.closeSheets();
+      return { rec: S.workouts[0].ex[0], body };
+    };
+    const a = run(e => { e.sets[0].warm = true; });
+    t('26 · a set marked as a warm up does not change what was planned', a.rec.plan.sets === 5, String(a.rec.plan.sets));
+    t('26 · and the difference is said plainly', /Planned 5 × 5 to 8 reps\. You did 4 working sets, 1 fewer than planned\./.test(a.body), (a.body.match(/Planned[^.]*\.[^.]*\./) || [''])[0]);
+    const b = run(e => { e.sets.push({ kg: 50, reps: 8, warm: false, done: true }); });
+    t('26 · an extra set does not change what was planned either', b.rec.plan.sets === 5 && /You did 6 working sets, 1 more than planned\./.test(b.body), (b.body.match(/Planned[^.]*\.[^.]*\./) || [''])[0]);
+    const c = run(() => {});
+    t('26 · when it went to plan, there is nothing extra to say', /Planned 5 × 5 to 8 reps( at [\d.,]+ kg)?\. Top of the range/.test(c.body) && !/than planned/.test(c.body), (c.body.match(/Planned[^.]*\.[^.]*\./) || [''])[0]);
+    const dl = (() => { G.startWorkout('t_push', { deload: 'moderate' }); const n = G.GYM.ex[0].dp.sets; G.GYM = null; return n; })();
+    t('26 · an easy week still plans its own lighter sets', dl < 5, String(dl));
+  }
+
+  /* ---------------------------------------------------------- 27 */
+  journey(27, 'One clear route to today, a finish screen that shows everything, a circuit editor fingers can use');
+  {
+    const { w, d, G, errs, source } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S, i = G.dowIdx();
+    const lift = S.plan.days.find(x => x.templateId);
+    S.plan.days[i] = Object.assign({}, lift, { dow: i }); G.save(); G.go('today'); G.renderAll();
+    const hero = d.querySelector('#todayView .hero');
+    const labels = [...hero.querySelectorAll('button')].map(b => b.textContent.trim());
+    t('27 · today has one button to see or edit the workout', labels.filter(l => /See or edit/.test(l)).length === 1, labels.join(' | '));
+    t('27 · and no second, overlapping one', !labels.some(l => /See what is in it|View or edit/.test(l)), labels.join(' | '));
+    d.getElementById('todayViewEdit').click();
+    const card = d.querySelectorAll('.daycards > *')[i];
+    t('27 · it opens today in Plan, with the workout listed', d.getElementById('s-plan').classList.contains('on') && /open/.test(card.className)
+      && card.querySelectorAll('[data-showmove]').length >= 3);
+    t('27 · with Start and Edit side by side', !!card.querySelector('[data-startday]') && !!card.querySelector('[data-tpledit]'));
+    card.querySelector('[data-tpledit]').click();
+    t('27 · the editor says changes carry to every future day', /Changes apply to every .* day from now on/.test(d.getElementById('tplEditBody').textContent));
+    const before = S.templates.find(x => x.id === lift.templateId).ex.length;
+    d.querySelector('[data-tpldel]').click();
+    d.getElementById('tplSave').click();
+    t('27 · saving changes the workout itself', S.templates.find(x => x.id === lift.templateId).ex.length === before - 1);
+    G.startWorkout(lift.templateId);
+    t('27 · and the next session is built from the edited version', G.GYM.ex.length === before - 1);
+    G.GYM.ex.forEach(e => e.sets.forEach(st => { if (st.kg === '') st.kg = 40; st.reps = 8; st.done = true; }));
+    G.finishWorkout();
+    const see = d.getElementById('seeSession');
+    t('27 · the finish screen offers everything that was done', !!see && /See everything you did/.test(see.textContent));
+    see.click();
+    t('27 · and opens the full session viewer', d.getElementById('sessSheet').classList.contains('on') && !d.getElementById('gym').classList.contains('on'));
+    const body = d.getElementById('sessBody').textContent;
+    t('27 · with every set and the detail', /kg lifted/.test(body) && /working sets/.test(body) && /What it worked/.test(body), body.slice(0, 120));
+    t('27 · no stand-in card is left behind in the feed', !S.mine.some(m => m.__temp));
+    G.closeSheets();
+
+    /* the circuit editor */
+    const cid = S.circuits[0].id;
+    G.openCircEdit(cid);
+    const cb = () => d.getElementById('circEditBody');
+    t('27 · no tiny symbol buttons remain', !cb().querySelector('.x'));
+    t('27 · every control is a proper tap target',
+      /\.cekind button\{min-height:44px/.test(source) && /\.ceinput\{[^}]*min-height:44px/.test(source) && /\.tact\{min-height:44px/.test(source));
+    t('27 · run or station is two labelled buttons, not "stn"', /Station/.test(cb().textContent) && !/\bstn\b/.test(cb().textContent));
+    const n0 = G.circDraft.items.length, first = G.circDraft.items[0].label;
+    t('27 · the first part cannot move up, the last cannot move down',
+      cb().querySelector('[data-cimove="0:-1"]').disabled && cb().querySelector('[data-cimove="' + (n0 - 1) + ':1"]').disabled);
+    cb().querySelector('[data-cimove="0:1"]').click();
+    t('27 · moving down works', G.circDraft.items[1].label === first);
+    cb().querySelector('[data-cimove="1:-1"]').click();
+    t('27 · and moving back up', G.circDraft.items[0].label === first);
+    const kindBefore = G.circDraft.items[0].t;
+    cb().querySelector('[data-citype="0:' + (kindBefore === 'run' ? 'station' : 'run') + '"]').click();
+    t('27 · switching kind is explicit', G.circDraft.items[0].t !== kindBefore);
+    cb().querySelector('[data-cidel="0"]').click();
+    t('27 · removing a part says so, with Undo', G.circDraft.items.length === n0 - 1 && /removed/.test(d.getElementById('toast').textContent) && /Undo/.test(d.getElementById('toast').textContent));
+    d.getElementById('toastAct').click();
+    t('27 · and Undo puts it back in place', G.circDraft.items.length === n0 && G.circDraft.items[0].label === first);
+    G.circDraft.items.splice(1);
+    G.circDraft.name = 'He said "go"';
+    G.drawCircEdit();
+    const del = () => cb().querySelector('[data-cidel="0"]');
+    t('27 · the last part cannot be removed', del().disabled && G.circDraft.items.length === 1);
+    t('27 · a name with quote marks does not break its own field', d.getElementById('circName').value === 'He said "go"', d.getElementById('circName').value);
     G.closeSheets();
   }
 

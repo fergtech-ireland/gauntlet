@@ -282,8 +282,16 @@ setTimeout(() => {
     return w.document.getElementById('youSheet').classList.contains('on')
       && w.document.getElementById('dashBody').innerHTML.length > 80; })());
   G.closeSheets();
-  t('templates are on the plan screen', (() => { G.go('plan'); G.renderPlan();
-    return /data-tplstart="t_push"/.test(w.document.getElementById('planView').innerHTML); })());
+  /* Which day's card is open depends on what day it is, so this checks what
+     must be true every day: every workout can be reached, started and edited
+     from Plan. It used to fail on rest days, which is how it was found. */
+  t('every workout is reachable from Plan, whatever day it is', (() => { G.go('plan'); G.renderPlan();
+    const open = w.document.querySelector('#planView [data-tplopen]');
+    if (!open) return false;
+    open.click();
+    const list = w.document.getElementById('tplList').innerHTML;
+    G.closeSheets();
+    return /data-tplstart="t_push"/.test(list) && /data-tpledit="t_push"/.test(list); })());
 
   t('daily log asks about stress', (() => { G.openDay();
     const h = w.document.getElementById('dayBody').innerHTML;

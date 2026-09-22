@@ -22,6 +22,17 @@ function boot(opts) {
       if (!w.navigator.clipboard) {
         Object.defineProperty(w.navigator, 'clipboard', { value: { writeText: () => Promise.resolve() } });
       }
+      /* DAYSHIFT=n runs the app as if today were n days later, so a test that
+         only passes on certain weekdays is caught on any day it is run. */
+      const shift = (+process.env.DAYSHIFT || 0) * 864e5;
+      if (shift) {
+        const Real = w.Date;
+        class Shifted extends Real {
+          constructor(...a) { if (a.length) super(...a); else super(Real.now() + shift); }
+          static now() { return Real.now() + shift; }
+        }
+        w.Date = Shifted;
+      }
       if (o.ua) Object.defineProperty(w.navigator, 'userAgent', { value: o.ua, configurable: true });
       if (o.before) o.before(w);
       /* keep where it happened, not just the message */

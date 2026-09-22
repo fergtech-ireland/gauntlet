@@ -34,7 +34,7 @@ TZ=America/Los_Angeles node test.js
 |---|---|
 | `regression.js` | Every fix made during the review, asserted individually. If a change here goes red, something that was broken and got fixed is broken again. |
 | `cta.js` | Two halves. A **static audit** that pulls every id and `data-` attribute written onto an interactive element and checks something in the source listens for it, plus that every `go()` names a real screen and every `openSheet()` names a real sheet. Then a **runtime sweep** that opens every screen and sheet and clicks every control in them. |
-| `uat.js` | Twenty-eight end-to-end journeys, each on a clean install. These assert the outcome the person came for, not the mechanism underneath. |
+| `uat.js` | Twenty-nine end-to-end journeys, each on a clean install. These assert the outcome the person came for, not the mechanism underneath. |
 
 | `sw.test.js` | Runs the real `sw.js` in a simulated service worker against a fake GitHub Pages: publish a new version, open the app, get it. Also offline, slow and failing networks, and that Supabase is never touched. |
 

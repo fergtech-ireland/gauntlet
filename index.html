@@ -555,9 +555,15 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
   border-radius:10px;padding:13px;margin-bottom:10px}
 .figwrap{background:var(--canvas);border:1px solid var(--line);border-radius:12px;
   display:grid;place-items:center;padding:10px;margin-bottom:12px}
-.fig{width:100%;max-width:190px;height:auto;display:block}
-.fig .body{stroke:var(--ink)}
-.fig .kit{stroke:var(--burnt);fill:var(--burnt)}
+.fig{width:100%;max-width:230px;height:auto;display:block}
+.fig .body{stroke:var(--ink);stroke-width:5}
+.fig .far{stroke:var(--mute);stroke-width:4.4;opacity:.55}
+.fig .trunk{fill:var(--t-marine);stroke:var(--ink);stroke-width:4;stroke-linejoin:round}
+.fig .skull{fill:var(--paper);stroke:var(--ink);stroke-width:4.5}
+.fig .hand{fill:var(--ink);stroke:none}
+.fig .neckline{stroke-width:5}
+.fig .bench{stroke:var(--mute);fill:var(--line)}
+.fig .kit{stroke:var(--burnt);fill:var(--burnt);stroke-linecap:round}
 .fig .kit rect{fill:var(--burnt)}
 .fig .kit line{fill:none}
 .fig .floor{stroke:var(--line)}
@@ -978,7 +984,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='23';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='24';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -5269,49 +5275,177 @@ $('gymClose').addEventListener('click',()=>{
    times more likely to still be doing it at 90 days. So this is a short list of
    things people actually eat, with a portion stepper, and your own recent items
    at the top. It is not a 20 million item database and does not pretend to be. */
+/* ---------- what people here actually eat ----------
+   Typical values per the portion named, rounded to the precision that is
+   honest for a food that varies between brands and cuts. The reference for
+   composition in Ireland is McCance and Widdowson's Composition of Foods
+   Integrated Dataset, which the Food Safety Authority of Ireland names as the
+   accepted source; branded items vary, so anything off a packet is better
+   taken from the packet, which is what "Something not on the list" is for.
+   Irish staples are included on purpose: rashers, sausages, black and white
+   pudding, soda and brown bread, spuds every way they are eaten, chowder,
+   stew, a pint, a bag of crisps.
+   Categories exist so the list can be browsed rather than only searched. */
+const FOOD_CATS=[['common','Usual suspects'],['breakfast','Breakfast'],['meat','Meat and fish'],
+  ['carbs','Bread, spuds and grains'],['veg','Fruit and veg'],['dairy','Dairy and eggs'],
+  ['meals','Meals and takeaway'],['snacks','Snacks and sweets'],['drinks','Drinks']];
 const FOODS=[
-  {id:'egg',n:'Egg, large',u:'egg',kcal:78,p:6.3,c:0.6,f:5.3},
-  {id:'eggwhite',n:'Egg whites',u:'100g',kcal:52,p:11,c:0.7,f:0.2},
-  {id:'oats',n:'Porridge oats',u:'50g dry',kcal:190,p:6.5,c:33,f:3.5},
-  {id:'skyr',n:'Skyr or 0% Greek yoghurt',u:'150g',kcal:90,p:16,c:6,f:0.3},
-  {id:'milk',n:'Milk, semi skimmed',u:'200ml',kcal:100,p:7,c:9.6,f:3.6},
-  {id:'whey',n:'Whey protein',u:'scoop',kcal:120,p:24,c:3,f:1.5},
-  {id:'banana',n:'Banana',u:'medium',kcal:105,p:1.3,c:27,f:0.4},
-  {id:'apple',n:'Apple',u:'medium',kcal:95,p:0.5,c:25,f:0.3},
-  {id:'berries',n:'Berries',u:'100g',kcal:50,p:1,c:12,f:0.3},
-  {id:'chicken',n:'Chicken breast, cooked',u:'100g',kcal:165,p:31,c:0,f:3.6},
-  {id:'mince',n:'Beef mince, 5%',u:'100g',kcal:137,p:21,c:0,f:5},
-  {id:'salmon',n:'Salmon fillet',u:'100g',kcal:208,p:20,c:0,f:13},
-  {id:'tuna',n:'Tuna, tinned in water',u:'tin',kcal:110,p:25,c:0,f:1},
-  {id:'steak',n:'Steak, lean',u:'100g',kcal:180,p:28,c:0,f:7},
-  {id:'tofu',n:'Tofu, firm',u:'100g',kcal:144,p:17,c:3,f:8},
-  {id:'beans',n:'Baked beans',u:'half tin',kcal:150,p:9,c:26,f:0.6},
-  {id:'lentils',n:'Lentils, cooked',u:'100g',kcal:116,p:9,c:20,f:0.4},
-  {id:'rice',n:'Rice, cooked',u:'100g',kcal:130,p:2.7,c:28,f:0.3},
-  {id:'pasta',n:'Pasta, cooked',u:'100g',kcal:158,p:5.8,c:31,f:0.9},
-  {id:'potato',n:'Potatoes, boiled',u:'100g',kcal:87,p:2,c:20,f:0.1},
-  {id:'sweetpot',n:'Sweet potato',u:'100g',kcal:90,p:2,c:21,f:0.2},
-  {id:'bread',n:'Bread, wholemeal',u:'slice',kcal:90,p:4,c:15,f:1.1},
-  {id:'wrap',n:'Tortilla wrap',u:'wrap',kcal:200,p:6,c:33,f:5},
-  {id:'porridgepot',n:'Porridge pot',u:'pot',kcal:250,p:8,c:42,f:5},
-  {id:'cheese',n:'Cheddar',u:'30g',kcal:124,p:7.5,c:0.4,f:10},
-  {id:'butter',n:'Butter',u:'10g',kcal:74,p:0.1,c:0,f:8.2},
-  {id:'oil',n:'Olive oil',u:'tbsp',kcal:120,p:0,c:0,f:14},
-  {id:'peanut',n:'Peanut butter',u:'tbsp',kcal:95,p:4,c:3,f:8},
-  {id:'nuts',n:'Mixed nuts',u:'30g',kcal:180,p:5,c:6,f:16},
-  {id:'avocado',n:'Avocado',u:'half',kcal:160,p:2,c:9,f:15},
-  {id:'veg',n:'Mixed vegetables',u:'150g',kcal:60,p:3,c:10,f:0.5},
-  {id:'salad',n:'Side salad',u:'bowl',kcal:40,p:2,c:6,f:0.5},
-  {id:'soup',n:'Soup',u:'bowl',kcal:180,p:6,c:24,f:6},
-  {id:'sandwich',n:'Sandwich, shop bought',u:'pack',kcal:400,p:20,c:42,f:16},
-  {id:'chipper',n:'Takeaway, average',u:'meal',kcal:900,p:35,c:90,f:45},
-  {id:'pint',n:'Pint of beer',u:'pint',kcal:210,p:2,c:17,f:0},
-  {id:'wine',n:'Glass of wine',u:'175ml',kcal:160,p:0,c:4,f:0},
-  {id:'choc',n:'Chocolate bar',u:'bar',kcal:230,p:3,c:26,f:13},
-  {id:'crisps',n:'Crisps',u:'bag',kcal:180,p:2,c:18,f:11},
-  {id:'protbar',n:'Protein bar',u:'bar',kcal:200,p:20,c:20,f:6},
-  {id:'coffee',n:'Coffee with milk',u:'cup',kcal:40,p:2,c:3,f:2}
+  /* breakfast */
+  {id:'egg',n:'Egg, large',u:'egg',kcal:78,p:6.3,c:0.6,f:5.3,cat:'breakfast'},
+  {id:'eggwhite',n:'Egg whites',u:'100g',kcal:52,p:11,c:0.7,f:0.2,cat:'breakfast'},
+  {id:'oats',n:'Porridge oats',u:'50g dry',kcal:190,p:6.5,c:33,f:3.5,cat:'breakfast'},
+  {id:'porridge_milk',n:'Porridge made with milk',u:'bowl',kcal:255,p:11,c:38,f:7,cat:'breakfast'},
+  {id:'weetabix',n:'Wheat biscuits, 2',u:'2 biscuits',kcal:135,p:4.5,c:26,f:1,cat:'breakfast'},
+  {id:'cornflakes',n:'Cornflakes',u:'40g',kcal:150,p:3,c:34,f:0.4,cat:'breakfast'},
+  {id:'granola',n:'Granola',u:'50g',kcal:220,p:5,c:29,f:9,cat:'breakfast'},
+  {id:'muesli',n:'Muesli, no added sugar',u:'50g',kcal:180,p:5,c:30,f:4,cat:'breakfast'},
+  {id:'fullirish',n:'Full Irish breakfast',u:'plate',kcal:820,p:41,c:48,f:50,cat:'breakfast'},
+  {id:'rasher',n:'Back rasher, grilled',u:'rasher',kcal:70,p:6,c:0,f:5,cat:'breakfast'},
+  {id:'sausage',n:'Pork sausage',u:'sausage',kcal:115,p:5,c:5,f:8,cat:'breakfast'},
+  {id:'blackpud',n:'Black pudding',u:'slice',kcal:115,p:4.5,c:7,f:7.5,cat:'breakfast'},
+  {id:'whitepud',n:'White pudding',u:'slice',kcal:120,p:3,c:10,f:8,cat:'breakfast'},
+  {id:'beans',n:'Baked beans',u:'half tin',kcal:150,p:9,c:25,f:0.8,cat:'breakfast'},
+  {id:'pancakes',n:'Pancakes, 2',u:'2',kcal:230,p:7,c:30,f:9,cat:'breakfast'},
+  {id:'croissant',n:'Croissant',u:'one',kcal:230,p:5,c:24,f:12,cat:'breakfast'},
+
+  /* meat and fish */
+  {id:'chicken',n:'Chicken breast, cooked',u:'150g',kcal:250,p:47,c:0,f:6,cat:'meat'},
+  {id:'chickenthigh',n:'Chicken thigh, cooked',u:'100g',kcal:210,p:26,c:0,f:11,cat:'meat'},
+  {id:'chickenfillet_bd',n:'Breaded chicken fillet',u:'fillet',kcal:280,p:22,c:18,f:13,cat:'meat'},
+  {id:'turkey',n:'Turkey breast, cooked',u:'100g',kcal:150,p:30,c:0,f:3,cat:'meat'},
+  {id:'mince5',n:'Beef mince, 5% fat, cooked',u:'150g',kcal:250,p:40,c:0,f:9,cat:'meat'},
+  {id:'mince20',n:'Beef mince, 20% fat, cooked',u:'150g',kcal:390,p:33,c:0,f:28,cat:'meat'},
+  {id:'steak',n:'Steak, lean, cooked',u:'200g',kcal:400,p:58,c:0,f:18,cat:'meat'},
+  {id:'porkchop',n:'Pork chop, cooked',u:'chop',kcal:290,p:36,c:0,f:16,cat:'meat'},
+  {id:'lamb',n:'Lamb, cooked',u:'150g',kcal:390,p:44,c:0,f:24,cat:'meat'},
+  {id:'ham',n:'Ham, sliced',u:'50g',kcal:60,p:9,c:1,f:2,cat:'meat'},
+  {id:'bacon_med',n:'Bacon medallions',u:'2',kcal:70,p:12,c:0,f:2.5,cat:'meat'},
+  {id:'mackerel',n:'Mackerel, smoked',u:'100g',kcal:310,p:19,c:0,f:26,cat:'meat'},
+  {id:'salmon',n:'Salmon fillet, cooked',u:'130g',kcal:280,p:33,c:0,f:16,cat:'meat'},
+  {id:'smokedsalmon',n:'Smoked salmon',u:'50g',kcal:90,p:12,c:0,f:4.5,cat:'meat'},
+  {id:'cod',n:'Cod or hake, cooked',u:'150g',kcal:145,p:32,c:0,f:1.5,cat:'meat'},
+  {id:'tuna',n:'Tuna, tinned in water',u:'tin, 110g',kcal:120,p:27,c:0,f:1,cat:'meat'},
+  {id:'sardines',n:'Sardines, tinned',u:'tin',kcal:180,p:21,c:0,f:11,cat:'meat'},
+  {id:'prawns',n:'Prawns, cooked',u:'100g',kcal:100,p:22,c:0,f:1,cat:'meat'},
+  {id:'fishfingers',n:'Fish fingers, 4',u:'4',kcal:220,p:13,c:19,f:10,cat:'meat'},
+
+  /* bread, spuds and grains */
+  {id:'brownbread',n:'Brown soda bread',u:'slice',kcal:120,p:4,c:21,f:2.5,cat:'carbs'},
+  {id:'wholemeal',n:'Wholemeal bread',u:'slice',kcal:95,p:4.5,c:16,f:1.2,cat:'carbs'},
+  {id:'whitebread',n:'White bread',u:'slice',kcal:95,p:3.2,c:18,f:0.9,cat:'carbs'},
+  {id:'sourdough',n:'Sourdough',u:'slice',kcal:120,p:4.5,c:23,f:0.8,cat:'carbs'},
+  {id:'bagel',n:'Bagel',u:'one',kcal:250,p:10,c:48,f:1.5,cat:'carbs'},
+  {id:'wrap',n:'Tortilla wrap',u:'wrap',kcal:180,p:5,c:30,f:4,cat:'carbs'},
+  {id:'pitta',n:'Pitta bread',u:'one',kcal:170,p:6,c:33,f:1,cat:'carbs'},
+  {id:'roll',n:'Bread roll',u:'roll',kcal:200,p:7,c:38,f:2,cat:'carbs'},
+  {id:'potato',n:'Potatoes, boiled',u:'200g',kcal:150,p:3.6,c:34,f:0.2,cat:'carbs'},
+  {id:'mash',n:'Mashed potato with butter',u:'200g',kcal:220,p:4,c:32,f:8,cat:'carbs'},
+  {id:'roastspuds',n:'Roast potatoes',u:'150g',kcal:220,p:4,c:32,f:8,cat:'carbs'},
+  {id:'chips_oven',n:'Oven chips',u:'150g',kcal:250,p:4,c:38,f:9,cat:'carbs'},
+  {id:'chips_bag',n:'Chipper chips',u:'portion',kcal:600,p:8,c:75,f:29,cat:'carbs'},
+  {id:'sweetpot',n:'Sweet potato, baked',u:'200g',kcal:180,p:3,c:41,f:0.3,cat:'carbs'},
+  {id:'rice',n:'Rice, cooked',u:'180g',kcal:250,p:5,c:55,f:0.6,cat:'carbs'},
+  {id:'ricebrown',n:'Brown rice, cooked',u:'180g',kcal:240,p:5.5,c:50,f:1.8,cat:'carbs'},
+  {id:'pasta',n:'Pasta, cooked',u:'200g',kcal:290,p:11,c:58,f:1.6,cat:'carbs'},
+  {id:'noodles',n:'Egg noodles, cooked',u:'200g',kcal:260,p:9,c:52,f:2,cat:'carbs'},
+  {id:'couscous',n:'Couscous, cooked',u:'150g',kcal:170,p:6,c:35,f:0.4,cat:'carbs'},
+  {id:'quinoa',n:'Quinoa, cooked',u:'150g',kcal:180,p:6.5,c:31,f:2.8,cat:'carbs'},
+
+  /* fruit and veg */
+  {id:'banana',n:'Banana',u:'medium',kcal:105,p:1.3,c:27,f:0.4,cat:'veg'},
+  {id:'apple',n:'Apple',u:'medium',kcal:80,p:0.4,c:21,f:0.2,cat:'veg'},
+  {id:'orange',n:'Orange',u:'medium',kcal:65,p:1.2,c:16,f:0.2,cat:'veg'},
+  {id:'berries',n:'Berries',u:'100g',kcal:45,p:1,c:10,f:0.3,cat:'veg'},
+  {id:'grapes',n:'Grapes',u:'100g',kcal:70,p:0.6,c:17,f:0.2,cat:'veg'},
+  {id:'pear',n:'Pear',u:'medium',kcal:85,p:0.5,c:22,f:0.2,cat:'veg'},
+  {id:'avocado',n:'Avocado',u:'half',kcal:160,p:2,c:2,f:15,cat:'veg'},
+  {id:'broccoli',n:'Broccoli',u:'100g',kcal:35,p:3.5,c:3,f:0.5,cat:'veg'},
+  {id:'carrots',n:'Carrots',u:'100g',kcal:35,p:0.7,c:8,f:0.2,cat:'veg'},
+  {id:'cabbage',n:'Cabbage',u:'100g',kcal:28,p:1.5,c:5,f:0.2,cat:'veg'},
+  {id:'peas',n:'Peas',u:'100g',kcal:80,p:6,c:11,f:0.5,cat:'veg'},
+  {id:'saladmix',n:'Mixed salad',u:'bowl',kcal:30,p:1.5,c:4,f:0.4,cat:'veg'},
+  {id:'tomato',n:'Tomatoes',u:'100g',kcal:18,p:0.8,c:3,f:0.2,cat:'veg'},
+  {id:'mushrooms',n:'Mushrooms',u:'100g',kcal:22,p:3,c:1,f:0.5,cat:'veg'},
+  {id:'onion',n:'Onion, cooked',u:'100g',kcal:40,p:1.2,c:8,f:0.2,cat:'veg'},
+  {id:'veg_mixed',n:'Mixed veg',u:'150g',kcal:70,p:4,c:10,f:0.8,cat:'veg'},
+  {id:'beetroot',n:'Beetroot',u:'100g',kcal:45,p:1.7,c:8,f:0.1,cat:'veg'},
+
+  /* dairy and eggs */
+  {id:'skyr',n:'Skyr or 0% Greek yoghurt',u:'150g',kcal:90,p:16,c:6,f:0.3,cat:'dairy'},
+  {id:'greekyog',n:'Greek yoghurt, 5%',u:'150g',kcal:150,p:9,c:6,f:10,cat:'dairy'},
+  {id:'yoghurt_fruit',n:'Fruit yoghurt',u:'pot',kcal:130,p:5,c:20,f:3,cat:'dairy'},
+  {id:'milk',n:'Milk, semi skimmed',u:'200ml',kcal:100,p:7,c:9.6,f:3.6,cat:'dairy'},
+  {id:'milk_whole',n:'Milk, whole',u:'200ml',kcal:130,p:7,c:9.4,f:7.6,cat:'dairy'},
+  {id:'cheddar',n:'Cheddar',u:'30g',kcal:125,p:7.6,c:0.1,f:10.4,cat:'dairy'},
+  {id:'lowfatcheese',n:'Reduced fat cheddar',u:'30g',kcal:80,p:9,c:0.2,f:4.5,cat:'dairy'},
+  {id:'cottage',n:'Cottage cheese',u:'100g',kcal:98,p:12,c:3,f:4,cat:'dairy'},
+  {id:'mozzarella',n:'Mozzarella',u:'50g',kcal:150,p:11,c:0.6,f:11,cat:'dairy'},
+  {id:'butter',n:'Butter',u:'10g',kcal:74,p:0.1,c:0.1,f:8.2,cat:'dairy'},
+  {id:'cream',n:'Cream',u:'30ml',kcal:100,p:0.6,c:0.8,f:10.5,cat:'dairy'},
+  {id:'whey',n:'Whey protein',u:'scoop',kcal:120,p:24,c:3,f:1.5,cat:'dairy'},
+
+  /* meals and takeaway */
+  {id:'chickencurry',n:'Chicken curry and rice',u:'plate',kcal:700,p:38,c:85,f:22,cat:'meals'},
+  {id:'stew',n:'Irish stew',u:'bowl',kcal:480,p:30,c:40,f:21,cat:'meals'},
+  {id:'baconcabbage',n:'Bacon and cabbage with spuds',u:'plate',kcal:600,p:40,c:45,f:28,cat:'meals'},
+  {id:'chowder',n:'Seafood chowder',u:'bowl',kcal:420,p:24,c:28,f:23,cat:'meals'},
+  {id:'shepherds',n:"Shepherd's pie",u:'portion',kcal:550,p:30,c:48,f:26,cat:'meals'},
+  {id:'lasagne',n:'Lasagne',u:'portion',kcal:600,p:32,c:52,f:29,cat:'meals'},
+  {id:'spagbol',n:'Spaghetti bolognese',u:'plate',kcal:620,p:34,c:75,f:20,cat:'meals'},
+  {id:'stirfry',n:'Chicken stir fry with noodles',u:'plate',kcal:550,p:40,c:60,f:16,cat:'meals'},
+  {id:'chickensalad',n:'Chicken salad',u:'bowl',kcal:380,p:40,c:14,f:18,cat:'meals'},
+  {id:'sandwich_chicken',n:'Chicken sandwich',u:'one',kcal:430,p:30,c:42,f:15,cat:'meals'},
+  {id:'sandwich_ham',n:'Ham and cheese sandwich',u:'one',kcal:450,p:22,c:41,f:22,cat:'meals'},
+  {id:'toastie',n:'Toasted special',u:'one',kcal:520,p:26,c:44,f:27,cat:'meals'},
+  {id:'soup',n:'Vegetable soup',u:'bowl',kcal:150,p:4,c:22,f:5,cat:'meals'},
+  {id:'chickenroll',n:'Chicken fillet roll',u:'one',kcal:700,p:35,c:75,f:28,cat:'meals'},
+  {id:'breakfastroll',n:'Breakfast roll',u:'one',kcal:800,p:32,c:72,f:42,cat:'meals'},
+  {id:'pizza',n:'Pizza',u:'half a 12 inch',kcal:640,p:28,c:72,f:26,cat:'meals'},
+  {id:'burger_meal',n:'Burger and chips',u:'meal',kcal:950,p:38,c:95,f:46,cat:'meals'},
+  {id:'fishchips',n:'Fish and chips',u:'portion',kcal:950,p:38,c:95,f:46,cat:'meals'},
+  {id:'chinese_curry',n:'Chinese takeaway curry and rice',u:'portion',kcal:900,p:35,c:110,f:34,cat:'meals'},
+  {id:'kebab',n:'Doner kebab',u:'one',kcal:800,p:40,c:70,f:40,cat:'meals'},
+  {id:'sushi',n:'Sushi',u:'8 pieces',kcal:350,p:14,c:60,f:5,cat:'meals'},
+  {id:'omelette',n:'Three egg omelette',u:'one',kcal:300,p:21,c:2,f:23,cat:'meals'},
+  {id:'protein_bowl',n:'Chicken, rice and veg',u:'bowl',kcal:600,p:45,c:70,f:13,cat:'meals'},
+
+  /* snacks and sweets */
+  {id:'crisps',n:'Crisps',u:'bag',kcal:180,p:2,c:17,f:11,cat:'snacks'},
+  {id:'peanuts',n:'Peanuts',u:'30g',kcal:180,p:7.5,c:4,f:15,cat:'snacks'},
+  {id:'almonds',n:'Almonds',u:'30g',kcal:180,p:6.4,c:2,f:16,cat:'snacks'},
+  {id:'peanutbutter',n:'Peanut butter',u:'tbsp',kcal:95,p:4,c:2.5,f:8,cat:'snacks'},
+  {id:'proteinbar',n:'Protein bar',u:'bar',kcal:200,p:20,c:20,f:6,cat:'snacks'},
+  {id:'choc_bar',n:'Chocolate bar',u:'standard',kcal:240,p:3,c:28,f:13,cat:'snacks'},
+  {id:'biscuits',n:'Biscuits, 2',u:'2',kcal:150,p:2,c:20,f:7,cat:'snacks'},
+  {id:'scone',n:'Scone with butter and jam',u:'one',kcal:400,p:7,c:55,f:17,cat:'snacks'},
+  {id:'flapjack',n:'Flapjack',u:'one',kcal:320,p:4,c:42,f:15,cat:'snacks'},
+  {id:'muffin',n:'Muffin',u:'one',kcal:400,p:6,c:52,f:19,cat:'snacks'},
+  {id:'icecream',n:'Ice cream',u:'2 scoops',kcal:200,p:3.5,c:24,f:10,cat:'snacks'},
+  {id:'popcorn',n:'Popcorn, salted',u:'bag',kcal:130,p:2,c:17,f:6,cat:'snacks'},
+  {id:'ricecakes',n:'Rice cakes, 2',u:'2',kcal:60,p:1.4,c:12,f:0.4,cat:'snacks'},
+  {id:'hummus',n:'Hummus',u:'50g',kcal:150,p:4,c:7,f:12,cat:'snacks'},
+  {id:'olives',n:'Olives',u:'50g',kcal:75,p:0.5,c:1,f:8,cat:'snacks'},
+  {id:'darkchoc',n:'Dark chocolate',u:'25g',kcal:135,p:2,c:11,f:9,cat:'snacks'},
+
+  /* drinks */
+  {id:'tea',n:'Tea with milk',u:'mug',kcal:20,p:1,c:2,f:0.8,cat:'drinks'},
+  {id:'coffee_black',n:'Coffee, black',u:'mug',kcal:4,p:0.3,c:0.5,f:0,cat:'drinks'},
+  {id:'latte',n:'Latte',u:'regular',kcal:150,p:8,c:14,f:7,cat:'drinks'},
+  {id:'cappuccino',n:'Cappuccino',u:'regular',kcal:110,p:6,c:10,f:5,cat:'drinks'},
+  {id:'oj',n:'Orange juice',u:'200ml',kcal:90,p:1.4,c:20,f:0.2,cat:'drinks'},
+  {id:'smoothie',n:'Fruit smoothie',u:'250ml',kcal:150,p:2,c:33,f:0.6,cat:'drinks'},
+  {id:'proteinshake',n:'Protein shake with milk',u:'400ml',kcal:270,p:36,c:16,f:6,cat:'drinks'},
+  {id:'cola',n:'Cola',u:'330ml can',kcal:139,p:0,c:35,f:0,cat:'drinks'},
+  {id:'diet_drink',n:'Diet or zero soft drink',u:'can',kcal:2,p:0,c:0.3,f:0,cat:'drinks'},
+  {id:'sportsdrink',n:'Sports drink',u:'500ml',kcal:130,p:0,c:32,f:0,cat:'drinks'},
+  {id:'pint_stout',n:'Pint of stout',u:'pint',kcal:210,p:1.8,c:18,f:0,alc:18.8,cat:'drinks'},
+  {id:'pint_lager',n:'Pint of lager',u:'pint',kcal:190,p:1.5,c:10,f:0,alc:20.2,cat:'drinks'},
+  {id:'wine',n:'Glass of wine',u:'175ml',kcal:140,p:0.2,c:4,f:0,alc:17.9,cat:'drinks'},
+  {id:'spirit',n:'Spirit measure',u:'35.5ml',kcal:78,p:0,c:0,f:0,alc:11.2,cat:'drinks'},
+  {id:'water',n:'Water',u:'glass',kcal:0,p:0,c:0,f:0,cat:'drinks'}
 ];
+/* The handful almost everyone taps, shown first before anything is logged. */
+const FOOD_COMMON=['egg','oats','chicken','rice','potato','brownbread','skyr','banana','milk','tea','whey','apple'];
 /* Your own things, saved as you go. The built in list is deliberately short,
    which only works if anything missing from it can be added once and reused. */
 const MEALS=[['b','Breakfast'],['l','Lunch'],['d','Dinner'],['s','Snacks']];
@@ -5384,7 +5518,7 @@ function slotNow(){
 }
 let foodQuery='', foodCameFromLog=false, foodSlot=slotNow(), foodAdding=false;
 function openFood(fromLog){
-  foodQuery=''; foodSlot=slotNow(); foodAdding=false;
+  foodQuery=''; foodCat=''; foodSlot=slotNow(); foodAdding=false;
   foodCameFromLog=!!fromLog || document.getElementById('dayCheck').classList.contains('on');
   closeSheets(); drawFood(); openSheet('foodSheet');
 }
@@ -5396,18 +5530,30 @@ function closeFood(){
 /* The list is redrawn on its own. The whole sheet used to be rebuilt on every
    keystroke and the search box put back with setSelectionRange, which is laggy
    on a mid-range phone and fights a non-Latin keyboard. */
+/* With 138 foods a plain list is a scroll, so there are categories to browse
+   and search across everything. Search always wins over a category. */
+let foodCat='';
 function foodListHTML(){
   const q=foodQuery.trim().toLowerCase();
   const recents=recentFoods();
   const pool=allFoods();
-  const list=(q? pool.filter(f=>f.n.toLowerCase().includes(q))
-    : recents.map(foodOf).filter(Boolean).concat(pool.filter(f=>recents.indexOf(f.id)<0))).slice(0,q?40:24);
+  const mine=pool.filter(f=>f.mine);
+  let list;
+  if(q) list=pool.filter(f=>f.n.toLowerCase().includes(q)).slice(0,60);
+  else if(foodCat==='mine') list=mine;
+  else if(foodCat) list=pool.filter(f=>f.cat===foodCat);
+  else {
+    /* nothing chosen: what they reach for, then the usual suspects */
+    const first=recents.map(foodOf).filter(Boolean);
+    const common=FOOD_COMMON.map(foodOf).filter(f=>f&&first.indexOf(f)<0);
+    list=first.concat(common, mine.filter(f=>first.indexOf(f)<0)).slice(0,24);
+  }
   if(!list.length) return `<div class="note">Nothing matching.</div>
     <button class="logrow" id="foodNew"><div class="txt"><div class="t">Add "${foodQuery.trim()}" yourself</div>
       <div class="s">Once, and it is in your list from now on</div></div></button>`;
   return list.map(f=>`<div class="frow">
-      <div class="txt"><div class="t">${f.n}${f.mine?' <span class="cichip">yours</span>':''}</div>
-        <div class="s">${f.u} · ${f.kcal} kcal · ${f.p}g protein</div></div>
+      <div class="txt"><div class="t">${escHabit(f.n)}${f.mine?' <span class="cichip">yours</span>':''}</div>
+        <div class="s">${escHabit(f.u)} · ${f.kcal} kcal · ${f.p}g protein${f.alc?' · '+f.alc+'g alcohol':''}</div></div>
       <button class="mini" data-foodadd="${f.id}:0.5">½</button>
       <button class="mini go" data-foodadd="${f.id}:1">Add</button>
       <button class="mini" data-foodadd="${f.id}:2">×2</button></div>`).join('')
@@ -5438,6 +5584,11 @@ function drawFood(){
       : `<div class="note">Nothing logged today.</div>`}
     <div class="slab">Add to ${MEALS.find(m=>m[0]===foodSlot)[1].toLowerCase()}</div>
     <input id="foodSearch" placeholder="Search food" value="${foodQuery}" aria-label="Search food" style="border:1px solid var(--line);border-radius:9px;padding:12px;width:100%;font-size:14.5px;font-weight:600;margin-bottom:10px">
+    <div class="pickchips" id="foodCats">
+      <button class="${foodCat?'':'on'}" data-foodcat="">Usual suspects</button>
+      ${FOOD_CATS.filter(c=>c[0]!=='common').map(([id,label])=>`<button class="${foodCat===id?'on':''}" data-foodcat="${id}">${label}</button>`).join('')}
+      ${allFoods().some(f=>f.mine)? `<button class="${foodCat==='mine'?'on':''}" data-foodcat="mine">Yours</button>`:''}
+    </div>
     <div id="foodList">${foodListHTML()}</div>
     <button class="sheetcta" id="foodDone">${foodCameFromLog?'Back to the log':'Done'}</button>`;
 }
@@ -5463,6 +5614,8 @@ function drawFoodNew(){
 document.addEventListener('click',e=>{
   if(e.target.closest('#foodBtn')) openFood(true);
   if(e.target.closest('#foodDone')) closeFood();
+  const fc=e.target.closest('[data-foodcat]');
+  if(fc){ foodCat=fc.dataset.foodcat; foodQuery=''; drawFood(); return; }
   const fs=e.target.closest('[data-foodslot]');
   if(fs){ foodSlot=fs.dataset.foodslot; drawFood(); }
   if(e.target.closest('#foodYesterday')){
@@ -6121,7 +6274,7 @@ coachBrief=function(){
 };
 
 Object.assign(window.__G,{tplErrors,tplRowErrors,drawTplEdit,TPL_LIMITS,LIBRARY,EQUIP,DIFF,exBlurb,drawExList,exOf,exHistory,nextPrescription,rxClass,prescribe,repText,RX_CLASS,warmSetsFor,platesFor,plateLine,fitToKit,fitTemplatesToKit,kitOf,hasKit,KIT,KIT_PRESETS,ALL_KIT,openKitSheet,applyKitChange,loggedMealMacros,mealArt,simulatedHealth,keyOf,dateOf,incrementFor,repRangeFor,nextPrescription,tonnageOf,progressLines,fillForward,suggestFor,openCircEdit,drawCircEdit,drawTemplates,seedTemplates,
-  FOODS,foodOf,addFood,removeFood,dayFood,foodTotals,openFood,closeFood,drawFood,drawFoodList,drawFoodNew,recentFoods,MEALS,slotNow,repeatYesterday,addCustomFood,saveMealAs,addSavedMeal,allFoods,customFoods,savedMeals,seedRunPlans,seedCircuits,circuitOf,startCircuit,finishCircuit,drawCircuit,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
+  FOODS,FOOD_CATS,FOOD_COMMON,foodOf,addFood,removeFood,dayFood,foodTotals,openFood,closeFood,drawFood,drawFoodList,drawFoodNew,recentFoods,MEALS,slotNow,repeatYesterday,addCustomFood,saveMealAs,addSavedMeal,allFoods,customFoods,savedMeals,seedRunPlans,seedCircuits,circuitOf,startCircuit,finishCircuit,drawCircuit,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
   openExMenu,openTplEdit,drawTemplates,exerciseStats,e1RM,lastSets,gymVolume,gymSets,templateChanged,startRest,
   get GYM(){return GYM}, get tplDraft(){return tplDraft}});
 Object.defineProperties(window.__G,{
@@ -6645,6 +6798,7 @@ function openHow(){
     <div class="method"><b>Protein</b><span>1.8 g per kilo. The meta-analysis on protein and resistance training supports roughly 1.6 to 2.2 g/kg, so this sits in the middle, and eating more of it while losing weight helps hold onto muscle. ${(()=>{const b=proteinBasis(S.profile); return b.adjusted? `Above a BMI of about 30 the kilo is an adjusted reference weight, ${b.kg} kg in your case rather than ${S.profile.weight} kg, because fat mass carries no protein requirement and total bodyweight would overshoot.` : 'Above a BMI of about 30 it is taken from an adjusted reference weight instead, since fat mass carries no protein requirement.';})()}</span></div>
     <div class="method"><b>Maintenance</b><span>One figure, from the best evidence the app has. To start: resting burn by Mifflin St Jeor, times 1.2 for a sedentary day, plus your step target and the lifting in your plan. Walking is 3 METs for every 100 steps a minute, net of rest, counted above 2,500 a day because a sedentary day already contains those (under 2,500 is what Tudor-Locke and colleagues class as basal activity; using it as the baseline is a judgement). Lifting is 4 METs for as long as your templates take. Once a tracker is connected, your real steps replace the target. Once you have about three weeks of food and weigh ins, what you actually ate minus what the scale says you stored replaces both, and that is the most accurate of the three. Running is counted as steps, which under-counts it a little; physical work a step count cannot see is missed; the three-week figure catches both.</span></div>
     <div class="method"><b>Your calorie target</b><span>Losing: three limits, and the tightest wins. 0.75% of your bodyweight a week, or what your goal date needs up to 1%, the range that keeps muscle while dieting (Helms and colleagues, 2014). A deficit of no more than 750 kcal a day, the top of what the 2013 AHA/ACC/TOS guideline prescribes, because a percentage keeps growing with size and clinical guidance does not. And about 69 kcal a day per kilo of body fat, Alpert's (2005) estimate of the most the fat store can supply; a theoretical model rather than a tested rule, so it is only a ceiling, and in practice it only matters for lean people asking for a fast date. Body fat is yours if you give it, otherwise estimated from BMI, age and sex by the Deurenberg equation, which is about 4 points out either way and cannot tell muscle from fat. Gaining: 0.25 to 0.5% a week, about 10 to 20% over maintenance (Iraki and colleagues, 2019). Never below 1,500 kcal for men or 1,200 for women, and never above maintenance while losing. When you reach your goal weight, the target goes back to maintenance.</span></div>
+    <div class="method"><b>The food list</b><span>Typical values for the portion named, for ${FOODS.length} foods people here actually eat. Composition figures in Ireland come from McCance and Widdowson's Composition of Foods Integrated Dataset, which the Food Safety Authority of Ireland names as the accepted source. Brands vary, so anything with a label on it is better taken from the label: "Something not on the list" saves it for good. Alcohol carries about 7 kcal a gram, which is why a pint's calories are mostly not protein, carbs or fat.</span></div>
     <div class="method"><b>What your steps are worth</b><span>Steps are part of what you burn, so they are already inside your maintenance. The deficit splits into the part food makes, eating less than you burn without walking, and the part the steps make, and the two add up to the whole. That is why skipping the steps at the same food slows the loss by exactly what they were burning.</span></div>
     <div class="method"><b>Easy weeks</b><span>Every ${+S.profile.deloadEvery||DELOAD_EVERY} weeks by default, from the 4 to 8 week range in Bell and colleagues' 2025 recommendations and the roughly five and a half week gap reported by 246 competitive lifters (Rogerson and colleagues, 2024). About 10% lighter and 25 to 90% less work depending on recovery. Easy-week sessions never set your next weights.</span></div>
     <div class="method"><b>Fat and carbohydrate</b><span>Fat at 28% of your calories, which sits inside the 20 to 35% the dietary guidelines give, and carbohydrate is simply what is left once protein and fat are paid for. Neither is a finding: protein and total calories are the two that have evidence behind them, and the split of the rest is largely preference. Move it if you train better on more of one.</span></div>
@@ -7131,146 +7285,335 @@ window.__CLOUD={get C(){return C},set C(v){C=v}, CLOUD_CONFIG, cloudReady, setBu
    ankle, elbow, wrist, and optionally a second leg for split stances. The two
    poses are interpolated by SVG's own animation, so there is nothing to load
    and nothing to run on a timer. */
-const FIG_W=100, FIG_H=140, GROUND=132;
-/* h n p k a e w  [k2 a2] */
-const POSES={
-  'squat':        {v:'side',a:[50,16,50,28,50,70,50,100,50,130,43,40,39,30],
-                            b:[41,31,43,43,41,85,61,104,52,130,35,53,31,43]},
-  'hinge':        {v:'side',a:[50,16,50,28,50,70,50,100,50,130,50,50,50,72],
-                            b:[35,35,39,45,53,70,55,100,51,130,43,67,43,89]},
-  'horizontal push':{v:'lie',a:[24,64,34,66,62,68,78,80,84,112,28,56,34,58],
-                            b:[24,64,34,66,62,68,78,80,84,112,32,50,34,34]},
-  'vertical push':{v:'side',a:[50,17,50,29,50,70,50,100,50,130,40,41,42,29],
-                            b:[50,21,50,31,50,70,50,100,50,130,45,26,47,7]},
-  'horizontal pull':{v:'side',a:[30,33,36,43,56,68,58,100,54,130,38,63,36,87],
-                            b:[30,33,36,43,56,68,58,100,54,130,29,61,38,65]},
-  'vertical pull': {v:'side',a:[50,40,50,52,50,92,52,118,44,136,50,26,50,8],
-                            b:[50,20,50,32,50,74,54,100,46,120,39,16,50,8]},
-  'lunge':        {v:'side',a:[50,16,50,28,50,70,50,100,50,130,46,48,44,70,50,100,50,130],
-                            b:[48,22,48,34,48,76,30,104,24,130,44,54,42,76,66,104,72,130]},
-  'shoulder isolation':{v:'front',m:1,a:[50,16,50,28,50,72,50,102,50,132,42,50,40,70],
-                            b:[50,16,50,28,50,72,50,102,50,132,30,40,16,32]},
-  'chest isolation':{v:'lie',a:[24,64,34,66,62,68,78,80,84,112,30,50,22,44],
-                            b:[24,64,34,66,62,68,78,80,84,112,32,48,34,36]},
-  'elbow flexion':{v:'front',m:1,a:[50,16,50,28,50,72,50,102,50,132,42,52,42,74],
-                            b:[50,16,50,28,50,72,50,102,50,132,42,52,46,32]},
-  'elbow extension':{v:'front',m:1,a:[50,16,50,28,50,72,50,102,50,132,45,50,44,38],
-                            b:[50,16,50,28,50,72,50,102,50,132,45,52,44,72]},
-  'hip isolation':{v:'side',a:[26,56,36,60,62,96,82,84,84,124,32,72,30,86],
-                            b:[26,56,36,60,64,72,84,78,84,124,32,72,30,86]},
-  'knee isolation':{v:'side',a:[34,26,38,38,42,78,70,78,74,110,34,54,36,74],
-                            b:[34,26,38,38,42,78,70,78,96,74,34,54,36,74]},
-  'calf':         {v:'side',a:[50,20,50,32,50,74,50,102,50,130,44,52,44,74],
-                            b:[50,12,50,24,50,66,50,96,52,126,44,44,44,66]},
-  'trunk flexion':{v:'side',a:[22,86,32,88,62,90,78,70,92,92,28,76,26,66],
-                            b:[31,70,39,78,62,90,78,70,92,92,35,62,33,56]},
-  'anti-extension':{v:'side',a:[20,66,30,70,58,75,80,81,96,88,28,84,24,98],
-                            b:[20,68,30,72,58,78,80,83,96,89,28,85,24,99]},
-  'anti-rotation':{v:'side',a:[50,18,50,30,50,72,50,102,50,132,44,46,44,56],
-                            b:[50,18,50,30,50,72,50,102,50,132,52,46,66,54]},
-  'carry':        {v:'side',a:[50,16,50,28,50,70,50,100,50,130,50,50,50,74,50,100,50,130],
-                            b:[50,14,50,26,50,68,44,100,38,128,50,48,50,72,58,98,64,128]},
-  'grip':         {v:'side',a:[50,17,50,29,50,70,50,100,50,130,50,50,50,74],
-                            b:[50,16,50,28,50,69,50,99,50,130,50,49,50,73]},
-  'mobility':     {v:'side',a:[22,62,32,66,66,66,78,90,92,94,32,88,30,110],
-                            b:[24,74,33,76,66,56,78,88,92,94,32,88,30,110]},
-  'cardio':       {v:'side',a:[50,16,50,28,50,70,62,96,72,120,42,52,34,64],
-                            b:[50,14,50,26,50,68,40,100,34,126,58,50,64,62]},
-  'full body':    {v:'side',a:[50,16,50,28,50,70,50,100,50,130,46,44,46,28],
-                            b:[38,34,42,44,52,72,56,100,52,130,40,62,40,84]}
+const FIG_W=200, FIG_H=240, GROUND=224;
+/* ---------- how a movement is drawn ----------
+   The old figure was seven dots joined by lines, one generic pose per
+   pattern, so a bench press and a press up came out identical and nothing
+   looked like a person. This draws an articulated body: head with a jaw line,
+   a torso that tapers from shoulders to hips, separate upper and lower arm,
+   thigh and shin, hands and feet, and the equipment actually in use. Poses are
+   per exercise where the movement is common enough to matter, and per pattern
+   otherwise, so every one of the 252 movements still gets a figure.
+
+   A pose is joint positions, in a 200 x 240 box, at the two ends of the
+   movement. SVG animates between them, so there is nothing to download and it
+   works offline, in both themes, at any size. Under prefers-reduced-motion it
+   holds still at the start position.
+
+   Joints: head, neck, chest, hip, then per side: shoulder, elbow, wrist,
+   knee, ankle, toe. "near" is the side towards the viewer, drawn heavier;
+   "far" is drawn lighter, which is what gives it depth. */
+const FIG_JOINTS=['head','neck','chest','hip','shoulder','elbow','wrist','knee','ankle','toe'];
+
+/* A neutral standing body, which every pose is written as a change from. */
+const STAND={
+  head:[100,34], neck:[100,56], chest:[100,86], hip:[100,126],
+  shoulder:[100,62], elbow:[100,100], wrist:[100,138],
+  knee:[100,172], ankle:[100,214], toe:[112,220]
 };
-const POSE_FALLBACK='full body';
-function poseFor(exId){
+/* side: x offsets applied to the far limb so it reads as behind */
+function poseFrom(o){ return Object.assign({}, STAND, o||{}); }
+
+/* ---------- the poses ----------
+   Each entry: view, then the two ends of the movement. Written as the joints
+   that differ from standing, which keeps them readable and consistent. */
+const MOVE_POSES={
+  /* ===== squat pattern ===== */
+  'squat':{view:'side',bar:'back',
+    a:poseFrom({wrist:[86,60],elbow:[88,78],shoulder:[98,62]}),
+    b:poseFrom({head:[92,52],neck:[94,72],chest:[96,100],hip:[86,152],
+      knee:[112,178],ankle:[100,214],toe:[114,220],
+      shoulder:[92,78],elbow:[80,94],wrist:[80,76]})},
+  'goblet':{view:'side',bar:'db-chest',
+    a:poseFrom({elbow:[92,96],wrist:[100,84]}),
+    b:poseFrom({head:[94,54],neck:[96,74],chest:[98,102],hip:[88,154],
+      knee:[114,180],elbow:[94,112],wrist:[102,100]})},
+  /* ===== hinge ===== */
+  'hinge':{view:'side',bar:'hands',
+    a:poseFrom({wrist:[100,140],elbow:[100,100]}),
+    b:poseFrom({head:[70,74],neck:[76,84],chest:[84,98],hip:[108,128],
+      knee:[104,172],elbow:[86,120],wrist:[88,150],ankle:[100,214]})},
+  'deadlift':{view:'side',bar:'hands',
+    a:poseFrom({head:[86,72],neck:[90,84],chest:[94,100],hip:[110,138],
+      knee:[108,172],elbow:[92,130],wrist:[92,164]}),
+    b:poseFrom({elbow:[100,104],wrist:[100,142]})},
+  /* ===== horizontal push ===== */
+  'bench':{view:'lie-bench',bar:'hands',
+    a:poseFrom({head:[52,118],neck:[66,118],chest:[86,118],hip:[118,120],
+      shoulder:[70,114],elbow:[62,98],wrist:[78,102],
+      knee:[146,140],ankle:[150,186],toe:[164,192]}),
+    b:poseFrom({head:[52,118],neck:[66,118],chest:[86,118],hip:[118,120],
+      shoulder:[70,114],elbow:[74,86],wrist:[78,60],
+      knee:[146,140],ankle:[150,186],toe:[164,192]})},
+  'pushup':{view:'side',bar:'floor-hands',
+    a:poseFrom({head:[56,120],neck:[70,124],chest:[90,130],hip:[124,140],
+      shoulder:[72,122],elbow:[66,152],wrist:[68,188],
+      knee:[156,166],ankle:[184,196],toe:[192,200]}),
+    b:poseFrom({head:[56,152],neck:[70,156],chest:[90,160],hip:[124,166],
+      shoulder:[72,154],elbow:[54,176],wrist:[68,188],
+      knee:[156,182],ankle:[184,200],toe:[192,204]})},
+  /* ===== vertical push ===== */
+  'ohp':{view:'side',bar:'hands',
+    a:poseFrom({shoulder:[98,62],elbow:[84,84],wrist:[92,62]}),
+    b:poseFrom({shoulder:[100,60],elbow:[96,42],wrist:[100,20]})},
+  /* ===== horizontal pull ===== */
+  'row':{view:'side',bar:'hands',
+    a:poseFrom({head:[70,80],neck:[78,88],chest:[88,100],hip:[112,128],
+      knee:[110,172],shoulder:[80,92],elbow:[80,126],wrist:[82,158]}),
+    b:poseFrom({head:[70,80],neck:[78,88],chest:[88,100],hip:[112,128],
+      knee:[110,172],shoulder:[80,92],elbow:[98,114],wrist:[86,116]})},
+  /* ===== vertical pull ===== */
+  'chin':{view:'side',bar:'overhead',
+    a:poseFrom({head:[100,84],neck:[100,104],chest:[100,130],hip:[100,168],
+      shoulder:[100,108],elbow:[98,72],wrist:[100,38],
+      knee:[108,208],ankle:[96,232],toe:[108,236]}),
+    b:poseFrom({head:[100,56],neck:[100,74],chest:[100,100],hip:[100,140],
+      shoulder:[100,78],elbow:[84,64],wrist:[100,38],
+      knee:[112,180],ankle:[98,206],toe:[110,210]})},
+  'pulldown':{view:'side',bar:'overhead-cable',
+    a:poseFrom({chest:[100,90],shoulder:[100,64],elbow:[92,40],wrist:[100,16]}),
+    b:poseFrom({chest:[100,90],shoulder:[100,64],elbow:[78,64],wrist:[100,50]})},
+  /* ===== lunge ===== */
+  'lunge':{view:'side',bar:'db-sides',split:true,
+    a:poseFrom({wrist:[100,142],elbow:[100,102]}),
+    b:poseFrom({head:[98,44],neck:[98,66],chest:[98,96],hip:[98,146],
+      knee:[128,176],ankle:[130,214],toe:[144,220],
+      elbow:[98,112],wrist:[98,152]})},
+  /* ===== isolation ===== */
+  'curl':{view:'front',mirror:true,bar:'db-hands',
+    a:poseFrom({shoulder:[84,64],elbow:[80,104],wrist:[80,142]}),
+    b:poseFrom({shoulder:[84,64],elbow:[80,104],wrist:[90,74]})},
+  'lateral':{view:'front',mirror:true,bar:'db-hands',
+    a:poseFrom({shoulder:[84,64],elbow:[80,102],wrist:[78,140]}),
+    b:poseFrom({shoulder:[84,64],elbow:[48,68],wrist:[24,62]})},
+  'pushdown':{view:'side',bar:'cable-high',
+    a:poseFrom({elbow:[96,100],wrist:[92,74]}),
+    b:poseFrom({elbow:[96,100],wrist:[96,136]})},
+  'fly':{view:'lie-bench',bar:'db-hands',
+    a:poseFrom({head:[52,118],neck:[66,118],chest:[86,118],hip:[118,120],
+      shoulder:[70,114],elbow:[52,96],wrist:[38,84],
+      knee:[146,140],ankle:[150,186],toe:[164,192]}),
+    b:poseFrom({head:[52,118],neck:[66,118],chest:[86,118],hip:[118,120],
+      shoulder:[70,114],elbow:[66,84],wrist:[72,62],
+      knee:[146,140],ankle:[150,186],toe:[164,192]})},
+  'calf':{view:'side',bar:'none',
+    a:poseFrom({ankle:[100,214],toe:[116,220]}),
+    b:poseFrom({head:[100,24],neck:[100,46],chest:[100,76],hip:[100,116],
+      shoulder:[100,52],elbow:[100,90],wrist:[100,128],
+      knee:[100,162],ankle:[100,200],toe:[116,220]})},
+  'legext':{view:'side-seated',bar:'machine',
+    a:poseFrom({head:[86,60],neck:[88,80],chest:[92,106],hip:[96,142],
+      knee:[136,146],ankle:[140,192],toe:[152,198],
+      shoulder:[90,84],elbow:[86,112],wrist:[96,132]}),
+    b:poseFrom({head:[86,60],neck:[88,80],chest:[92,106],hip:[96,142],
+      knee:[136,146],ankle:[182,140],toe:[192,150],
+      shoulder:[90,84],elbow:[86,112],wrist:[96,132]})},
+  'hamcurl':{view:'side',bar:'machine',
+    a:poseFrom({head:[52,150],neck:[68,152],chest:[90,156],hip:[124,160],
+      knee:[160,164],ankle:[194,168],toe:[198,180],
+      shoulder:[70,150],elbow:[56,168],wrist:[44,182]}),
+    b:poseFrom({head:[52,150],neck:[68,152],chest:[90,156],hip:[124,160],
+      knee:[160,164],ankle:[168,122],toe:[180,116],
+      shoulder:[70,150],elbow:[56,168],wrist:[44,182]})},
+  'hipthrust':{view:'side',bar:'lap',
+    a:poseFrom({head:[52,110],neck:[66,114],chest:[86,124],hip:[118,176],
+      knee:[156,150],ankle:[162,212],toe:[176,218],
+      shoulder:[70,114],elbow:[62,136],wrist:[80,150]}),
+    b:poseFrom({head:[52,110],neck:[66,114],chest:[86,120],hip:[122,134],
+      knee:[158,138],ankle:[162,212],toe:[176,218],
+      shoulder:[70,114],elbow:[64,124],wrist:[84,124]})},
+  /* ===== trunk ===== */
+  'crunch':{view:'lie-floor',bar:'none',
+    a:poseFrom({head:[44,176],neck:[58,178],chest:[80,182],hip:[112,188],
+      knee:[146,158],ankle:[152,212],toe:[166,218],
+      shoulder:[62,176],elbow:[54,158],wrist:[56,168]}),
+    b:poseFrom({head:[66,148],neck:[74,160],chest:[88,174],hip:[112,188],
+      knee:[146,158],ankle:[152,212],toe:[166,218],
+      shoulder:[76,158],elbow:[66,146],wrist:[70,152]})},
+  'plank':{view:'side',bar:'none',
+    a:poseFrom({head:[52,140],neck:[68,144],chest:[90,150],hip:[126,156],
+      knee:[158,176],ankle:[188,196],toe:[196,200],
+      shoulder:[70,142],elbow:[66,172],wrist:[86,180]}),
+    b:poseFrom({head:[52,142],neck:[68,146],chest:[90,152],hip:[126,157],
+      knee:[158,178],ankle:[188,198],toe:[196,202],
+      shoulder:[70,144],elbow:[66,174],wrist:[86,182]})},
+  'hanging':{view:'side',bar:'overhead',
+    a:poseFrom({head:[100,72],neck:[100,92],chest:[100,118],hip:[100,158],
+      shoulder:[100,96],elbow:[100,66],wrist:[100,34],
+      knee:[100,198],ankle:[100,232],toe:[112,236]}),
+    b:poseFrom({head:[100,72],neck:[100,92],chest:[100,118],hip:[104,156],
+      shoulder:[100,96],elbow:[100,66],wrist:[100,34],
+      knee:[142,132],ankle:[152,96],toe:[164,92]})},
+  'paloff':{view:'front',bar:'cable-side',
+    a:poseFrom({elbow:[86,96],wrist:[94,88]}),
+    b:poseFrom({elbow:[92,92],wrist:[92,64]})},
+  /* ===== carries, cardio, mobility ===== */
+  'carry':{view:'side',mirror:true,bar:'db-sides',split:true,
+    a:poseFrom({wrist:[100,142]}),
+    b:poseFrom({head:[98,32],neck:[98,54],chest:[98,84],hip:[98,124],
+      knee:[86,170],ankle:[78,212],toe:[92,218],wrist:[98,140]})},
+  'run':{view:'side',bar:'none',split:true,
+    a:poseFrom({head:[98,32],neck:[98,54],chest:[98,84],hip:[100,124],
+      knee:[126,158],ankle:[140,192],toe:[152,196],
+      shoulder:[98,60],elbow:[78,88],wrist:[72,112]}),
+    b:poseFrom({head:[98,32],neck:[98,54],chest:[98,84],hip:[100,124],
+      knee:[74,164],ankle:[58,196],toe:[48,200],
+      shoulder:[98,60],elbow:[120,88],wrist:[128,110]})},
+  'mobility':{view:'side',bar:'none',
+    a:poseFrom({head:[44,124],neck:[60,128],chest:[86,134],hip:[124,132],
+      knee:[128,180],ankle:[128,216],toe:[142,220],
+      shoulder:[64,128],elbow:[58,158],wrist:[54,190]}),
+    b:poseFrom({head:[48,142],neck:[62,142],chest:[86,120],hip:[124,116],
+      knee:[128,170],ankle:[128,212],toe:[142,216],
+      shoulder:[66,140],elbow:[58,166],wrist:[54,192]})}
+};
+/* Which drawing a movement uses: its own if it has one, then its pattern. */
+const PATTERN_POSE={
+  'squat':'squat','hinge':'hinge','lunge':'lunge',
+  'horizontal push':'bench','vertical push':'ohp',
+  'horizontal pull':'row','vertical pull':'chin',
+  'chest isolation':'fly','shoulder isolation':'lateral',
+  'elbow flexion':'curl','elbow extension':'pushdown',
+  'knee isolation':'legext','hip isolation':'hipthrust','calf':'calf',
+  'trunk flexion':'crunch','anti-extension':'plank','anti-rotation':'paloff',
+  'carry':'carry','grip':'carry','cardio':'run','mobility':'mobility','full body':'squat'
+};
+/* Movements whose own drawing differs from the pattern default. */
+const EX_POSE={
+  bench:'bench', dbbench:'bench', incline:'bench', pushup:'pushup', dip:'pushup',
+  squat:'squat', frontsquat:'squat', hack:'squat', legpress:'squat', goblet:'goblet',
+  bss:'lunge', lunge:'lunge', stepup:'lunge', splitsq:'lunge',
+  dead:'deadlift', deadlift:'deadlift', rdl:'hinge', goodmorning:'hinge', hipthrust:'hipthrust',
+  bbrow:'row', dbrow:'row', csrow:'row', facepull:'pulldown', pulldown:'pulldown',
+  chin:'chin', pullup:'chin', hanging:'hanging', legraise:'hanging',
+  ohp:'ohp', dbpress:'ohp', arnold:'ohp', lateral:'lateral', hammer:'curl', curl:'curl',
+  pushdown:'pushdown', skull:'pushdown', calf:'calf', hamcurl:'hamcurl', legext:'legext',
+  plank:'plank', sidplank:'plank', deadbug:'crunch', crunch:'crunch', paloff:'paloff',
+  catcow:'mobility', '90_90':'mobility', carry:'carry', farmers:'carry'
+};
+function poseKeyFor(exId){
+  if(MOVE_POSES[exId]) return exId;
+  if(EX_POSE[exId]&&MOVE_POSES[EX_POSE[exId]]) return EX_POSE[exId];
   const x=(typeof exOf==='function')? exOf(exId) : null;
-  return POSES[(x&&x.p)||'']||POSES[POSE_FALLBACK];
+  const byPattern=x&&PATTERN_POSE[x.p];
+  if(byPattern&&MOVE_POSES[byPattern]) return byPattern;
+  /* nothing matched: the movement's group decides, so it is never blank */
+  const g=(x&&x.g)||'';
+  if(/leg|glute|quad|ham/i.test(g)) return 'squat';
+  if(/back/i.test(g)) return 'row';
+  if(/chest/i.test(g)) return 'bench';
+  if(/shoulder/i.test(g)) return 'lateral';
+  if(/arm|bicep|tricep/i.test(g)) return 'curl';
+  if(/core/i.test(g)) return 'plank';
+  return 'squat';
 }
-/* Pull a joint out of a flat pose array. */
-const J={h:0,n:2,p:4,k:6,a:8,e:10,w:12,k2:14,a2:16};
-const jx=(arr,k)=>arr[J[k]], jy=(arr,k)=>arr[J[k]+1];
-const has2=arr=>arr.length>14;
+function poseFor(exId){ return MOVE_POSES[poseKeyFor(exId)]; }
 
 const reduced=()=>{ try{ return window.matchMedia
   && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } };
 
-function seg(A,B,k1,k2,dur,mirror){
-  const f=(arr,k,ax)=>{ const v=(ax==='x')? jx(arr,k) : jy(arr,k);
-    return (mirror&&ax==='x')? (FIG_W-v) : v; };
-  const at=(arr)=>[f(arr,k1,'x'),f(arr,k1,'y'),f(arr,k2,'x'),f(arr,k2,'y')];
-  const a=at(A), b=at(B);
-  if(reduced()) return `<line x1="${a[0]}" y1="${a[1]}" x2="${a[2]}" y2="${a[3]}"/>`;
-  const an=(name,i)=>`<animate attributeName="${name}" dur="${dur}s" repeatCount="indefinite"
-    values="${a[i]};${b[i]};${a[i]}" keyTimes="0;0.5;1" calcMode="spline"
-    keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/>`;
-  return `<line x1="${a[0]}" y1="${a[1]}" x2="${a[2]}" y2="${a[3]}">
-    ${an('x1',0)}${an('y1',1)}${an('x2',2)}${an('y2',3)}</line>`;
+/* one animated value, between the two ends of the movement */
+function anim(name,from,to,dur){
+  if(reduced()) return '';
+  return `<animate attributeName="${name}" dur="${dur}s" repeatCount="indefinite"
+    values="${from};${to};${from}" keyTimes="0;0.5;1" calcMode="spline"
+    keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/>`;
 }
-function head(A,B,dur,mirror){
-  const f=(arr,ax)=>{ const v=(ax==='x')? jx(arr,'h') : jy(arr,'h');
-    return (mirror&&ax==='x')? (FIG_W-v) : v; };
-  const a=[f(A,'x'),f(A,'y')], b=[f(B,'x'),f(B,'y')];
-  if(reduced()) return `<circle cx="${a[0]}" cy="${a[1]}" r="8.5" fill="none"/>`;
-  const an=(name,i)=>`<animate attributeName="${name}" dur="${dur}s" repeatCount="indefinite"
-    values="${a[i]};${b[i]};${a[i]}" keyTimes="0;0.5;1" calcMode="spline"
-    keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/>`;
-  return `<circle cx="${a[0]}" cy="${a[1]}" r="8.5" fill="none">${an('cx',0)}${an('cy',1)}</circle>`;
+function bone(A,B,j1,j2,dur,dx,cls){
+  const f=(P,j,i)=>+(P[j][i]+(i===0?(dx||0):0)).toFixed(1);
+  return `<line class="${cls||''}" x1="${f(A,j1,0)}" y1="${f(A,j1,1)}" x2="${f(A,j2,0)}" y2="${f(A,j2,1)}">
+    ${anim('x1',f(A,j1,0),f(B,j1,0),dur)}${anim('y1',f(A,j1,1),f(B,j1,1),dur)}
+    ${anim('x2',f(A,j2,0),f(B,j2,0),dur)}${anim('y2',f(A,j2,1),f(B,j2,1),dur)}</line>`;
 }
-/* What is in their hands, drawn at the wrist and moving with it. */
-function implement(A,B,eq,dur,mirror){
-  const f=(arr,ax)=>{ const v=(ax==='x')? jx(arr,'w') : jy(arr,'w');
-    return (mirror&&ax==='x')? (FIG_W-v) : v; };
-  const a=[f(A,'x'),f(A,'y')], b=[f(B,'x'),f(B,'y')];
-  const anim=(name,i)=> reduced()? '' : `<animate attributeName="${name}" dur="${dur}s" repeatCount="indefinite"
-    values="${a[i]};${b[i]};${a[i]}" keyTimes="0;0.5;1" calcMode="spline"
-    keySplines="0.4 0 0.2 1;0.4 0 0.2 1"/>`;
-  const move=(name,i)=>anim(name,i);
-  if(eq==='barbell') return `<g class="kit"><line x1="${a[0]-17}" y1="${a[1]}" x2="${a[0]+17}" y2="${a[1]}" stroke-width="2.6">
-      ${reduced()?'':`<animate attributeName="y1" dur="${dur}s" repeatCount="indefinite" values="${a[1]};${b[1]};${a[1]}" keyTimes="0;0.5;1"/>
-      <animate attributeName="y2" dur="${dur}s" repeatCount="indefinite" values="${a[1]};${b[1]};${a[1]}" keyTimes="0;0.5;1"/>
-      <animate attributeName="x1" dur="${dur}s" repeatCount="indefinite" values="${a[0]-17};${b[0]-17};${a[0]-17}" keyTimes="0;0.5;1"/>
-      <animate attributeName="x2" dur="${dur}s" repeatCount="indefinite" values="${a[0]+17};${b[0]+17};${a[0]+17}" keyTimes="0;0.5;1"/>`}
-    </line>
-    <circle cx="${a[0]-17}" cy="${a[1]}" r="5.5">${move('cx',0)}${move('cy',1)}</circle>
-    <circle cx="${a[0]+17}" cy="${a[1]}" r="5.5">${move('cx',0)}${move('cy',1)}</circle></g>`;
-  if(eq==='dumbbell'||eq==='kettlebell')
-    return `<g class="kit"><rect x="${a[0]-5}" y="${a[1]-4}" width="10" height="8" rx="2">
-      ${reduced()?'':`<animate attributeName="x" dur="${dur}s" repeatCount="indefinite" values="${a[0]-5};${b[0]-5};${a[0]-5}" keyTimes="0;0.5;1"/>
-      <animate attributeName="y" dur="${dur}s" repeatCount="indefinite" values="${a[1]-4};${b[1]-4};${a[1]-4}" keyTimes="0;0.5;1"/>`}</rect></g>`;
-  if(eq==='cable'||eq==='band')
-    return `<g class="kit"><line x1="96" y1="${a[1]}" x2="${a[0]}" y2="${a[1]}" stroke-width="1.8"
-      stroke-dasharray="${eq==='band'?'4 3':'0'}">
-      ${reduced()?'':`<animate attributeName="x2" dur="${dur}s" repeatCount="indefinite" values="${a[0]};${b[0]};${a[0]}" keyTimes="0;0.5;1"/>
-      <animate attributeName="y1" dur="${dur}s" repeatCount="indefinite" values="${a[1]};${b[1]};${a[1]}" keyTimes="0;0.5;1"/>
-      <animate attributeName="y2" dur="${dur}s" repeatCount="indefinite" values="${a[1]};${b[1]};${a[1]}" keyTimes="0;0.5;1"/>`}</line></g>`;
-  if(eq==='machine')
-    return `<g class="kit"><rect x="86" y="40" width="12" height="60" rx="2" stroke-width="2"/></g>`;
-  return '';
+function blob(A,B,j,r,dur,dx,cls){
+  const f=(P,i)=>+(P[j][i]+(i===0?(dx||0):0)).toFixed(1);
+  return `<circle class="${cls||''}" cx="${f(A,0)}" cy="${f(A,1)}" r="${r}">
+    ${anim('cx',f(A,0),f(B,0),dur)}${anim('cy',f(A,1),f(B,1),dur)}</circle>`;
+}
+/* the torso, as a shape rather than a line: shoulders to hips, tapered */
+function torso(A,B,dur){
+  const path=P=>{ const [sx,sy]=P.neck,[cx,cy]=P.chest,[hx,hy]=P.hip;
+    const w1=13,w2=9;
+    const ang=Math.atan2(hy-sy,hx-sx)+Math.PI/2;
+    const ox=Math.cos(ang),oy=Math.sin(ang);
+    return `M${(sx+ox*w1).toFixed(1)} ${(sy+oy*w1).toFixed(1)}
+      L${(cx+ox*w2).toFixed(1)} ${(cy+oy*w2).toFixed(1)}
+      L${(hx+ox*w2*0.9).toFixed(1)} ${(hy+oy*w2*0.9).toFixed(1)}
+      L${(hx-ox*w2*0.9).toFixed(1)} ${(hy-oy*w2*0.9).toFixed(1)}
+      L${(cx-ox*w2).toFixed(1)} ${(cy-oy*w2).toFixed(1)}
+      L${(sx-ox*w1).toFixed(1)} ${(sy-oy*w1).toFixed(1)} Z`.replace(/\s+/g,' '); };
+  const pa=path(A), pb=path(B);
+  return `<path class="trunk" d="${pa}">${reduced()?'':`<animate attributeName="d" dur="${dur}s"
+    repeatCount="indefinite" values="${pa};${pb};${pa}" keyTimes="0;0.5;1" calcMode="spline"
+    keySplines="0.42 0 0.2 1;0.42 0 0.2 1"/>`}</path>`;
+}
+/* what is in their hands or under them */
+function kit(A,B,kind,dur){
+  const w=(P)=>P.wrist, plate=13;
+  const at=(P,i)=>+w(P)[i].toFixed(1);
+  const pair=(name,fa,fb)=>anim(name,fa,fb,dur);
+  switch(kind){
+    case 'back': case 'lap': case 'hands': case 'overhead': {
+      /* a barbell, seen end on: a bar across the hands with a plate */
+      return `<g class="kit"><circle cx="${at(A,0)}" cy="${at(A,1)}" r="${plate}" fill="none" stroke-width="4">
+        ${pair('cx',at(A,0),at(B,0))}${pair('cy',at(A,1),at(B,1))}</circle>
+        <circle cx="${at(A,0)}" cy="${at(A,1)}" r="3">${pair('cx',at(A,0),at(B,0))}${pair('cy',at(A,1),at(B,1))}</circle></g>`;
+    }
+    case 'db-hands': case 'db-sides': case 'db-chest': {
+      return `<g class="kit"><rect x="${at(A,0)-9}" y="${at(A,1)-5}" width="18" height="10" rx="3">
+        ${pair('x',at(A,0)-9,at(B,0)-9)}${pair('y',at(A,1)-5,at(B,1)-5)}</rect></g>`;
+    }
+    case 'cable-high': case 'overhead-cable': {
+      const top=kind==='cable-high'? 18 : 10;
+      return `<g class="kit"><rect x="150" y="${top}" width="26" height="54" rx="3" fill="none" stroke-width="3"/>
+        <line x1="163" y1="${top+54}" x2="${at(A,0)}" y2="${at(A,1)}" stroke-width="2">
+        ${pair('x2',at(A,0),at(B,0))}${pair('y2',at(A,1),at(B,1))}</line></g>`;
+    }
+    case 'cable-side': {
+      return `<g class="kit"><rect x="164" y="70" width="24" height="60" rx="3" fill="none" stroke-width="3"/>
+        <line x1="164" y1="96" x2="${at(A,0)}" y2="${at(A,1)}" stroke-width="2">
+        ${pair('x2',at(A,0),at(B,0))}${pair('y2',at(A,1),at(B,1))}</line></g>`;
+    }
+    case 'machine':
+      return `<g class="kit"><rect x="150" y="96" width="28" height="86" rx="4" fill="none" stroke-width="3"/></g>`;
+    default: return '';
+  }
+}
+/* the ground, a bench, or a bar overhead: whatever the movement happens on */
+function setting(pose){
+  const v=pose.view, k=pose.bar;
+  let out=`<line class="floor" x1="10" y1="${GROUND+6}" x2="190" y2="${GROUND+6}" stroke-width="3"/>`;
+  if(v==='lie-bench') out+=`<rect class="bench" x="36" y="126" width="104" height="12" rx="4"/>
+    <line class="bench" x1="46" y1="138" x2="46" y2="176" stroke-width="5"/>
+    <line class="bench" x1="130" y1="138" x2="130" y2="176" stroke-width="5"/>`;
+  if(v==='side-seated') out+=`<rect class="bench" x="58" y="140" width="72" height="12" rx="4"/>`;
+  if(k==='overhead') out+=`<line class="bench" x1="52" y1="30" x2="148" y2="30" stroke-width="6"/>`;
+  if(pose===MOVE_POSES.hipthrust) out+=`<rect class="bench" x="30" y="122" width="72" height="12" rx="4"/>`;
+  return out;
 }
 function figureSVG(exId,opts){
-  const o=opts||{}, pose=poseFor(exId);
+  const o=opts||{}, pose=poseFor(exId), dur=o.dur||3.0;
   const x=(typeof exOf==='function')? exOf(exId) : {};
-  const A=pose.a, B=pose.b, dur=o.dur||2.8, mir=!!pose.m;
-  const arms=(m)=>seg(A,B,'n','e',dur,m)+seg(A,B,'e','w',dur,m);
-  const legs=(m)=>seg(A,B,'p','k',dur,m)+seg(A,B,'k','a',dur,m);
-  const lying=pose.v==='lie';
+  const A=pose.a, B=pose.b;
+  const far=pose.split? 14 : 6;   /* how far the back limb sits behind */
+  const limbs=(dx,cls)=>bone(A,B,'shoulder','elbow',dur,dx,cls)+bone(A,B,'elbow','wrist',dur,dx,cls)
+    +bone(A,B,'hip','knee',dur,dx,cls)+bone(A,B,'knee','ankle',dur,dx,cls)+bone(A,B,'ankle','toe',dur,dx,cls);
   return `<svg class="fig" viewBox="0 0 ${FIG_W} ${FIG_H}" role="img"
-    aria-label="A figure moving through a ${(x.p||'full body')} pattern"
+    aria-label="A figure moving through ${escHabit((x.n||'the movement').toLowerCase())}"
     xmlns="http://www.w3.org/2000/svg">
-    ${lying? `<line class="floor" x1="18" y1="74" x2="72" y2="74" stroke-width="3"/>`
-           : `<line class="floor" x1="6" y1="${GROUND+3}" x2="94" y2="${GROUND+3}" stroke-width="2"/>`}
-    <g class="body" fill="none" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round">
-      ${head(A,B,dur,false)}
-      ${seg(A,B,'n','p',dur,false)}
-      ${legs(false)}
-      ${has2(A)&&has2(B)? seg(A,B,'p','k2',dur,false)+seg(A,B,'k2','a2',dur,false):''}
-      ${mir? legs(true):''}
-      ${arms(false)}
-      ${mir? arms(true):''}
+    ${setting(pose)}
+    <g class="far" fill="none" stroke-linecap="round" stroke-linejoin="round">${limbs(-far,'')}</g>
+    ${torso(A,B,dur)}
+    <g class="body" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      ${bone(A,B,'neck','head',dur,0,'neckline')}
+      ${limbs(0,'')}
+      ${blob(A,B,'head',15,dur,0,'skull')}
+      ${blob(A,B,'wrist',4,dur,0,'hand')}
+      ${blob(A,B,'toe',0.1,dur,0,'')}
     </g>
-    ${implement(A,B,x.eq,dur,false)}
-    ${mir? implement(A,B,x.eq,dur,true):''}
+    ${kit(A,B,pose.bar,dur)}
   </svg>`;
 }
-/* The sheet you get when you tap a movement you do not know. */
 function openMove(exId){
   const x=exOf(exId);
   const el=document.getElementById('altBody');
@@ -7298,7 +7641,7 @@ document.addEventListener('click',e=>{
   const sm=e.target.closest('[data-showmove]');
   if(sm){ openMove(sm.dataset.showmove); }
 });
-Object.assign(window.__G||{},{figureSVG,openMove,POSES,poseFor});
+Object.assign(window.__G||{},{figureSVG,openMove,MOVE_POSES,PATTERN_POSE,EX_POSE,poseFor,poseKeyFor,STAND});
 </script>
 
 <script>

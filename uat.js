@@ -1360,7 +1360,9 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     const sfoot = txt(signed.d.querySelector('#s-today .colophon .sub'));
     t('24 · signed in, it no longer claims the week is only on this device', !/nowhere else/.test(sfoot) && /copy in your account/.test(sfoot), sfoot);
     t('24 · the export carries the build number', G.exportPayload().version === G.APP_VERSION);
-    t('24 · and this release is build 23', G.APP_VERSION === '23');
+    t('24 · the footer, the export and the app agree on the build number',
+      G.exportPayload().version === G.APP_VERSION
+      && new RegExp('build ' + G.APP_VERSION + '\\.').test(d.querySelector('#s-progress .colophon .sub').textContent));
 
     /* ---- your own habits ---- */
     G.openHabitSheet();
@@ -1865,6 +1867,72 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     const svg3 = G.weightChart();
     t('28 · a goal within reach is drawn as a line on the chart',
       /stroke-dasharray="2 4"/.test(svg3) && /goal 92/.test(svg3));
+  }
+
+  /* ---------------------------------------------------------- 29 */
+  journey(29, 'A food list with Irish food in it, and movements you can recognise');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+
+    /* ---- the food list ---- */
+    t('29 · there is a lot more food than before', G.FOODS.length >= 130, String(G.FOODS.length));
+    t('29 · every entry has a portion, calories and macros', G.FOODS.every(f =>
+      f.id && f.n && f.u && typeof f.kcal === 'number' && typeof f.p === 'number' && typeof f.c === 'number' && typeof f.f === 'number'));
+    t('29 · no two foods share an id', new Set(G.FOODS.map(f => f.id)).size === G.FOODS.length);
+    t('29 · calories agree with the macros, allowing for alcohol', (() => {
+      const off = G.FOODS.filter(f => {
+        const calc = f.p * 4 + f.c * 4 + f.f * 9 + (f.alc || 0) * 7;
+        return Math.abs(calc - f.kcal) > Math.max(25, f.kcal * 0.18); });
+      return off.length === 0; })(),
+      G.FOODS.filter(f => Math.abs(f.p*4+f.c*4+f.f*9+(f.alc||0)*7 - f.kcal) > Math.max(25, f.kcal*0.18)).map(f=>f.n).join(', '));
+    t('29 · drinks with alcohol in them say so', G.foodOf('pint_stout').alc > 0 && G.foodOf('water').alc === undefined);
+    t('29 · the Irish staples are there', ['brownbread','rasher','blackpud','chickenroll','breakfastroll','chowder','stew','baconcabbage','pint_stout','chips_bag']
+      .every(id => !!G.foodOf(id)), ['brownbread','rasher','blackpud','chickenroll','breakfastroll','chowder','stew','baconcabbage','pint_stout','chips_bag'].filter(id => !G.foodOf(id)).join(', '));
+    t('29 · every food sits in a category that exists', (() => {
+      const cats = new Set(G.FOOD_CATS.map(c => c[0]));
+      return G.FOODS.every(f => cats.has(f.cat)); })());
+    t('29 · nothing is in a category on its own', (() => {
+      const n = {}; G.FOODS.forEach(f => n[f.cat] = (n[f.cat] || 0) + 1);
+      return Object.values(n).every(v => v >= 8); })(), JSON.stringify((() => { const n={}; G.FOODS.forEach(f=>n[f.cat]=(n[f.cat]||0)+1); return n; })()));
+
+    G.openFood(false);
+    t('29 · the sheet offers categories to browse', d.querySelectorAll('[data-foodcat]').length >= 8);
+    t('29 · it opens on the usual suspects, not all 138', d.querySelectorAll('#foodList [data-foodadd]').length <= 24 * 3 + 3);
+    d.querySelector('[data-foodcat="meals"]').click();
+    const meals = d.getElementById('foodList').textContent;
+    t('29 · a category shows only that category', /Irish stew|chowder|fillet roll/i.test(meals) && !/Porridge oats/.test(meals));
+    const box = d.getElementById('foodSearch');
+    box.value = 'pud'; box.dispatchEvent(new w.Event('input', { bubbles: true }));
+    t('29 · search still looks across everything', /pudding/i.test(d.getElementById('foodList').textContent));
+    box.value = ''; box.dispatchEvent(new w.Event('input', { bubbles: true }));
+    G.addFood('chickenroll', 1, 'l');
+    t('29 · one of them logs and counts properly', G.foodTotals(G.todayKey()).kcal === 700);
+    G.closeSheets();
+    t('29 · the method sheet says where the figures come from', (() => { G.openHow();
+      const h = d.getElementById('howBody') ? d.getElementById('howBody').textContent : d.body.textContent;
+      return /Food Safety Authority of Ireland/.test(h) && /7 kcal a gram/.test(h); })());
+    G.closeSheets();
+
+    /* ---- the drawings ---- */
+    t('29 · a bench press, a squat and a curl are three different pictures', (() => {
+      const set = new Set(['bench', 'squat', 'curl'].map(id => G.figureSVG(id)));
+      return set.size === 3; })());
+    t('29 · a press up is drawn on the floor, not on a bench',
+      !/class="bench"/.test(G.figureSVG('pushup')) && /class="bench"/.test(G.figureSVG('bench')));
+    t('29 · a chin up hangs from a bar', /class="bench"/.test(G.figureSVG('chin')));
+    t('29 · a cable movement draws the stack', /rect/.test(G.figureSVG('pulldown')));
+    t('29 · a dumbbell is drawn as a dumbbell, not a barbell plate',
+      /rect/.test(G.figureSVG('lateral')) && /circle/.test(G.figureSVG('squat')));
+    t('29 · the figure has a body, not just sticks', (() => {
+      const svg = G.figureSVG('squat');
+      return /class="trunk"/.test(svg) && /class="skull"/.test(svg) && /class="far"/.test(svg); })());
+    t('29 · every one of the movements has a drawing', G.LIBRARY.every(x => !!G.figureSVG(x.id)));
+    G.openMove('bench');
+    t('29 · the move sheet shows one, with the caveat', /class="fig"/.test(d.getElementById('altBody').innerHTML)
+      && /not a form check/.test(d.getElementById('altBody').textContent));
+    G.closeSheets();
   }
 
   const r = s.report(allErrs);

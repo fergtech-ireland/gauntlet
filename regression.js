@@ -96,7 +96,8 @@ setTimeout(() => {
   t('no food logged means no macros', m === null);
   G.addFood('chicken', 2); G.addFood('rice', 1);
   const m2 = G.loggedMealMacros();
-  t('macros come from the real log', m2 && m2.p === 65, JSON.stringify(m2));
+  const expectP = Math.round(G.foodOf('chicken').p * 2 + G.foodOf('rice').p);
+  t('macros come from the real log', m2 && m2.p === expectP, JSON.stringify(m2) + ' expected ' + expectP);
   t('meal art draws nothing when there is nothing', /nothing logged/.test(G.mealArt(null)));
 
 
@@ -371,34 +372,33 @@ setTimeout(() => {
 
 
   // ---- pass F: movement figures ----
-  t('every library pattern has a pose', (() => {
-    const missing = [...new Set(G.LIBRARY.map(x => x.p).filter(Boolean))].filter(p => !G.POSES[p]);
-    return missing.length === 0; })(),
-    [...new Set(G.LIBRARY.map(x => x.p).filter(Boolean))].filter(p => !G.POSES[p]).join(', '));
-  t('every movement resolves to a pose', G.LIBRARY.every(x => !!G.poseFor(x.id)));
-  t('poses are well formed', Object.keys(G.POSES).every(k => {
-    const p = G.POSES[k];
-    return Array.isArray(p.a) && Array.isArray(p.b) && p.a.length === p.b.length
-      && (p.a.length === 14 || p.a.length === 18)
-      && p.a.every(n => typeof n === 'number' && n >= 0 && n <= 140); }),
-    Object.keys(G.POSES).filter(k => { const p = G.POSES[k];
-      return !(p.a.length === p.b.length && (p.a.length === 14 || p.a.length === 18)); }).join(','));
-  t('start and end differ', Object.keys(G.POSES).every(k =>
-    G.POSES[k].a.join() !== G.POSES[k].b.join()));
-  t('a figure renders as valid svg', (() => {
-    const svg = G.figureSVG('bench');
-    const doc = new w.DOMParser().parseFromString(svg, 'image/svg+xml');
-    return !doc.querySelector('parsererror') && doc.querySelector('svg'); })());
+  t('every movement resolves to a drawing', G.LIBRARY.every(x => !!G.poseFor(x.id)));
+  t('the drawings are well formed', Object.keys(G.MOVE_POSES).every(k => {
+    const m = G.MOVE_POSES[k];
+    return m.a && m.b && ['head','neck','chest','hip','shoulder','elbow','wrist','knee','ankle','toe']
+      .every(j => Array.isArray(m.a[j]) && Array.isArray(m.b[j]) && m.a[j].length === 2); }),
+    Object.keys(G.MOVE_POSES).filter(k => !G.MOVE_POSES[k].b).join(','));
+  t('start and end differ', Object.keys(G.MOVE_POSES).every(k =>
+    JSON.stringify(G.MOVE_POSES[k].a) !== JSON.stringify(G.MOVE_POSES[k].b)));
+  t('a bench press and a squat are not the same picture', G.figureSVG('bench') !== G.figureSVG('squat'));
   t('every movement renders without throwing', (() => {
-    try { G.LIBRARY.forEach(x => G.figureSVG(x.id)); return true; } catch(e){ return false; } })());
-  t('a barbell movement draws a barbell', /class="kit"/.test(G.figureSVG('bench'))
-    && /circle/.test(G.figureSVG('bench')));
-  t('a bodyweight movement draws no kit', !/class="kit"/.test(G.figureSVG('pushup')), G.exOf('pushup').eq);
+    try { G.LIBRARY.forEach(x => G.figureSVG(x.id)); return true; } catch (e) { return false; } })());
+  t('a figure renders as valid svg', (() => {
+    const doc = new w.DOMParser().parseFromString(G.figureSVG('bench'), 'image/svg+xml');
+    return !doc.querySelector('parsererror') && !!doc.querySelector('svg'); })());
+  t('nothing is drawn outside the frame', G.LIBRARY.every(x =>
+    [...G.figureSVG(x.id).matchAll(/(?:x1|y1|x2|y2|cx|cy)="(-?[\d.]+)"/g)].every(m => +m[1] >= -40 && +m[1] <= 280)));
+  t('the body has a torso, a head and hands, not just lines', (() => {
+    const svg = G.figureSVG('squat');
+    return /class="trunk"/.test(svg) && /class="skull"/.test(svg) && /class="hand"/.test(svg); })());
+  t('the limb behind is drawn lighter, for depth', /class="far"/.test(G.figureSVG('run')));
+  t('a barbell movement draws the bar', /class="kit"/.test(G.figureSVG('squat')));
+  t('a bodyweight movement draws no kit', !/class="kit"/.test(G.figureSVG('pushup')));
+  t('a bench movement draws a bench', /class="bench"/.test(G.figureSVG('bench')));
   t('the figure animates', /<animate /.test(G.figureSVG('squat')));
-  t('mirrored patterns draw two arms', (() => {
-    const svg = G.figureSVG('lateral');
-    const doc = new w.DOMParser().parseFromString(svg, 'image/svg+xml');
-    return doc.querySelectorAll('line').length > doc.querySelectorAll('line').length / 2 + 4; })());
+  t('there are many drawings, not one', new Set(G.LIBRARY.map(x => G.poseKeyFor(x.id))).size >= 20,
+    String(new Set(G.LIBRARY.map(x => G.poseKeyFor(x.id))).size));
+
   t('the move sheet opens with a figure', (() => { G.openMove('squat');
     const h = w.document.getElementById('altBody').innerHTML;
     return /class="fig"/.test(h) && /not a form check/.test(h); })());

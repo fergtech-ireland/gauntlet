@@ -357,6 +357,27 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .wmsg{color:var(--oxblood);min-height:0}
 .wmsg:empty{display:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.phead .gear{margin-left:auto;width:44px;height:44px;display:grid;place-items:center;color:var(--mute);border-radius:12px}
+.phead .gear svg{width:22px;height:22px}
+.ytabs{display:flex;gap:6px;padding:0 14px 10px;border-bottom:1px solid var(--line);margin-bottom:12px}
+.ytabs button{flex:1;min-height:44px;border-radius:10px;font-weight:700;font-size:13.5px;color:var(--mute);
+  background:var(--grey-btn);position:relative}
+.ytabs button.on{background:var(--ink);color:var(--on-ink)}
+.logtile{display:grid;grid-template-columns:auto;gap:2px;align-items:start;text-align:left;width:100%;
+  min-height:104px;padding:13px;border-radius:14px;border:1px solid var(--line);background:var(--paper);position:relative}
+.logtile .ic{width:26px;height:26px;color:var(--tone);margin-bottom:6px}
+.logtile .ic svg{width:100%;height:100%;display:block}
+.logtile .t{font-size:14.5px;font-weight:700;line-height:1.25}
+.logtile .s{font-size:11.5px;font-weight:600;color:var(--mute);line-height:1.35}
+.logtile.done{background:var(--canvas)}
+.logtile.done .t:after{content:" ✓";color:var(--forest)}
+.logtile.wide{min-height:0;padding:15px;margin-bottom:10px;border:0;background:var(--tone);color:#fff}
+.logtile.wide .ic{width:30px;height:30px;color:#fff}
+.logtile.wide .t{font-size:18px;letter-spacing:-.01em}
+.logtile.wide .s{color:rgba(255,255,255,.88);font-size:12.5px}
+.logtile.wide .bar{display:block;height:4px;border-radius:3px;background:rgba(255,255,255,.28);margin-top:10px;overflow:hidden}
+.logtile.wide .bar i{display:block;height:100%;background:#fff}
+.logtiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .updatebar{position:fixed;left:50%;bottom:calc(72px + env(safe-area-inset-bottom,0px));transform:translate(-50%,12px);
   width:calc(100% - 24px);max-width:436px;z-index:75;display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;
   border-radius:12px;background:var(--marine-bg);color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.18);
@@ -607,7 +628,8 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 .hero-card .hwhy{margin-top:12px;font-size:13px;color:var(--burnt-ink)}
 .hero-card .hwhy ul{margin:8px 0 0;padding-left:18px}
 .hero-card .hwhy li{margin-bottom:4px}
-.chart{width:100%;height:110px;display:block;margin:2px 0 4px;overflow:visible}
+.chart{width:100%;height:auto;aspect-ratio:320/132;display:block;margin:2px 0 4px;overflow:visible}
+.chart .clab{font-family:Archivo,sans-serif;font-size:9px;font-weight:700}
 .chartkey{display:flex;gap:14px;font-size:11px;color:var(--mute);font-weight:600;margin-top:2px}
 .chartkey i{width:14px;height:2.5px;display:inline-block;margin-right:5px;vertical-align:middle;border-radius:2px}
 .bars{display:flex;gap:5px;align-items:flex-end;margin-top:12px}
@@ -715,17 +737,32 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
   <section class="screen" id="s-progress" tabindex="-1">
     <div class="h1" id="profHandle">your progress</div>
     <div class="phead">
-      <button class="av-lg" id="profAv" style="background:var(--marine-bg)" aria-label="Your details and settings">YOU</button>
+      <button class="av-lg" id="profAv" style="background:var(--marine-bg)" aria-label="Your details">YOU</button>
       <div class="stats">
         <div><b id="stSessions">0</b><span>sessions</span></div>
-        <div><b id="stTried">0</b><span>tried</span></div>
-        <div><b id="stPicked">0</b><span>picked up</span></div></div>
+        <div><b id="stWeek">0</b><span>this week</span></div>
+        <div><b id="stLogged">0</b><span>days logged</span></div></div>
+      <button class="gear" id="settingsBtn" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.9 19.3a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.7 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v0a1.7 1.7 0 0 0 1.56 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1Z"/></svg>
+      </button>
     </div>
-    <div id="settingsList"></div>
-    <div class="dash" id="dash"></div>
-    <div class="sechead" id="sessHead"><h2>Sessions</h2><button id="allSess">See all</button></div>
-    <div class="grid" id="grid"></div>
-    <div id="settingsMore"></div>
+    <div class="ytabs" role="tablist" aria-label="Your things">
+      <button role="tab" id="ytab-progress" aria-controls="ypanel-progress" aria-selected="true" class="on" data-ytab="progress">Progress</button>
+      <button role="tab" id="ytab-sessions" aria-controls="ypanel-sessions" aria-selected="false" data-ytab="sessions">Sessions</button>
+      <button role="tab" id="ytab-plan" aria-controls="ypanel-plan" aria-selected="false" data-ytab="plan">Your plan</button>
+    </div>
+    <div id="ypanel-progress" role="tabpanel" aria-labelledby="ytab-progress" tabindex="0">
+      <div class="dash" id="dash"></div>
+    </div>
+    <div id="ypanel-sessions" role="tabpanel" aria-labelledby="ytab-sessions" tabindex="0" hidden>
+      <div class="sechead" id="sessHead"><h2>Sessions</h2><button id="allSess">See all</button></div>
+      <div class="grid" id="grid"></div>
+      <div id="settingsMore"></div>
+    </div>
+    <div id="ypanel-plan" role="tabpanel" aria-labelledby="ytab-plan" tabindex="0" hidden>
+      <div id="settingsList"></div>
+    </div>
   </section>
   <section class="screen" id="s-feed" tabindex="-1"><div id="feed"></div></section>
 </div>
@@ -750,6 +787,12 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
   <div class="grab"></div><h3>Your coach</h3>
   <p class="sub">Everything the app knows about you, in plain English, and somewhere to ask about it.</p>
   <div id="coachBody"></div>
+</div>
+
+<div class="sheet" id="settingsSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>Settings</h3>
+  <p class="sub">How the app behaves, your account, and where every number comes from.</p>
+  <div id="appSettings"></div>
 </div>
 
 <div class="sheet" id="youSheet" role="dialog" aria-modal="true" tabindex="-1">
@@ -935,7 +978,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='22';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='23';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -2486,9 +2529,16 @@ function renderProgress(){
   const p=S.profile, g=S.goal, imp=p.units==='imperial', st=weekStats();
   $('profHandle').textContent=p.onboarded? '@'+p.handle : 'your progress';
   $('profAv').textContent=(p.handle||'you').slice(0,2).toUpperCase();
+  /* "tried" and "picked up" counted other people's sessions, which read as
+     three zeros to anyone using this on their own. */
   $('stSessions').textContent=S.sessions;
-  $('stTried').textContent=S.tries.length;
-  $('stPicked').textContent=S.pickups.length;
+  const wk=mondayKey();
+  const planned=S.plan? S.plan.days.filter(x=>x.type&&x.slot!=='walk').length : 0;
+  const doneThisWeek=(S.workouts||[]).filter(x=>x.d>=wk).length
+    +(S.mine||[]).filter(p=>p.d>=wk&&(p.kind==='run'||p.kind==='fast')).length;
+  $('stWeek').textContent=planned? doneThisWeek+'/'+planned : String(doneThisWeek);
+  const since=addDays(todayKey(),-29);
+  $('stLogged').textContent=Object.keys(S.days||{}).filter(k=>k>=since&&Object.keys(S.days[k]||{}).length).length;
   const first=S.weights[0], last=S.weights[S.weights.length-1];
   const diff=first&&last? +(last.kg-first.kg).toFixed(1):0;
   const ripples=S.tries.map(t=>({u:P[t.from]||ME,at:t.at,t:`You tried <b>${t.title}</b> from <b>@${(P[t.from]||ME).n}</b>`}))
@@ -2885,21 +2935,46 @@ document.addEventListener('click',e=>{
 $('findBtn').addEventListener('click',()=>{renderPeople();openSheet('findSheet')});
 /* One button that reaches everything you can put in, from any screen. Logging
    used to live only on Today, so anywhere else meant navigating home first. */
+/* The + used to be a list of seven rows of equal weight, which made the two
+   things people do every day (food and the session) no easier to reach than
+   the two they do weekly. Tiles instead: bigger targets, scannable at a
+   glance, and ordered by how often they are actually used.
+   Food gets the top, full width, with today's total on it, because eating is
+   logged several times a day and everything else once at most. */
+const LOG_ICONS={
+  food:'<path d="M4 3v8a3 3 0 0 0 3 3v7M7 3v7M10 3v8M17 3c-1.5 2-2 4-2 7h4c0-3-.5-5-2-7ZM17 10v11"/>',
+  today:'<path d="M4 9v6M8 5v14M16 5v14M20 9v6M8 12h8"/>',
+  weigh:'<circle cx="12" cy="12" r="8"/><path d="M12 12 9 8"/>',
+  day:'<circle cx="12" cy="12" r="8"/><path d="M9 14c.9.9 1.9 1.3 3 1.3s2.1-.4 3-1.3M9 9.5h.01M15 9.5h.01"/>',
+  week:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4"/>',
+  templates:'<path d="M4 6h16M4 12h16M4 18h10"/>',
+  coach:'<path d="M21 12a8 8 0 1 1-3.2-6.4M12 8v4l2.5 2.5"/>'};
+const logIcon=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${LOG_ICONS[k]||''}</svg>`;
 function openLog(){
   const d=todayPlan(), logged=S.days[todayKey()], k=todayKey();
   const weighed=S.weights.length&&S.weights[S.weights.length-1].d===k;
-  const row=(id,t,s,tone)=>`<button class="logrow" data-log="${id}">
-    <div class="sq" style="background:${tone||'var(--grey-btn)'}"></div>
-    <div class="txt"><div class="t">${t}</div><div class="s">${s}</div></div>
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2.2" stroke-linecap="round"><path d="m9 5 7 7-7 7"/></svg></button>`;
-  $('logBody').innerHTML=
-    (d&&d.type&&d.slot!=='walk'? row('today',(dayDone(dowIdx())?'Do '+dayLabel(d)+' again':'Start '+dayLabel(d)),daySub(d),(HUE[d.kind]||HUE.any).deep):'')
-    +row('weigh',weighed?'Weigh in again':'Weigh in',weighed?'already logged today':'five seconds','var(--forest)')
-    +row('food','Log food',dayFood(k).length? dayFood(k).length+' things so far':'tap from a list','var(--burnt)')
-    +row('day','How did today go?',logged&&logged.wb? 'you said '+logged.wb+' out of 10':'one slider','var(--marine)')
-    +row('week','Weekly check in',checkinDone()?'done for this week':'two minutes, and next week is built from it','var(--marigold)')
-    +row('templates','Start something else','any template, circuit or run')
-    +row('coach','Ask about your record','everything the app knows, in plain English','var(--marine-bg)');
+  const t=S.targets||{}, eaten=(typeof foodTotals==='function')? foodTotals(k) : {kcal:0,protein:0};
+  const tile=(id,title,sub,tone,done)=>`<button class="logtile ${done?'done':''}" data-log="${id}" style="--tone:${tone||'var(--mute)'}">
+    <span class="ic">${logIcon(id)}</span>
+    <span class="t">${title}</span><span class="s">${sub}</span></button>`;
+  const left=t.kcal? Math.max(0,Math.round(t.kcal-eaten.kcal)) : null;
+  $('logBody').innerHTML=`
+    <button class="logtile wide" data-log="food" style="--tone:var(--burnt)">
+      <span class="ic">${logIcon('food')}</span>
+      <span class="t">Log food</span>
+      <span class="s">${dayFood(k).length
+        ? num(Math.round(eaten.kcal))+' kcal so far'+(left!==null? ', '+num(left)+' left today' : '')+' · '+Math.round(eaten.protein)+'g protein'
+        : (t.kcal? num(t.kcal)+' kcal and '+t.protein+'g protein to aim at today' : 'Tap what you ate from a list')}</span>
+      ${t.kcal? `<span class="bar"><i style="width:${Math.min(100,Math.round(eaten.kcal/t.kcal*100))}%"></i></span>`:''}
+    </button>
+    <div class="logtiles">
+      ${d&&d.type&&d.slot!=='walk'? tile('today',(dayDone(dowIdx())?'Do it again':'Start '+dayLabel(d)),daySub(d),(HUE[d.kind]||HUE.any).deep,dayDone(dowIdx())):''}
+      ${tile('weigh',weighed?'Weigh in again':'Weigh in',weighed? S.weights[S.weights.length-1].kg+' kg today':'Five seconds','var(--forest)',weighed)}
+      ${tile('day','How today went',logged&&logged.wb? 'You said '+logged.wb+' out of 10':'A slider and a line','var(--marine)',!!(logged&&logged.wb))}
+      ${tile('week','Weekly check in',checkinDone()?'Done for this week':'Next week is built from it','var(--marigold)',checkinDone())}
+      ${tile('templates','Something else','Any template, circuit or run','var(--ink)')}
+      ${tile('coach','Ask about your record','Everything the app knows','var(--marine-bg)')}
+    </div>`;
   openSheet('logSheet');
 }
 document.addEventListener('click',e=>{
@@ -6373,43 +6448,95 @@ function reviewWeek(weekOf){
 }
 
 /* ---------- charts ---------- */
-function weightChart(){
-  const pts=S.weights.slice(-12);
-  if(pts.length<2) return `<div class="note" style="margin:0">Two weigh ins and the trend line starts. One point is not a direction.</div>`;
-  const w=320,h=110,pad=10,right=86;
-  const ys=pts.map(p=>p.kg), min=Math.min(...ys), max=Math.max(...ys), span=Math.max(0.8,(max-min))*1.25;
-  const mid=(min+max)/2;
-  const lo=mid-span/2, hi=mid+span/2;
-  const x=i=>pad+i*(w-pad-right)/(pts.length-1);
-  const y=v=>pad+(1-(v-lo)/(hi-lo))*(h-pad*2);
-  const n=pts.length;
-  const xs=pts.map((_,i)=>i), sx=mean(xs), sy=mean(ys);
+/* The chart used to space weigh ins evenly whatever the gap between them, so
+   a gap of three weeks looked identical to one of a day, and the trend was
+   drawn through whatever shape that made. It was also stretched to fit
+   (preserveAspectRatio="none"), which distorts the very slope it is showing.
+   Now: a real timeline in days, least squares on days rather than on the
+   order of the points, a projection that runs a fixed four weeks ahead, the
+   goal drawn if there is one, and a sentence underneath for anyone who cannot
+   see it. */
+const CHART_DAYS_BACK=90, CHART_DAYS_FWD=28;
+function weightSeries(){
+  const all=(S.weights||[]).filter(p=>p&&typeof p.kg==='number'&&p.d).slice();
+  all.sort((a,b)=>a.d<b.d?-1:1);
+  const cut=addDays(todayKey(),-CHART_DAYS_BACK);
+  const inWindow=all.filter(p=>p.d>=cut);
+  return inWindow.length>=2? inWindow : all.slice(-12);
+}
+function weightTrend(pts){
+  /* least squares against days elapsed, so uneven gaps are honoured */
+  const t0=dateOf(pts[0].d).getTime();
+  const xs=pts.map(p=>(dateOf(p.d).getTime()-t0)/864e5), ys=pts.map(p=>p.kg);
+  const sx=mean(xs), sy=mean(ys);
   let num=0,den=0; xs.forEach((xi,i)=>{num+=(xi-sx)*(ys[i]-sy);den+=(xi-sx)*(xi-sx);});
-  const slope=den? num/den : 0;
-  const line=pts.map((p,i)=>`${i?'L':'M'}${x(i).toFixed(1)} ${y(p.kg).toFixed(1)}`).join(' ');
-  const proj=[], steps=4;
-  for(let i=0;i<=steps;i++){ const v=sy+slope*((n-1)+i-sx); proj.push([x(n-1)+i*( (w-pad-right)/(n-1) ||12), v]); }
-  const projPath=proj.map((q,i)=>`${i?'L':'M'}${Math.min(w-4,q[0]).toFixed(1)} ${y(q[1]).toFixed(1)}`).join(' ');
-  const end=proj[proj.length-1][1];
-  return `<svg viewBox="0 0 ${w} ${h}" class="chart" preserveAspectRatio="none" aria-hidden="true">
+  const perDay=den? num/den : 0;
+  return {xs,ys,sx,sy,perDay,perWeek:perDay*7,at:d=>sy+perDay*(d-sx),spanDays:xs[xs.length-1]};
+}
+function weightChart(){
+  const pts=weightSeries();
+  if(pts.length<2) return `<div class="note" style="margin:0">Two weigh ins and the trend line starts. One point is not a direction.</div>`;
+  const tr=weightTrend(pts);
+  const w=320,h=132,padL=10,padR=64,padT=12,padB=26;
+  const lastDay=tr.xs[tr.xs.length-1], endDay=lastDay+CHART_DAYS_FWD;
+  const projEnd=tr.at(endDay);
+  const goal=(S.target&&S.target.kind==='weight'&&!S.target.hit)? +S.target.value : null;
+  /* Scale to the weigh ins and where they are heading. A goal months away used
+     to be included, which squashed the actual line into a fifth of the box and
+     left the rest empty. If the goal is close it is drawn; if not, it is a
+     marker at the edge with the number on it. */
+  const vals=tr.ys.concat([projEnd]);
+  const min=Math.min(...vals), max=Math.max(...vals);
+  const span=Math.max(1,(max-min))*1.3, mid=(min+max)/2;
+  let lo=mid-span/2, hi=mid+span/2;
+  if(goal!==null&&goal>lo-span*0.25&&goal<hi+span*0.25){
+    lo=Math.min(lo,goal-span*0.1); hi=Math.max(hi,goal+span*0.1);
+  }
+  const goalOn=goal!==null&&goal>=lo&&goal<=hi;
+  const x=day=>padL+(day/endDay)*(w-padL-padR);
+  const y=v=>padT+(1-(v-lo)/(hi-lo))*(h-padT-padB);
+  const line=pts.map((p,i)=>`${i?'L':'M'}${x(tr.xs[i]).toFixed(1)} ${y(p.kg).toFixed(1)}`).join(' ');
+  const projPath=`M${x(lastDay).toFixed(1)} ${y(tr.at(lastDay)).toFixed(1)} L${x(endDay).toFixed(1)} ${y(projEnd).toFixed(1)}`;
+  const trendPath=`M${x(0).toFixed(1)} ${y(tr.at(0)).toFixed(1)} L${x(lastDay).toFixed(1)} ${y(tr.at(lastDay)).toFixed(1)}`;
+  const now=pts[pts.length-1];
+  const words=`Weighed ${pts.length} times over ${Math.round(lastDay)} days, from ${pts[0].kg} to ${now.kg} kg. `
+    +(Math.abs(tr.perWeek)<0.05? 'Holding steady.' : `Trending ${tr.perWeek<0?'down':'up'} about ${Math.abs(tr.perWeek).toFixed(2)} kg a week, which is about ${projEnd.toFixed(1)} kg in four weeks.`)
+    +(goal!==null? ` Goal ${goal} kg.` : '');
+  return `<svg viewBox="0 0 ${w} ${h}" class="chart" role="img" aria-label="${words}">
+    ${goalOn? `<line x1="${padL}" y1="${y(goal).toFixed(1)}" x2="${(w-padR+40).toFixed(1)}" y2="${y(goal).toFixed(1)}" stroke="var(--forest)" stroke-width="1.4" stroke-dasharray="2 4"/>
+      <text x="${(w-padR+44).toFixed(1)}" y="${(y(goal)+3.5).toFixed(1)}" class="clab" fill="var(--forest)">goal ${goal}</text>`
+     : ''}
+    <path d="${trendPath}" fill="none" stroke="var(--line)" stroke-width="1.6"/>
     <path d="${line}" fill="none" stroke="var(--marine)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-    ${pts.map((p,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(p.kg).toFixed(1)}" r="2.6" fill="var(--marine)"/>`).join('')}
+    ${pts.map((p,i)=>{ const last=i===pts.length-1;
+      /* with a weigh in most days the dots merge into a caterpillar, so only
+         the first, the last and a few in between are drawn */
+      const every=Math.max(1,Math.ceil(pts.length/8));
+      if(!last&&i!==0&&i%every) return '';
+      return `<circle cx="${x(tr.xs[i]).toFixed(1)}" cy="${y(p.kg).toFixed(1)}" r="${last?3.4:2}" fill="var(--marine)"/>`; }).join('')}
     <path d="${projPath}" fill="none" stroke="var(--marigold)" stroke-width="2.2" stroke-dasharray="4 4" stroke-linecap="round"/>
-    <circle cx="${Math.min(w-4,proj[proj.length-1][0]).toFixed(1)}" cy="${y(end).toFixed(1)}" r="3.4" fill="var(--marigold)"/>
+    <circle cx="${x(endDay).toFixed(1)}" cy="${y(projEnd).toFixed(1)}" r="3.4" fill="var(--marigold)"/>
+    <text x="${(x(endDay)+6).toFixed(1)}" y="${(y(projEnd)+3.5).toFixed(1)}" class="clab" fill="var(--marigold)">${projEnd.toFixed(1)}</text>
+    <text x="${padL}" y="${h-8}" class="clab" fill="var(--mute)">${prettyDate(pts[0].d)}</text>
+    <text x="${x(lastDay).toFixed(1)}" y="${h-8}" class="clab" fill="var(--mute)" text-anchor="middle">today</text>
+    <text x="${x(endDay).toFixed(1)}" y="${h-8}" class="clab" fill="var(--mute)" text-anchor="end">${prettyDate(addDays(todayKey(),CHART_DAYS_FWD))}</text>
   </svg>
   <div class="chartkey"><span><i style="background:var(--marine)"></i>what you weighed</span>
-    <span><i style="background:var(--marigold)"></i>where it is heading</span></div>`;
+    <span><i style="background:var(--marigold)"></i>four weeks ahead</span>
+    ${goal!==null? `<span><i style="background:var(--forest)"></i>goal ${goal} kg${goalOn?'':', below this'}</span>`:''}</div>`;
 }
+/* This treated every weigh in as a week apart: someone weighing daily was
+   told their four-day change was their four-week change. It is per day now,
+   multiplied out to real weeks. */
 function projectionLine(){
-  const pts=S.weights.slice(-12);
+  const pts=weightSeries();
   if(pts.length<3) return null;
-  const ys=pts.map(p=>p.kg), xs=pts.map((_,i)=>i), sx=mean(xs), sy=mean(ys);
-  let num=0,den=0; xs.forEach((xi,i)=>{num+=(xi-sx)*(ys[i]-sy);den+=(xi-sx)*(xi-sx);});
-  const slope=den? num/den : 0;
-  const perWeek=slope*(pts.length>1? 1 : 0);
-  if(Math.abs(perWeek)<0.05) return 'Holding steady. At this rate you are the same weight in a month.';
-  const in4=+(ys[ys.length-1]+perWeek*4).toFixed(1);
-  return `At this rate, about <b>${in4} kg</b> by ${prettyDate(addDays(todayKey(),28))}.`;
+  const tr=weightTrend(pts);
+  if(!isFinite(tr.perWeek)) return null;
+  if(Math.abs(tr.perWeek)<0.05) return 'Holding steady. At this rate you are the same weight in a month.';
+  const last=pts[pts.length-1].kg;
+  const in4=+(last+tr.perWeek*4).toFixed(1);
+  return `${tr.perWeek<0?'Down':'Up'} about <b>${Math.abs(tr.perWeek).toFixed(2)} kg a week</b>. At this rate, about <b>${in4} kg</b> by ${prettyDate(addDays(todayKey(),28))}.`;
 }
 function consistencyChart(){
   const hist=weeklyHistory(8).reverse();
@@ -6484,7 +6611,7 @@ function renderTrends(){
   <div class="panel">
     <div class="ph"><h3>Weight</h3><button data-weigh="1">Weigh in</button></div>
     ${weightChart()}
-    ${proj? `<div class="note">At this rate, about <b>${proj[3].kg} kg</b> by ${prettyDate(addDays(todayKey(),28))}. Recalculated each week as you get lighter, which is why it is not a straight line.</div>`:''}
+    ${proj? `<div class="note">The dashed line follows your weigh ins. The forecast above works from calories instead and says <b>${proj[3].kg} kg</b> by ${prettyDate(addDays(todayKey(),28))}, recalculated each week as you get lighter. Two methods, so two numbers; the gap between them is worth watching.</div>`:''}
     ${waterWindow(todayKey())? `<div class="note" style="color:var(--burnt)">Fluid retention is typically highest around now, averaging about half a kilo in the study that measured it. Read the line, not today's number.</div>`:''}
   </div>
   <div class="panel">
@@ -6560,7 +6687,7 @@ document.addEventListener('input',e=>{
   if(r){ S.cycle.length=+r.value; const o=$('outlen'); if(o) o.textContent=S.cycle.length+' days'; }
 });
 
-Object.assign(window.__G,{prettyDate,weeklyHistory,buildForecast,ensureForecast,reviewWeek,actualsFor,renderTrends,
+Object.assign(window.__G,{prettyDate,weightSeries,weightTrend,weightChart,projectionLine,weeklyHistory,buildForecast,ensureForecast,reviewWeek,actualsFor,renderTrends,
   SCI,openHow,weightSlopePerDay,walkKcal,liftKcal,tdeeEstimate,tdeeObserved,trendSeries,trendNow,trendRatePerWeek,recentIntake,projectWeeks,bandFor,pastErrors,
   phaseOn,cycleDay,waterWindow,openCycle,weightChart,projectionLine,consistencyChart,weekOfDate,addDays,PHASES});
 </script>
@@ -7348,6 +7475,7 @@ function setRow(key,tone,label,value,sub,id,subId){
 }
 function renderSettings(){
   const top=document.getElementById('settingsList'), more=document.getElementById('settingsMore');
+  const app=document.getElementById('appSettings');
   if(!top||!more) return;
   const p=S.profile||{};
   const aim=(typeof aimOf==='function')? aimOf(p.aim) : {t:p.aim||''};
@@ -7381,17 +7509,44 @@ function renderSettings(){
   more.innerHTML=`<div class="ysgroup"><div class="yshead">Your records</div>
     ${setRow('records','marine','Weight, tracker and numbers', S.weights.length? S.weights.length+' weigh ins' : 'No weigh ins yet')}
     ${setRow('coach','forest','Coach and weekly brief', coachReady&&coachReady()? 'Connected' : 'Your whole record in plain English')}
-    ${setRow('data','grey','Your data', 'Download it, or delete it')}
-  </div>
-  <div class="ysgroup"><div class="yshead">Settings</div>
+  </div>`;
+  /* Settings are things people go looking for on purpose, so they live behind
+     the gear rather than taking up room under what they check every day. */
+  if(app) app.innerHTML=`<div class="ysgroup" style="padding-top:0">
     ${setRow('theme','grey','Theme', (THEMES.find(t=>t[0]===themeOf())||THEMES[0])[1])}
     ${setRow('tempo','grey','Tempo guidance', showTempoSafe()? 'On' : 'Off', 'The four digits beside your sets. Off leaves your programme exactly as it is.')}
     ${setRow('nudge','grey','Check in reminder', nudgeVal, nudgeHelp(), 'nudgeBtn', 'nudgeNote')}
     ${showCycle? setRow('cycle','oxblood','Cycle', S.cycle&&S.cycle.tracking? 'Tracking' : 'Off') : ''}
     ${setRow('account','grey','Account and sync', signed? 'Signed in' : 'On this device only')}
+    ${setRow('data','grey','Your data', 'Download it, or delete it')}
     ${setRow('how','grey','How the numbers are worked out', 'Every formula, and where it comes from')}
   </div>`;
 }
+let yTab='progress';
+function showYTab(name){
+  yTab=['progress','sessions','plan'].indexOf(name)>=0? name : 'progress';
+  ['progress','sessions','plan'].forEach(k=>{
+    const panel=document.getElementById('ypanel-'+k), tab=document.getElementById('ytab-'+k);
+    if(panel) panel.hidden = k!==yTab;
+    if(tab){ tab.classList.toggle('on',k===yTab); tab.setAttribute('aria-selected',k===yTab?'true':'false'); }
+  });
+}
+function openAppSettings(){ renderSettings(); openSheet('settingsSheet'); }
+try{ Object.assign(window.__G,{showYTab,openAppSettings,renderSettings}); }catch(e){}
+document.addEventListener('click',e=>{
+  const yt=e.target.closest('[data-ytab]');
+  if(yt){ showYTab(yt.dataset.ytab); return; }
+  if(e.target.closest('#settingsBtn')){ openAppSettings(); return; }
+});
+/* left and right arrows move between tabs, as a tablist should */
+document.addEventListener('keydown',e=>{
+  if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight') return;
+  const t=e.target.closest('[data-ytab]'); if(!t) return;
+  const order=['progress','sessions','plan'];
+  const i=order.indexOf(t.dataset.ytab);
+  const n=order[(i+(e.key==='ArrowRight'?1:order.length-1))%order.length];
+  showYTab(n); const btn=document.getElementById('ytab-'+n); if(btn) btn.focus();
+});
 function openThemeSheet(){
   const desc={light:'The default', dark:'Easier in a dark gym or late at night', auto:'Light or dark, whatever your phone is set to'};
   document.getElementById('altTitle').textContent='Theme';

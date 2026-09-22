@@ -981,12 +981,15 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     const top = d.getElementById('settingsList'), more = d.getElementById('settingsMore');
     const row = k => d.querySelector('[data-setting="' + k + '"]');
     const val = k => (row(k) && row(k).querySelector('.sv') || {}).textContent || '';
-    t('19 · your plan sits at the top of the screen, above the trends',
-      !!top && top.compareDocumentPosition(d.getElementById('dash')) === w.Node.DOCUMENT_POSITION_FOLLOWING);
-    t('19 · app settings sit at the bottom, below the sessions',
-      d.getElementById('grid').compareDocumentPosition(more) === w.Node.DOCUMENT_POSITION_FOLLOWING);
+    t('19 · your plan is one tap away, under its own tab',
+      !!d.getElementById('ytab-plan') && d.getElementById('ypanel-plan').contains(top));
+    t('19 · progress is what you land on', d.getElementById('ytab-progress').getAttribute('aria-selected') === 'true'
+      && !d.getElementById('ypanel-progress').hidden && d.getElementById('ypanel-plan').hidden);
     t('19 · the plan group has its seven rows', ['aim','goal','body','steps','habits','deload','kit'].every(k => top.contains(row(k))));
-    t('19 · the settings groups have theirs', ['records','coach','data','theme','tempo','nudge','account','how'].every(k => more.contains(row(k))));
+    t('19 · records sit with the sessions', ['records','coach'].every(k => more.contains(row(k))));
+    t('19 · and app settings live behind the gear', (() => { G.openAppSettings();
+      const app = d.getElementById('appSettings');
+      return ['theme','tempo','nudge','account','data','how'].every(k => !!app.querySelector('[data-setting="' + k + '"]')); })());
     t('19 · aim row shows the aim and days', /Lose fat/.test(val('aim')) && /3 lifting, 2 cardio/.test(val('aim')), val('aim'));
     t('19 · goal row shows the target and date', /^85 kg by /.test(val('goal')), val('goal'));
     t('19 · calories row shows what to eat and maintenance',
@@ -1357,7 +1360,7 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     const sfoot = txt(signed.d.querySelector('#s-today .colophon .sub'));
     t('24 · signed in, it no longer claims the week is only on this device', !/nowhere else/.test(sfoot) && /copy in your account/.test(sfoot), sfoot);
     t('24 · the export carries the build number', G.exportPayload().version === G.APP_VERSION);
-    t('24 · and this release is build 22', G.APP_VERSION === '22');
+    t('24 · and this release is build 23', G.APP_VERSION === '23');
 
     /* ---- your own habits ---- */
     G.openHabitSheet();
@@ -1762,6 +1765,106 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     t('27 · the last part cannot be removed', del().disabled && G.circDraft.items.length === 1);
     t('27 · a name with quote marks does not break its own field', d.getElementById('circName').value === 'He said "go"', d.getElementById('circName').value);
     G.closeSheets();
+  }
+
+  /* ---------------------------------------------------------- 28 */
+  journey(28, 'Tiles to log with, food first; You in three tabs with settings behind a gear; a weight chart that tells the truth');
+  {
+    const { w, d, G, errs, source } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S, txt = el => el.textContent.replace(/\s+/g, ' ').trim();
+
+    /* ---- the + ---- */
+    G.openLog();
+    const body = d.getElementById('logBody');
+    t('28 · the list is gone, tiles instead', body.querySelectorAll('.logtile').length >= 6 && !body.querySelector('.logrow'));
+    const first = body.querySelector('.logtile');
+    t('28 · food comes first and takes the full width', first.dataset.log === 'food' && first.classList.contains('wide'));
+    t('28 · it shows what to aim at before anything is logged', /kcal and \d+g protein to aim at today/.test(txt(first)), txt(first));
+    G.addFood('chicken', 1, 'l'); G.addFood('rice', 1, 'l'); G.openLog();
+    const f2 = d.querySelector('.logtile.wide');
+    t('28 · and what is left once food is in', /kcal so far/.test(txt(f2)) && /left today/.test(txt(f2)), txt(f2));
+    t('28 · with a progress bar', !!f2.querySelector('.bar i'));
+    t('28 · every tile is a big target', /\.logtile\{[^}]*min-height:104px/.test(source) && /\.logtiles\{[^}]*grid-template-columns:1fr 1fr/.test(source));
+    t('28 · things already done are marked', (() => {
+      S.weights.push({ d: G.todayKey(), kg: 90 }); G.openLog();
+      const weigh = d.querySelector('[data-log="weigh"]');
+      return weigh.classList.contains('done') && /90 kg today/.test(txt(weigh)); })());
+    d.querySelector('[data-log="food"]').click();
+    t('28 · tapping food opens the food sheet', d.getElementById('foodSheet').classList.contains('on'));
+    G.closeSheets();
+
+    /* ---- You, in tabs ---- */
+    G.go('progress'); G.renderAll();
+    const tabs = [...d.querySelectorAll('.ytabs [data-ytab]')];
+    t('28 · three tabs, short labels', tabs.length === 3 && tabs.map(x => txt(x)).join(',') === 'Progress,Sessions,Your plan');
+    t('28 · they are a real tablist', d.querySelector('.ytabs').getAttribute('role') === 'tablist'
+      && tabs.every(x => x.getAttribute('role') === 'tab' && x.getAttribute('aria-controls')));
+    t('28 · you land on Progress', tabs[0].getAttribute('aria-selected') === 'true' && !d.getElementById('ypanel-progress').hidden);
+    t('28 · the selected tab is obvious, not just a colour shift', tabs[0].classList.contains('on')
+      && /\.ytabs button\.on\{background:var\(--ink\);color:var\(--on-ink\)\}/.test(source));
+    tabs[2].click();
+    t('28 · tapping a tab shows only that panel',
+      !d.getElementById('ypanel-plan').hidden && d.getElementById('ypanel-progress').hidden && d.getElementById('ypanel-sessions').hidden);
+    t('28 · and marks it selected', tabs[2].getAttribute('aria-selected') === 'true' && tabs[0].getAttribute('aria-selected') === 'false');
+    tabs[2].dispatchEvent(new w.KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    t('28 · arrow keys move between tabs', d.getElementById('ytab-sessions').getAttribute('aria-selected') === 'true');
+    t('28 · your plan rows live in the plan tab',
+      ['aim', 'goal', 'body', 'steps', 'habits', 'deload', 'kit'].every(k => d.getElementById('ypanel-plan').querySelector('[data-setting="' + k + '"]')));
+    t('28 · sessions and records live in the sessions tab',
+      d.getElementById('ypanel-sessions').contains(d.getElementById('grid'))
+      && !!d.getElementById('ypanel-sessions').querySelector('[data-setting="records"]'));
+
+    /* ---- settings behind the gear ---- */
+    const gear = d.getElementById('settingsBtn');
+    t('28 · there is a gear, labelled for screen readers', !!gear && gear.getAttribute('aria-label') === 'Settings' && !!gear.querySelector('svg'));
+    t('28 · and it is a full size target', /\.phead \.gear\{[^}]*width:44px;height:44px/.test(source));
+    gear.click();
+    t('28 · it opens settings', d.getElementById('settingsSheet').classList.contains('on'));
+    t('28 · holding the app settings, not the plan',
+      ['theme', 'tempo', 'nudge', 'account', 'data', 'how'].every(k => d.getElementById('appSettings').querySelector('[data-setting="' + k + '"]'))
+      && !d.getElementById('appSettings').querySelector('[data-setting="goal"]'));
+    G.closeSheets();
+
+    /* ---- the chart ---- */
+    S.weights = [];
+    t('28 · one weigh in is not a direction', /Two weigh ins/.test(G.weightChart()));
+    /* daily weigh ins, losing 0.1 kg a day = 0.7 a week */
+    for (let i = 20; i >= 0; i--) S.weights.push({ d: G.addDays(G.todayKey(), -i), kg: +(92 - (20 - i) * 0.1).toFixed(1) });
+    const tr = G.weightTrend(G.weightSeries());
+    t('28 · the trend is per day, not per weigh in', Math.abs(tr.perWeek + 0.7) < 0.02, tr.perWeek.toFixed(3) + ' kg a week');
+    t('28 · the sentence says a week and means it', /0\.70 kg a week/.test(G.projectionLine()), G.projectionLine());
+    /* the same loss, but weighed weekly: the rate must come out the same */
+    S.weights = [];
+    for (let i = 3; i >= 0; i--) S.weights.push({ d: G.addDays(G.todayKey(), -i * 7), kg: +(92 - (3 - i) * 0.7).toFixed(1) });
+    const tr2 = G.weightTrend(G.weightSeries());
+    t('28 · weighing weekly gives the same weekly rate as weighing daily', Math.abs(tr2.perWeek + 0.7) < 0.02, tr2.perWeek.toFixed(3));
+    /* uneven gaps: a three week gap must not be drawn as one step */
+    S.weights = [{ d: G.addDays(G.todayKey(), -21), kg: 92 }, { d: G.addDays(G.todayKey(), -1), kg: 90 }, { d: G.todayKey(), kg: 89.9 }];
+    const svg = G.weightChart();
+    const xs = [...svg.matchAll(/<circle cx="([\d.]+)"/g)].map(m => +m[1]).slice(0, 3);
+    t('28 · points are placed by date, so a long gap looks long',
+      (xs[1] - xs[0]) > (xs[2] - xs[1]) * 5, xs.join(', '));
+    t('28 · the chart is not stretched out of shape', !/preserveAspectRatio="none"/.test(svg));
+    t('28 · it describes itself for anyone who cannot see it', /role="img"/.test(svg) && /aria-label="Weighed 3 times over 21 days/.test(svg), (svg.match(/aria-label="[^"]{0,80}/) || [''])[0]);
+    t('28 · the timeline is labelled at both ends and today', (() => {
+      const labels = [...svg.matchAll(/<text[^>]*class="clab"[^>]*>([^<]+)<\/text>/g)].map(m => m[1]);
+      const future = G.prettyDate(G.addDays(G.todayKey(), 28));
+      return labels.includes('today') && labels.includes(future) && labels.includes(G.prettyDate(G.addDays(G.todayKey(), -21))); })(),
+      [...svg.matchAll(/<text[^>]*class="clab"[^>]*>([^<]+)</g)].map(m => m[1]).join(' | '));
+    G.setTarget('weight', 70, G.addDays(G.todayKey(), 300)); S.target.from = 92;
+    const svg2 = G.weightChart();
+    t('28 · a goal far below is named rather than squashing the chart',
+      /goal 70 kg, below this/.test(svg2) && !/stroke-dasharray="2 4"/.test(svg2), (svg2.match(/goal[^<]{0,30}/) || [''])[0]);
+    t('28 · and the weigh ins still use the full height', (() => {
+      const ys = [...svg2.matchAll(/<circle cy?="[\d.]+" cy="([\d.]+)"/g)].map(m => +m[1]);
+      const all = [...svg2.matchAll(/<circle[^>]*cy="([\d.]+)"/g)].map(m => +m[1]);
+      return Math.max(...all) - Math.min(...all) > 40; })(),
+      [...svg2.matchAll(/<circle[^>]*cy="([\d.]+)"/g)].map(m => m[1]).join(','));
+    G.setTarget('weight', 92, G.addDays(G.todayKey(), 90)); S.target.from = 94;
+    const svg3 = G.weightChart();
+    t('28 · a goal within reach is drawn as a line on the chart',
+      /stroke-dasharray="2 4"/.test(svg3) && /goal 92/.test(svg3));
   }
 
   const r = s.report(allErrs);

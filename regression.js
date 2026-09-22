@@ -365,8 +365,8 @@ setTimeout(() => {
     return at.getDay() === ci && at.getHours() === 19 && at.getTime() > Date.now(); })(),
     String(G.nextNudgeAt()));
   t('scheduling without permission does nothing', (() => { G.scheduleNudge(); return true; })());
-  t('reminders appear in settings', (() => { G.go('progress'); G.renderAll();
-    return /nudgeBtn/.test(w.document.getElementById('settingsMore').innerHTML); })());
+  t('reminders appear in settings, behind the gear', (() => { G.go('progress'); G.renderAll(); G.openAppSettings();
+    return /nudgeBtn/.test(w.document.getElementById('appSettings').innerHTML); })());
   G.closeSheets();
 
 

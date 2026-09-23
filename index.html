@@ -109,6 +109,28 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .hero .sub{color:var(--mute);font-size:13.5px;margin-bottom:14px}
 .why{font-size:12.5px;color:var(--warm-ink);background:var(--warm-tint);border-radius:8px;padding:10px 12px;margin-bottom:14px}
 .why b{font-weight:700}
+.glances{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 10px}
+.glance{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:11px 10px;text-align:left;min-height:88px;display:flex;flex-direction:column;gap:3px}
+.glance .gv{font-family:"Archivo Black",Archivo,sans-serif;font-size:22px;letter-spacing:-.04em;line-height:1}
+.glance .gl{font-size:11.5px;font-weight:700;color:var(--mute)}
+.glance .gbar{height:4px;border-radius:3px;background:var(--line-soft);overflow:hidden;margin-top:3px}
+.glance .gbar i{display:block;height:100%}
+.glance .gs{font-size:10.5px;color:var(--mute);font-weight:600;margin-top:auto}
+.quicks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 14px}
+.quick{min-height:52px;border-radius:12px;background:var(--grey-btn);display:flex;flex-direction:column;justify-content:center;gap:2px;padding:0 10px;text-align:left}
+.quick .ql{font-size:13px;font-weight:700}
+.quick .qs{font-size:10.5px;color:var(--mute);font-weight:600}
+.quick.done{background:var(--t-forest)}
+.quick.done .ql:after{content:" ✓";color:var(--forest)}
+.weekstrip{display:flex;gap:4px;padding:2px 14px 4px}
+.weekstrip button{flex:1;min-height:52px;display:flex;flex-direction:column;align-items:center;gap:6px;border-radius:10px;padding:6px 0}
+.weekstrip .d{font-size:10.5px;font-weight:700;color:var(--mute)}
+.weekstrip .dot{width:14px;height:14px;border-radius:50%;background:var(--line);display:block}
+.weekstrip .dot.rest{background:var(--line-soft)}
+.weekstrip .dot.done{box-shadow:none}
+.weekstrip .past .dot{opacity:.75}
+.weekstrip .today{background:var(--t-marine)}
+.weekstrip .today .d{color:var(--ink)}
 .ribbon{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 .ribbon button{padding:10px 0 11px;border-right:1px solid var(--line-soft);text-align:center}
 .ribbon button:last-child{border-right:0}
@@ -984,7 +1006,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='24';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='27';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -1437,6 +1459,24 @@ function sessionMinutes(tpl){
   if(!tpl||!tpl.ex||!tpl.ex.length) return 0;
   return Math.round(5+tpl.ex.reduce((a,r)=>a+(+r.sets||3)*((+r.rest||90)+40),0)/60);
 }
+/* Planned cardio that a step count cannot see: a bike, a rower, a pool, a
+   class. Running and walking are left out on purpose, because those steps are
+   already counted and adding them again would pay twice for the same work.
+   Compendium METs, net of resting, spread across the week. */
+function plannedCardioKcalPerDay(p){
+  const days=(S.plan&&S.plan.days)||[];
+  const kg=+((p||S.profile||{}).weight)||0;
+  if(!kg||!days.length) return 0;
+  let kcal=0;
+  days.forEach(d=>{
+    if(!d.runId||typeof runPlan!=='function') return;
+    const r=runPlan(d.runId);
+    if(!r||cardioMakesSteps(r)) return;
+    const met=+r.met||6, mins=+r.mins||0;
+    kcal+=(met-1)*3.5*kg/200*mins;
+  });
+  return kcal/7;
+}
 /* Planned lifting, spread across the week. From the built plan when there is
    one, otherwise from the number of lifting days asked for. */
 function plannedLiftMinPerDay(p){
@@ -1456,8 +1496,9 @@ function plannedTdee(p,kgOverride){
   const rmr=bmrOf(Object.assign({},p,{weight:kg}));
   const steps=stepTarget(p);
   const base=rmr*1.2, walk=stepKcal(steps,kg), lift=liftNetKcal(plannedLiftMinPerDay(p),kg);
-  return {kcal:Math.round(base+walk+lift), rmr:Math.round(rmr), base:Math.round(base),
-    walk:Math.round(walk), lift:Math.round(lift), steps,
+  const cardio=plannedCardioKcalPerDay(p);
+  return {kcal:Math.round(base+walk+lift+cardio), rmr:Math.round(rmr), base:Math.round(base),
+    walk:Math.round(walk), lift:Math.round(lift), cardio:Math.round(cardio), steps,
     per1000:Math.round(stepKcal(BASAL_STEPS+1000,kg))};
 }
 
@@ -1492,7 +1533,7 @@ function maintenance(){
       const kg=+p.weight;
       const w21=(S.workouts||[]).filter(x=>x.d>=(typeof addDays==='function'? addDays(todayKey(),-21) : '0'));
       const liftMin=w21.length? w21.reduce((a,x)=>a+(x.minutes||0),0)/21 : plannedLiftMinPerDay(p);
-      const kcal=Math.round(bmrOf(p)*1.2+stepKcal(steps,kg)+liftNetKcal(liftMin,kg));
+      const kcal=Math.round(bmrOf(p)*1.2+stepKcal(steps,kg)+liftNetKcal(liftMin,kg)+plannedCardioKcalPerDay(p));
       return {kcal, source:'measured', steps:Math.round(steps),
         label:'resting burn plus the '+num(Math.round(steps))+' steps a day your tracker counted and your sessions'};
     }
@@ -2312,6 +2353,74 @@ function habitRow(){
   } else out+=habitRowFor('start');
   return out+habitRowFor('stop');
 }
+/* ---------- what the home screen is for ----------
+   The research on this is not kind: health and fitness apps lose about seven in
+   ten users inside a hundred days, steepest in the first fortnight, and the
+   average fitness app keeps 3 to 4 in a hundred at day thirty. What separates
+   the ones that last is not gamification: it is self-monitoring, self-
+   regulation and seeing your own history (Fitbit review analysis, 2023; app
+   loyalty study, 2025), and the single biggest reason people quit is the
+   tedium of logging.
+   So the home screen answers three questions in order, and nothing else:
+     1. What am I doing today, and can I start it from here?
+     2. Where am I against today's numbers, and can I log in one tap?
+     3. Is any of this working?
+   No invented streaks to break, no pressure to come back for its own sake. The
+   only nudges are the ones that make the advice better: a weigh in, what you
+   ate, how the day went. */
+
+/* Today's numbers, as a row you can tap to log. Calories first, because food
+   is the thing people stop logging first and the thing the whole forecast
+   rests on. */
+function glanceRow(){
+  const k=todayKey(), t=S.targets||{}, day=S.days[k]||{};
+  const food=foodTotals(k);
+  const eaten=Math.round(food.kcal||0), target=+t.kcal||0;
+  const left=target? target-eaten : null;
+  const protein=Math.round(food.protein||0);
+  const st=(typeof stepsToday==='function')? stepsToday() : null;
+  const cell=(id,top,label,sub,pct,tone)=>`<button class="glance" data-glance="${id}">
+    <div class="gv">${top}</div><div class="gl">${label}</div>
+    ${pct!==null? `<div class="gbar"><i style="width:${Math.max(2,Math.min(100,pct))}%;background:${tone}"></i></div>`:''}
+    <div class="gs">${sub}</div></button>`;
+  return `<div class="glances">
+    ${cell('food', target? num(Math.max(0,left)) : num(eaten), target? 'kcal left':'kcal in',
+      target? num(eaten)+' of '+num(target) : 'no target yet',
+      target? Math.round(eaten/target*100) : null,
+      (left!==null&&left<0)? 'var(--oxblood)' : 'var(--forest-bg)')}
+    ${cell('protein', protein+'g', 'protein', t.protein? 'of '+t.protein+'g':'today',
+      t.protein? Math.round(protein/t.protein*100) : null, 'var(--marine-bg)')}
+    ${cell('steps', st===null? '–' : num(st), 'steps', st===null? 'no tracker':'of '+num(stepTarget()),
+      st===null? null : Math.round(st/stepTarget()*100), 'var(--burnt)')}
+  </div>`;
+}
+/* One tap each, and each one says where it stands rather than nagging. */
+function logRow(){
+  const k=todayKey(), logged=S.days[k]||{};
+  const weighed=S.weights.length&&S.weights[S.weights.length-1].d===k;
+  const meals=dayFood(k).length;
+  const btn=(id,label,state,done)=>`<button class="quick ${done?'done':''}" data-glance="${id}">
+    <span class="ql">${label}</span><span class="qs">${state}</span></button>`;
+  return `<div class="quicks">
+    ${btn('food','Log food', meals? meals+' logged':'nothing yet', meals>0)}
+    ${btn('weigh','Weigh in', weighed? showW(S.weights[S.weights.length-1].kg,S.profile.units==='imperial') : 'not today', weighed)}
+    ${btn('day','Rate the day', logged.wb? logged.wb+'/10':'one slider', !!logged.wb)}
+  </div>`;
+}
+/* How the week is actually going, in one honest sentence. */
+function weekLine(){
+  const plan=ensurePlan(), i=dowIdx();
+  const planned=plan.days.filter(d=>d.type&&d.slot!=='walk').length;
+  let done=0; for(let n=0;n<=i;n++) if(dayDone(n)) done++;
+  const days=lastNDays(7).length;
+  const bits=[];
+  bits.push(done+' of '+planned+' sessions done');
+  if(days) bits.push(days+' of the last 7 days logged');
+  const tr=(typeof weightTrend==='function'&&typeof weightSeries==='function')? weightTrend(weightSeries()) : null;
+  if(tr&&tr.perWeek!==null&&Math.abs(tr.perWeek)>=0.05)
+    bits.push((tr.perWeek<0?'down ':'up ')+Math.abs(tr.perWeek).toFixed(2)+' kg a week');
+  return bits.join(' · ');
+}
 function renderToday(){
   const plan=ensurePlan(), d=todayPlan(), i=dowIdx(), logged=S.days[todayKey()];
   const weighedToday=S.weights.length && S.weights[S.weights.length-1].d===todayKey();
@@ -2340,12 +2449,14 @@ function renderToday(){
     ${d.type&&d.slot!=='walk'&&!done? `<button class="skipbtn" data-restday="${i}">Not today</button>`:''}
     ${d.exclude&&d.exclude.length?`<div class="note">Leaving out ${d.exclude.join(', ')} while it settles.</div>`:''}
   </div>
-  <div class="ribbon">${plan.days.map((x,n)=>`<button data-planday="${n}" class="${n===i?'today':''}">
-      <div class="d">${DAYS[n][0]}</div>
-      <div class="m ${x.kind==='rest'?'empty':''} ${dayDone(n)?'done':''}" style="${x.kind==='rest'?'':'background:'+(HUE[x.kind]||HUE.any).deep}">${dayLabel(x).slice(0,2)}</div>
-      ${x.checkin?`<div class="cidot" title="Check in"></div>`:''}
+  ${glanceRow()}
+  ${logRow()}
+  <div class="sechead"><h2>Your week so far</h2><button data-go="plan">The whole week</button></div>
+  <div class="weekstrip">${plan.days.map((x,n)=>`<button data-planday="${n}" class="${n===i?'today':''} ${n<i?'past':''}">
+      <span class="d">${DAYS[n][0]}</span>
+      <span class="dot ${x.kind==='rest'?'rest':''} ${dayDone(n)?'done':''}" style="${x.kind==='rest'||!dayDone(n)?'':'background:'+(HUE[x.kind]||HUE.any).deep}"></span>
     </button>`).join('')}</div>
-  <div class="sechead"><h2>Quick bits</h2></div>
+  <div class="note" style="margin:2px 14px 10px">${weekLine()}</div>
   <button class="todo ${weighedToday?'done':''}" id="todoWeigh">
     <span class="ic" style="background:var(--t-forest);color:var(--forest)">kg</span>
     <span class="t"><b>Weigh in</b><span>${S.weights.length? 'last '+showW(S.weights[S.weights.length-1].kg,S.profile.units==='imperial'):'takes five seconds'}</span></span>
@@ -2369,11 +2480,12 @@ function renderToday(){
       <span style="display:flex;gap:6px">
         <button class="mini go" data-painok="${n}">Fine now</button>
         <button class="mini" data-painsore="${n}">Still sore</button></span></div>`).join('')}
-  <div class="sechead"><h2>Coming up</h2><button data-go="plan">Whole week</button></div>
-  ${plan.days.slice(i+1,i+4).map((x,n)=>`<div class="pday"><div class="dd">${DAYS[i+1+n]}</div>
+  ${(()=>{ const next=plan.days.slice(i+1,i+3);
+    if(!next.length) return `<div class="note" style="margin:0 14px 10px">That is the week. ${checkinDone()? 'You have already checked in.' : 'Your check in is '+checkinDayName()+'.'}</div>`;
+    return `<div class="sechead"><h2>Next up</h2></div>`
+      +next.map((x,n)=>`<button class="pday" data-planday="${i+1+n}"><div class="dd">${DAYS[i+1+n]}</div>
       <div class="txt"><b>${dayLabel(x)}</b><span>${daySub(x)}</span></div>
-      <div class="sq" style="background:${x.kind==='rest'?'var(--line)':(HUE[x.kind]||HUE.any).deep}"></div></div>`).join('')
-    || `<div class="empty">That is the week. ${checkinDone()? 'You have already checked in.' : 'Your check in is '+checkinDayName()+'.'}</div>`}`;
+      <div class="sq" style="background:${x.kind==='rest'?'var(--line)':(HUE[x.kind]||HUE.any).deep}"></div></button>`).join(''); })()}`;
 }
 function openConnect(){
   $('connectBody').innerHTML=SOURCES.map(x=>`<button class="logrow" data-connect="${x.id}">
@@ -2881,6 +2993,13 @@ document.addEventListener('click',e=>{
     toast((meta? meta.t : 'Habit')+' put down','Undo',()=>{ S.habits=snapshot; save(); renderAll(); });
     return; }
   if(e.target.closest('#habitChange')){ openHabitSheet(); return; }
+  const gl=e.target.closest('[data-glance]');
+  if(gl){ const what=gl.dataset.glance;
+    if(what==='food'||what==='protein') openFood(false);
+    else if(what==='weigh') openWeigh();
+    else if(what==='day') openDay();
+    else if(what==='steps'){ if(healthOn()) openDay(); else openConnect(); }
+    return; }
   const pok=e.target.closest('[data-painok]');
   if(pok){ const n=pok.dataset.painok; clearPain(n); toast(n+' is back in the plan'); }
   const pso=e.target.closest('[data-painsore]');
@@ -3370,7 +3489,7 @@ function onbRender(){
         : 'Somewhere between 1,000 and 40,000.'}</div>
       ${ready? `<div class="revday" style="margin-top:14px"><div class="revhead">What that gives you <span>an estimate</span></div>
         <div class="revrow" style="pointer-events:none"><div class="txt"><div class="t">${num(kcal)} kcal a day to stay where you are</div>
-          <div class="s">Resting burn ${num(pt.rmr)}${sex==='x'?' (midpoint of the male and female equations)':''}, a sedentary day ${num(pt.base)}, plus ${num(pt.walk)} for ${num(pt.steps)} steps and ${num(pt.lift)} for your lifting. Each 1,000 steps is about ${pt.per1000} kcal for you. Replaced by your own numbers once you have logged about three weeks.</div></div></div>
+          <div class="s">Resting burn ${num(pt.rmr)}${sex==='x'?' (midpoint of the male and female equations)':''}, a sedentary day ${num(pt.base)}, plus ${num(pt.walk)} for ${num(pt.steps)} steps${pt.cardio?', '+num(pt.cardio)+' for cardio a step count misses':''} and ${num(pt.lift)} for your lifting. Each 1,000 steps is about ${pt.per1000} kcal for you. Replaced by your own numbers once you have logged about three weeks.</div></div></div>
         ${preview&&preview.dir!=='hold'? `<div class="revrow" style="pointer-events:none"><div class="txt"><div class="t">${num(preview.kcal)} kcal a day to eat</div>
           <div class="s">${calorieLine(preview)}</div></div></div>`:''}
         ${preview&&preview.split? `<div class="revrow" id="onbSplit" style="pointer-events:none"><div class="txt"><div class="t">${preview.dir==='lose'&&preview.split.deficit>0?'Where the deficit comes from':'What your steps are worth'}</div>
@@ -3456,6 +3575,17 @@ function onbCta(){
   if(step===1) $('onbNext').disabled = (onbDraft.liftDays+onbDraft.cardioDays)>6
     || !(onbDraft.kit&&onbDraft.kit.length);
 }
+/* Grouped, because a list of nineteen sessions is no use. */
+function cardioGroups(){
+  const out=[];
+  Object.keys(CARDIO_KINDS).forEach(k=>{
+    const list=(S.runPlans||[]).filter(r=>(r.kind||'run')===k);
+    if(list.length) out.push([CARDIO_KINDS[k],list]);
+  });
+  const rest=(S.runPlans||[]).filter(r=>!CARDIO_KINDS[r.kind||'run']);
+  if(rest.length) out.push(['Other',rest]);
+  return out;
+}
 function openRunSwap(dayIndex,current){
   const row=(id,title,sub)=>{
     const why=(typeof suggestFor==='function')? suggestFor(id) : '';
@@ -3468,8 +3598,8 @@ function openRunSwap(dayIndex,current){
   document.getElementById('altBody').innerHTML=
     `<div class="slab" style="padding:0 14px">Lifting</div>`+
     (S.templates||[]).map(t=>row(t.id,t.name+' day',t.ex.length+' movements')).join('')+
-    `<div class="slab" style="padding:0 14px">Running</div>`+
-    (S.runPlans||[]).map(r=>row(r.id,r.name,r.sub+' · about '+r.mins+' min')).join('')+
+    cardioGroups().map(([label,list])=>`<div class="slab" style="padding:0 14px">${label}</div>`+
+      list.map(r=>row(r.id,r.name,r.sub+' · about '+r.mins+' min')).join('')).join('')+
     ((S.circuits||[]).length? `<div class="slab" style="padding:0 14px">Circuits</div>`+
       (S.circuits||[]).map(c=>row(c.id,c.name,c.sub+' · about '+c.mins+' min')).join('') : '')+
     `<div class="slab" style="padding:0 14px">Or nothing much</div>`+
@@ -4364,7 +4494,7 @@ function copyBrief(){
 
 renderProgress();
 Object.assign(window.__G,{TRAIN_DAYS,DEFAULT_TARGETS,ownTargets,allMovements,drawWeekStep,
-  lastNDays,avg,steers,coachBrief,openDay,openWeek,
+  lastNDays,avg,steers,coachBrief,plannedCardioKcalPerDay,openDay,openWeek,
   HABITS,habitOf,currentHabit,startHabit,retireHabit,toggleHabitDay,habitWeek,habitStreak,habitRate,suggestHabit,openHabitSheet,habitRow,habitRowFor,habitApplies,habitSlots,addOwnHabit,ownHabits,escHabit,OWN_MAX,colophonText,
   TARGET_KINDS,setTarget,clearTarget,targetNow,targetProgress,openTargetSheet,targetLine,
   nudgeState,nextNudgeAt,scheduleNudge,enableNudges,disableNudges,fireNudge,nudgeHelp,onIOS,installed,NUDGE_KEY,
@@ -4734,35 +4864,115 @@ const GROUPS=[...new Set(LIBRARY.map(x=>x.g))];
    Every session is editable, and any day can be swapped for another. */
 function seedRunPlans(){
   return [
-    {id:'r_easy',name:'Easy run',kind:'run',mins:35,
+    {id:'r_easy',name:'Easy run',kind:'run',mins:35,met:8.0,
       sub:'Conversational the whole way',
       why:'The bulk of a week should be easy enough to talk in full sentences. This is the one that builds the engine.',
       steps:[{n:'Walk to loosen off',r:'5 min',sec:10},{n:'Easy running',r:'25 min, conversational',sec:16},
         {n:'Walk home',r:'5 min',sec:8}]},
-    {id:'r_long',name:'Long run',kind:'run',mins:60,
+    {id:'r_long',name:'Long run',kind:'run',mins:60,met:8.0,
       sub:'Slower than you think, further than usual',
       why:'One longer effort a week. Pace should feel too easy at the start. If it does not, it is too fast.',
       steps:[{n:'Walk to loosen off',r:'5 min',sec:10},{n:'Easy running',r:'45 to 55 min',sec:18},
         {n:'Walk and stretch',r:'5 min',sec:10}]},
-    {id:'r_intervals',name:'Intervals',kind:'run',mins:40,
+    {id:'r_intervals',name:'Intervals',kind:'run',mins:40,met:10.0,
       sub:'6 × 2 minutes hard, 2 minutes easy',
       why:'The hard fifth of the week. Hard means you can manage a word or two, not a sentence.',
       steps:[{n:'Easy jog to warm up',r:'10 min',sec:12},{n:'2 min hard, 2 min easy jog',r:'× 6',sec:18},
         {n:'Easy jog to cool down',r:'10 min',sec:12}]},
-    {id:'r_tempo',name:'Tempo run',kind:'run',mins:40,
+    {id:'r_tempo',name:'Tempo run',kind:'run',mins:40,met:9.8,
       sub:'20 minutes comfortably hard',
       why:'Comfortably hard: you could say a short sentence, but you would rather not.',
       steps:[{n:'Easy jog to warm up',r:'10 min',sec:12},{n:'Steady, comfortably hard',r:'20 min',sec:18},
         {n:'Easy jog to cool down',r:'10 min',sec:10}]},
-    {id:'r_walkrun',name:'Run walk build',kind:'run',mins:30,
+    {id:'r_walkrun',name:'Run walk build',kind:'run',mins:30,met:6.0,
       sub:'8 × 2 minutes running, 1 minute walking',
       why:'How to start, or come back, without wrecking yourself. Move to the easy run once 30 minutes feels fine.',
       steps:[{n:'Walk to warm up',r:'5 min',sec:10},{n:'2 min run, 1 min walk',r:'× 8',sec:18},
-        {n:'Walk to finish',r:'5 min',sec:10}]}
+        {n:'Walk to finish',r:'5 min',sec:10}]},
+
+    /* ---------- everything that is not running ----------
+       Cardio was five kinds of run, which is no use to anyone who cycles,
+       rows, swims or takes a class. MET values are from the Compendium of
+       Physical Activities (Ainsworth and colleagues, 2011): the standard
+       reference for what an activity costs. They are averages for the whole
+       session, so a hard day is worth more than the number says and an easy
+       one less. */
+    {id:'c_bike_easy',name:'Easy spin',kind:'bike',mins:45,met:6.8,inSteps:false,
+      sub:'Steady, talking pace',
+      why:'The same job as an easy run, without the pounding. Handy on a day when the legs are wrecked from lifting.',
+      steps:[{n:'Spin up, light gear',r:'5 min',sec:10},{n:'Steady riding',r:'35 min, conversational',sec:16},
+        {n:'Spin down',r:'5 min',sec:8}]},
+    {id:'c_bike_intervals',name:'Bike intervals',kind:'bike',mins:40,met:8.5,inSteps:false,
+      sub:'8 × 90 seconds hard',
+      why:'Hard work with almost no impact and nothing to be sore from tomorrow.',
+      steps:[{n:'Easy spin to warm up',r:'10 min',sec:12},{n:'90 sec hard, 2 min easy',r:'× 8',sec:18},
+        {n:'Easy spin to finish',r:'8 min',sec:10}]},
+    {id:'c_spin',name:'Spin class',kind:'bike',mins:45,met:8.5,inSteps:false,
+      sub:'Whatever the instructor says',
+      why:'Fine as your hard cardio day. If you lift the same day, lift first.',
+      steps:[{n:'The class',r:'45 min',sec:20}]},
+    {id:'c_row_steady',name:'Steady row',kind:'row',mins:30,met:6.0,inSteps:false,
+      sub:'Under control, long strokes',
+      why:'Legs, back and lungs at once. Drive with the legs, arms last.',
+      steps:[{n:'Easy rowing',r:'5 min',sec:10},{n:'Steady rowing',r:'20 min',sec:16},
+        {n:'Easy rowing',r:'5 min',sec:8}]},
+    {id:'c_row_intervals',name:'Row intervals',kind:'row',mins:30,met:8.5,inSteps:false,
+      sub:'6 × 500m, easy row between',
+      why:'Short and honest. Hold the same split on the last one as the first, or you went too hard.',
+      steps:[{n:'Easy rowing to warm up',r:'8 min',sec:12},{n:'500m hard, 2 min easy',r:'× 6',sec:18},
+        {n:'Easy rowing to finish',r:'5 min',sec:10}]},
+    {id:'c_swim',name:'Swim',kind:'swim',mins:35,met:5.8,inSteps:false,
+      sub:'Steady lengths, rest at the wall',
+      why:'No impact at all, and the one cardio day that will not leave your legs heavy for lifting.',
+      steps:[{n:'Easy lengths',r:'5 min',sec:10},{n:'Steady lengths',r:'25 min',sec:16},
+        {n:'Easy lengths',r:'5 min',sec:8}]},
+    {id:'c_swim_intervals',name:'Swim intervals',kind:'swim',mins:40,met:9.8,inSteps:false,
+      sub:'10 × 50m hard, 30 seconds rest',
+      why:'Hard swimming is very hard. Cut the set short rather than turn it into slow lengths.',
+      steps:[{n:'Easy lengths',r:'8 min',sec:12},{n:'50m hard, 30 sec rest',r:'× 10',sec:18},
+        {n:'Easy lengths',r:'6 min',sec:10}]},
+    {id:'c_cross',name:'Cross trainer',kind:'machine',mins:35,met:5.0,inSteps:false,
+      sub:'Steady, hands on the handles',
+      why:'Easy on the joints and easy to zone out on, which is the point some days.',
+      steps:[{n:'Easy to start',r:'5 min',sec:10},{n:'Steady',r:'25 min',sec:16},{n:'Easy to finish',r:'5 min',sec:8}]},
+    {id:'c_stairs',name:'Stair machine',kind:'machine',mins:25,met:9.0,inSteps:false,
+      sub:'Steady climbing, no leaning on the rails',
+      why:'Brutal for the time it takes. Leaning on the handles is how people fake it: stand up.',
+      steps:[{n:'Easy climbing',r:'5 min',sec:10},{n:'Steady climbing',r:'15 min',sec:18},
+        {n:'Easy climbing',r:'5 min',sec:8}]},
+    {id:'c_airbike',name:'Air bike intervals',kind:'bike',mins:20,met:9.0,inSteps:false,
+      sub:'10 × 30 seconds on, 60 off',
+      why:'Twenty minutes, and the hardest twenty on this list. Start easier than you think.',
+      steps:[{n:'Easy pedalling',r:'5 min',sec:10},{n:'30 sec hard, 60 sec easy',r:'× 10',sec:20},
+        {n:'Easy pedalling',r:'4 min',sec:10}]},
+    {id:'c_skip',name:'Skipping',kind:'skip',mins:20,met:11.0,inSteps:false,
+      sub:'10 × 1 minute, rest as needed',
+      why:'Cheap, portable, and harder than it looks. Trips are part of it.',
+      steps:[{n:'Easy skipping',r:'3 min',sec:10},{n:'1 min skipping, rest',r:'× 10',sec:18},
+        {n:'Easy skipping',r:'3 min',sec:8}]},
+    {id:'c_walk_brisk',name:'Brisk walk',kind:'walk',mins:45,met:4.3,
+      sub:'Quick enough that talking takes effort',
+      why:'The most underrated thing here. It adds up, it costs nothing, and it never interferes with lifting.',
+      steps:[{n:'Walking',r:'45 min, brisk',sec:20}]},
+    {id:'c_walk_hill',name:'Hill walk',kind:'walk',mins:60,met:6.0,
+      sub:'Out on a hill, or the treadmill on an incline',
+      why:'Steady and hard without being fast. A hill or a 10% incline does the work for you.',
+      steps:[{n:'Warm up on the flat',r:'5 min',sec:10},{n:'Climbing',r:'50 min',sec:18},
+        {n:'Easy to finish',r:'5 min',sec:8}]},
+    {id:'c_sport',name:'A match or training',kind:'sport',mins:60,met:7.0,inSteps:false,
+      sub:'Football, hurling, five a side, whatever you play',
+      why:'It counts. Log it as cardio and take it into account when the week looks heavy.',
+      steps:[{n:'The session',r:'60 min',sec:20}]}
   ];
 }
+/* Sessions that move you along the ground already show up in your step count.
+   Anything else does not, which is why they are counted separately. */
+const CARDIO_KINDS={run:'Running',bike:'Bike',row:'Rowing',swim:'Swimming',
+  machine:'Machines',skip:'Skipping',walk:'Walking',sport:'Sport'};
+const cardioMakesSteps=r=>!r||r.inSteps!==false;
 S.runPlans=Array.isArray(S.runPlans)&&S.runPlans.length? S.runPlans : seedRunPlans();
 const runPlan=id=>(S.runPlans||[]).find(r=>r.id===id)||null;
+try{ Object.assign(window.__G,{runPlan,cardioGroups,CARDIO_KINDS,cardioMakesSteps,seedRunPlans}); }catch(e){}
 function runSession(id){
   const r=runPlan(id); if(!r) return null;
   return {title:r.name,type:'run',adds:1,runId:id,steps:r.steps.slice()};
@@ -5283,11 +5493,11 @@ $('gymClose').addEventListener('click',()=>{
    accepted source; branded items vary, so anything off a packet is better
    taken from the packet, which is what "Something not on the list" is for.
    Irish staples are included on purpose: rashers, sausages, black and white
-   pudding, soda and brown bread, spuds every way they are eaten, chowder,
+   pudding, soda and brown bread, potatoes every way they are eaten, chowder,
    stew, a pint, a bag of crisps.
    Categories exist so the list can be browsed rather than only searched. */
-const FOOD_CATS=[['common','Usual suspects'],['breakfast','Breakfast'],['meat','Meat and fish'],
-  ['carbs','Bread, spuds and grains'],['veg','Fruit and veg'],['dairy','Dairy and eggs'],
+const FOOD_CATS=[['common','Common foods'],['breakfast','Breakfast'],['meat','Meat and fish'],
+  ['carbs','Bread, potatoes and grains'],['veg','Fruit and vegetables'],['dairy','Dairy and eggs'],
   ['meals','Meals and takeaway'],['snacks','Snacks and sweets'],['drinks','Drinks']];
 const FOODS=[
   /* breakfast */
@@ -5300,7 +5510,7 @@ const FOODS=[
   {id:'granola',n:'Granola',u:'50g',kcal:220,p:5,c:29,f:9,cat:'breakfast'},
   {id:'muesli',n:'Muesli, no added sugar',u:'50g',kcal:180,p:5,c:30,f:4,cat:'breakfast'},
   {id:'fullirish',n:'Full Irish breakfast',u:'plate',kcal:820,p:41,c:48,f:50,cat:'breakfast'},
-  {id:'rasher',n:'Back rasher, grilled',u:'rasher',kcal:70,p:6,c:0,f:5,cat:'breakfast'},
+  {id:'rasher',n:'Bacon rasher, grilled',u:'rasher',kcal:70,p:6,c:0,f:5,cat:'breakfast'},
   {id:'sausage',n:'Pork sausage',u:'sausage',kcal:115,p:5,c:5,f:8,cat:'breakfast'},
   {id:'blackpud',n:'Black pudding',u:'slice',kcal:115,p:4.5,c:7,f:7.5,cat:'breakfast'},
   {id:'whitepud',n:'White pudding',u:'slice',kcal:120,p:3,c:10,f:8,cat:'breakfast'},
@@ -5329,7 +5539,7 @@ const FOODS=[
   {id:'prawns',n:'Prawns, cooked',u:'100g',kcal:100,p:22,c:0,f:1,cat:'meat'},
   {id:'fishfingers',n:'Fish fingers, 4',u:'4',kcal:220,p:13,c:19,f:10,cat:'meat'},
 
-  /* bread, spuds and grains */
+  /* bread, potatoes and grains */
   {id:'brownbread',n:'Brown soda bread',u:'slice',kcal:120,p:4,c:21,f:2.5,cat:'carbs'},
   {id:'wholemeal',n:'Wholemeal bread',u:'slice',kcal:95,p:4.5,c:16,f:1.2,cat:'carbs'},
   {id:'whitebread',n:'White bread',u:'slice',kcal:95,p:3.2,c:18,f:0.9,cat:'carbs'},
@@ -5342,7 +5552,7 @@ const FOODS=[
   {id:'mash',n:'Mashed potato with butter',u:'200g',kcal:220,p:4,c:32,f:8,cat:'carbs'},
   {id:'roastspuds',n:'Roast potatoes',u:'150g',kcal:220,p:4,c:32,f:8,cat:'carbs'},
   {id:'chips_oven',n:'Oven chips',u:'150g',kcal:250,p:4,c:38,f:9,cat:'carbs'},
-  {id:'chips_bag',n:'Chipper chips',u:'portion',kcal:600,p:8,c:75,f:29,cat:'carbs'},
+  {id:'chips_bag',n:'Chips, takeaway',u:'portion',kcal:600,p:8,c:75,f:29,cat:'carbs'},
   {id:'sweetpot',n:'Sweet potato, baked',u:'200g',kcal:180,p:3,c:41,f:0.3,cat:'carbs'},
   {id:'rice',n:'Rice, cooked',u:'180g',kcal:250,p:5,c:55,f:0.6,cat:'carbs'},
   {id:'ricebrown',n:'Brown rice, cooked',u:'180g',kcal:240,p:5.5,c:50,f:1.8,cat:'carbs'},
@@ -5367,7 +5577,7 @@ const FOODS=[
   {id:'tomato',n:'Tomatoes',u:'100g',kcal:18,p:0.8,c:3,f:0.2,cat:'veg'},
   {id:'mushrooms',n:'Mushrooms',u:'100g',kcal:22,p:3,c:1,f:0.5,cat:'veg'},
   {id:'onion',n:'Onion, cooked',u:'100g',kcal:40,p:1.2,c:8,f:0.2,cat:'veg'},
-  {id:'veg_mixed',n:'Mixed veg',u:'150g',kcal:70,p:4,c:10,f:0.8,cat:'veg'},
+  {id:'veg_mixed',n:'Mixed vegetables',u:'150g',kcal:70,p:4,c:10,f:0.8,cat:'veg'},
   {id:'beetroot',n:'Beetroot',u:'100g',kcal:45,p:1.7,c:8,f:0.1,cat:'veg'},
 
   /* dairy and eggs */
@@ -5387,7 +5597,7 @@ const FOODS=[
   /* meals and takeaway */
   {id:'chickencurry',n:'Chicken curry and rice',u:'plate',kcal:700,p:38,c:85,f:22,cat:'meals'},
   {id:'stew',n:'Irish stew',u:'bowl',kcal:480,p:30,c:40,f:21,cat:'meals'},
-  {id:'baconcabbage',n:'Bacon and cabbage with spuds',u:'plate',kcal:600,p:40,c:45,f:28,cat:'meals'},
+  {id:'baconcabbage',n:'Bacon and cabbage with potatoes',u:'plate',kcal:600,p:40,c:45,f:28,cat:'meals'},
   {id:'chowder',n:'Seafood chowder',u:'bowl',kcal:420,p:24,c:28,f:23,cat:'meals'},
   {id:'shepherds',n:"Shepherd's pie",u:'portion',kcal:550,p:30,c:48,f:26,cat:'meals'},
   {id:'lasagne',n:'Lasagne',u:'portion',kcal:600,p:32,c:52,f:29,cat:'meals'},
@@ -5396,7 +5606,7 @@ const FOODS=[
   {id:'chickensalad',n:'Chicken salad',u:'bowl',kcal:380,p:40,c:14,f:18,cat:'meals'},
   {id:'sandwich_chicken',n:'Chicken sandwich',u:'one',kcal:430,p:30,c:42,f:15,cat:'meals'},
   {id:'sandwich_ham',n:'Ham and cheese sandwich',u:'one',kcal:450,p:22,c:41,f:22,cat:'meals'},
-  {id:'toastie',n:'Toasted special',u:'one',kcal:520,p:26,c:44,f:27,cat:'meals'},
+  {id:'toastie',n:'Toasted ham and cheese sandwich',u:'one',kcal:520,p:26,c:44,f:27,cat:'meals'},
   {id:'soup',n:'Vegetable soup',u:'bowl',kcal:150,p:4,c:22,f:5,cat:'meals'},
   {id:'chickenroll',n:'Chicken fillet roll',u:'one',kcal:700,p:35,c:75,f:28,cat:'meals'},
   {id:'breakfastroll',n:'Breakfast roll',u:'one',kcal:800,p:32,c:72,f:42,cat:'meals'},
@@ -5407,7 +5617,7 @@ const FOODS=[
   {id:'kebab',n:'Doner kebab',u:'one',kcal:800,p:40,c:70,f:40,cat:'meals'},
   {id:'sushi',n:'Sushi',u:'8 pieces',kcal:350,p:14,c:60,f:5,cat:'meals'},
   {id:'omelette',n:'Three egg omelette',u:'one',kcal:300,p:21,c:2,f:23,cat:'meals'},
-  {id:'protein_bowl',n:'Chicken, rice and veg',u:'bowl',kcal:600,p:45,c:70,f:13,cat:'meals'},
+  {id:'protein_bowl',n:'Chicken, rice and vegetables',u:'bowl',kcal:600,p:45,c:70,f:13,cat:'meals'},
 
   /* snacks and sweets */
   {id:'crisps',n:'Crisps',u:'bag',kcal:180,p:2,c:17,f:11,cat:'snacks'},
@@ -5543,7 +5753,7 @@ function foodListHTML(){
   else if(foodCat==='mine') list=mine;
   else if(foodCat) list=pool.filter(f=>f.cat===foodCat);
   else {
-    /* nothing chosen: what they reach for, then the usual suspects */
+    /* nothing chosen: what they reach for, then the common ones */
     const first=recents.map(foodOf).filter(Boolean);
     const common=FOOD_COMMON.map(foodOf).filter(f=>f&&first.indexOf(f)<0);
     list=first.concat(common, mine.filter(f=>first.indexOf(f)<0)).slice(0,24);
@@ -5585,7 +5795,7 @@ function drawFood(){
     <div class="slab">Add to ${MEALS.find(m=>m[0]===foodSlot)[1].toLowerCase()}</div>
     <input id="foodSearch" placeholder="Search food" value="${foodQuery}" aria-label="Search food" style="border:1px solid var(--line);border-radius:9px;padding:12px;width:100%;font-size:14.5px;font-weight:600;margin-bottom:10px">
     <div class="pickchips" id="foodCats">
-      <button class="${foodCat?'':'on'}" data-foodcat="">Usual suspects</button>
+      <button class="${foodCat?'':'on'}" data-foodcat="">Common foods</button>
       ${FOOD_CATS.filter(c=>c[0]!=='common').map(([id,label])=>`<button class="${foodCat===id?'on':''}" data-foodcat="${id}">${label}</button>`).join('')}
       ${allFoods().some(f=>f.mine)? `<button class="${foodCat==='mine'?'on':''}" data-foodcat="mine">Yours</button>`:''}
     </div>
@@ -6618,6 +6828,8 @@ function weightSeries(){
   return inWindow.length>=2? inWindow : all.slice(-12);
 }
 function weightTrend(pts){
+  /* no weigh ins yet, or only one: there is no trend to report */
+  if(!Array.isArray(pts)||pts.length<2) return {perWeek:null,perDay:null,points:pts||[]};
   /* least squares against days elapsed, so uneven gaps are honoured */
   const t0=dateOf(pts[0].d).getTime();
   const xs=pts.map(p=>(dateOf(p.d).getTime()-t0)/864e5), ys=pts.map(p=>p.kg);
@@ -6798,6 +7010,7 @@ function openHow(){
     <div class="method"><b>Protein</b><span>1.8 g per kilo. The meta-analysis on protein and resistance training supports roughly 1.6 to 2.2 g/kg, so this sits in the middle, and eating more of it while losing weight helps hold onto muscle. ${(()=>{const b=proteinBasis(S.profile); return b.adjusted? `Above a BMI of about 30 the kilo is an adjusted reference weight, ${b.kg} kg in your case rather than ${S.profile.weight} kg, because fat mass carries no protein requirement and total bodyweight would overshoot.` : 'Above a BMI of about 30 it is taken from an adjusted reference weight instead, since fat mass carries no protein requirement.';})()}</span></div>
     <div class="method"><b>Maintenance</b><span>One figure, from the best evidence the app has. To start: resting burn by Mifflin St Jeor, times 1.2 for a sedentary day, plus your step target and the lifting in your plan. Walking is 3 METs for every 100 steps a minute, net of rest, counted above 2,500 a day because a sedentary day already contains those (under 2,500 is what Tudor-Locke and colleagues class as basal activity; using it as the baseline is a judgement). Lifting is 4 METs for as long as your templates take. Once a tracker is connected, your real steps replace the target. Once you have about three weeks of food and weigh ins, what you actually ate minus what the scale says you stored replaces both, and that is the most accurate of the three. Running is counted as steps, which under-counts it a little; physical work a step count cannot see is missed; the three-week figure catches both.</span></div>
     <div class="method"><b>Your calorie target</b><span>Losing: three limits, and the tightest wins. 0.75% of your bodyweight a week, or what your goal date needs up to 1%, the range that keeps muscle while dieting (Helms and colleagues, 2014). A deficit of no more than 750 kcal a day, the top of what the 2013 AHA/ACC/TOS guideline prescribes, because a percentage keeps growing with size and clinical guidance does not. And about 69 kcal a day per kilo of body fat, Alpert's (2005) estimate of the most the fat store can supply; a theoretical model rather than a tested rule, so it is only a ceiling, and in practice it only matters for lean people asking for a fast date. Body fat is yours if you give it, otherwise estimated from BMI, age and sex by the Deurenberg equation, which is about 4 points out either way and cannot tell muscle from fat. Gaining: 0.25 to 0.5% a week, about 10 to 20% over maintenance (Iraki and colleagues, 2019). Never below 1,500 kcal for men or 1,200 for women, and never above maintenance while losing. When you reach your goal weight, the target goes back to maintenance.</span></div>
+    <div class="method"><b>Cardio</b><span>Nineteen sessions across running, the bike, the rower, the pool, the machines, skipping, walking and whatever you play. What each one costs comes from the Compendium of Physical Activities (Ainsworth and colleagues, 2011), net of what you would burn sitting still. Running and walking are not added to your maintenance because their steps are already counted; a bike, a rower, a pool or a class are, because no step count can see them.</span></div>
     <div class="method"><b>The food list</b><span>Typical values for the portion named, for ${FOODS.length} foods people here actually eat. Composition figures in Ireland come from McCance and Widdowson's Composition of Foods Integrated Dataset, which the Food Safety Authority of Ireland names as the accepted source. Brands vary, so anything with a label on it is better taken from the label: "Something not on the list" saves it for good. Alcohol carries about 7 kcal a gram, which is why a pint's calories are mostly not protein, carbs or fat.</span></div>
     <div class="method"><b>What your steps are worth</b><span>Steps are part of what you burn, so they are already inside your maintenance. The deficit splits into the part food makes, eating less than you burn without walking, and the part the steps make, and the two add up to the whole. That is why skipping the steps at the same food slows the loss by exactly what they were burning.</span></div>
     <div class="method"><b>Easy weeks</b><span>Every ${+S.profile.deloadEvery||DELOAD_EVERY} weeks by default, from the 4 to 8 week range in Bell and colleagues' 2025 recommendations and the roughly five and a half week gap reported by 246 competitive lifters (Rogerson and colleagues, 2024). About 10% lighter and 25 to 90% less work depending on recovery. Easy-week sessions never set your next weights.</span></div>

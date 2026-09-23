@@ -1574,8 +1574,8 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     d.getElementById('todayViewEdit').click();
     t('25 · which opens today\'s card on the plan', d.getElementById('s-plan').classList.contains('on') && cards()[ti].classList.contains('open'));
     G.go('today');
-    d.querySelector('.ribbon [data-planday="' + ti + '"]').click();
-    t('25 · the day sheet from the ribbon has Edit this workout too', !!d.querySelector('#dayDetail [data-tpledit]'));
+    d.querySelector('.weekstrip [data-planday="' + ti + '"]').click();
+    t('25 · the day sheet from the week strip has Edit this workout too', !!d.querySelector('#dayDetail [data-tpledit]'));
     G.closeSheets();
 
     /* ================= a finished session in full ================= */
@@ -1890,6 +1890,11 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     t('29 · drinks with alcohol in them say so', G.foodOf('pint_stout').alc > 0 && G.foodOf('water').alc === undefined);
     t('29 · the Irish staples are there', ['brownbread','rasher','blackpud','chickenroll','breakfastroll','chowder','stew','baconcabbage','pint_stout','chips_bag']
       .every(id => !!G.foodOf(id)), ['brownbread','rasher','blackpud','chickenroll','breakfastroll','chowder','stew','baconcabbage','pint_stout','chips_bag'].filter(id => !G.foodOf(id)).join(', '));
+    t('29 · the names are plain, not slang', (() => {
+      const slang = /\b(spud|spuds|chipper|brekkie|cuppa|sambo|veg|butty|chippie)\b/i;
+      const off = G.FOODS.filter(f => slang.test(f.n)).concat(G.FOOD_CATS.filter(c => slang.test(c[1])).map(c => ({n:c[1]})));
+      return off.length === 0; })(),
+      G.FOODS.filter(f => /\b(spud|spuds|chipper|veg)\b/i.test(f.n)).map(f => f.n).join(', '));
     t('29 · every food sits in a category that exists', (() => {
       const cats = new Set(G.FOOD_CATS.map(c => c[0]));
       return G.FOODS.every(f => cats.has(f.cat)); })());
@@ -1933,6 +1938,115 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     t('29 · the move sheet shows one, with the caveat', /class="fig"/.test(d.getElementById('altBody').innerHTML)
       && /not a form check/.test(d.getElementById('altBody').textContent));
     G.closeSheets();
+  }
+
+  /* ---------------------------------------------------------- 30 */
+  journey(30, 'Cardio that is not running, counted properly');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const plans = S.runPlans;
+    t('30 · there is cardio beyond running', plans.length >= 18, String(plans.length));
+    t('30 · the common kinds are all there', ['run','bike','row','swim','machine','skip','walk','sport']
+      .every(k => plans.some(r => (r.kind || 'run') === k)),
+      [...new Set(plans.map(r => r.kind || 'run'))].join(', '));
+    t('30 · every session has minutes, a cost and steps to follow', plans.every(r =>
+      r.mins > 0 && r.met > 0 && Array.isArray(r.steps) && r.steps.length >= 1));
+    t('30 · the costs are in a sane range for cardio', plans.every(r => r.met >= 3 && r.met <= 14),
+      plans.filter(r => r.met < 3 || r.met > 14).map(r => r.name + ' ' + r.met).join(', '));
+    t('30 · running and walking are marked as making steps, the rest are not',
+      plans.filter(r => ['run','walk'].includes(r.kind || 'run')).every(G.cardioMakesSteps)
+      && plans.filter(r => !['run','walk'].includes(r.kind || 'run')).every(r => !G.cardioMakesSteps(r)));
+
+    const i = S.plan.days.findIndex(x => x.runId);
+    t('30 · the week has a cardio day to change', i >= 0);
+    const put = id => { S.plan.days[i] = Object.assign({}, S.plan.days[i], { runId: id }); return G.maintenance(); };
+    const run = put('r_easy');
+    t('30 · a run adds nothing on top, because its steps already count', run.cardio === 0);
+    const walk = put('c_walk_brisk');
+    t('30 · nor does a walk', walk.cardio === 0 && walk.kcal === run.kcal);
+    const bike = put('c_bike_intervals');
+    const expect = Math.round((8.5 - 1) * 3.5 * S.profile.weight / 200 * 40 / 7);
+    t('30 · a bike session does, at the published cost', bike.cardio === expect, bike.cardio + ' vs ' + expect);
+    t('30 · and it raises what you can eat', G.calorieTarget({ m: bike }).kcal > G.calorieTarget({ m: run }).kcal);
+    const swim = put('c_swim_intervals');
+    t('30 · harder swimming is worth more than a steady row', swim.cardio > put('c_row_steady').cardio);
+    put('r_easy');
+
+    G.openRunSwap(i, 'r_easy');
+    const slabs = [...d.querySelectorAll('#altBody .slab')].map(x => x.textContent);
+    t('30 · choosing one is grouped by kind, not one long list',
+      ['Bike','Rowing','Swimming','Machines','Walking','Sport'].every(k => slabs.includes(k)), slabs.join(', '));
+    const pick = d.querySelector('[data-runpick="' + i + ':c_row_steady"]');
+    t('30 · every session can be picked for a day', !!pick);
+    pick.click();
+    t('30 · picking one puts it on the day', S.plan.days[i].runId === 'c_row_steady');
+    G.closeSheets();
+    G.go('today'); G.renderAll();
+    G.go('plan'); G.renderPlan();
+    t('30 · and it shows up in the week by name', /Steady row/.test(d.getElementById('s-plan').innerHTML));
+    t('30 · the method sheet says where the costs come from', (() => { G.openHow();
+      const h = d.body.textContent; return /Compendium of Physical Activities/.test(h) && /already counted/.test(h); })());
+    G.closeSheets();
+  }
+
+  /* ---------------------------------------------------------- 31 */
+  journey(31, 'A home screen that answers what now, where am I, and is it working');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    G.go('today'); G.renderAll();
+    const home = () => d.getElementById('todayView');
+
+    t('31 · the first thing is today, with something to press', !!home().querySelector('.hero') &&
+      !!home().querySelector('#startToday, [data-go="plan"], #todayViewEdit'));
+    t('31 · today\'s numbers are right there', d.querySelectorAll('.glances .glance').length === 3);
+    t('31 · calories come first, because that is what people stop logging',
+      d.querySelector('.glances .glance').dataset.glance === 'food');
+    t('31 · and they show what is left, not just what is eaten', /kcal left/.test(txt(d.querySelector('.glances'))));
+    t('31 · each one can be logged in one tap', ['food','protein','steps'].every(k => !!d.querySelector('[data-glance="' + k + '"]')));
+    t('31 · with a row for the three things worth logging', d.querySelectorAll('.quicks .quick').length === 3);
+
+    /* the week, once, not twice */
+    t('31 · the week appears once, as a strip', d.querySelectorAll('.weekstrip').length === 1 && !home().querySelector('.ribbon'));
+    t('31 · the strip is seven days and each one opens', d.querySelectorAll('.weekstrip button[data-planday]').length === 7);
+    t('31 · the old row of day cards is gone', !/Quick bits/.test(txt(home())));
+    t('31 · next up is two days, not a repeat of the whole week',
+      home().innerHTML.match(/class="pday"/g) === null || home().innerHTML.match(/class="pday"/g).length <= 2);
+
+    /* it tells you whether it is working */
+    t('31 · the week line counts sessions done', /of \d+ sessions done/.test(txt(home())), txt(home()).slice(0, 200));
+    for (let i = 0; i < 6; i++) { const k = G.addDays(G.todayKey(), -i); S.days[k] = { wb: 7, kcal: 2100 }; }
+    S.weights = [{ d: G.addDays(G.todayKey(), -14), kg: 95 }, { d: G.todayKey(), kg: 93.6 }];
+    G.renderAll();
+    const line = txt(home());
+    t('31 · and days logged, which is the habit that matters', /of the last 7 days logged/.test(line));
+    t('31 · and the weight trend once there is one', /kg a week/.test(line), line.slice(0, 220));
+
+    /* logging from the home screen */
+    const tap = id => { G.go('today'); G.renderAll(); const b = d.querySelector('[data-glance="' + id + '"]'); if (b) b.click(); return !!b; };
+    t('31 · tapping calories opens the food sheet', tap('food') && d.getElementById('foodSheet').classList.contains('on'));
+    G.closeSheets();
+    t('31 · tapping weigh in opens the weigh in', tap('weigh') && d.getElementById('weighSheet').classList.contains('on'));
+    G.closeSheets();
+    t('31 · tapping rate the day opens the day', tap('day') && d.getElementById('dayCheck').classList.contains('on'));
+    G.closeSheets(); G.go('today'); G.renderAll();
+    G.addFood('chicken', 1, 'l'); G.renderAll();
+    t('31 · logging updates the numbers straight away', /1 logged/.test(txt(d.querySelector('.quicks'))));
+    t('31 · and what is left comes down', (() => {
+      const before = +txt(d.querySelector('.glances .glance .gv')).replace(/,/g, '');
+      G.addFood('rice', 1, 'l'); G.renderAll();
+      const after = +txt(d.querySelector('.glances .glance .gv')).replace(/,/g, '');
+      return after < before; })());
+
+    /* nothing invented to keep people coming back */
+    t('31 · no invented streak to break', !/streak|don't break|keep it alive/i.test(txt(home())), txt(home()).slice(0, 160));
+    t('31 · a brand new user is not shown numbers that do not exist yet', (() => {
+      const fresh = G.weightTrend([]);
+      return fresh.perWeek === null; })());
   }
 
   const r = s.report(allErrs);

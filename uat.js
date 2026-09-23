@@ -2032,7 +2032,8 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     G.closeSheets();
     t('31 · tapping weigh in opens the weigh in', tap('weigh') && d.getElementById('weighSheet').classList.contains('on'));
     G.closeSheets();
-    t('31 · tapping rate the day opens the day', tap('day') && d.getElementById('dayCheck').classList.contains('on'));
+    t('31 · tapping rate the day opens just that, not the whole log',
+      tap('day') && d.getElementById('quickSheet').classList.contains('on') && !d.getElementById('dayCheck').classList.contains('on'));
     G.closeSheets(); G.go('today'); G.renderAll();
     G.addFood('chicken', 1, 'l'); G.renderAll();
     t('31 · logging updates the numbers straight away', /1 logged/.test(txt(d.querySelector('.quicks'))));
@@ -2047,6 +2048,114 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     t('31 · a brand new user is not shown numbers that do not exist yet', (() => {
       const fresh = G.weightTrend([]);
       return fresh.perWeek === null; })());
+  }
+
+  /* ---------------------------------------------------------- 32 */
+  journey(32, 'Bodyweight counts, tiles log one thing, sauces exist, the keyboard keeps out of the way');
+  {
+    const { w, d, G, errs, source } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+
+    /* ---- bodyweight ---- */
+    S.weights.push({ d: G.todayKey(), kg: 92 });
+    t('32 · a chin up counts your bodyweight, a press up does not',
+      G.isBwFull('chin') && G.isBodyweight('pushup') && !G.isBwFull('pushup'));
+    t('32 · ten chin ups at 92 kg is 920 kg of work',
+      G.setVolume({ kg: '', reps: 10 }, 'chin') === 920, String(G.setVolume({ kg: '', reps: 10 }, 'chin')));
+    t('32 · a belt adds to it, it does not replace it',
+      G.setVolume({ kg: 10, reps: 8 }, 'chin') === 8 * 102);
+    t('32 · a press up counts only what you strap on', G.setVolume({ kg: '', reps: 20 }, 'pushup') === 0
+      && G.setVolume({ kg: 10, reps: 20 }, 'pushup') === 200);
+    t('32 · a barbell movement is unchanged', G.setVolume({ kg: 60, reps: 5 }, 'bench') === 300);
+    t('32 · the movements people start unloaded take no weight at all',
+      ['bss','lunge','stepup','goblet','crunch','plank','pushup'].every(id => G.isBodyweight(id)),
+      ['bss','lunge','stepup','goblet','crunch','plank','pushup'].filter(id => !G.isBodyweight(id)).join(', '));
+    t('32 · but the ones you cannot do with nothing still ask for a weight',
+      ['bench','legpress','hack','pulldown','rdl','dbrow'].every(id => !G.isBodyweight(id)),
+      ['bench','legpress','hack','pulldown','rdl','dbrow'].filter(id => G.isBodyweight(id)).join(', '));
+    t('32 · with no weight on it, reps are what progress', (() => {
+      S.lifts.bss = [{ d: G.addDays(G.todayKey(), -7), sets: [{ kg: 0, reps: 8 }, { kg: 0, reps: 8 }] }];
+      const row = S.templates.flatMap(x => x.ex).find(r => r.exId === 'bss') || { exId: 'bss', sets: 3, reps: 12, repMin: 8 };
+      const n = G.nextPrescription('bss', row);
+      return n.kg === null && n.reps > 8 && /Bodyweight last time/.test(n.why); })(),
+      JSON.stringify(G.nextPrescription('bss', { exId: 'bss', sets: 3, reps: 12, repMin: 8 })));
+    t('32 · and once the range is full it offers weight', (() => {
+      const row = { exId: 'bss', sets: 3, reps: 12, repMin: 8 };
+      S.lifts.bss = [{ d: G.addDays(G.todayKey(), -7), sets: [{ kg: 0, reps: 12 }, { kg: 0, reps: 12 }] }];
+      const n = G.nextPrescription('bss', row);
+      return /start adding weight/.test(n.why); })());
+    t('32 · a bodyweight set is not treated as an empty set', (() => {
+      const row = { exId: 'bss', sets: 3, reps: 12, repMin: 8 };
+      S.lifts.bss = [{ d: G.addDays(G.todayKey(), -7), sets: [{ kg: '', reps: 10 }] }];
+      return G.nextPrescription('bss', row).kind !== 'first'; })());
+    t('32 · bodyweight comes from the scale, not the profile alone', G.bodyweightNow() === 92);
+    G.startWorkout('t_pull');
+    const gymHTML = d.getElementById('gymBody').innerHTML;
+    t('32 · the weight column says + kg on a bodyweight movement', /\+kg/.test(gymHTML), (gymHTML.match(/<div>[+]?kg<\/div>/g) || []).join(' '));
+    const chin = G.GYM.ex.find(e => e.exId === 'chin');
+    chin.sets[0].reps = 10; chin.sets[0].kg = ''; chin.sets[0].done = true;
+    t('32 · logging one with no weight still counts', G.gymVolume() === 920, String(G.gymVolume()));
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+
+    /* ---- the gym footer ---- */
+    t('32 · the footer has its own background, so nothing shows through it',
+      /\.gymfoot\{[^}]*background:var\(--paper\)/.test(source));
+    t('32 · and it wraps instead of letting text land on text',
+      /\.gymfoot\{[^}]*flex-wrap:wrap/.test(source));
+    t('32 · the hint steps aside on a narrow phone', /@media \(max-width:380px\)\{ \.gymfoot \.hint\{display:none\} \}/.test(source));
+
+    /* ---- tiles log one thing ---- */
+    G.go('today'); G.renderAll();
+    d.querySelector('[data-glance="day"]').click();
+    t('32 · the day tile opens just the rating', d.getElementById('quickSheet').classList.contains('on')
+      && /How did today go/.test(txt(d.getElementById('quickTitle'))));
+    t('32 · with buttons and a box, not five controls', d.querySelectorAll('#quickBody [data-quickstep]').length >= 2
+      && !!d.getElementById('quickValue') && !d.querySelector('#quickBody [data-dayrange="sleep"]'));
+    d.getElementById('quickValue').value = '8';
+    d.getElementById('quickSave').click();
+    t('32 · saving it saves only that', S.days[G.todayKey()].wb === 8 && !S.days[G.todayKey()].sleep);
+    t('32 · and the sheet closes', !d.getElementById('quickSheet').classList.contains('on'));
+    G.go('today'); G.renderAll();
+    d.querySelector('[data-glance="steps"]').click();
+    t('32 · the steps tile does the same', /Steps today/.test(txt(d.getElementById('quickTitle'))));
+    d.querySelector('[data-quickstep="1000"]').click();
+    t('32 · the buttons move it', +d.getElementById('quickValue').value === 1000);
+    d.getElementById('quickSave').click();
+    t('32 · steps are saved for today', S.days[G.todayKey()].steps === 1000);
+    G.go('today'); G.renderAll();
+    d.querySelector('[data-glance="protein"]').click();
+    t('32 · protein too, with the full log still one tap away', /Protein today/.test(txt(d.getElementById('quickTitle')))
+      && !!d.getElementById('quickFull'));
+    G.closeSheets();
+    G.go('today'); G.renderAll();
+    d.querySelector('[data-glance="food"]').click();
+    t('32 · the food tile still opens the food list, which is the right place for it',
+      d.getElementById('foodSheet').classList.contains('on'));
+    G.closeSheets();
+
+    /* ---- sauces ---- */
+    t('32 · sauces and condiments are their own category',
+      G.FOOD_CATS.some(c => c[0] === 'sauces') && G.FOODS.filter(f => f.cat === 'sauces').length >= 18,
+      String(G.FOODS.filter(f => f.cat === 'sauces').length));
+    t('32 · the ones people actually use are there',
+      ['ketchup','mayo','brownsauce','mustard','bbqsauce','sweetchilli','soysauce','garlicsauce','currysauce','gravy','pesto','oliveoil','honey','jam']
+        .every(id => !!G.foodOf(id)));
+    t('32 · their calories add up like everything else', G.FOODS.filter(f => f.cat === 'sauces').every(f => {
+      const calc = f.p * 4 + f.c * 4 + f.f * 9;
+      return Math.abs(calc - f.kcal) <= Math.max(25, f.kcal * 0.18); }));
+    t('32 · and they log', (() => { G.addFood('mayo', 2, 'd'); return G.foodTotals(G.todayKey()).kcal >= 190; })());
+
+    /* ---- the keyboard ---- */
+    t('32 · the app measures what the keyboard covers', /visualViewport/.test(source) && typeof G.fitToKeyboard === 'function');
+    t('32 · sheets give up that space rather than hiding their own input',
+      /max-height:calc\(88vh - var\(--keyboard, 0px\)\)/.test(source) && /keyboard-open \.sheet\{max-height/.test(source));
+    t('32 · and the food search sticks to the top while typing',
+      /\.foodsearch\{position:sticky;top:0/.test(source));
+    G.openFood(false);
+    t('32 · the search box is inside that sticky wrapper', !!d.querySelector('.foodsearch #foodSearch'));
+    G.closeSheets();
   }
 
   const r = s.report(allErrs);

@@ -109,6 +109,14 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .hero .sub{color:var(--mute);font-size:13.5px;margin-bottom:14px}
 .why{font-size:12.5px;color:var(--warm-ink);background:var(--warm-tint);border-radius:8px;padding:10px 12px;margin-bottom:14px}
 .why b{font-weight:700}
+.foodsearch{position:sticky;top:0;z-index:3;background:var(--paper);padding:8px 0 10px;margin:0 0 2px}
+.foodsearch input{width:100%}
+.keyboard-open .foodsearch{box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+.quickrow{display:flex;gap:8px;align-items:center;padding:0 14px 10px}
+.quickrow input{flex:1;min-width:0;min-height:56px;border:1px solid var(--line);border-radius:12px;
+  font:inherit;font-family:"Archivo Black",Archivo,sans-serif;font-size:26px;letter-spacing:-.04em;
+  text-align:center;background:var(--paper);color:var(--ink)}
+.qstep{min-width:52px;min-height:56px;border-radius:12px;background:var(--grey-btn);font-weight:700;font-size:15px}
 .glances{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 10px}
 .glance{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:11px 10px;text-align:left;min-height:88px;display:flex;flex-direction:column;gap:3px}
 .glance .gv{font-family:"Archivo Black",Archivo,sans-serif;font-size:22px;letter-spacing:-.04em;line-height:1}
@@ -255,7 +263,9 @@ nav.tabs{position:fixed;bottom:0;left:0;right:0;max-width:460px;margin:0 auto;z-
 .scrim.on{opacity:1;pointer-events:auto}
 .sheet{position:fixed;left:0;right:0;bottom:0;max-width:460px;margin:0 auto;z-index:61;background:var(--paper);
   border-radius:12px 12px 0 0;transform:translateY(103%);transition:transform .25s cubic-bezier(.2,.8,.25,1);
-  max-height:88vh;overflow:auto;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+  max-height:calc(88vh - var(--keyboard, 0px));overflow:auto;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+.keyboard-open .sheet{max-height:calc(100vh - var(--keyboard, 0px) - 12px)}
+.keyboard-open .sheet .sub{display:none}
 .sheet.on{transform:translateY(0)}
 .grab{width:36px;height:4px;border-radius:4px;background:var(--line);margin:8px auto 6px}
 .sheet h3{font-size:15px;font-weight:700;margin:6px 14px 2px;text-align:center}
@@ -521,7 +531,16 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .setbtns button{height:30px;padding:0 11px;border-radius:8px;background:var(--grey-btn);font-weight:700;font-size:12px}
 .addex{display:flex;gap:8px;padding:14px}
 .addex button{flex:1;height:42px;border-radius:8px;border:1px dashed var(--line);font-weight:700;font-size:13.5px;color:var(--mute)}
-.gymfoot{display:flex;gap:14px;padding:11px 14px calc(11px + env(safe-area-inset-bottom));border-top:1px solid var(--line);font-size:12.5px;font-weight:600;color:var(--mute)}
+/* Its own background and its own layer, so nothing scrolling underneath can
+   show through it, and it wraps rather than letting three pieces of text land
+   on top of each other on a narrow phone. */
+.gymfoot{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;
+  padding:11px 14px calc(11px + env(safe-area-inset-bottom));border-top:1px solid var(--line);
+  background:var(--paper);position:relative;z-index:2;
+  font-size:12.5px;font-weight:600;color:var(--mute)}
+.gymfoot>div{min-width:0}
+.gymfoot .hint{margin-left:auto;text-align:right;flex:1 1 auto;min-width:120px}
+@media (max-width:380px){ .gymfoot .hint{display:none} }
 .gymfoot b{color:var(--ink);font-weight:700}
 .exrow.excluded{opacity:.55}
 .exrow{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line-soft);width:100%;text-align:left}
@@ -835,6 +854,12 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
   <div id="logBody"></div>
 </div>
 
+<div class="sheet" id="quickSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3 id="quickTitle">Log</h3>
+  <p class="sub" id="quickSub"></p>
+  <div id="quickBody"></div>
+</div>
+
 <div class="sheet" id="findSheet" role="dialog" aria-modal="true" tabindex="-1">
   <div class="grab"></div><h3>Find people</h3>
   <p class="sub">Follow someone and their sessions land in your feed.</p>
@@ -1006,7 +1031,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='27';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='29';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -2487,6 +2512,60 @@ function renderToday(){
       <div class="txt"><b>${dayLabel(x)}</b><span>${daySub(x)}</span></div>
       <div class="sq" style="background:${x.kind==='rest'?'var(--line)':(HUE[x.kind]||HUE.any).deep}"></div></button>`).join(''); })()}`;
 }
+/* ---------- one number, one sheet ----------
+   Tapping a tile on the home screen used to open the whole daily log: five
+   controls when the person wanted to change one. Each tile now opens the
+   single thing it shows, with the full form one tap away for anyone who wants
+   the rest of it. */
+let quickKind=null;
+const QUICK={
+  protein:{title:'Protein today',sub:'Grams so far. The food list keeps this for you, this is for when you want to set it yourself.',
+    unit:'g',steps:[-25,-10,10,25],
+    get:()=>Math.round((foodTotals(todayKey()).protein)||0),
+    set:v=>{ const k=todayKey(); S.days[k]=Object.assign({},S.days[k],{protein:v}); }},
+  steps:{title:'Steps today',sub:'What your phone or watch says. A tracker fills this in on its own.',
+    unit:' steps',steps:[-1000,-500,500,1000],
+    get:()=>{ const s=(typeof stepsToday==='function')? stepsToday() : null; return s===null? 0 : s; },
+    set:v=>{ const k=todayKey(); S.days[k]=Object.assign({},S.days[k],{steps:v}); }},
+  day:{title:'How did today go?',sub:'One number, out of ten. Everything else about the day is in the full log.',
+    unit:'/10',min:1,max:10,steps:[-1,1],
+    get:()=>{ const d=S.days[todayKey()]; return (d&&d.wb)||6; },
+    set:v=>{ const k=todayKey(); S.days[k]=Object.assign({},S.days[k],{wb:Math.max(1,Math.min(10,v))}); }}
+};
+function openQuick(kind){
+  const q=QUICK[kind]; if(!q) return openDay();
+  quickKind=kind;
+  document.getElementById('quickTitle').textContent=q.title;
+  document.getElementById('quickSub').textContent=q.sub;
+  document.getElementById('quickBody').innerHTML=`
+    <div class="quickrow">
+      ${q.steps.filter(s=>s<0).map(s=>`<button class="qstep" data-quickstep="${s}">${s}</button>`).join('')}
+      <input id="quickValue" type="number" inputmode="${kind==='day'?'numeric':'decimal'}" value="${q.get()}"
+        ${q.min!==undefined?`min="${q.min}" max="${q.max}"`:'min="0"'} aria-label="${q.title}">
+      ${q.steps.filter(s=>s>0).map(s=>`<button class="qstep" data-quickstep="${s}">+${s}</button>`).join('')}
+    </div>
+    <div class="note" id="quickNote"></div>
+    <button class="sheetcta" id="quickSave">Save</button>
+    <button class="skipbtn" id="quickFull">Open the full log instead</button>`;
+  quickPreview();
+  openSheet('quickSheet');
+}
+function quickPreview(){
+  const q=QUICK[quickKind], el=document.getElementById('quickValue'), note=document.getElementById('quickNote');
+  if(!q||!el||!note) return;
+  const v=+el.value||0, t=S.targets||{};
+  if(quickKind==='protein') note.textContent=t.protein? (v>=t.protein? 'That is your target met.' : (t.protein-v)+'g short of '+t.protein+'g.') : '';
+  else if(quickKind==='steps') note.textContent=v>=stepTarget()? 'Target hit.' : num(Math.max(0,stepTarget()-v))+' short of '+num(stepTarget())+'.';
+  else note.textContent=v>=8? 'Good day.' : (v<=4? 'A hard one. That is worth knowing when the week is reviewed.' : '');
+}
+function saveQuick(){
+  const q=QUICK[quickKind], el=document.getElementById('quickValue');
+  if(!q||!el) return;
+  q.set(Math.max(0,+el.value||0));
+  save(); closeSheets(); renderAll();
+  toast('Saved');
+}
+document.addEventListener('input',e=>{ if(e.target.id==='quickValue') quickPreview(); });
 function openConnect(){
   $('connectBody').innerHTML=SOURCES.map(x=>`<button class="logrow" data-connect="${x.id}">
       <div class="txt"><div class="t">${x.n}</div><div class="s">Steps, sleep and resting heart rate</div></div>
@@ -2824,6 +2903,35 @@ document.addEventListener('keydown',e=>{
   if(e.shiftKey&&document.activeElement===first){ e.preventDefault(); last.focus(); }
   else if(!e.shiftKey&&document.activeElement===last){ e.preventDefault(); first.focus(); }
 });
+/* ---------- the keyboard ----------
+   On a phone the keyboard covers the bottom half of the screen, and a sheet
+   that is 88% of the window ends up with its input underneath it. The visual
+   viewport tells us how much room is actually left, so the sheet is resized to
+   that, and whatever was focused is scrolled back into sight. */
+function fitToKeyboard(){
+  const vv=window.visualViewport; if(!vv) return;
+  const covered=Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+  document.documentElement.style.setProperty('--keyboard', covered+'px');
+  document.documentElement.classList.toggle('keyboard-open', covered>120);
+  if(covered>120){
+    const el=document.activeElement;
+    if(el&&/^(INPUT|TEXTAREA)$/.test(el.tagName)){
+      try{ el.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){ try{ el.scrollIntoView(); }catch(e2){} }
+    }
+  }
+}
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize',fitToKeyboard);
+  window.visualViewport.addEventListener('scroll',fitToKeyboard);
+}
+document.addEventListener('focusin',e=>{
+  if(!/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+  /* wait for the keyboard to actually appear before measuring */
+  setTimeout(fitToKeyboard,120);
+  setTimeout(()=>{ try{ e.target.scrollIntoView({block:'center'}); }catch(err){} },200);
+});
+document.addEventListener('focusout',()=>setTimeout(fitToKeyboard,120));
+
 /* Swipe down to dismiss. Only from the top of the sheet, so a scrolled list
    still scrolls. */
 (function(){
@@ -2995,11 +3103,16 @@ document.addEventListener('click',e=>{
   if(e.target.closest('#habitChange')){ openHabitSheet(); return; }
   const gl=e.target.closest('[data-glance]');
   if(gl){ const what=gl.dataset.glance;
-    if(what==='food'||what==='protein') openFood(false);
+    if(what==='food') openFood(false);
     else if(what==='weigh') openWeigh();
-    else if(what==='day') openDay();
-    else if(what==='steps'){ if(healthOn()) openDay(); else openConnect(); }
+    else openQuick(what);
     return; }
+  const qs=e.target.closest('[data-quickstep]');
+  if(qs){ const el=document.getElementById('quickValue');
+    if(el){ el.value=Math.max(0,(+el.value||0)+ +qs.dataset.quickstep); quickPreview(); } return; }
+  if(e.target.closest('#quickSave')){ saveQuick(); return; }
+  if(e.target.closest('#quickFull')){ const k=quickKind; closeSheets();
+    if(k==='day') openDay(); else if(k==='protein') openFood(false); else openDay(); return; }
   const pok=e.target.closest('[data-painok]');
   if(pok){ const n=pok.dataset.painok; clearPain(n); toast(n+' is back in the plan'); }
   const pso=e.target.closest('[data-painsore]');
@@ -5138,7 +5251,34 @@ function exerciseStats(exId){
   });
   return {sessions:h.length, heaviest, best1, bestVol, last:h[0]};
 }
-const setVolume=s=>(+s.kg||0)*(+s.reps||0);
+/* ---------- bodyweight movements ----------
+   A chin up is not zero kilos. The convention the lifting apps settled on, and
+   the one used here: movements that hang your whole bodyweight count it in the
+   volume, anything you strap on is added to it, and movements that carry only
+   part of your weight (press ups, planks, sit ups) count the added weight only.
+   So the weight box on those movements means EXTRA weight, is left empty by
+   default, and reads BW. */
+const BW_FULL=['chin','pullup','chinup','dip','hanging','legraise','muscleup','pullover_bw','invrow','chinneutral'];
+const isBwFull=exId=>BW_FULL.indexOf(exId)>=0;
+/* Plenty of movements are listed with dumbbells but are perfectly normal to do
+   with nothing at all: split squats, lunges, step ups, goblet squats, calf
+   raises, most core work. Holding a weight is optional on those, so the weight
+   box is optional too, by rule rather than by a list somebody has to maintain. */
+const BW_OPTIONAL_PATTERNS=['lunge','squat','hinge','calf','trunk flexion','anti-rotation',
+  'anti-extension','hip isolation','knee isolation','mobility'];
+const BW_OPTIONAL_KIT=['dumbbell','kettlebell','band','other'];
+const isBodyweight=exId=>{ const x=(typeof exOf==='function')? exOf(exId) : null;
+  if(!x) return false;
+  if(x.eq==='bodyweight'||isBwFull(exId)) return true;
+  return BW_OPTIONAL_KIT.indexOf(x.eq)>=0 && BW_OPTIONAL_PATTERNS.indexOf(x.p)>=0;
+};
+/* what the scale last said, for the volume sum */
+function bodyweightNow(){
+  if(S.weights&&S.weights.length) return +S.weights[S.weights.length-1].kg||0;
+  return +((S.profile||{}).weight)||0;
+}
+/* what one set actually moved */
+const setVolume=(s,exId)=>((+s.kg||0)+(exId&&isBwFull(exId)? bodyweightNow():0))*(+s.reps||0);
 
 /* ===================== progressive overload =====================
    Double progression, which is the method with the most support behind it and
@@ -5182,15 +5322,27 @@ function nextPrescription(exId,row){
   const last=hist[0];
   if(!last||!last.sets||!last.sets.length)
     return {kg:null,reps:range.bottom,range,inc,why:'First time on this one. Pick something you could manage a couple more reps with.',kind:'first'};
-  const working=last.sets.filter(s2=>!s2.warm&&s2.kg!==''&&s2.reps!=='');
+  const bw=isBodyweight(exId);
+  /* with no weight on it, an empty box is a real entry, not a missing one */
+  const working=last.sets.filter(s2=>!s2.warm&&s2.reps!==''&&(bw||s2.kg!==''));
   if(!working.length) return {kg:null,reps:range.bottom,range,inc,why:'Nothing logged last time.',kind:'first'};
+  if(bw&&working.every(s2=>!(+s2.kg))){
+    /* every set was bodyweight only: reps are the progression */
+    const best=Math.max(...working.map(s2=>+s2.reps));
+    const hit=working.every(s2=>+s2.reps>=range.top);
+    return {kg:null, reps: hit? range.top+2 : Math.min(range.top,best+1), range, inc,
+      lastTonnage:0, kind: hit? 'bwload':'bwreps',
+      why: hit
+        ? `You hit ${range.top} on every set with just bodyweight. Add reps, or start adding weight and go back to ${range.bottom}.`
+        : `Bodyweight last time, best set ${best}. Aim for ${Math.min(range.top,best+1)} on the first set.`};
+  }
   const topWeight=Math.max(...working.map(s2=>+s2.kg));
   const atTop=working.filter(s2=>+s2.kg===topWeight);
   const allHitTop=atTop.every(s2=>+s2.reps>=range.top);
   const lastSet=atTop[atTop.length-1];
   const twoForTwo=(+lastSet.reps>=range.top+2) &&
     (hist[1]&&(hist[1].sets||[]).filter(s2=>!s2.warm&&+s2.kg===topWeight).some(s2=>+s2.reps>=range.top+2));
-  const tonnage=working.reduce((a,s2)=>a+setVolume(s2),0);
+  const tonnage=working.reduce((a,s2)=>a+setVolume(s2,exId),0);
   if(allHitTop||twoForTwo){
     const kg=+(topWeight+inc).toFixed(2);
     return {kg, reps:range.bottom, range, inc, lastTonnage:tonnage,
@@ -5206,7 +5358,7 @@ function nextPrescription(exId,row){
     kind:'reps'};
 }
 /* total load moved, which is the honest check that the week went somewhere */
-function tonnageOf(sets){ return (sets||[]).filter(s2=>!s2.warm).reduce((a,s2)=>a+setVolume(s2),0); }
+function tonnageOf(sets,exId){ return (sets||[]).filter(s2=>!s2.warm).reduce((a,s2)=>a+setVolume(s2,exId),0); }
 function progressLines(gym){
   return (gym.ex||[]).map(e=>{
     const p=nextPrescription(e.exId,{reps:e.reps,repMin:e.repMin});
@@ -5338,7 +5490,7 @@ function elapsed(){
   const s=Math.floor((Date.now()-GYM.started)/1000);
   return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
 }
-function gymVolume(){ return GYM.ex.reduce((a,e)=>a+e.sets.filter(s=>s.done&&!s.warm).reduce((b,s)=>b+setVolume(s),0),0); }
+function gymVolume(){ return GYM.ex.reduce((a,e)=>a+e.sets.filter(s=>s.done&&!s.warm).reduce((b,s)=>b+setVolume(s,e.exId),0),0); }
 function gymSets(){ return GYM.ex.reduce((a,e)=>a+e.sets.filter(s=>s.done).length,0); }
 function deloadBanner(){
   if(!GYM||!GYM.deload) return '';
@@ -5364,7 +5516,7 @@ function drawGym(){
         ${e.rx.lastTonnage? `<span class="tonn">Last time you moved ${num(Math.round(e.rx.lastTonnage))}kg on this. Today so far: ${num(Math.round(tonnageOf(e.sets)))}kg.</span>`:''}</div>`:''}
       ${e.tempo&&showTempo()&&tempoMatters(e.tempo)?`<div class="tempo">${tempoWords(e.tempo)}</div>`:''}
       ${e.note?`<div class="note">${e.note}</div>`:''}
-      <div class="sethead"><div>Set</div><div>Previous</div><div>kg</div><div>Reps</div><div></div></div>
+      <div class="sethead"><div>Set</div><div>Previous</div><div>${isBodyweight(e.exId)?'+kg':'kg'}</div><div>Reps</div><div></div></div>
       ${e.sets.map((s,j)=>{ const pr=setPR(e.exId,s); const inc=incrementFor(e.exId);
         return `<div class="setline ${s.done?'done':''} ${pr?'ispr':''} ${s.warm?'warm':''}">
         <div class="sn">${s.warm?'W':workingIndex(e,j)}</div>
@@ -5392,7 +5544,7 @@ function drawGym(){
   + (GYM.ex.length? '' : `<div class="empty">Nothing in here yet.<br>Add your first movement and the sets appear.</div>`)
   + `<div class="addex"><button id="addExBtn">+ Add exercise</button></div>`;
   $('gymFoot').innerHTML=`<div>Volume <b>${num(Math.round(gymVolume()))} kg</b></div>
-    <div>Sets <b>${gymSets()}</b></div><div style="margin-left:auto">Tap the tick to start the rest clock</div>`;
+    <div>Sets <b>${gymSets()}</b></div><div class="hint">Tap the tick to start the rest clock</div>`;
 }
 function startRest(sec,label){
   rest={left:sec,label};
@@ -5496,7 +5648,7 @@ $('gymClose').addEventListener('click',()=>{
    pudding, soda and brown bread, potatoes every way they are eaten, chowder,
    stew, a pint, a bag of crisps.
    Categories exist so the list can be browsed rather than only searched. */
-const FOOD_CATS=[['common','Common foods'],['breakfast','Breakfast'],['meat','Meat and fish'],
+const FOOD_CATS=[['common','Common foods'],['breakfast','Breakfast'],['meat','Meat and fish'],['sauces','Sauces and condiments'],
   ['carbs','Bread, potatoes and grains'],['veg','Fruit and vegetables'],['dairy','Dairy and eggs'],
   ['meals','Meals and takeaway'],['snacks','Snacks and sweets'],['drinks','Drinks']];
 const FOODS=[
@@ -5652,7 +5804,34 @@ const FOODS=[
   {id:'pint_lager',n:'Pint of lager',u:'pint',kcal:190,p:1.5,c:10,f:0,alc:20.2,cat:'drinks'},
   {id:'wine',n:'Glass of wine',u:'175ml',kcal:140,p:0.2,c:4,f:0,alc:17.9,cat:'drinks'},
   {id:'spirit',n:'Spirit measure',u:'35.5ml',kcal:78,p:0,c:0,f:0,alc:11.2,cat:'drinks'},
-  {id:'water',n:'Water',u:'glass',kcal:0,p:0,c:0,f:0,cat:'drinks'}
+  {id:'water',n:'Water',u:'glass',kcal:0,p:0,c:0,f:0,cat:'drinks'},
+
+  /* sauces and condiments: small amounts, but they are where a careful day
+     quietly turns into a loose one, so they are worth a tap */
+  {id:'ketchup',n:'Tomato ketchup',u:'tbsp',kcal:20,p:0.2,c:4.5,f:0,cat:'sauces'},
+  {id:'mayo',n:'Mayonnaise',u:'tbsp',kcal:95,p:0.2,c:0.3,f:10.3,cat:'sauces'},
+  {id:'mayo_light',n:'Light mayonnaise',u:'tbsp',kcal:38,p:0.2,c:1.5,f:3.4,cat:'sauces'},
+  {id:'brownsauce',n:'Brown sauce',u:'tbsp',kcal:22,p:0.2,c:5,f:0,cat:'sauces'},
+  {id:'mustard',n:'Mustard',u:'tsp',kcal:8,p:0.4,c:0.6,f:0.4,cat:'sauces'},
+  {id:'bbqsauce',n:'Barbecue sauce',u:'tbsp',kcal:30,p:0.2,c:7,f:0.1,cat:'sauces'},
+  {id:'sweetchilli',n:'Sweet chilli sauce',u:'tbsp',kcal:35,p:0.1,c:8.5,f:0,cat:'sauces'},
+  {id:'soysauce',n:'Soy sauce',u:'tbsp',kcal:9,p:1.3,c:0.8,f:0,cat:'sauces'},
+  {id:'hotsauce',n:'Hot sauce',u:'tsp',kcal:1,p:0.1,c:0.2,f:0,cat:'sauces'},
+  {id:'garlicsauce',n:'Garlic sauce',u:'tbsp',kcal:90,p:0.3,c:1,f:9.5,cat:'sauces'},
+  {id:'taco_sauce',n:'Taco sauce',u:'tbsp',kcal:45,p:0.3,c:2,f:4,cat:'sauces'},
+  {id:'saladcream',n:'Salad cream',u:'tbsp',kcal:52,p:0.3,c:2.5,f:4.5,cat:'sauces'},
+  {id:'caesar',n:'Caesar dressing',u:'tbsp',kcal:80,p:0.5,c:0.6,f:8.5,cat:'sauces'},
+  {id:'vinaigrette',n:'Oil and vinegar dressing',u:'tbsp',kcal:72,p:0,c:0.6,f:8,cat:'sauces'},
+  {id:'pesto',n:'Pesto',u:'tbsp',kcal:80,p:1.5,c:1,f:8,cat:'sauces'},
+  {id:'gravy',n:'Gravy',u:'50ml',kcal:25,p:0.5,c:3,f:1.2,cat:'sauces'},
+  {id:'currysauce',n:'Chip shop curry sauce',u:'100ml',kcal:90,p:1.5,c:14,f:3,cat:'sauces'},
+  {id:'tartare',n:'Tartare sauce',u:'tbsp',kcal:85,p:0.2,c:1.5,f:8.8,cat:'sauces'},
+  {id:'sourcream',n:'Sour cream',u:'tbsp',kcal:30,p:0.4,c:0.6,f:2.9,cat:'sauces'},
+  {id:'oliveoil',n:'Olive oil',u:'tbsp',kcal:120,p:0,c:0,f:13.5,cat:'sauces'},
+  {id:'honey',n:'Honey',u:'tsp',kcal:23,p:0,c:6,f:0,cat:'sauces'},
+  {id:'jam',n:'Jam',u:'tsp',kcal:20,p:0,c:5,f:0,cat:'sauces'},
+  {id:'chocspread',n:'Chocolate spread',u:'tbsp',kcal:100,p:1,c:11,f:5.8,cat:'sauces'},
+  {id:'salsa',n:'Salsa',u:'tbsp',kcal:8,p:0.3,c:1.6,f:0.1,cat:'sauces'}
 ];
 /* The handful almost everyone taps, shown first before anything is logged. */
 const FOOD_COMMON=['egg','oats','chicken','rice','potato','brownbread','skyr','banana','milk','tea','whey','apple'];
@@ -5793,7 +5972,7 @@ function drawFood(){
         <button class="x hit" data-foodrm="${o.i}" aria-label="Remove ${o.x.n}">×</button></div>`).join('')).join('')
       : `<div class="note">Nothing logged today.</div>`}
     <div class="slab">Add to ${MEALS.find(m=>m[0]===foodSlot)[1].toLowerCase()}</div>
-    <input id="foodSearch" placeholder="Search food" value="${foodQuery}" aria-label="Search food" style="border:1px solid var(--line);border-radius:9px;padding:12px;width:100%;font-size:14.5px;font-weight:600;margin-bottom:10px">
+    <div class="foodsearch"><input id="foodSearch" placeholder="Search food" value="${foodQuery}" aria-label="Search food" style="border:1px solid var(--line);border-radius:9px;padding:12px;width:100%;font-size:14.5px;font-weight:600;margin-bottom:10px"></div>
     <div class="pickchips" id="foodCats">
       <button class="${foodCat?'':'on'}" data-foodcat="">Common foods</button>
       ${FOOD_CATS.filter(c=>c[0]!=='common').map(([id,label])=>`<button class="${foodCat===id?'on':''}" data-foodcat="${id}">${label}</button>`).join('')}
@@ -6485,7 +6664,7 @@ coachBrief=function(){
 
 Object.assign(window.__G,{tplErrors,tplRowErrors,drawTplEdit,TPL_LIMITS,LIBRARY,EQUIP,DIFF,exBlurb,drawExList,exOf,exHistory,nextPrescription,rxClass,prescribe,repText,RX_CLASS,warmSetsFor,platesFor,plateLine,fitToKit,fitTemplatesToKit,kitOf,hasKit,KIT,KIT_PRESETS,ALL_KIT,openKitSheet,applyKitChange,loggedMealMacros,mealArt,simulatedHealth,keyOf,dateOf,incrementFor,repRangeFor,nextPrescription,tonnageOf,progressLines,fillForward,suggestFor,openCircEdit,drawCircEdit,drawTemplates,seedTemplates,
   FOODS,FOOD_CATS,FOOD_COMMON,foodOf,addFood,removeFood,dayFood,foodTotals,openFood,closeFood,drawFood,drawFoodList,drawFoodNew,recentFoods,MEALS,slotNow,repeatYesterday,addCustomFood,saveMealAs,addSavedMeal,allFoods,customFoods,savedMeals,seedRunPlans,seedCircuits,circuitOf,startCircuit,finishCircuit,drawCircuit,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
-  openExMenu,openTplEdit,drawTemplates,exerciseStats,e1RM,lastSets,gymVolume,gymSets,templateChanged,startRest,
+  openExMenu,openTplEdit,drawTemplates,exerciseStats,e1RM,lastSets,gymVolume,gymSets,templateChanged,startRest,isBodyweight,isBwFull,bodyweightNow,setVolume,BW_FULL,openQuick,QUICK,saveQuick,fitToKeyboard,
   get GYM(){return GYM}, get tplDraft(){return tplDraft}});
 Object.defineProperties(window.__G,{
   GYM:{get:()=>GYM,set:v=>{GYM=v},configurable:true},

@@ -1830,7 +1830,8 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
 
     /* ---- the chart ---- */
     S.weights = [];
-    t('28 · one weigh in is not a direction', /Two weigh ins/.test(G.weightChart()));
+    t('28 · with no weigh ins the chart says what it needs instead of drawing nothing',
+      /No weigh ins yet/.test(G.weightChart()) && /weigh in/.test(G.forecastReadiness().line));
     /* daily weigh ins, losing 0.1 kg a day = 0.7 a week */
     for (let i = 20; i >= 0; i--) S.weights.push({ d: G.addDays(G.todayKey(), -i), kg: +(92 - (20 - i) * 0.1).toFixed(1) });
     const tr = G.weightTrend(G.weightSeries());
@@ -2156,6 +2157,124 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     G.openFood(false);
     t('32 · the search box is inside that sticky wrapper', !!d.querySelector('.foodsearch #foodSearch'));
     G.closeSheets();
+  }
+
+  /* ---------------------------------------------------------- 33 */
+  journey(33, 'The daily check in starts from the plan, and takes more than one thing');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S, i = G.dowIdx();
+    const chips = () => [...d.querySelectorAll('[data-train]')];
+    const on = () => chips().filter(b => b.classList.contains('on')).map(b => b.dataset.train);
+    const lift = S.plan.days.find(x => x.templateId);
+    const run = S.plan.days.find(x => x.runId);
+
+    /* it knows what it asked you to do */
+    S.plan.days[i] = Object.assign({}, lift, { dow: i }); G.save();
+    G.openDay();
+    t('33 · on a lifting day it opens on that session, not on Rest', on().length === 1 && ['push','pull','lower'].includes(on()[0]), on().join(','));
+    t('33 · and says so', /What the plan asked for/.test(d.getElementById('dayBody').textContent));
+    G.closeSheets();
+    S.plan.days[i] = Object.assign({}, run, { dow: i }); G.save();
+    G.openDay();
+    t('33 · on a cardio day it opens on cardio', on().join() === 'cardio');
+    G.closeSheets();
+    S.plan.days[i] = Object.assign({}, G.slotFor ? G.slotFor('rest') : { slot: 'rest' }, { dow: i, templateId: null, runId: null, type: null }); G.save();
+    G.openDay();
+    t('33 · on a rest day Rest is the one showing as chosen', on().join() === 'rest' && G.trainingList(G.dayDraft.training).length === 0);
+    t('33 · and it invites more than one', /a session and a run both count/.test(d.getElementById('dayBody').textContent));
+    G.closeSheets();
+
+    /* more than one */
+    S.plan.days[i] = Object.assign({}, lift, { dow: i }); G.save();
+    G.openDay();
+    const first = on()[0];
+    d.querySelector('[data-train="cardio"]').click();
+    t('33 · a session and a run can both be true', on().length === 2 && on().includes('cardio') && on().includes(first));
+    d.querySelector('[data-train="cardio"]').click();
+    t('33 · and tapping again takes it off', on().join() === first);
+    d.querySelector('[data-train="cardio"]').click();
+    d.querySelector('[data-train="rest"]').click();
+    t('33 · choosing Rest clears the others and shows as chosen itself',
+      on().join() === 'rest' && G.trainingList(G.dayDraft.training).length === 0);
+    d.querySelector('[data-train="cardio"]').click();
+    t('33 · and choosing something clears Rest', on().join() === 'cardio');
+    d.querySelector('[data-train="' + first + '"]').click();
+    d.getElementById('saveDay').click();
+    const saved = S.days[G.todayKey()].training;
+    t('33 · both are saved', Array.isArray(saved) && saved.length === 2, JSON.stringify(saved));
+    t('33 · and both count toward the week', (() => {
+      const day = S.week[G.dowIdx()];
+      return day.done.includes('workout') && day.done.includes('run'); })());
+    t('33 · the brief reads them plainly', /Training days: .*(and|;)/.test(G.coachBrief().split('\n').filter(l => /Training days/.test(l))[0] || ''),
+      (G.coachBrief().split('\n').filter(l => /Training days/.test(l))[0] || ''));
+
+    /* days written before this change */
+    const old = G.addDays(G.todayKey(), -3);
+    S.days[old] = { training: 'push', sleep: 7, wb: 7 };
+    t('33 · a day saved the old way still reads', G.trainingList(S.days[old].training).join() === 'push'
+      && G.trainingText(S.days[old].training) === 'push');
+    S.days[G.addDays(G.todayKey(), -4)] = { training: 'rest' };
+    t('33 · an old rest day still counts as nothing', G.trainingList('rest').length === 0 && G.trainingText('rest') === 'rest');
+    t('33 · and the brief handles a mix of old and new without breaking',
+      /Training days:/.test(G.coachBrief()) && !/undefined|\[object/.test(G.coachBrief()));
+
+    /* reopening keeps what was saved */
+    G.openDay();
+    t('33 · reopening shows what was saved, not the plan again', on().length === 2);
+    G.closeSheets();
+  }
+
+  /* ---------------------------------------------------------- 34 */
+  journey(34, 'A chart you can read, and a straight answer on when forecasting starts');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const food = n => { for (let i = 0; i < n; i++) { const k = G.addDays(G.todayKey(), -i);
+      S.days[k] = Object.assign({}, S.days[k], { kcal: 2200 }); } };
+
+    /* it says what it needs, before it has it */
+    let r = G.forecastReadiness();
+    t('34 · with nothing logged it says there is no forecast yet', r.stage === 'none' && /No forecast yet/.test(r.line));
+    t('34 · and names both routes to one', /weigh in/.test(r.line) && /food/.test(r.line), r.line);
+    t('34 · the empty chart says the same and offers to fix it', (() => {
+      const c = G.weightChart();
+      return /No weigh ins yet/.test(c) && /data-glance="weigh"/.test(c); })());
+    S.weights.push({ d: G.addDays(G.todayKey(), -10), kg: 92 });
+    t('34 · one weigh in is acknowledged, not ignored', /One weigh in so far/.test(G.weightChart()));
+    S.weights.push({ d: G.addDays(G.todayKey(), -5), kg: 91.6 });
+    t('34 · two weigh ins draw a line', /<svg/.test(G.weightChart()));
+    t('34 · but two is still not a forecast', G.forecastReadiness().stage === 'none');
+    S.weights.push({ d: G.todayKey(), kg: 91.2 });
+    r = G.forecastReadiness();
+    t('34 · three weigh ins starts one', r.canForecast && r.stage === 'early');
+    t('34 · and it admits the burn is an estimate', /estimate of what you burn/.test(r.line));
+
+    food(14);
+    for (let i = 0; i < 14; i++) S.weights.push({ d: G.addDays(G.todayKey(), -i), kg: +(92 - i * 0.05).toFixed(2) });
+    S.weights.sort((a, b) => a.d < b.d ? -1 : 1);
+    r = G.forecastReadiness();
+    t('34 · with three weeks of food and weigh ins it stops estimating', r.stage === 'good' && r.observed);
+    t('34 · and says the range is still a default until it has been scored', /how wrong it has actually been/.test(r.line));
+
+    /* the chart itself */
+    const svg = G.weightChart();
+    t('34 · the chart has kilos up the side', (svg.match(/class="clab"/g) || []).length >= 5);
+    t('34 · dates along the bottom, including today', /today<\/text>/.test(svg) && /<text class="clab" x="34"/.test(svg));
+    t('34 · the current weight is labelled', new RegExp(S.weights[S.weights.length - 1].kg.toFixed(1) + ' kg').test(svg));
+    t('34 · the forecast shows a range, not a single confident line', /opacity="0\.16"/.test(svg));
+    t('34 · and the projected weight is written on it', /kg<\/text>/.test(svg));
+    t('34 · nothing is drawn outside the frame', (() => {
+      const vb = /viewBox="0 0 (\d+) (\d+)"/.exec(svg);
+      return [...svg.matchAll(/(?:x|y|x1|y1|x2|y2|cx|cy)="(-?[\d.]+)"/g)]
+        .every(m => +m[1] >= -60 && +m[1] <= +vb[1] + 60); })());
+
+    /* the note under it */
+    G.go('progress'); G.renderAll();
+    t('34 · the note appears under the chart on the You screen',
+      /estimate of what you burn|how wrong it has actually been|No forecast yet/.test(d.getElementById('s-progress').textContent));
   }
 
   const r = s.report(allErrs);

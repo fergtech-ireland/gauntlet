@@ -112,6 +112,11 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .foodsearch{position:sticky;top:0;z-index:3;background:var(--paper);padding:8px 0 10px;margin:0 0 2px}
 .foodsearch input{width:100%}
 .keyboard-open .foodsearch{box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+.chartempty{border:1px dashed var(--line);border-radius:12px;padding:16px 14px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.chartempty .ce-h{font-size:15px;font-weight:700}
+.chartempty .ce-s{font-size:12.5px;color:var(--mute);line-height:1.45}
+.chart .axis{stroke:var(--line-soft);stroke-width:1}
+.chart .axis.dashed{stroke-dasharray:3 3;stroke:var(--line)}
 .quickrow{display:flex;gap:8px;align-items:center;padding:0 14px 10px}
 .quickrow input{flex:1;min-width:0;min-height:56px;border:1px solid var(--line);border-radius:12px;
   font:inherit;font-family:"Archivo Black",Archivo,sans-serif;font-size:26px;letter-spacing:-.04em;
@@ -676,7 +681,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 .hero-card .hwhy ul{margin:8px 0 0;padding-left:18px}
 .hero-card .hwhy li{margin-bottom:4px}
 .chart{width:100%;height:auto;aspect-ratio:320/132;display:block;margin:2px 0 4px;overflow:visible}
-.chart .clab{font-family:Archivo,sans-serif;font-size:9px;font-weight:700}
+.chart .clab{font-family:Archivo,sans-serif;font-size:9px;font-weight:700;fill:var(--mute)}
 .chartkey{display:flex;gap:14px;font-size:11px;color:var(--mute);font-weight:600;margin-top:2px}
 .chartkey i{width:14px;height:2.5px;display:inline-block;margin-right:5px;vertical-align:middle;border-radius:2px}
 .bars{display:flex;gap:5px;align-items:flex-end;margin-top:12px}
@@ -1031,7 +1036,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='29';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='31';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -4250,6 +4255,58 @@ Object.defineProperties(window.__G,{
    ===================================================================== */
 
 const TRAIN_DAYS=[['push','Push'],['pull','Pull'],['lower','Lower'],['cardio','Cardio'],['rest','Rest']];
+/* ---------- what you did today ----------
+   Two changes, both because the old version got in the way:
+   1. It always opened on Rest, so anyone who trained had to tell the app
+      something it already knew. It now opens on what today's plan asked for,
+      or on what was actually logged if a session has been finished.
+   2. It was one choice. Plenty of people lift and then run, or take a class
+      after a session, so it takes as many as apply. Rest is the exception: it
+      means none of the others, so choosing it clears them and choosing
+      anything else clears Rest.
+   Days recorded before this change hold a single value, so everything reads
+   through trainingList(), which accepts either. */
+const trainingList=v=>{
+  if(Array.isArray(v)) return v.filter(x=>x&&x!=='rest');
+  if(!v||v==='rest') return [];
+  return [v];
+};
+const trainingText=v=>{
+  const l=trainingList(v);
+  if(!l.length) return 'rest';
+  const label=k=>{ const f=TRAIN_DAYS.find(t=>t[0]===k); return f? f[1].toLowerCase() : k; };
+  return l.map(label).join(' and ');
+};
+/* What today's plan asked for, as check in options. */
+function plannedTraining(){
+  const d=(typeof todayPlan==='function')? todayPlan() : null;
+  if(!d||!d.type||d.slot==='walk') return [];
+  if(d.runId) return ['cardio'];
+  if(d.circuitId) return ['cardio'];
+  if(d.templateId){
+    const t=(S.templates||[]).find(x=>x.id===d.templateId);
+    const name=((t&&t.name)||d.label||'').toLowerCase();
+    if(/push/.test(name)) return ['push'];
+    if(/pull/.test(name)) return ['pull'];
+    if(/lower|leg/.test(name)) return ['lower'];
+    return ['push'];
+  }
+  return [];
+}
+/* What actually happened today, if anything has been finished. */
+function loggedTraining(){
+  const k=todayKey(), out=[];
+  (S.workouts||[]).filter(w=>w.d===k).forEach(w=>{
+    const name=(w.name||'').toLowerCase();
+    if(w.kind==='circuit') { if(out.indexOf('cardio')<0) out.push('cardio'); return; }
+    const key=/push/.test(name)?'push':(/pull/.test(name)?'pull':(/lower|leg/.test(name)?'lower':'push'));
+    if(out.indexOf(key)<0) out.push(key);
+  });
+  (S.mine||[]).filter(m=>m.d===k&&(m.kind==='run'||m.kind==='walk')).forEach(()=>{
+    if(out.indexOf('cardio')<0) out.push('cardio');
+  });
+  return out;
+}
 /* These were a real coaching sheet's numbers, which is exactly why they are not
    used for anybody else. Targets come from your own details once you have given
    them, and until then the app shows no calorie or protein target at all. */
@@ -4385,8 +4442,8 @@ function coachBrief(){
   if(notes.length) L.push('What they said about the days:\n'+notes.join('\n'));
   const w=rows.filter(r=>typeof r.w==='number');
   if(w.length) L.push(`Bodyweight: ${w.map(r=>r.w).join(', ')} kg`);
-  const sessions=rows.filter(r=>r.training&&r.training!=='rest').map(r=>r.training);
-  L.push(`Training days: ${sessions.length? sessions.join(', ') : 'none logged'}`);
+  const sessions=rows.filter(r=>trainingList(r.training).length).map(r=>trainingText(r.training));
+  L.push(`Training days: ${sessions.length? sessions.join('; ') : 'none logged'}`);
   if(c){
     /* Split, so whoever reads this knows which numbers came out of the logs and
        which the person actually answered. Nothing is printed that was not one or
@@ -4417,7 +4474,12 @@ function coachBrief(){
 let dayDraft=null;
 function openDay(){
   const prev=today()||{};
-  dayDraft=Object.assign({training:'rest',sleep:7,wb:6,stress:5,note:''},prev);
+  /* Start from what is already saved, then what was actually done, then what
+     the plan asked for. Only fall back to rest when none of those say anything. */
+  const already=prev&&prev.training!==undefined? trainingList(prev.training) : null;
+  const start=(already&&already.length)? already
+    : (loggedTraining().length? loggedTraining() : plannedTraining());
+  dayDraft=Object.assign({sleep:7,wb:6,stress:5,note:''},prev,{training:start});
   drawDay(); openSheet('dayCheck');
 }
 function drawDay(){
@@ -4432,7 +4494,14 @@ function drawDay(){
       <input type="range" min="1" max="10" step="1" value="${d.stress}" data-dayrange="stress" aria-label="How stressed you were"></div>
     <textarea class="ta" data-daynote="1" placeholder="A line about the day, if there is one. This is the bit a coach actually reads.">${(d.note||'').replace(/</g,'&lt;')}</textarea>
     <div class="slab">What you did</div>
-    <div class="chips">${TRAIN_DAYS.map(([k,l])=>`<button class="${d.training===k?'on':''}" data-train="${k}">${l}</button>`).join('')}</div>
+    <div class="chips">${TRAIN_DAYS.map(([k,l])=>{
+      const on=k==='rest'? trainingList(d.training).length===0 : trainingList(d.training).indexOf(k)>=0;
+      return `<button class="${on?'on':''}" data-train="${k}" aria-pressed="${on}">${l}</button>`; }).join('')}</div>
+    <div class="note" style="margin-top:6px">${(()=>{ const l=trainingList(d.training);
+      const planned=plannedTraining();
+      if(!l.length) return 'Nothing today. Tap as many as you did: a session and a run both count.';
+      const same=planned.length&&planned.every(x=>l.indexOf(x)>=0)&&l.length===planned.length;
+      return (same? 'What the plan asked for. ' : '')+'Tap another if you did more than one.'; })()}</div>
     ${auto
       ? `<div class="todo auto" style="border-radius:10px;border:1px solid var(--line-soft);margin-bottom:16px">
           <span class="ic" style="background:var(--t-marine);color:var(--marine)">⌚</span>
@@ -4453,7 +4522,14 @@ function drawDay(){
 }
 document.addEventListener('click',e=>{
   const tr=e.target.closest('[data-train]');
-  if(tr&&dayDraft){ dayDraft.training=tr.dataset.train; drawDay(); }
+  if(tr&&dayDraft){
+    const k=tr.dataset.train;
+    if(k==='rest') dayDraft.training=[];
+    else {
+      const l=trainingList(dayDraft.training);
+      dayDraft.training = l.indexOf(k)>=0? l.filter(x=>x!==k) : l.concat([k]);
+    }
+    drawDay(); }
   if(e.target.closest('#openDay')) openDay();
   if(e.target.closest('#openWeek')) openWeek();
   if(e.target.closest('#logDayBtn')) openDay();
@@ -4482,13 +4558,15 @@ $('saveDay').addEventListener('click',()=>{
     if(last&&last.d===k) last.kg=d.w; else S.weights.push({d:k,kg:d.w});
     S.profile.weight=d.w;
   }
-  if(d.training&&d.training!=='rest'){
-    const day=S.week[todayIdx()], kind=d.training==='cardio'?'run':'workout';
-    if(day&&!day.done.includes(kind)) day.done.push(kind);
+  const didList=trainingList(d.training);
+  if(didList.length){
+    const day=S.week[todayIdx()];
+    didList.forEach(x=>{ const kind=x==='cardio'?'run':'workout';
+      if(day&&!day.done.includes(kind)) day.done.push(kind); });
   }
   save(); closeSheets(); renderAll();
   const planned=typeof todayPlan==='function'? todayPlan() : null;
-  if(d.training==='rest' && planned && planned.type && planned.slot!=='walk' && !dayDone(todayIdx())){
+  if(!didList.length && planned && planned.type && planned.slot!=='walk' && !dayDone(todayIdx())){
     toast('Today saved');
     setTimeout(()=>openRestChoice(dowIdx()),300);
   } else toast('Today saved');
@@ -4607,7 +4685,7 @@ function copyBrief(){
 
 renderProgress();
 Object.assign(window.__G,{TRAIN_DAYS,DEFAULT_TARGETS,ownTargets,allMovements,drawWeekStep,
-  lastNDays,avg,steers,coachBrief,plannedCardioKcalPerDay,openDay,openWeek,
+  lastNDays,avg,steers,coachBrief,trainingList,trainingText,plannedTraining,loggedTraining,TRAIN_DAYS,plannedCardioKcalPerDay,openDay,openWeek,
   HABITS,habitOf,currentHabit,startHabit,retireHabit,toggleHabitDay,habitWeek,habitStreak,habitRate,suggestHabit,openHabitSheet,habitRow,habitRowFor,habitApplies,habitSlots,addOwnHabit,ownHabits,escHabit,OWN_MAX,colophonText,
   TARGET_KINDS,setTarget,clearTarget,targetNow,targetProgress,openTargetSheet,targetLine,
   nudgeState,nextNudgeAt,scheduleNudge,enableNudges,disableNudges,fireNudge,nudgeHelp,onIOS,installed,NUDGE_KEY,
@@ -7017,11 +7095,60 @@ function weightTrend(pts){
   const perDay=den? num/den : 0;
   return {xs,ys,sx,sy,perDay,perWeek:perDay*7,at:d=>sy+perDay*(d-sx),spanDays:xs[xs.length-1]};
 }
+/* ---------- when the forecast starts, and when it is worth trusting ----------
+   Nothing in the app said this, so a new person saw an empty box and no idea
+   what would fill it. These are the real thresholds, read out of the code that
+   does the work rather than written separately and left to drift:
+     trend line        2 weigh ins
+     a direction       3 weigh ins (that is what the slope needs)
+     a forecast        3 weigh ins, or 4 days of food with an estimated burn
+     a good one        10 days of food inside 21 and 3 weigh ins, at which
+                       point your burn is worked out from your own data
+                       instead of an equation
+     a tested one      3 weeks of forecasts scored against what happened,
+                       after which the range comes from its own past misses */
+function forecastReadiness(){
+  const weighs=(S.weights||[]).length;
+  const foodDays=(()=>{ let n=0; for(let i=0;i<21;i++){ const r=S.days[addDays(todayKey(),-i)];
+    if(r&&typeof r.kcal==='number') n++; } return n; })();
+  const food14=(()=>{ let n=0; for(let i=0;i<14;i++){ const r=S.days[addDays(todayKey(),-i)];
+    if(r&&typeof r.kcal==='number') n++; } return n; })();
+  const observed=!!tdeeObserved(21);
+  const scored=(typeof pastErrors==='function'? pastErrors().length : 0);
+  const canForecast=weighs>=3||food14>=4;
+  let stage='none', line='';
+  if(!canForecast){
+    const needW=Math.max(0,3-weighs), needF=Math.max(0,4-food14);
+    stage='none';
+    line=`No forecast yet. It starts at ${needW? needW+' more weigh in'+(needW>1?'s':'') : 'three weigh ins'}`
+      +`${needF? ', or '+needF+' more day'+(needF>1?'s':'')+' of food logged' : ''}.`;
+  } else if(!observed){
+    stage='early';
+    const needF=Math.max(0,10-foodDays), needW=Math.max(0,3-weighs);
+    line=`Working from an estimate of what you burn. It stops estimating once you have `
+      +`${needF? needF+' more day'+(needF>1?'s':'')+' of food' : '10 days of food'}`
+      +`${needW? ' and '+needW+' more weigh in'+(needW>1?'s':'') : ''} in a three week window.`;
+  } else if(scored<3){
+    stage='good';
+    line=`Your burn is now worked out from your own weight and intake, not an equation. `
+      +`After ${3-scored} more week${3-scored>1?'s':''} the range comes from how wrong it has actually been, rather than a default.`;
+  } else {
+    stage='best';
+    line=`Working from your own numbers, with a range built from its own past misses over ${scored} weeks.`;
+  }
+  return {stage,weighs,foodDays,food14,observed,scored,canForecast,line};
+}
 function weightChart(){
   const pts=weightSeries();
-  if(pts.length<2) return `<div class="note" style="margin:0">Two weigh ins and the trend line starts. One point is not a direction.</div>`;
+  if(pts.length<2){
+    const r=forecastReadiness();
+    return `<div class="chartempty">
+      <div class="ce-h">${pts.length? 'One weigh in so far' : 'No weigh ins yet'}</div>
+      <div class="ce-s">A line needs two points and a direction needs three. ${r.line}</div>
+      <button class="mini go" data-glance="weigh">Weigh in</button></div>`;
+  }
   const tr=weightTrend(pts);
-  const w=320,h=132,padL=10,padR=64,padT=12,padB=26;
+  const w=320,h=150,padL=34,padR=58,padT=14,padB=30;
   const lastDay=tr.xs[tr.xs.length-1], endDay=lastDay+CHART_DAYS_FWD;
   const projEnd=tr.at(endDay);
   const goal=(S.target&&S.target.kind==='weight'&&!S.target.hit)? +S.target.value : null;
@@ -7046,7 +7173,18 @@ function weightChart(){
   const words=`Weighed ${pts.length} times over ${Math.round(lastDay)} days, from ${pts[0].kg} to ${now.kg} kg. `
     +(Math.abs(tr.perWeek)<0.05? 'Holding steady.' : `Trending ${tr.perWeek<0?'down':'up'} about ${Math.abs(tr.perWeek).toFixed(2)} kg a week, which is about ${projEnd.toFixed(1)} kg in four weeks.`)
     +(goal!==null? ` Goal ${goal} kg.` : '');
+  const dateShort=k=>{ const d=dateOf(k); return d.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]; };
+  const axis=`
+    <line class="axis" x1="${padL}" y1="${y(hi).toFixed(1)}" x2="${(w-padR).toFixed(1)}" y2="${y(hi).toFixed(1)}"/>
+    <line class="axis" x1="${padL}" y1="${y(lo).toFixed(1)}" x2="${(w-padR).toFixed(1)}" y2="${y(lo).toFixed(1)}"/>
+    <text class="clab" x="${padL-4}" y="${(y(hi)+3.5).toFixed(1)}" text-anchor="end">${hi.toFixed(1)}</text>
+    <text class="clab" x="${padL-4}" y="${(y(lo)+3.5).toFixed(1)}" text-anchor="end">${lo.toFixed(1)}</text>
+    <text class="clab" x="${padL}" y="${h-8}">${dateShort(pts[0].d)}</text>
+    <text class="clab" x="${x(lastDay).toFixed(1)}" y="${h-8}" text-anchor="middle">today</text>
+    <text class="clab" x="${(w-padR).toFixed(1)}" y="${h-8}" text-anchor="middle">${dateShort(addDays(todayKey(),CHART_DAYS_FWD))}</text>
+    <line class="axis dashed" x1="${x(lastDay).toFixed(1)}" y1="${padT}" x2="${x(lastDay).toFixed(1)}" y2="${(h-padB).toFixed(1)}"/>`;
   return `<svg viewBox="0 0 ${w} ${h}" class="chart" role="img" aria-label="${words}">
+    ${axis}
     ${goalOn? `<line x1="${padL}" y1="${y(goal).toFixed(1)}" x2="${(w-padR+40).toFixed(1)}" y2="${y(goal).toFixed(1)}" stroke="var(--forest)" stroke-width="1.4" stroke-dasharray="2 4"/>
       <text x="${(w-padR+44).toFixed(1)}" y="${(y(goal)+3.5).toFixed(1)}" class="clab" fill="var(--forest)">goal ${goal}</text>`
      : ''}
@@ -7058,8 +7196,16 @@ function weightChart(){
       const every=Math.max(1,Math.ceil(pts.length/8));
       if(!last&&i!==0&&i%every) return '';
       return `<circle cx="${x(tr.xs[i]).toFixed(1)}" cy="${y(p.kg).toFixed(1)}" r="${last?3.4:2}" fill="var(--marine)"/>`; }).join('')}
+    ${(()=>{ /* the range the forecast could be out by, drawn rather than described */
+      const band=(typeof bandFor==='function')? bandFor(mondayKey()) : 0.5;
+      const x1=x(lastDay), x2=x(endDay), y0=y(tr.at(lastDay));
+      const yHi=y(projEnd+band), yLo=y(projEnd-band);
+      return `<path d="M${x1.toFixed(1)} ${y0.toFixed(1)} L${x2.toFixed(1)} ${yHi.toFixed(1)} L${x2.toFixed(1)} ${yLo.toFixed(1)} Z"
+        fill="var(--marigold)" opacity="0.16"/>`; })()}
     <path d="${projPath}" fill="none" stroke="var(--marigold)" stroke-width="2.2" stroke-dasharray="4 4" stroke-linecap="round"/>
     <circle cx="${x(endDay).toFixed(1)}" cy="${y(projEnd).toFixed(1)}" r="3.4" fill="var(--marigold)"/>
+    <text class="clab" x="${(w-padR+5).toFixed(1)}" y="${(y(projEnd)+3.5).toFixed(1)}" fill="var(--marigold)">${projEnd.toFixed(1)} kg</text>
+    <text class="clab" x="${(x(lastDay)+5).toFixed(1)}" y="${(y(now.kg)-6).toFixed(1)}" fill="var(--marine)">${now.kg.toFixed(1)} kg</text>
     <text x="${(x(endDay)+6).toFixed(1)}" y="${(y(projEnd)+3.5).toFixed(1)}" class="clab" fill="var(--marigold)">${projEnd.toFixed(1)}</text>
     <text x="${padL}" y="${h-8}" class="clab" fill="var(--mute)">${prettyDate(pts[0].d)}</text>
     <text x="${x(lastDay).toFixed(1)}" y="${h-8}" class="clab" fill="var(--mute)" text-anchor="middle">today</text>
@@ -7108,6 +7254,12 @@ function cycleStrip(){
 }
 
 /* ---------- the trends view ---------- */
+/* One line under the chart saying where the forecast stands. */
+function forecastNote(){
+  const r=forecastReadiness();
+  const tone=r.stage==='none'? 'warn' : 'note';
+  return `<div class="${tone}" style="margin:8px 14px 0">${r.line}</div>`;
+}
 function renderTrends(){
   const f=ensureForecast(), g=S.goal;
   const lastWeek=addDays(mondayKey(),-7);
@@ -7155,6 +7307,7 @@ function renderTrends(){
   <div class="panel">
     <div class="ph"><h3>Weight</h3><button data-weigh="1">Weigh in</button></div>
     ${weightChart()}
+    ${forecastNote()}
     ${proj? `<div class="note">The dashed line follows your weigh ins. The forecast above works from calories instead and says <b>${proj[3].kg} kg</b> by ${prettyDate(addDays(todayKey(),28))}, recalculated each week as you get lighter. Two methods, so two numbers; the gap between them is worth watching.</div>`:''}
     ${waterWindow(todayKey())? `<div class="note" style="color:var(--burnt)">Fluid retention is typically highest around now, averaging about half a kilo in the study that measured it. Read the line, not today's number.</div>`:''}
   </div>
@@ -7189,6 +7342,7 @@ function openHow(){
     <div class="method"><b>Protein</b><span>1.8 g per kilo. The meta-analysis on protein and resistance training supports roughly 1.6 to 2.2 g/kg, so this sits in the middle, and eating more of it while losing weight helps hold onto muscle. ${(()=>{const b=proteinBasis(S.profile); return b.adjusted? `Above a BMI of about 30 the kilo is an adjusted reference weight, ${b.kg} kg in your case rather than ${S.profile.weight} kg, because fat mass carries no protein requirement and total bodyweight would overshoot.` : 'Above a BMI of about 30 it is taken from an adjusted reference weight instead, since fat mass carries no protein requirement.';})()}</span></div>
     <div class="method"><b>Maintenance</b><span>One figure, from the best evidence the app has. To start: resting burn by Mifflin St Jeor, times 1.2 for a sedentary day, plus your step target and the lifting in your plan. Walking is 3 METs for every 100 steps a minute, net of rest, counted above 2,500 a day because a sedentary day already contains those (under 2,500 is what Tudor-Locke and colleagues class as basal activity; using it as the baseline is a judgement). Lifting is 4 METs for as long as your templates take. Once a tracker is connected, your real steps replace the target. Once you have about three weeks of food and weigh ins, what you actually ate minus what the scale says you stored replaces both, and that is the most accurate of the three. Running is counted as steps, which under-counts it a little; physical work a step count cannot see is missed; the three-week figure catches both.</span></div>
     <div class="method"><b>Your calorie target</b><span>Losing: three limits, and the tightest wins. 0.75% of your bodyweight a week, or what your goal date needs up to 1%, the range that keeps muscle while dieting (Helms and colleagues, 2014). A deficit of no more than 750 kcal a day, the top of what the 2013 AHA/ACC/TOS guideline prescribes, because a percentage keeps growing with size and clinical guidance does not. And about 69 kcal a day per kilo of body fat, Alpert's (2005) estimate of the most the fat store can supply; a theoretical model rather than a tested rule, so it is only a ceiling, and in practice it only matters for lean people asking for a fast date. Body fat is yours if you give it, otherwise estimated from BMI, age and sex by the Deurenberg equation, which is about 4 points out either way and cannot tell muscle from fat. Gaining: 0.25 to 0.5% a week, about 10 to 20% over maintenance (Iraki and colleagues, 2019). Never below 1,500 kcal for men or 1,200 for women, and never above maintenance while losing. When you reach your goal weight, the target goes back to maintenance.</span></div>
+    <div class="method"><b>When the forecast starts</b><span>A trend line needs two weigh ins and a direction needs three. A forecast starts at three weigh ins, or four days of food logged. It is working from an estimate of what you burn until you have ten days of food inside three weeks along with three weigh ins, at which point it works your burn out from your own weight and intake instead. After three weeks of forecasts it scores itself, and the range you see comes from how wrong it has actually been rather than a default. The note under the chart always says which of those you are at.</span></div>
     <div class="method"><b>Cardio</b><span>Nineteen sessions across running, the bike, the rower, the pool, the machines, skipping, walking and whatever you play. What each one costs comes from the Compendium of Physical Activities (Ainsworth and colleagues, 2011), net of what you would burn sitting still. Running and walking are not added to your maintenance because their steps are already counted; a bike, a rower, a pool or a class are, because no step count can see them.</span></div>
     <div class="method"><b>The food list</b><span>Typical values for the portion named, for ${FOODS.length} foods people here actually eat. Composition figures in Ireland come from McCance and Widdowson's Composition of Foods Integrated Dataset, which the Food Safety Authority of Ireland names as the accepted source. Brands vary, so anything with a label on it is better taken from the label: "Something not on the list" saves it for good. Alcohol carries about 7 kcal a gram, which is why a pint's calories are mostly not protein, carbs or fat.</span></div>
     <div class="method"><b>What your steps are worth</b><span>Steps are part of what you burn, so they are already inside your maintenance. The deficit splits into the part food makes, eating less than you burn without walking, and the part the steps make, and the two add up to the whole. That is why skipping the steps at the same food slows the loss by exactly what they were burning.</span></div>
@@ -7233,7 +7387,7 @@ document.addEventListener('input',e=>{
   if(r){ S.cycle.length=+r.value; const o=$('outlen'); if(o) o.textContent=S.cycle.length+' days'; }
 });
 
-Object.assign(window.__G,{prettyDate,weightSeries,weightTrend,weightChart,projectionLine,weeklyHistory,buildForecast,ensureForecast,reviewWeek,actualsFor,renderTrends,
+Object.assign(window.__G,{prettyDate,weightSeries,weightTrend,weightChart,projectionLine,forecastReadiness,forecastNote,bandFor,tdeeObserved,pastErrors,weeklyHistory,buildForecast,ensureForecast,reviewWeek,actualsFor,renderTrends,
   SCI,openHow,weightSlopePerDay,walkKcal,liftKcal,tdeeEstimate,tdeeObserved,trendSeries,trendNow,trendRatePerWeek,recentIntake,projectWeeks,bandFor,pastErrors,
   phaseOn,cycleDay,waterWindow,openCycle,weightChart,projectionLine,consistencyChart,weekOfDate,addDays,PHASES});
 </script>

@@ -2445,6 +2445,39 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     });
   }
 
+  /* ---------------------------------------------------------- 37 */
+  journey(37, 'Over target shows how far over, with maintenance beside it');
+  {
+    const { d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const tile = () => { G.go('today'); G.renderAll(); return d.querySelector('.glances .glance'); };
+    const txt = el => el.textContent.replace(/\s+/g, ' ').trim();
+    const target = S.targets.kcal, maint = S.targets.maintenance;
+    t('37 · there is a gap between target and maintenance to test in', maint > target, target + ' / ' + maint);
+    const eat = kcal => { const k = G.todayKey(); S.days[k] = Object.assign({}, S.days[k], { food: [
+      { id: 'x', n: 'Test', u: 'portion', q: 1, meal: 'l', kcal, p: 0, c: 0, f: 0 }] }); };
+
+    eat(target - 400);
+    t('37 · under target it shows what is left', /kcal left/.test(txt(tile())));
+    t('37 · and the amount is right', +txt(tile().querySelector('.gv')).replace(/,/g, '') === 400);
+
+    eat(target + 300);
+    t('37 · over target it no longer says 0 left', !/kcal left/.test(txt(tile())) && /kcal over target/.test(txt(tile())));
+    t('37 · it shows how far over', +txt(tile().querySelector('.gv')).replace(/,/g, '') === 300);
+    t('37 · it shows maintenance', txt(tile()).indexOf('maintenance ' + maint.toLocaleString('en-GB')) >= 0, txt(tile()));
+    t('37 · and that this is still under it', new RegExp('still ' + (maint - target - 300).toLocaleString('en-GB') + ' under').test(txt(tile())), txt(tile()));
+    t('37 · in a caution colour, not alarm', tile().classList.contains('over') && !tile().classList.contains('past'));
+
+    eat(maint + 150);
+    t('37 · past maintenance too, it says so', /150 over/.test(txt(tile())), txt(tile()));
+    t('37 · and switches to the alarm colour', tile().classList.contains('past'));
+    t('37 · the overage is still the headline number', +txt(tile().querySelector('.gv')).replace(/,/g, '') === maint + 150 - target);
+
+    eat(target);
+    t('37 · exactly on target reads as nothing left, not over', /kcal left/.test(txt(tile())) && +txt(tile().querySelector('.gv')).replace(/,/g, '') === 0);
+  }
+
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);
 })();

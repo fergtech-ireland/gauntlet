@@ -128,6 +128,8 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .glance .gl{font-size:11.5px;font-weight:700;color:var(--mute)}
 .glance .gbar{height:4px;border-radius:3px;background:var(--line-soft);overflow:hidden;margin-top:3px}
 .glance .gbar i{display:block;height:100%}
+.glance.over .gv{color:var(--burnt)}
+.glance.over.past .gv{color:var(--oxblood)}
 .glance .gs{font-size:10.5px;color:var(--mute);font-weight:600;margin-top:auto}
 .quicks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 14px}
 .quick{min-height:46px;border-radius:12px;background:var(--grey-btn);display:flex;flex-direction:column;justify-content:center;gap:1px;padding:0 10px;text-align:left}
@@ -1052,7 +1054,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='33';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='34';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -2457,15 +2459,27 @@ function glanceRow(){
   const left=target? target-eaten : null;
   const protein=Math.round(food.protein||0);
   const st=(typeof stepsToday==='function')? stepsToday() : null;
-  const cell=(id,top,label,sub,pct,tone)=>`<button class="glance" data-glance="${id}">
+  const cell=(id,top,label,sub,pct,tone,cls)=>`<button class="glance ${cls||''}" data-glance="${id}">
     <div class="gv">${top}</div><div class="gl">${label}</div>
     ${pct!==null? `<div class="gbar"><i style="width:${Math.max(2,Math.min(100,pct))}%;background:${tone}"></i></div>`:''}
     <div class="gs">${sub}</div></button>`;
+  /* Over target used to read "0 kcal left", which looks like bang on target.
+     It now says how far over, and puts maintenance beside it: over target but
+     under maintenance is still a deficit, just a smaller one, and that is a
+     very different day from eating past what you burn. */
+  const maint=+t.maintenance||0;
+  const over=target&&eaten>target? eaten-target : 0;
+  let top, label, sub, tone, cls='';
+  if(!target){ top=num(eaten); label='kcal in'; sub='no target yet'; tone='var(--forest-bg)'; }
+  else if(!over){ top=num(left); label='kcal left'; sub=num(eaten)+' of '+num(target); tone='var(--forest-bg)'; }
+  else {
+    top=num(over); label='kcal over target';
+    if(maint&&eaten<=maint){ sub='maintenance '+num(maint)+', still '+num(maint-eaten)+' under'; tone='var(--burnt)'; cls='over'; }
+    else if(maint){ sub='maintenance '+num(maint)+', '+num(eaten-maint)+' over'; tone='var(--oxblood)'; cls='over past'; }
+    else { sub=num(eaten)+' of '+num(target); tone='var(--oxblood)'; cls='over past'; }
+  }
   return `<div class="glances">
-    ${cell('food', target? num(Math.max(0,left)) : num(eaten), target? 'kcal left':'kcal in',
-      target? num(eaten)+' of '+num(target) : 'no target yet',
-      target? Math.round(eaten/target*100) : null,
-      (left!==null&&left<0)? 'var(--oxblood)' : 'var(--forest-bg)')}
+    ${cell('food', top, label, sub, target? Math.round(eaten/target*100) : null, tone, cls)}
     ${cell('protein', protein+'g', 'protein', t.protein? 'of '+t.protein+'g':'today',
       t.protein? Math.round(protein/t.protein*100) : null, 'var(--marine-bg)')}
     ${cell('steps', st===null? '–' : num(st), 'steps', st===null? 'no tracker':'of '+num(stepTarget()),

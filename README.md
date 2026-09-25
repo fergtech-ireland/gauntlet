@@ -34,7 +34,7 @@ TZ=America/Los_Angeles node test.js
 |---|---|
 | `regression.js` | Every fix made during the review, asserted individually. If a change here goes red, something that was broken and got fixed is broken again. |
 | `cta.js` | Two halves. A **static audit** that pulls every id and `data-` attribute written onto an interactive element and checks something in the source listens for it, plus that every `go()` names a real screen and every `openSheet()` names a real sheet. Then a **runtime sweep** that opens every screen and sheet and clicks every control in them. |
-| `uat.js` | Thirty-four end-to-end journeys, each on a clean install. These assert the outcome the person came for, not the mechanism underneath. |
+| `uat.js` | Thirty-six end-to-end journeys, each on a clean install. These assert the outcome the person came for, not the mechanism underneath. |
 
 | `sw.test.js` | Runs the real `sw.js` in a simulated service worker against a fake GitHub Pages: publish a new version, open the app, get it. Also offline, slow and failing networks, and that Supabase is never touched. |
 
@@ -67,6 +67,17 @@ TZ=America/Los_Angeles node test.js
 23. Returning users open the app with their history, with no errors
 24. Your own habits, a theme sheet that closes, and a footer that tells the truth
 25. Exact weigh ins, one place for each day, full session detail, an editor you can use
+26. Planned means what was planned, even when the session changes
+27. One clear route to today, a finish screen that shows everything, a circuit editor fingers can use
+28. Tiles to log with, food first; You in three tabs with settings behind a gear; a weight chart that tells the truth
+29. A food list with Irish food in it, and movements you can recognise
+30. Cardio that is not running, counted properly
+31. A home screen that answers what now, where am I, and is it working
+32. Bodyweight counts, tiles log one thing, sauces exist, the keyboard keeps out of the way
+33. The daily check in starts from the plan, and takes more than one thing
+34. A chart you can read, and a straight answer on when forecasting starts
+35. Several habits, raw meat, a tighter home row, a prefilled weight, and eating around the day
+36. Meal timing holds up on awkward days, including night shifts
 
 ## Things the tests cannot cover
 

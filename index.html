@@ -130,7 +130,7 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .glance .gbar i{display:block;height:100%}
 .glance .gs{font-size:10.5px;color:var(--mute);font-weight:600;margin-top:auto}
 .quicks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 14px}
-.quick{min-height:52px;border-radius:12px;background:var(--grey-btn);display:flex;flex-direction:column;justify-content:center;gap:2px;padding:0 10px;text-align:left}
+.quick{min-height:46px;border-radius:12px;background:var(--grey-btn);display:flex;flex-direction:column;justify-content:center;gap:1px;padding:0 10px;text-align:left}
 .quick .ql{font-size:13px;font-weight:700}
 .quick .qs{font-size:10.5px;color:var(--mute);font-weight:600}
 .quick.done{background:var(--t-forest)}
@@ -627,6 +627,21 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 .dlweek .d span{font-size:11.5px;color:var(--mute);font-weight:600}
 .dlweek .tag{font-size:11px;font-weight:700;padding:4px 8px;border-radius:6px;background:var(--grey-btn);color:var(--mute)}
 .dlweek .tag.on{background:var(--marine-bg);color:#fff}
+.eatrow{display:flex;align-items:center;gap:12px;width:calc(100% - 28px);margin:0 14px 10px;
+  min-height:56px;padding:10px 14px;border-radius:12px;background:var(--t-marigold);text-align:left}
+.eatrow .t{flex:1;display:flex;flex-direction:column;gap:2px}
+.eatrow .t b{font-size:13.5px}
+.eatrow .t span{font-size:12px;color:var(--mute);font-weight:600}
+.eatrow .chev{color:var(--mute);font-size:18px}
+.eatitem{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line-soft)}
+.eatitem .et{width:52px;flex:0 0 auto;font-weight:700;font-size:13px}
+.eatitem .ew{flex:1;display:flex;flex-direction:column;gap:3px}
+.eatitem .ew b{font-size:13.5px;line-height:1.35}
+.eatitem .ew span{font-size:12px;color:var(--mute);line-height:1.45}
+.addhabit{display:flex;align-items:center;justify-content:space-between;gap:10px;width:calc(100% - 28px);
+  margin:0 14px 10px;min-height:48px;padding:0 14px;border-radius:12px;border:1px dashed var(--line);
+  font-size:13.5px;font-weight:700;color:var(--marine)}
+.addhabit span{font-size:11.5px;font-weight:700;color:var(--mute)}
 .habitdots{display:flex;gap:5px;margin-top:7px}
 .habitdots i{width:9px;height:9px;border-radius:50%;background:var(--line);display:block}
 .habitdots i.on{background:var(--forest)}
@@ -682,6 +697,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 .hero-card .hwhy li{margin-bottom:4px}
 .chart{width:100%;height:auto;aspect-ratio:320/132;display:block;margin:2px 0 4px;overflow:visible}
 .chart .clab{font-family:Archivo,sans-serif;font-size:9px;font-weight:700;fill:var(--mute)}
+.chart .raw{fill:var(--mute);opacity:.45}
 .chartkey{display:flex;gap:14px;font-size:11px;color:var(--mute);font-weight:600;margin-top:2px}
 .chartkey i{width:14px;height:2.5px;display:inline-block;margin-right:5px;vertical-align:middle;border-radius:2px}
 .bars{display:flex;gap:5px;align-items:flex-end;margin-top:12px}
@@ -1036,7 +1052,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='31';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='33';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -1109,10 +1125,42 @@ const habitDay=(k,n)=>{ const d=dateOf(k); d.setDate(d.getDate()+n); return keyO
 const habitOf=id=>HABITS.find(h=>h.id===id)||ownHabits().find(h=>h.id===id)||null;
 function habitSlots(){ if(!S.habits||typeof S.habits!=='object') S.habits={}; return S.habits; }
 const currentHabit=slot=>{ const h=habitSlots()[slot||'start']; return h&&h.id&&!h.retired&&habitOf(h.id)? h : null; };
-function startHabit(id){
+/* ---------- how many habits at once ----------
+   One at a time was a deliberate choice and the evidence behind it is real:
+   a habit takes a median of 66 days to become automatic (Lally, 2010), and
+   spreading attention thin is how people end up keeping none of them. But the
+   app gave no way to say "I already have that one, I want another", which read
+   as a missing feature rather than a decision.
+   So: three at once, no more, with the third one warned about rather than
+   blocked, and the count always on screen. Slots are named so old saves keep
+   working: start and stop as before, plus extra ones. */
+const HABIT_MAX=3;
+const HABIT_SLOTS=['start','stop','extra1','extra2'];
+function activeHabits(){
+  const h=habitSlots();
+  return HABIT_SLOTS.map(slot=>{ const x=h[slot];
+    return (x&&x.id&&!x.retired&&habitOf(x.id))? Object.assign({slot},x) : null; }).filter(Boolean);
+}
+const habitCount=()=>activeHabits().length;
+const habitRoom=()=>Math.max(0,HABIT_MAX-habitCount());
+/* Where a new one goes: its own kind if that is free, otherwise the first
+   spare slot, otherwise it replaces the one of the same kind. */
+function slotForNew(kind){
+  const h=habitSlots();
+  const free=s=>!(h[s]&&h[s].id&&!h[s].retired&&habitOf(h[s].id));
+  if(free(kind)) return kind;
+  if(habitCount()<HABIT_MAX){ const spare=['extra1','extra2'].find(free); if(spare) return spare; }
+  return kind;
+}
+function startHabit(id,slot){
   const m=habitOf(id); if(!m) return null;
-  habitSlots()[m.kind]={id,started:todayKey(),days:{},retired:false};
-  save(); return habitSlots()[m.kind];
+  const put=slot||slotForNew(m.kind);
+  habitSlots()[put]={id,started:todayKey(),days:{},retired:false,kind:m.kind};
+  save(); return habitSlots()[put];
+}
+function habitSlotOf(id){
+  const h=habitSlots();
+  return HABIT_SLOTS.find(s=>h[s]&&h[s].id===id&&!h[s].retired)||null;
 }
 function retireHabit(slot){ const h=habitSlots()[slot||'start']; if(h) h.retired=true; save(); }
 /* does this habit count on this day? */
@@ -2429,12 +2477,15 @@ function logRow(){
   const k=todayKey(), logged=S.days[k]||{};
   const weighed=S.weights.length&&S.weights[S.weights.length-1].d===k;
   const meals=dayFood(k).length;
+  /* The state line used to read "not today" under every unfinished one, which
+     spent three lines of a phone screen saying nothing. Done shows a tick and
+     what it was; not done shows the label alone. */
   const btn=(id,label,state,done)=>`<button class="quick ${done?'done':''}" data-glance="${id}">
-    <span class="ql">${label}</span><span class="qs">${state}</span></button>`;
+    <span class="ql">${label}</span>${done&&state? `<span class="qs">${state}</span>`:''}</button>`;
   return `<div class="quicks">
-    ${btn('food','Log food', meals? meals+' logged':'nothing yet', meals>0)}
-    ${btn('weigh','Weigh in', weighed? showW(S.weights[S.weights.length-1].kg,S.profile.units==='imperial') : 'not today', weighed)}
-    ${btn('day','Rate the day', logged.wb? logged.wb+'/10':'one slider', !!logged.wb)}
+    ${btn('food','Log food', meals? meals+' in':'', meals>0)}
+    ${btn('weigh','Weigh in', weighed? showW(S.weights[S.weights.length-1].kg,S.profile.units==='imperial') : '', weighed)}
+    ${btn('day','Rate today', logged.wb? logged.wb+'/10':'', !!logged.wb)}
   </div>`;
 }
 /* How the week is actually going, in one honest sentence. */
@@ -2451,6 +2502,186 @@ function weekLine(){
     bits.push((tr.perWeek<0?'down ':'up ')+Math.abs(tr.perWeek).toFixed(2)+' kg a week');
   return bits.join(' · ');
 }
+/* ---------- eating around your day ----------
+   What the evidence actually supports, and what it does not:
+     - Total protein across the day beats when you eat it. The ISSN's 2017
+       position stand puts 20 to 40 g every three to four hours ahead of
+       post-workout timing, and the pooled analyses found the timing effect
+       disappears once daily protein is accounted for (Schoenfeld, Aragon and
+       Krieger, 2013).
+     - Eating within a couple of hours before training makes the post-workout
+       rush largely redundant, because that meal is still being digested.
+     - Post-exercise protein within about two hours does raise muscle protein
+       synthesis, so it is worth doing, not worth panicking about.
+     - The last big meal is better finished two to three hours before bed:
+       later meals raise core temperature when it needs to fall, and the
+       observational evidence on late eating and sleep quality points one way.
+     - 20 to 40 g of slow protein before sleep raises overnight muscle protein
+       synthesis. Small and easy to digest, not a second dinner.
+     - Caffeine fragments sleep when taken within about eight hours of bed at
+       a coffee-sized dose; a small one four hours out is usually fine.
+   What this is not: a claim that timing will make you lose weight. Calories
+   decide that. Timing is for training quality, recovery and sleep, and the
+   app says so rather than implying otherwise. */
+const EAT_CLOCK={bed:'23:00', train:'18:00', wake:'07:00'};
+const hhmmToMin=t=>{ const m=/^(\d{1,2}):(\d{2})$/.exec(String(t||'')); return m? (+m[1])*60+(+m[2]) : null; };
+const minToHhmm=v=>{ const x=((Math.round(v)%1440)+1440)%1440;
+  return String(Math.floor(x/60)).padStart(2,'0')+':'+String(x%60).padStart(2,'0'); };
+const clockOf=k=>{ const p=S.profile||{}; return hhmmToMin(p[k==='bed'?'bedtime':(k==='train'?'trainTime':'wakeTime')])??hhmmToMin(EAT_CLOCK[k]); };
+/* Does today involve training, and what kind. */
+function todayTrains(){
+  const d=(typeof todayPlan==='function')? todayPlan() : null;
+  if(!d||!d.type||d.slot==='walk') return null;
+  return d.templateId? 'lifting' : (d.runId||d.circuitId? 'cardio' : null);
+}
+function eatingPlan(){
+  /* Everything is planned in minutes since waking and only turned back into
+     clock times at the end. Working in raw clock minutes broke for anyone
+     whose day crosses midnight: a night shift came out with "04:00 last meal"
+     listed before "15:30 breakfast", and every "is this close to that" check
+     compared the wrong numbers. */
+  const bedA=clockOf('bed'), wakeA=clockOf('wake'), trainA=clockOf('train');
+  const rel=t=>(((t-wakeA)%1440)+1440)%1440;
+  const abs=r=>(((wakeA+r)%1440)+1440)%1440;
+  const bed=rel(bedA)||960, train=rel(trainA);
+  const t=S.targets||{}, protein=+t.protein||0;
+  const kind=todayTrains();
+  const trains=!!kind && train<bed;
+  const meals=Math.max(3,Math.min(5,Math.round((bed/60)/3.5)));
+  const per=protein? Math.round(protein/meals) : null;
+  const P=per? per+'g' : '20 to 40g';
+  const items=[];
+  const add=(tag,time,what,why)=>items.push({tag,time,what,why:why||''});
+
+  /* The meals it tells you to eat are the meals it schedules: the stated
+     number, spaced evenly from breakfast to the last big meal. The first
+     version said "5 meals of 33g" and then showed three, with a nine hour gap
+     in the afternoon, which contradicted its own advice. */
+  const firstAt=30, lastAt=Math.max(firstAt+240, bed-180);
+  /* to the quarter hour: 16:53 reads like a machine made it */
+  const slot=k=>Math.round((firstAt+k*(lastAt-firstAt)/(meals-1))/15)*15;
+  const lunchK=(()=>{ let best=1,d=1e9; for(let k=1;k<meals-1;k++){ const g=Math.abs(slot(k)-330); if(g<d){d=g;best=k;} } return best; })();
+  for(let k=0;k<meals;k++){
+    const at=slot(k);
+    if(k===0) add('breakfast',at,'Breakfast'+(per?`, about ${per}g protein`:''),
+      `Protein lands better spread out: ${meals} meals of ${P} across the day beats saving it all for after training.`);
+    else if(k===meals-1) add('last',at,'Last big meal'+(per?`, about ${per}g protein`:''),
+      'Two to three hours before bed. Later than that and digestion is still going while your body is trying to cool down for sleep.');
+    else if(k===lunchK) add('lunch',at,'Lunch'+(per?`, about ${per}g protein`:''),
+      trains? 'Keeps the protein spread across the day, which matters more than exactly when you eat around the session.'
+            : 'A rest day changes nothing about the protein. It is the total across the day that counts.');
+    else add('meal'+k,at,'A meal or a proper snack'+(per?`, about ${per}g protein`:''),
+      'Spreading protein this way beats one or two big hits. Anything with real protein in it counts.');
+  }
+
+  if(trains){
+    const preAt=train-150;
+    const pre = preAt<20
+      ? {tag:'pre',time:10,small:true,what:'Something small first, or train as you are',
+         why:'Training this early leaves no room for a proper meal beforehand. A banana or a slice of toast is plenty, and training fasted is fine too, as long as you eat properly afterwards.'}
+      : {tag:'pre',time:preAt,what:'Eat properly, two to three hours before training',
+         why:'Carbohydrate and protein here fuels the session and keeps working through it. Eat this and the rush to eat straight afterwards stops mattering.'};
+    const post={tag:'post',time:Math.min(train+60,Math.max(train+30,bed-30)),
+      what:'Eat again within about two hours'+(per?`, at least ${per}g protein`:''),
+      why:'Protein after training does raise muscle protein synthesis. Two hours is plenty: the window is not the fifteen minutes it was once sold as.'};
+    /* a meal around training replaces the regular meal it lands on, and
+       takes over its role if that meal was breakfast or the last one */
+    /* the meal after training claims its slot first; a small snack before an
+       early session is not a meal and replaces nothing */
+    [post,pre].forEach(tm=>{
+      if(tm.small){ items.push(tm); return; }
+      const hit=items.filter(i=>!['train','coffee','pre','post'].includes(i.tag)&&Math.abs(i.time-tm.time)<=90)
+        .sort((x,y)=>Math.abs(x.time-tm.time)-Math.abs(y.time-tm.time))[0];
+      if(hit){
+        if(hit.tag==='breakfast'&&tm.tag==='post'){
+          tm.what='Breakfast, within about two hours of finishing'+(per?`, at least ${per}g protein`:'');
+          tm.why='Training this early means breakfast is the meal after it. Protein then raises muscle protein synthesis, and two hours is plenty of room.';
+        }
+        if(hit.tag==='last'){
+          tm.tookLast=true;
+          tm.what= tm.tag==='post'? 'Eat after training, and make it the last big one' : 'Eat properly before training, and make it the last big one';
+          if(tm.tag==='post') tm.why='Training runs close to bed today, so this is one meal rather than two. Two to three hours before bed is still the aim, and the protein matters more than the hour.';
+        }
+        items.splice(items.indexOf(hit),1);
+      }
+      items.push(tm);
+    });
+    add('train',train,kind==='lifting'? 'Train':'Cardio','');
+    add('presleep',bed-45,'Something small and protein rich, if you are hungry',
+      '20 to 40g of slow protein before sleep raises overnight muscle protein synthesis. Yoghurt or a shake, not a second dinner.');
+  }
+  add('coffee',Math.max(60,bed-480),'Last coffee',
+    'A full coffee within about eight hours of bed fragments sleep even when it does not feel like it. A small one four hours out is usually fine.');
+
+  /* And if the meal after training already lands near bed, it does the job of
+     the small one before sleep: one entry, not two a quarter of an hour apart. */
+  const post2=items.find(i=>i.tag==='post'), sleepy=items.find(i=>i.tag==='presleep');
+  if(post2&&sleepy&&Math.abs(post2.time-sleepy.time)<=90){
+    /* if it has already become the last big meal, that wording stands */
+    if(!post2.tookLast){
+      post2.what='Eat after training, keep it light and protein first'+(per?`, at least ${per}g`:'');
+      post2.why='This close to bed, one smallish meal with plenty of protein does both jobs: it feeds the session and it covers you overnight.';
+    }
+    items.splice(items.indexOf(sleepy),1);
+  }
+
+  const out=items.slice().sort((x,y)=>x.time-y.time)
+    .map(i=>Object.assign({},i,{time:minToHhmm(abs(i.time))}));
+  return {items:out, bed:minToHhmm(bedA), train:minToHhmm(trainA), wake:minToHhmm(wakeA), kind, meals, per};
+}
+/* The next thing due, for the home screen. */
+function nextEating(){
+  const plan=eatingPlan(), now=new Date().getHours()*60+new Date().getMinutes();
+  const next=plan.items.find(i=>hhmmToMin(i.time)>=now);
+  return {plan,next};
+}
+function eatingRow(){
+  if(!(S.targets&&S.targets.protein)) return '';
+  const {plan,next}=nextEating();
+  const line=next? `${next.time} · ${next.what}` : 'That is the day. Nothing else due.';
+  return `<button class="eatrow" id="eatBtn">
+    <span class="t"><b>Eating around today</b><span>${line}</span></span>
+    <span class="chev">›</span></button>`;
+}
+function openEating(){
+  const plan=eatingPlan();
+  document.getElementById('altTitle').textContent='Eating around today';
+  document.getElementById('altSub').textContent= plan.kind
+    ? 'Built around training at '+plan.train+' and bed at '+plan.bed+'.'
+    : 'A day with no session in it, built around bed at '+plan.bed+'.';
+  document.getElementById('altBody').innerHTML=`
+    <div style="padding:0 14px 6px">
+      ${plan.items.map(i=>`<div class="eatitem">
+        <div class="et">${i.time}</div>
+        <div class="ew"><b>${i.what}</b>${i.why?`<span>${i.why}</span>`:''}</div></div>`).join('')}
+      <div class="method"><b>What this will and will not do</b><span>This is for training quality, recovery and sleep. It is not a weight loss trick: what you eat in total decides that, and moving the same food around the clock does not change it. If a time does not suit your life, ignore it. The one worth keeping is the spread of protein.</span></div>
+      <div class="method"><b>Where it comes from</b><span>The International Society of Sports Nutrition's 2017 position stand on nutrient timing, which puts 20 to 40g of protein every three to four hours ahead of post-workout timing; Schoenfeld, Aragon and Krieger's pooled analysis, where the timing effect disappeared once daily protein was accounted for; the sleep work on finishing large meals two to three hours before bed; pre-sleep protein trials at 20 to 40g; and a randomised crossover on caffeine, where a coffee-sized dose inside eight hours of bed fragmented sleep.</span></div>
+      <button class="mini" id="eatTimes">Change your times</button>
+    </div>`;
+  openSheet('altSheet');
+}
+function openEatTimes(){
+  const p=S.profile||{};
+  document.getElementById('altTitle').textContent='Your times';
+  document.getElementById('altSub').textContent='Only used to lay the day out. Nothing is counted from them.';
+  const row=(k,label,val)=>`<div class="nf" style="margin-bottom:10px"><label for="time_${k}">${label}</label>
+    <input id="time_${k}" type="time" value="${val}" data-timeset="${k}"></div>`;
+  document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 6px">
+    ${row('wakeTime','Usually up at',p.wakeTime||EAT_CLOCK.wake)}
+    ${row('trainTime','Usually train at',p.trainTime||EAT_CLOCK.train)}
+    ${row('bedtime','Usually in bed by',p.bedtime||EAT_CLOCK.bed)}
+    <button class="sheetcta" id="eatBack">Done</button></div>`;
+  openSheet('altSheet');
+}
+document.addEventListener('click',e=>{
+  if(e.target.closest('#eatBtn')) openEating();
+  if(e.target.closest('#eatTimes')) openEatTimes();
+  if(e.target.closest('#eatBack')) openEating();
+});
+document.addEventListener('change',e=>{
+  const ts=e.target.closest('[data-timeset]');
+  if(ts&&hhmmToMin(e.target.value)!==null){ S.profile[ts.dataset.timeset]=e.target.value; save(); }
+});
 function renderToday(){
   const plan=ensurePlan(), d=todayPlan(), i=dowIdx(), logged=S.days[todayKey()];
   const weighedToday=S.weights.length && S.weights[S.weights.length-1].d===todayKey();
@@ -2502,7 +2733,9 @@ function renderToday(){
     : `<button class="todo" id="connectBtn"><span class="ic" style="background:var(--t-marine);color:var(--marine)">⌚</span>
         <span class="t"><b>Connect your watch or phone</b><span>Steps and sleep fill themselves in. You never log them.</span></span>
         <span class="chev">›</span></button>`}
-  ${habitRow()}
+  ${eatingRow()}
+  ${activeHabits().map(h=>habitRowFor(h.slot)).join('')||habitRow()}
+  ${habitCount()&&habitRoom()? `<button class="addhabit" data-habitadd="1">Add another habit<span>${habitCount()} of ${HABIT_MAX}</span></button>`:''}
   ${checkinRow()}
   ${(typeof painToReview==='function'? painToReview() : []).map(n=>`<div class="todo">
       <span class="ic" style="background:var(--t-burnt);color:var(--burnt)">?</span>
@@ -3069,6 +3302,7 @@ document.addEventListener('click',e=>{
   if(e.target.closest('#changeAim')){ drawAimSheet(); openSheet('aimSheet'); }
   const am=e.target.closest('[data-aim]');
   if(am){ setAim(am.dataset.aim); closeSheets(); toast('Aim changed. The week rebuilt around it.'); }
+  if(e.target.closest('[data-habitadd]')){ openHabitSheet(); return; }
   const hp=e.target.closest('[data-habitpick]');
   if(hp&&!e.target.closest('#habitSheet')){ openHabitSheet(); return; }
   const ht=e.target.closest('[data-habittoggle]');
@@ -4431,10 +4665,14 @@ function coachBrief(){
       +(S.target.hit? ` Met on ${S.target.hit}.`
         : pr? ` Currently ${pr.now}, ${Math.abs(pr.remaining)} to go, ${pr.daysLeft} days left.` : ' Nothing logged against it yet.'));
   }
-  if(typeof currentHabit==='function'){
-    const hs=currentHabit('start'), hx=currentHabit('stop');
-    if(hs) L.push(`Habit: ${habitOf(hs.id).t}, since ${hs.started}. ${habitStreak('start')} day streak, kept on ${Object.keys(hs.days||{}).length} days so far.`);
-    if(hx) L.push(`Habit to stop: ${habitOf(hx.id).t}, since ${hx.started}. ${habitStreak('stop')} days without in a row, ${Object.keys(hx.days||{}).length} days without so far.`);
+  if(typeof activeHabits==='function'){
+    /* every habit they are keeping, not just the first two slots */
+    activeHabits().forEach(h=>{
+      const meta=habitOf(h.id), stop=meta.kind==='stop', kept=Object.keys(h.days||{}).length;
+      L.push(stop
+        ? `Habit to stop: ${meta.t}, since ${h.started}. ${habitStreak(h.slot)} days without in a row, ${kept} days without so far.`
+        : `Habit: ${meta.t}, since ${h.started}. ${habitStreak(h.slot)} day streak, kept on ${kept} days so far.`);
+    });
   }
   /* Their own words, which is the richest thing in here and the one part no
      number can stand in for. */
@@ -4476,10 +4714,14 @@ function openDay(){
   const prev=today()||{};
   /* Start from what is already saved, then what was actually done, then what
      the plan asked for. Only fall back to rest when none of those say anything. */
+  /* If they weighed in today, the daily check in already knows the number.
+     Asking for it twice is how you get two different answers. */
+  const weighedToday=(S.weights||[]).filter(x=>x.d===todayKey()).slice(-1)[0];
   const already=prev&&prev.training!==undefined? trainingList(prev.training) : null;
   const start=(already&&already.length)? already
     : (loggedTraining().length? loggedTraining() : plannedTraining());
   dayDraft=Object.assign({sleep:7,wb:6,stress:5,note:''},prev,{training:start});
+  if(weighedToday&&(dayDraft.w===undefined||dayDraft.w===null||dayDraft.w==='')) dayDraft.w=weighedToday.kg;
   drawDay(); openSheet('dayCheck');
 }
 function drawDay(){
@@ -4513,11 +4755,12 @@ function drawDay(){
     <div class="slab">Food</div>
     <button class="logrow" id="foodBtn"><span class="ic" style="background:var(--t-burnt);color:var(--burnt)">+</span>
       <div class="txt"><div class="t">${dayFood(todayKey()).length? 'Add more food' : 'Log what you ate'}</div>
-        <div class="s">${dayFood(todayKey()).length? dayFood(todayKey()).length+' things logged · '+Math.round(foodTotals(todayKey()).kcal)+' kcal' : 'Tap from a list rather than typing numbers'}</div></div>
+        <div class="s">${dayFood(todayKey()).length? dayFood(todayKey()).length+(dayFood(todayKey()).length===1?' thing':' things')+' logged · '+Math.round(foodTotals(todayKey()).kcal)+' kcal' : 'Tap from a list rather than typing numbers'}</div></div>
       <span class="chev">›</span></button>
     ${t.kcal? '' : `<div class="note" style="margin:-4px 0 10px">No targets set. Work out your numbers on the Progress screen and they appear here.</div>`}
     <div class="nums">${nf('kcal','Calories',t.kcal)}${nf('protein','Protein (g)',t.protein)}${nf('carbs','Carbs (g)',t.carbs)}${nf('fat','Fat (g)',t.fat)}</div>
     <div class="nums" style="margin-top:8px">${nf('w','Weight (kg)','',0.1)}${nf('fibre','Fibre (g)',t.fibre)}</div>
+    ${(S.weights||[]).some(x=>x.d===todayKey())? `<div class="note" style="margin-top:4px">Weight came from this morning's weigh in. Changing it here changes that too.</div>`:''}
     <div class="note">Blank is fine. A day with one slider on it is still a useful day.</div>`;
 }
 document.addEventListener('click',e=>{
@@ -4685,7 +4928,7 @@ function copyBrief(){
 
 renderProgress();
 Object.assign(window.__G,{TRAIN_DAYS,DEFAULT_TARGETS,ownTargets,allMovements,drawWeekStep,
-  lastNDays,avg,steers,coachBrief,trainingList,trainingText,plannedTraining,loggedTraining,TRAIN_DAYS,plannedCardioKcalPerDay,openDay,openWeek,
+  lastNDays,avg,steers,coachBrief,eatingPlan,nextEating,openEating,openEatTimes,eatingRow,hhmmToMin,minToHhmm,todayTrains,activeHabits,habitCount,habitRoom,HABIT_MAX,slotForNew,habitSlotOf,trainingList,trainingText,plannedTraining,loggedTraining,TRAIN_DAYS,plannedCardioKcalPerDay,openDay,openWeek,
   HABITS,habitOf,currentHabit,startHabit,retireHabit,toggleHabitDay,habitWeek,habitStreak,habitRate,suggestHabit,openHabitSheet,habitRow,habitRowFor,habitApplies,habitSlots,addOwnHabit,ownHabits,escHabit,OWN_MAX,colophonText,
   TARGET_KINDS,setTarget,clearTarget,targetNow,targetProgress,openTargetSheet,targetLine,
   nudgeState,nextNudgeAt,scheduleNudge,enableNudges,disableNudges,fireNudge,nudgeHelp,onIOS,installed,NUDGE_KEY,
@@ -5768,6 +6011,24 @@ const FOODS=[
   {id:'sardines',n:'Sardines, tinned',u:'tin',kcal:180,p:21,c:0,f:11,cat:'meat'},
   {id:'prawns',n:'Prawns, cooked',u:'100g',kcal:100,p:22,c:0,f:1,cat:'meat'},
   {id:'fishfingers',n:'Fish fingers, 4',u:'4',kcal:220,p:13,c:19,f:10,cat:'meat'},
+
+  /* Raw weights, because that is how meat is bought and how most people weigh
+     it. Meat loses roughly a quarter of its weight cooking, mostly water, so
+     100g raw is about 75g on the plate and the numbers per 100g look lower raw
+     than cooked. Weigh it whichever way you actually do it, and use the
+     matching entry. */
+  {id:'chicken_raw',n:'Chicken breast, raw',u:'100g',kcal:106,p:23,c:0,f:1.6,cat:'meat'},
+  {id:'chickenthigh_raw',n:'Chicken thigh, raw',u:'100g',kcal:145,p:19,c:0,f:7.5,cat:'meat'},
+  {id:'turkey_raw',n:'Turkey breast, raw',u:'100g',kcal:105,p:22,c:0,f:1.5,cat:'meat'},
+  {id:'mince5_raw',n:'Beef mince, 5% fat, raw',u:'100g',kcal:130,p:21,c:0,f:5,cat:'meat'},
+  {id:'mince20_raw',n:'Beef mince, 20% fat, raw',u:'100g',kcal:250,p:17,c:0,f:20,cat:'meat'},
+  {id:'steak_raw',n:'Steak, lean, raw',u:'100g',kcal:135,p:22,c:0,f:5,cat:'meat'},
+  {id:'pork_raw',n:'Pork loin, raw',u:'100g',kcal:135,p:21,c:0,f:5.5,cat:'meat'},
+  {id:'lamb_raw',n:'Lamb, raw',u:'100g',kcal:200,p:20,c:0,f:13,cat:'meat'},
+  {id:'salmon_raw',n:'Salmon fillet, raw',u:'100g',kcal:180,p:20,c:0,f:11,cat:'meat'},
+  {id:'cod_raw',n:'Cod or hake, raw',u:'100g',kcal:80,p:18,c:0,f:0.7,cat:'meat'},
+  {id:'prawns_raw',n:'Prawns, raw',u:'100g',kcal:75,p:17,c:0,f:0.6,cat:'meat'},
+  {id:'mince_turkey_raw',n:'Turkey mince, raw',u:'100g',kcal:150,p:20,c:0,f:7.5,cat:'meat'},
 
   /* bread, potatoes and grains */
   {id:'brownbread',n:'Brown soda bread',u:'slice',kcal:120,p:4,c:21,f:2.5,cat:'carbs'},
@@ -7148,7 +7409,7 @@ function weightChart(){
       <button class="mini go" data-glance="weigh">Weigh in</button></div>`;
   }
   const tr=weightTrend(pts);
-  const w=320,h=150,padL=34,padR=58,padT=14,padB=30;
+  const w=320,h=158,padL=34,padR=58,padT=24,padB=30;
   const lastDay=tr.xs[tr.xs.length-1], endDay=lastDay+CHART_DAYS_FWD;
   const projEnd=tr.at(endDay);
   const goal=(S.target&&S.target.kind==='weight'&&!S.target.hit)? +S.target.value : null;
@@ -7166,13 +7427,28 @@ function weightChart(){
   const goalOn=goal!==null&&goal>=lo&&goal<=hi;
   const x=day=>padL+(day/endDay)*(w-padL-padR);
   const y=v=>padT+(1-(v-lo)/(hi-lo))*(h-padT-padB);
-  const line=pts.map((p,i)=>`${i?'L':'M'}${x(tr.xs[i]).toFixed(1)} ${y(p.kg).toFixed(1)}`).join(' ');
+  /* Every serious weight app draws it this way round, and for a good reason:
+     the raw number swings a kilo or two a day on water and gut contents, so the
+     smoothed trend is the signal and the readings are the noise around it. The
+     app already smooths exponentially, the same method Libra uses, and the
+     forecast already runs off that trend rather than the last reading. The
+     chart now shows what the maths is actually using. */
+  const smoothAll=(typeof trendSeries==='function')? trendSeries() : [];
+  const byDay={}; smoothAll.forEach(sp=>{ byDay[sp.d]=sp.kg; });
+  const smooth=pts.map((p,i)=>({x:tr.xs[i], kg: byDay[p.d]!==undefined? byDay[p.d] : p.kg}));
+  const line=smooth.map((p,i)=>`${i?'L':'M'}${x(p.x).toFixed(1)} ${y(p.kg).toFixed(1)}`).join(' ');
+  const smoothNow=smooth[smooth.length-1].kg;
   const projPath=`M${x(lastDay).toFixed(1)} ${y(tr.at(lastDay)).toFixed(1)} L${x(endDay).toFixed(1)} ${y(projEnd).toFixed(1)}`;
   const trendPath=`M${x(0).toFixed(1)} ${y(tr.at(0)).toFixed(1)} L${x(lastDay).toFixed(1)} ${y(tr.at(lastDay)).toFixed(1)}`;
   const now=pts[pts.length-1];
-  const words=`Weighed ${pts.length} times over ${Math.round(lastDay)} days, from ${pts[0].kg} to ${now.kg} kg. `
+  const words=`Weighed ${pts.length} times over ${Math.round(lastDay)} days. Trend now ${smoothNow.toFixed(1)} kg, last reading ${now.kg} kg. `
     +(Math.abs(tr.perWeek)<0.05? 'Holding steady.' : `Trending ${tr.perWeek<0?'down':'up'} about ${Math.abs(tr.perWeek).toFixed(2)} kg a week, which is about ${projEnd.toFixed(1)} kg in four weeks.`)
     +(goal!==null? ` Goal ${goal} kg.` : '');
+  const legend=`<g class="legend">
+    <circle class="raw swatch" cx="${padL+4}" cy="${padT-4}" r="1.9"/>
+    <text class="clab" x="${padL+11}" y="${padT-1}">what the scale said</text>
+    <line x1="${padL+96}" y1="${padT-4}" x2="${padL+112}" y2="${padT-4}" stroke="var(--marine)" stroke-width="2.6"/>
+    <text class="clab" x="${padL+117}" y="${padT-1}">the trend</text></g>`;
   const dateShort=k=>{ const d=dateOf(k); return d.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]; };
   const axis=`
     <line class="axis" x1="${padL}" y1="${y(hi).toFixed(1)}" x2="${(w-padR).toFixed(1)}" y2="${y(hi).toFixed(1)}"/>
@@ -7184,18 +7460,13 @@ function weightChart(){
     <text class="clab" x="${(w-padR).toFixed(1)}" y="${h-8}" text-anchor="middle">${dateShort(addDays(todayKey(),CHART_DAYS_FWD))}</text>
     <line class="axis dashed" x1="${x(lastDay).toFixed(1)}" y1="${padT}" x2="${x(lastDay).toFixed(1)}" y2="${(h-padB).toFixed(1)}"/>`;
   return `<svg viewBox="0 0 ${w} ${h}" class="chart" role="img" aria-label="${words}">
-    ${axis}
+    ${axis}${legend}
     ${goalOn? `<line x1="${padL}" y1="${y(goal).toFixed(1)}" x2="${(w-padR+40).toFixed(1)}" y2="${y(goal).toFixed(1)}" stroke="var(--forest)" stroke-width="1.4" stroke-dasharray="2 4"/>
       <text x="${(w-padR+44).toFixed(1)}" y="${(y(goal)+3.5).toFixed(1)}" class="clab" fill="var(--forest)">goal ${goal}</text>`
      : ''}
-    <path d="${trendPath}" fill="none" stroke="var(--line)" stroke-width="1.6"/>
     <path d="${line}" fill="none" stroke="var(--marine)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-    ${pts.map((p,i)=>{ const last=i===pts.length-1;
-      /* with a weigh in most days the dots merge into a caterpillar, so only
-         the first, the last and a few in between are drawn */
-      const every=Math.max(1,Math.ceil(pts.length/8));
-      if(!last&&i!==0&&i%every) return '';
-      return `<circle cx="${x(tr.xs[i]).toFixed(1)}" cy="${y(p.kg).toFixed(1)}" r="${last?3.4:2}" fill="var(--marine)"/>`; }).join('')}
+    ${pts.map((p,i)=>`<circle class="raw" cx="${x(tr.xs[i]).toFixed(1)}" cy="${y(p.kg).toFixed(1)}" r="1.9"/>`).join('')}
+    <circle cx="${x(tr.xs[pts.length-1]).toFixed(1)}" cy="${y(smoothNow).toFixed(1)}" r="3.4" fill="var(--marine)"/>
     ${(()=>{ /* the range the forecast could be out by, drawn rather than described */
       const band=(typeof bandFor==='function')? bandFor(mondayKey()) : 0.5;
       const x1=x(lastDay), x2=x(endDay), y0=y(tr.at(lastDay));
@@ -7205,7 +7476,7 @@ function weightChart(){
     <path d="${projPath}" fill="none" stroke="var(--marigold)" stroke-width="2.2" stroke-dasharray="4 4" stroke-linecap="round"/>
     <circle cx="${x(endDay).toFixed(1)}" cy="${y(projEnd).toFixed(1)}" r="3.4" fill="var(--marigold)"/>
     <text class="clab" x="${(w-padR+5).toFixed(1)}" y="${(y(projEnd)+3.5).toFixed(1)}" fill="var(--marigold)">${projEnd.toFixed(1)} kg</text>
-    <text class="clab" x="${(x(lastDay)+5).toFixed(1)}" y="${(y(now.kg)-6).toFixed(1)}" fill="var(--marine)">${now.kg.toFixed(1)} kg</text>
+    <text class="clab" x="${(x(lastDay)+5).toFixed(1)}" y="${(y(smoothNow)-6).toFixed(1)}" fill="var(--marine)">${smoothNow.toFixed(1)} kg</text>
     <text x="${(x(endDay)+6).toFixed(1)}" y="${(y(projEnd)+3.5).toFixed(1)}" class="clab" fill="var(--marigold)">${projEnd.toFixed(1)}</text>
     <text x="${padL}" y="${h-8}" class="clab" fill="var(--mute)">${prettyDate(pts[0].d)}</text>
     <text x="${x(lastDay).toFixed(1)}" y="${h-8}" class="clab" fill="var(--mute)" text-anchor="middle">today</text>
@@ -7343,6 +7614,7 @@ function openHow(){
     <div class="method"><b>Maintenance</b><span>One figure, from the best evidence the app has. To start: resting burn by Mifflin St Jeor, times 1.2 for a sedentary day, plus your step target and the lifting in your plan. Walking is 3 METs for every 100 steps a minute, net of rest, counted above 2,500 a day because a sedentary day already contains those (under 2,500 is what Tudor-Locke and colleagues class as basal activity; using it as the baseline is a judgement). Lifting is 4 METs for as long as your templates take. Once a tracker is connected, your real steps replace the target. Once you have about three weeks of food and weigh ins, what you actually ate minus what the scale says you stored replaces both, and that is the most accurate of the three. Running is counted as steps, which under-counts it a little; physical work a step count cannot see is missed; the three-week figure catches both.</span></div>
     <div class="method"><b>Your calorie target</b><span>Losing: three limits, and the tightest wins. 0.75% of your bodyweight a week, or what your goal date needs up to 1%, the range that keeps muscle while dieting (Helms and colleagues, 2014). A deficit of no more than 750 kcal a day, the top of what the 2013 AHA/ACC/TOS guideline prescribes, because a percentage keeps growing with size and clinical guidance does not. And about 69 kcal a day per kilo of body fat, Alpert's (2005) estimate of the most the fat store can supply; a theoretical model rather than a tested rule, so it is only a ceiling, and in practice it only matters for lean people asking for a fast date. Body fat is yours if you give it, otherwise estimated from BMI, age and sex by the Deurenberg equation, which is about 4 points out either way and cannot tell muscle from fat. Gaining: 0.25 to 0.5% a week, about 10 to 20% over maintenance (Iraki and colleagues, 2019). Never below 1,500 kcal for men or 1,200 for women, and never above maintenance while losing. When you reach your goal weight, the target goes back to maintenance.</span></div>
     <div class="method"><b>When the forecast starts</b><span>A trend line needs two weigh ins and a direction needs three. A forecast starts at three weigh ins, or four days of food logged. It is working from an estimate of what you burn until you have ten days of food inside three weeks along with three weigh ins, at which point it works your burn out from your own weight and intake instead. After three weeks of forecasts it scores itself, and the range you see comes from how wrong it has actually been rather than a default. The note under the chart always says which of those you are at.</span></div>
+    <div class="method"><b>Why the line is smoothed</b><span>Bodyweight swings a kilo or two a day on water and gut contents, so the dots are what the scale said and the line is the trend underneath them, smoothed exponentially the way Libra and the Hacker's Diet do it. The forecast, your maintenance calories and your rate of loss are all worked from that trend rather than your last reading, which is why the number on the chart is not the number you saw on the scale this morning.</span></div>
     <div class="method"><b>Cardio</b><span>Nineteen sessions across running, the bike, the rower, the pool, the machines, skipping, walking and whatever you play. What each one costs comes from the Compendium of Physical Activities (Ainsworth and colleagues, 2011), net of what you would burn sitting still. Running and walking are not added to your maintenance because their steps are already counted; a bike, a rower, a pool or a class are, because no step count can see them.</span></div>
     <div class="method"><b>The food list</b><span>Typical values for the portion named, for ${FOODS.length} foods people here actually eat. Composition figures in Ireland come from McCance and Widdowson's Composition of Foods Integrated Dataset, which the Food Safety Authority of Ireland names as the accepted source. Brands vary, so anything with a label on it is better taken from the label: "Something not on the list" saves it for good. Alcohol carries about 7 kcal a gram, which is why a pint's calories are mostly not protein, carbs or fat.</span></div>
     <div class="method"><b>What your steps are worth</b><span>Steps are part of what you burn, so they are already inside your maintenance. The deficit splits into the part food makes, eating less than you burn without walking, and the part the steps make, and the two add up to the whole. That is why skipping the steps at the same food slows the loss by exactly what they were burning.</span></div>
@@ -7387,7 +7659,7 @@ document.addEventListener('input',e=>{
   if(r){ S.cycle.length=+r.value; const o=$('outlen'); if(o) o.textContent=S.cycle.length+' days'; }
 });
 
-Object.assign(window.__G,{prettyDate,weightSeries,weightTrend,weightChart,projectionLine,forecastReadiness,forecastNote,bandFor,tdeeObserved,pastErrors,weeklyHistory,buildForecast,ensureForecast,reviewWeek,actualsFor,renderTrends,
+Object.assign(window.__G,{prettyDate,weightSeries,weightTrend,weightChart,projectionLine,forecastReadiness,trendSeries,trendNow,forecastNote,bandFor,tdeeObserved,pastErrors,weeklyHistory,buildForecast,ensureForecast,reviewWeek,actualsFor,renderTrends,
   SCI,openHow,weightSlopePerDay,walkKcal,liftKcal,tdeeEstimate,tdeeObserved,trendSeries,trendNow,trendRatePerWeek,recentIntake,projectWeeks,bandFor,pastErrors,
   phaseOn,cycleDay,waterWindow,openCycle,weightChart,projectionLine,consistencyChart,weekOfDate,addDays,PHASES});
 </script>

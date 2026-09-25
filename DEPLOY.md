@@ -3,8 +3,8 @@
 Live site: https://fergtech-ireland.github.io/gauntlet/
 Repository: github.com/fergtech-ireland/gauntlet (branch `main`)
 
-**This release is build 31.** The footer at the bottom of every screen shows the build
-number, which is how you confirm a phone has it. Build 31 includes everything from
+**This release is build 33.** The footer at the bottom of every screen shows the build
+number, which is how you confirm a phone has it. Build 33 includes everything from
 builds 20 and 21, so if you skipped either, this one release brings you fully up to date.
 
 ## Files in this release
@@ -34,7 +34,7 @@ The tests look for `index.html` and `sw.js` next to themselves.
 2. Drag in every file from the table above except the unchanged ones.
    If your download named the app anything other than `index.html` (for example `index-3.html`), rename it to `index.html` first.
 3. `.gitignore` starts with a dot, so some computers hide it. If it does not appear in the upload list, skip it here and do step 3.
-4. Commit message: `Build 31: a readable chart, and when forecasting starts`.
+4. Commit message: `Build 33: audit fixes to meal timing`.
 5. Leave **Commit directly to the main branch** selected. Click **Commit changes**.
 
 ## 3. Only if .gitignore did not upload
@@ -48,7 +48,7 @@ The tests look for `index.html` and `sw.js` next to themselves.
 
 1. Open the **Actions** tab. Wait for **pages build and deployment** to show a green tick, usually one to two minutes.
 2. Open the live site in a private or incognito window.
-3. Check: the footer at the bottom of the screen says **Gauntlet, build 31**.
+3. Check: the footer at the bottom of the screen says **Gauntlet, build 33**.
    It opens in the light theme. The **+ Log** button is in the middle of the bar, and there is a tab called **You** where Progress used to be.
    Onboarding has the **Daily step target** and **Body fat %** fields.
    On Plan, **This week** shows each day as a card, with today's open.
@@ -72,7 +72,7 @@ Phones that already have the app are still run by the old service worker, so the
 
 1. Open Gauntlet. Leave it open for about ten seconds while the new service worker installs and takes over.
 2. Close it fully. On iPhone, swipe up from the bottom and swipe the app away. On Android, open recent apps and swipe it away.
-3. Open it again. Scroll to the bottom of any screen: the footer should say **build 31**,
+3. Open it again. Scroll to the bottom of any screen: the footer should say **build 33**,
    and there should be a tab called **You** where Progress used to be.
 4. Still the old one? Repeat once.
 
@@ -99,7 +99,7 @@ cd path/to/gauntlet
 npm install
 npm test
 git add index.html sw.js sw.test.js test.js regression.js cta.js uat.js harness.js package.json .gitignore README.md DEPLOY.md supabase-delete-policies.sql
-git commit -m "Build 31: a readable chart, and when forecasting starts"
+git commit -m "Build 33: audit fixes to meal timing"
 git push
 ```
 Then carry on from step 4.

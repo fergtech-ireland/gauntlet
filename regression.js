@@ -333,8 +333,17 @@ setTimeout(() => {
     G.toggleHabitDay(G.addDays(G.todayKey(), -1));
     G.toggleHabitDay(G.todayKey());
     return G.habitStreak() === 2; })(), String(G.habitStreak()));
-  t('only one habit at a time', (() => { G.startHabit('stairs');
-    return G.currentHabit().id === 'stairs' && !Array.isArray(S.habit); })());
+  t('a second habit takes a free slot, up to three', (() => {
+    const before = G.currentHabit().id;
+    G.startHabit('stairs');
+    const live = Object.values(G.habitSlots()).filter(h => h && !h.retired).map(h => h.id);
+    return G.currentHabit().id === before && live.includes('stairs') && live.length <= 3; })(),
+    Object.values(G.habitSlots()).filter(h => h && !h.retired).map(h => h.id).join(','));
+  t('and once all three are taken, a new one replaces the oldest slot', (() => {
+    G.startHabit('veg_lunch'); G.startHabit('phone_out');
+    const live = Object.values(G.habitSlots()).filter(h => h && !h.retired).map(h => h.id);
+    return live.length === 3 && G.currentHabit().id === 'phone_out'; })(),
+    Object.values(G.habitSlots()).filter(h => h && !h.retired).map(h => h.id).join(','));
   t('the row renders with its own dots', /class="habitdots"/.test(G.habitRow()) && !/class="dots"/.test(G.habitRow()));
   t('retiring clears it', (() => { G.retireHabit(); return !G.currentHabit(); })());
   G.startHabit('walk_after'); G.toggleHabitDay(G.todayKey());

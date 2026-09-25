@@ -13,6 +13,8 @@ const allErrs = [];
 
 function journey(n, title) { console.log('  ' + n + '. ' + title); }
 
+const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
+
 (async () => {
 
   /* ---------------------------------------------------------- 1 */
@@ -181,8 +183,13 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     t('6 · a miss breaks it honestly', G.habitStreak() === 2, String(G.habitStreak()));
     t('6 · only ever one habit to start', !Array.isArray(G.S.habits.start) && !!G.currentHabit());
     G.startHabit('phone_out');
-    t('6 · changing it starts a new count', G.currentHabit().id === 'phone_out' && G.habitStreak() === 0);
-    t('6 · the habit reaches the coach brief', /Habit: Phone out of the bedroom/.test(G.coachBrief()));
+    t('6 · picking another adds it, now that three are allowed',
+      G.activeHabits().some(h => h.id === 'phone_out') && G.activeHabits().some(h => h.id === 'walk_after'));
+    t('6 · every habit being kept reaches the coach brief', (() => {
+      const live = G.activeHabits().map(h => G.habitOf(h.id).t);
+      const brief = G.coachBrief();
+      return live.length >= 1 && live.every(name => brief.indexOf(name) >= 0); })(),
+      G.activeHabits().map(h => G.habitOf(h.id).t).join(', '));
   }
 
   /* ---------------------------------------------------------- 7 */
@@ -1200,7 +1207,8 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     t('22 · both show on Today', tv.querySelectorAll('.todo.habit').length === 2);
     t('22 · the stop one is marked as a stop', /Stop: No sugary drinks/.test(tv.textContent) && !!tv.querySelector('.todo.habit.stop'));
     G.openHabitSheet(); d.querySelector('[data-habitchoose="stairs"]').click();
-    t('22 · choosing another to start replaces it and leaves the stop alone', G.currentHabit('start').id === 'stairs' && G.currentHabit('stop').id === 'no_sugary_drinks');
+    t('22 · choosing another to start adds it and leaves the stop alone',
+      G.activeHabits().some(h => h.id === 'stairs') && G.currentHabit('stop').id === 'no_sugary_drinks');
 
     tv.querySelector('[data-habittoggle="stop"]').click();
     t('22 · ticking the stop habit says "went without"', /went without|days without/.test(d.getElementById('toast').textContent), d.getElementById('toast').textContent);
@@ -1237,7 +1245,8 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     t('22 · the brief carries both habits', /Habit: Stairs, not the lift/.test(brief) && /Habit to stop: No alcohol on weeknights/.test(brief));
     G.openHabitSheet();
     d.querySelector('[data-habitretire="stop"]').click();
-    t('22 · putting down the stop habit keeps the start one', !G.currentHabit('stop') && G.currentHabit('start').id === 'stairs');
+    t('22 · putting down the stop habit keeps the ones to start',
+      !G.currentHabit('stop') && G.activeHabits().some(h => habitKindOf(G, h.id) === 'start'));
     d.getElementById('toastAct').click();
     t('22 · and it can be undone', G.currentHabit('stop') && G.currentHabit('stop').id === 'no_alcohol_wk');
 
@@ -1845,7 +1854,7 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     /* uneven gaps: a three week gap must not be drawn as one step */
     S.weights = [{ d: G.addDays(G.todayKey(), -21), kg: 92 }, { d: G.addDays(G.todayKey(), -1), kg: 90 }, { d: G.todayKey(), kg: 89.9 }];
     const svg = G.weightChart();
-    const xs = [...svg.matchAll(/<circle cx="([\d.]+)"/g)].map(m => +m[1]).slice(0, 3);
+    const xs = [...svg.matchAll(/<circle class="raw" cx="([\d.]+)"/g)].map(m => +m[1]).slice(0, 3);
     t('28 · points are placed by date, so a long gap looks long',
       (xs[1] - xs[0]) > (xs[2] - xs[1]) * 5, xs.join(', '));
     t('28 · the chart is not stretched out of shape', !/preserveAspectRatio="none"/.test(svg));
@@ -2037,7 +2046,7 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
       tap('day') && d.getElementById('quickSheet').classList.contains('on') && !d.getElementById('dayCheck').classList.contains('on'));
     G.closeSheets(); G.go('today'); G.renderAll();
     G.addFood('chicken', 1, 'l'); G.renderAll();
-    t('31 · logging updates the numbers straight away', /1 logged/.test(txt(d.querySelector('.quicks'))));
+    t('31 · logging updates the numbers straight away', /1 in/.test(txt(d.querySelector('.quicks'))));
     t('31 · and what is left comes down', (() => {
       const before = +txt(d.querySelector('.glances .glance .gv')).replace(/,/g, '');
       G.addFood('rice', 1, 'l'); G.renderAll();
@@ -2260,7 +2269,23 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     t('34 · and says the range is still a default until it has been scored', /how wrong it has actually been/.test(r.line));
 
     /* the chart itself */
+    S.weights = [];
+    for (let i = 21; i >= 0; i--) { const noise = [0.9, -0.6, 0.3, -1.1, 0.5, 0, -0.4][i % 7];
+      S.weights.push({ d: G.addDays(G.todayKey(), -i), kg: +(92 - (21 - i) * (0.5 / 7) + noise).toFixed(1) }); }
     const svg = G.weightChart();
+    t('34 · every weigh in is on the chart, as a dot',
+      (svg.match(/class="raw"/g) || []).length >= S.weights.length, String((svg.match(/class="raw"/g) || []).length));
+    t('34 · the bold line is the smoothed trend, not the jagged readings', (() => {
+      const smooth = G.trendSeries();
+      const last = smooth[smooth.length - 1].kg.toFixed(1);
+      return new RegExp('fill="var\\(--marine\\)">' + last + ' kg').test(svg); })(),
+      'trend ' + G.trendSeries().slice(-1)[0].kg.toFixed(1) + ' vs reading ' + S.weights.slice(-1)[0].kg);
+    t('34 · so a noisy day does not change the headline number',
+      G.trendSeries().slice(-1)[0].kg !== S.weights.slice(-1)[0].kg);
+    t('34 · and the chart says which line is which',
+      /what the scale said/.test(svg) && /the trend/.test(svg));
+    t('34 · there is one trend line, not two competing ones',
+      (svg.match(/stroke="var\(--line\)" stroke-width="1.6"/g) || []).length === 0);
     t('34 · the chart has kilos up the side', (svg.match(/class="clab"/g) || []).length >= 5);
     t('34 · dates along the bottom, including today', /today<\/text>/.test(svg) && /<text class="clab" x="34"/.test(svg));
     t('34 · the current weight is labelled', new RegExp(S.weights[S.weights.length - 1].kg.toFixed(1) + ' kg').test(svg));
@@ -2275,6 +2300,149 @@ function journey(n, title) { console.log('  ' + n + '. ' + title); }
     G.go('progress'); G.renderAll();
     t('34 · the note appears under the chart on the You screen',
       /estimate of what you burn|how wrong it has actually been|No forecast yet/.test(d.getElementById('s-progress').textContent));
+  }
+
+  /* ---------------------------------------------------------- 35 */
+  journey(35, 'Several habits, raw meat, a tighter home row, a prefilled weight, and eating around the day');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+
+    /* ---- more than one habit ---- */
+    t('35 · three at once is the cap', G.HABIT_MAX === 3);
+    G.startHabit('walk_after');
+    G.go('today'); G.renderAll();
+    t('35 · with one going, the app offers another', /Add another habit/.test(txt(d.getElementById('todayView')))
+      && /1 of 3/.test(txt(d.querySelector('.addhabit'))));
+    G.startHabit('no_sugary_drinks');
+    t('35 · a second one does not replace the first', G.habitCount() === 2
+      && G.activeHabits().map(h => h.id).sort().join() === 'no_sugary_drinks,walk_after');
+    G.startHabit('water_am');
+    t('35 · a third goes in its own slot', G.habitCount() === 3 && G.habitRoom() === 0);
+    G.go('today'); G.renderAll();
+    t('35 · all three show on Today', d.querySelectorAll('#todayView .habitdots').length === 3);
+    t('35 · and the invitation disappears at the cap', !/Add another habit/.test(txt(d.getElementById('todayView'))));
+    t('35 · each keeps its own days', (() => {
+      const slots = G.activeHabits().map(h => h.slot);
+      G.toggleHabitDay(G.todayKey(), slots[0]);
+      return G.habitStreak(slots[0]) === 1 && G.habitStreak(slots[1]) === 0; })());
+    t('35 · a fourth replaces rather than silently failing', (() => {
+      G.startHabit('stairs'); return G.habitCount() === 3 && G.activeHabits().some(h => h.id === 'stairs'); })());
+
+    /* ---- raw meat ---- */
+    t('35 · raw chicken breast is there', !!G.foodOf('chicken_raw') && /raw/i.test(G.foodOf('chicken_raw').n));
+    t('35 · and raw versions of the rest of the meat and fish',
+      ['chicken_raw','chickenthigh_raw','turkey_raw','mince5_raw','mince20_raw','steak_raw','pork_raw','lamb_raw','salmon_raw','cod_raw','prawns_raw']
+        .every(id => !!G.foodOf(id)));
+    t('35 · raw is lower per 100g than cooked, as it should be', (() => {
+      const raw = G.foodOf('chicken_raw'), cooked = G.foodOf('chicken');
+      const cookedPer100 = cooked.kcal / 150 * 100;
+      return raw.kcal < cookedPer100; })());
+    t('35 · and they add up like everything else',
+      G.FOODS.filter(f => /raw/i.test(f.n)).every(f => Math.abs(f.p * 4 + f.c * 4 + f.f * 9 - f.kcal) <= Math.max(25, f.kcal * 0.18)));
+
+    /* ---- the quick row ---- */
+    S.days = {}; S.weights = []; G.go('today'); G.renderAll();
+    t('35 · nothing logged says nothing, rather than "not today" three times',
+      !/not today/.test(txt(d.querySelector('.quicks'))) && !/one slider/.test(txt(d.querySelector('.quicks'))));
+    t('35 · the three buttons are still there', d.querySelectorAll('.quicks .quick').length === 3);
+    S.weights.push({ d: G.todayKey(), kg: 91.4 }); G.renderAll();
+    t('35 · once done, it shows what it was', /91\.4/.test(txt(d.querySelector('.quicks'))));
+
+    /* ---- the weight carries into the check in ---- */
+    G.openDay();
+    const wbox = d.querySelector('[data-day="w"]');
+    t('35 · the daily check in already has this morning\'s weight', wbox && +wbox.value === 91.4, wbox && wbox.value);
+    t('35 · and says where it came from', /came from this morning/.test(txt(d.getElementById('dayBody'))));
+    G.closeSheets();
+
+    /* ---- eating around the day ---- */
+    const i = G.dowIdx();
+    const lift = S.plan.days.find(x => x.templateId);
+    S.plan.days[i] = Object.assign({}, lift, { dow: i });
+    S.profile.wakeTime = '07:00'; S.profile.trainTime = '18:00'; S.profile.bedtime = '23:00';
+    let plan = G.eatingPlan();
+    const at = tag => plan.items.find(x => x.tag === tag);
+    t('35 · a training day gets a plan in order', plan.items.length >= 5
+      && plan.items.every((x, n) => n === 0 || G.hhmmToMin(x.time) >= G.hhmmToMin(plan.items[n - 1].time)));
+    t('35 · protein is spread, not saved for after training', /every|spread/i.test(at('breakfast').why)
+      && plan.per > 0 && plan.meals >= 3);
+    t('35 · it feeds you two to three hours before training', at('pre') && G.hhmmToMin(at('pre').time) === 15 * 60 + 30);
+    t('35 · the last coffee is eight hours before bed', at('coffee') && at('coffee').time === '15:00');
+    t('35 · it does not ask you to eat before you are awake', plan.items.every(x => G.hhmmToMin(x.time) >= G.hhmmToMin(plan.wake) - 5
+      || x.tag === 'coffee'), JSON.stringify(plan.items.map(x => x.time + ' ' + x.tag)));
+    t('35 · a late session gets one meal after it, not two', (() => {
+      S.profile.trainTime = '20:30'; plan = G.eatingPlan();
+      return !plan.items.some(x => x.tag === 'last') && /last big one/.test((plan.items.find(x => x.tag === 'post') || {}).what || ''); })());
+    t('35 · an early session makes breakfast the meal after it', (() => {
+      S.profile.trainTime = '06:30'; S.profile.wakeTime = '05:45'; plan = G.eatingPlan();
+      const b = plan.items.find(x => x.tag === 'breakfast'), p = plan.items.find(x => x.tag === 'post');
+      return !b && /Breakfast/.test(p.what) && G.hhmmToMin(p.time) > G.hhmmToMin('06:30'); })());
+    t('35 · a rest day still gets a sensible day', (() => {
+      S.plan.days[i] = Object.assign({}, S.plan.days[i], { templateId: null, runId: null, type: null });
+      plan = G.eatingPlan();
+      return !plan.kind && plan.items.some(x => x.tag === 'lunch') && plan.items.some(x => x.tag === 'last')
+        && !plan.items.some(x => x.tag === 'presleep'); })());
+
+    /* the screen */
+    S.plan.days[i] = Object.assign({}, lift, { dow: i });
+    S.profile.trainTime = '18:00'; S.profile.wakeTime = '07:00';
+    G.go('today'); G.renderAll();
+    t('35 · it sits on the home screen showing what is next', !!d.getElementById('eatBtn')
+      && /Eating around today/.test(txt(d.getElementById('eatBtn'))));
+    d.getElementById('eatBtn').click();
+    const body = txt(d.getElementById('altBody'));
+    t('35 · the sheet lays the day out', /Last big meal|last big one/.test(body) && /Last coffee/.test(body));
+    t('35 · it is honest that this is not a weight loss trick', /not a weight loss trick/.test(body));
+    t('35 · and it cites where the advice comes from',
+      /International Society of Sports Nutrition/.test(body) && /Schoenfeld/.test(body));
+    d.getElementById('eatTimes').click();
+    t('35 · the times can be changed', !!d.querySelector('[data-timeset="bedtime"]'));
+    const bedInput = d.querySelector('[data-timeset="bedtime"]');
+    bedInput.value = '22:00'; bedInput.dispatchEvent(new w.Event('change', { bubbles: true }));
+    t('35 · and changing bedtime moves the day', S.profile.bedtime === '22:00'
+      && G.eatingPlan().items.find(x => x.tag === 'coffee').time === '14:00');
+    G.closeSheets();
+  }
+
+  /* ---------------------------------------------------------- 36 */
+  journey(36, 'Meal timing holds up on awkward days, including night shifts');
+  {
+    const { G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S, i = G.dowIdx();
+    const lift = S.plan.days.find(x => x.templateId), run = S.plan.days.find(x => x.runId);
+    const cases = [
+      ['a normal day', '07:00', '23:00', '18:00', lift],
+      ['training on waking', '06:00', '22:30', '06:30', lift],
+      ['training at lunch', '07:00', '23:00', '12:30', lift],
+      ['training late', '07:00', '23:30', '21:00', lift],
+      ['training very late', '08:00', '23:30', '22:00', run],
+      ['a night shift', '15:00', '07:00', '20:00', lift],
+      ['a rest day', '07:00', '23:00', '18:00', null]];
+    cases.forEach(([label, wake, bed, train, day]) => {
+      S.profile.wakeTime = wake; S.profile.bedtime = bed; S.profile.trainTime = train;
+      S.plan.days[i] = day ? Object.assign({}, day, { dow: i })
+        : Object.assign({}, S.plan.days[i], { templateId: null, runId: null, circuitId: null, type: null, slot: 'rest' });
+      const p = G.eatingPlan(), m = x => G.hhmmToMin(x), w = m(p.wake);
+      const since = x => ((m(x) - w) % 1440 + 1440) % 1440;
+      const bedR = since(p.bed);
+      t('36 · ' + label + ': in order from waking', p.items.every((x, k) => k === 0 || since(x.time) >= since(p.items[k - 1].time)),
+        p.items.map(x => x.time + ' ' + x.tag).join(', '));
+      t('36 · ' + label + ': nothing after bed', p.items.every(x => since(x.time) <= bedR));
+      const food = p.items.filter(x => !['train', 'coffee'].includes(x.tag)).map(x => since(x.time)).sort((a, b) => a - b);
+      const gap = Math.max(...food.slice(1).map((v, k) => v - food[k]));
+      t('36 · ' + label + ': no gap between meals over six hours', gap <= 360, (gap / 60).toFixed(1) + 'h');
+      const tags = p.items.map(x => x.tag);
+      t('36 · ' + label + ': never two meals where one will do', !(tags.includes('post') && tags.includes('presleep')
+        && Math.abs(since(p.items.find(x => x.tag === 'post').time) - since(p.items.find(x => x.tag === 'presleep').time)) < 90));
+      t('36 · ' + label + ': times read like a person wrote them',
+        p.items.filter(x => !['pre', 'train', 'post', 'presleep', 'coffee'].includes(x.tag)).every(x => m(x.time) % 15 === 0));
+      if (!day) t('36 · ' + label + ': it schedules the number of meals it tells you to eat',
+        p.items.filter(x => !['train', 'coffee', 'presleep'].includes(x.tag)).length === p.meals, p.meals + ' meals stated');
+    });
   }
 
   const r = s.report(allErrs);

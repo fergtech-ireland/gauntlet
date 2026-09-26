@@ -109,6 +109,11 @@ function staticAudit(source, t) {
   const clash = rootAttrs.filter(x => source.includes("closest('[data-" + x + "]')"));
   t('no click handler matches an attribute that lives on the page root', clash.length === 0, clash.join(', '));
 
+  /* A colour defined as itself resolves to nothing at all. That is how the
+     completed-set border vanished in light mode. (Review P2-06.) */
+  const selfRef = [...source.matchAll(/(--[a-z0-9-]+)\s*:\s*var\(\s*(--[a-z0-9-]+)\s*\)/g)].filter(m => m[1] === m[2]).map(m => m[1]);
+  t('no colour or style token is defined as itself', selfRef.length === 0, selfRef.join(', '));
+
   return { ids, dataAttrs, sheets, screens };
 }
 

@@ -35,7 +35,7 @@
   --t-marine:#eaeef6;--t-forest:#e9f1ee;--t-burnt:#f8efe7;--t-marigold:#fbf3e4;--t-oxblood:#f7ecee;
   --warm:#fffdf6;--warm-tint:#fdf6ea;--warm-ink:#7a5f2e;--warm-line:#f0e6cf;--warm-head:#8a6a2f;
   --burnt-bg:#fdf6ef;--burnt-ink:#7a4a35;--bad-bg:#fbeef0;--off-bg:#fdf3ef;
-  --good-bg:#f1f7f4;--good-bg2:#f2f7f5;--cool-bg:#fafbfd;--good-line:var(--good-line);
+  --good-bg:#f1f7f4;--good-bg2:#f2f7f5;--cool-bg:#fafbfd;--good-line:#cfe4d8;
   color-scheme:light}
 @media (prefers-color-scheme:dark){
   :root[data-theme="auto"]{
@@ -171,6 +171,10 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .wkey .k-fc{width:16px;height:0;border-top:2.5px dashed var(--marigold)}
 .wkey .k-goal{width:16px;height:0;border-top:2px dashed var(--forest)}
 .wsentence{margin:4px 0 0}
+.field input[type=range].unset{opacity:.45}
+.teencard{display:flex;flex-direction:column;gap:6px;margin:12px 0 4px;padding:12px 14px;border-radius:12px;background:var(--t-marine);font-size:13px;line-height:1.45}
+.teencard b{font-size:14px}
+.supportcard .logrow{display:flex;text-decoration:none;color:inherit}
 .chartempty{border:1px dashed var(--line);border-radius:12px;padding:16px 14px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
 .chartempty .ce-h{font-size:15px;font-weight:700}
 .chartempty .ce-s{font-size:12.5px;color:var(--mute);line-height:1.45}
@@ -500,9 +504,12 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .updatebar .msg span{font-size:11.5px;opacity:.85}
 .updatebar button{min-height:44px;padding:0 16px;border-radius:9px;background:#fff;color:#161618;font-weight:700;font-size:13px}
 .toast{position:fixed;bottom:84px;left:50%;transform:translate(-50%,10px);z-index:80;background:var(--ink);color:var(--on-ink);
-  border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:14px;font-size:13px;font-weight:600;
+  border-radius:10px;padding:9px 12px;display:flex;align-items:center;gap:12px;font-size:12.5px;font-weight:600;
   opacity:0;pointer-events:none;transition:.18s;max-width:400px;width:calc(100% - 28px)}
-.toast.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}
+.toast.on{opacity:1;transform:translate(-50%,0);pointer-events:none}
+.toast.on button{pointer-events:auto}
+.toast.top{bottom:auto;top:calc(10px + env(safe-area-inset-top,0px));transform:translate(-50%,-10px)}
+.toast.top.on{transform:translate(-50%,0)}
 .toast button{color:var(--marigold);font-weight:700;white-space:nowrap}
 .player{position:fixed;inset:0;z-index:70;color:var(--on-deep);display:none;flex-direction:column;max-width:460px;margin:0 auto;background:var(--deep)}
 .player.on{display:flex}
@@ -848,14 +855,28 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 .setline{margin-top:6px;display:grid;grid-template-columns:24px 1fr 1fr 52px;gap:8px;align-items:center;padding:7px 0}
 .setline .sn{font-size:12px;font-weight:700;color:var(--mute);text-align:center}
 .setline.warm .sn{color:var(--burnt)}
-.stepper{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--paper);height:52px}
-.stepper input{height:50px;border:0;text-align:center;font-size:17px;font-weight:700;outline:none;width:100%;background:transparent;padding:0}
+.stepper{display:grid;grid-template-columns:34px minmax(0,1fr) 34px;align-items:center;border:1px solid var(--line);border-radius:11px;overflow:hidden;background:var(--paper);height:52px}
+.stepper input{height:50px;border:0;text-align:center;font-size:16px;font-weight:700;outline:none;width:100%;min-width:0;background:transparent;padding:0;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em;-moz-appearance:textfield;appearance:textfield}
+/* the app has its own minus and plus; the browser's tiny arrows only took room
+   from the number, which is how 62.5 came to read as "62." on a phone */
+.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+@media (max-width:340px){ .stepper{grid-template-columns:28px minmax(0,1fr) 28px} .stepper .step{font-size:19px} }
 .stepper .step{height:50px;font-size:21px;font-weight:700;color:var(--mute);background:var(--canvas);display:grid;place-items:center;line-height:1}
 .stepper .step:active{background:var(--line)}
 .setline .tick{flex:0 0 auto;height:52px;width:52px;border-radius:12px;border:1.5px solid var(--line);display:grid;place-items:center;color:#fff}
 .setline.done .tick{background:var(--forest);border-color:var(--forest)}
 .setline.done .stepper{opacity:.55}
 .setline.ispr .tick{background:var(--marigold);border-color:var(--marigold)}
+.grouphead{display:flex;flex-direction:column;gap:2px;margin:14px 0 0;padding:10px 12px;border-radius:12px 12px 0 0;background:var(--t-marine);border-left:4px solid var(--marine)}
+.grouphead b{font-size:13px;letter-spacing:.02em}
+.grouphead span{font-size:12px;color:var(--mute);font-weight:600}
+.exc.ingroup,.tcard.ingroup{border-left:4px solid var(--marine)}
+.exc.ingroup:not(.grouplast){border-bottom-style:dashed}
+.gbadge{display:inline-grid;place-items:center;min-width:28px;height:22px;padding:0 6px;border-radius:6px;background:var(--marine);color:#fff;font-size:11.5px;font-weight:800;margin-right:8px}
+.tact.on{background:var(--marine);color:#fff}
+.setline.short .tick{background:var(--oxblood);border-color:var(--oxblood);color:#fff}
+.setline.short input{border-color:var(--oxblood)}
 .rxline{font-size:12.5px;color:var(--burnt-ink);background:var(--burnt-bg);border-radius:9px;padding:9px 11px;margin-top:8px;line-height:1.45}
 .rxline b{display:block;font-size:12px;letter-spacing:.02em;color:var(--burnt)}
 .rxline .tonn{display:block;margin-top:4px;color:var(--mute)}
@@ -1135,12 +1156,12 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='39';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='43';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
 /* ---------- habits ----------
-   One to start and one to stop, at most. The plan used to promise "one food
+   Up to three habits at once (it was one to start and one to stop). The plan used to promise "one food
    habit this week and nothing else" and then track nothing; the first version
    of this fixed that with a single habit. People also want to stop things, so
    there is now one slot for each, and still no more than that: doing one thing
@@ -1571,7 +1592,49 @@ const tdeeOf=p=>Math.round(bmrOf(p)*actOf(p.activity).mult);
    height of "18" on the way to "180" produced a maintenance figure of about
    1,300 kcal and showed it as an answer. Nothing is shown until every number
    is one a real adult could have. */
-const plausibleBody=p=>!!p&&+p.age>=14&&+p.age<=100&&+p.height>=120&&+p.height<=230&&+p.weight>=30&&+p.weight<=350;
+/* Adults only. The resting burn equation was derived in adults aged 19 to 78,
+   and calorie targets, weight goals and deficits are adult advice. A younger
+   person needs a different pathway with clinical and guardian safeguards,
+   which this app does not pretend to be. (Review P0 02.) */
+const ADULT_AGE=18;
+const isMinorAge=a=>a!==undefined&&a!==null&&a!==''&&+a>0&&+a<ADULT_AGE;
+/* ---------- teenagers ----------
+   13 to 17 year olds are welcome, and get a version built for them rather than
+   the adult one with the numbers switched off. The American Academy of
+   Pediatrics (Golden and colleagues, 2016, reaffirmed 2022) is clear on what
+   helps a teenager and what harms: dieting, meaning eating less to lose
+   weight, is a risk factor for both obesity and eating disorders, and so are
+   talk about weight and meal skipping. What helps is regular meals, being
+   active, sleep and a positive body image. So for a teenager Gauntlet:
+     sets no calorie target, no deficit, no weight goal, and never asks for a
+       weigh in; weight is optional at sign up and never shown back
+     plans around moving, getting stronger with good technique, sleep, food
+       habits and how they feel
+     uses youth guidance: about an hour of activity a day with muscle and bone
+       strengthening three days a week (WHO, 2020), 8 to 10 hours of sleep
+       (American Academy of Sleep Medicine, 2016), and resistance training
+       that puts technique first, which is safe and useful when supervised
+       (Lloyd and colleagues, 2014)
+     keeps someone to talk to one tap away
+   Under 16, an account needs a parent or guardian's consent in Ireland, so
+   everything stays on the phone. Under 13 is not supported. */
+const TEEN_MIN=13, ACCOUNT_MIN=16;
+const ageOf=p=>+((p||S.profile||{}).age)||0;
+const isTeen=p=>{ const a=ageOf(p); return a>=TEEN_MIN&&a<ADULT_AGE; };
+const tooYoung=a=>a!==undefined&&a!==null&&a!==''&&+a>0&&+a<TEEN_MIN;
+const canHaveAccount=p=>{ const a=ageOf(p); return !a||a>=ACCOUNT_MIN; };
+const SUPPORT_TEEN=[
+  ['Childline','Free, 24 hours, for anyone up to 18. Call 1800 66 66 66 or text 50101.','https://www.childline.ie'],
+  ['Text About It','Free, 24 hours. Text HELLO to 50808.','https://www.textaboutit.ie'],
+  ['Jigsaw','Free mental health support for 12 to 25 year olds, online and in person.','https://jigsaw.ie'],
+  ['Bodywhys','Support with eating, food and body image.','https://www.bodywhys.ie']];
+function supportCard(){
+  return `<div class="panel supportcard"><div class="ph"><h3>Someone to talk to</h3></div>
+    <div class="note" style="margin:0 0 8px">Whatever it is, it is worth saying out loud. These are free and confidential.</div>
+    ${SUPPORT_TEEN.map(([n,s,u])=>`<a class="logrow" href="${u}" target="_blank" rel="noopener"><div class="txt"><div class="t">${n}</div><div class="s">${s}</div></div></a>`).join('')}
+  </div>`;
+}
+const plausibleBody=p=>!!p&&(isTeen(p)? true : (+p.age>=ADULT_AGE&&+p.age<=100&&+p.height>=120&&+p.height<=230&&+p.weight>=30&&+p.weight<=350));
 
 /* ---------- steps, and what they are worth ----------
    The step target now drives the estimate. It replaces the activity
@@ -1723,6 +1786,11 @@ function maintenance(){
    weight loss; 1,350 for anyone who has not said. If the floor binds, the rate
    is slower than asked and the app says so. */
 const RATE={lose:{min:0.005,max:0.010,def:0.0075}, gain:{min:0.0025,max:0.005,def:0.00375}};
+/* Pace is the person's choice within the evidence range, not a rule handed
+   down. (Review P0 06.) */
+const PACE={gentle:{lose:0.005,gain:0.0025,label:'Gentle'},standard:{lose:0.0075,gain:0.00375,label:'Standard'},
+  faster:{lose:0.010,gain:0.005,label:'Faster'}};
+const paceOf=()=>PACE[(S.profile&&S.profile.pace)]||PACE.standard;
 const KCAL_FLOOR={m:1500,f:1200};
 const kcalFloor=s=>KCAL_FLOOR[s]||1350;
 const SURPLUS_CAP=0.20;
@@ -1792,7 +1860,7 @@ function calorieTarget(over){
   if(dir==='hold'||!kg) return out;
   const R=RATE[dir];
   const t=(over&&over.target)||S.target;
-  let pct=R.def;
+  let pct=paceOf()[dir]||R.def;
   /* A date the app worked out for them is a consequence of the default rate,
      not a request, so it never feeds back into the rate. Only a date the
      person chose does. Rounding the weeks up and reading the rate back used to
@@ -1858,13 +1926,13 @@ function calorieLine(ct){
   let s=`${num(ct.kcal)} kcal to ${verb} about ${(+ct.rateKg).toFixed(2)} kg a week (${(+ct.ratePct).toFixed(2)}% of your weight).`;
   if(ct.dir==='lose'){
     if(ct.asked!==null&&ct.asked>1) s+=` Your goal date needs ${ct.asked}% a week.`;
-    if(ct.limit==='rate') s+=` That is 0.75% of your weight a week, the middle of the 0.5 to 1% range for keeping muscle.`;
-    if(ct.limit==='date') s+= ct.asked>1? ` Held at 1%, the top of the range for keeping muscle.` : ` That is the pace your goal date needs.`;
-    if(ct.limit==='cap') s+=` Held at a ${DEFICIT_CAP} kcal deficit, the top of what clinical guidelines prescribe. A percentage of your weight would ask for more.`;
+    if(ct.limit==='rate') s+=` That is 0.75% of your weight a week, your ${paceOf().label.toLowerCase()} pace, inside the 0.5 to 1% range that research on natural bodybuilders preparing for competition found keeps muscle. You can change the pace.`;
+    if(ct.limit==='date') s+= ct.asked>1? ` Held at 1%, the top of the range that research on natural bodybuilders preparing for competition found keeps muscle.` : ` That is the pace your goal date needs.`;
+    if(ct.limit==='cap') s+=` Held at a ${DEFICIT_CAP} kcal deficit, the top of what clinical guidance for adults with overweight or obesity prescribes. A percentage of your weight would ask for more.`;
     if(ct.limit==='fat') s+=` Held back because at about ${ct.bf.pct}% body fat${ct.bf.source==='estimated'?' (estimated)':''}, a bigger deficit would start coming from muscle rather than fat.`;
-    if(atFloor) s+=` This is the floor. Going lower is a job for a clinician, not an app.`;
+    if(atFloor) s+=` This is the lowest the app will set, a common clinical minimum for adults. Going lower is a job for a clinician, not an app.`;
   }
-  if(ct.capped&&ct.dir==='gain') s+=` Capped at the top of the range for lean gain, so most of it is muscle rather than fat.`;
+  if(ct.capped&&ct.dir==='gain') s+=` Capped at the top of the range from bodybuilding off-season research, so most of it is muscle rather than fat.`;
   if(ct.eta) s+=` At that rate, around ${prettyDate(ct.eta)}.`;
   return s+stepNote;
 }
@@ -2510,7 +2578,7 @@ function habitRow(){
     const s=suggestHabit();
     if(s) out+=`<button class="todo" data-habitpick="${s.id}">
       <span class="ic" style="background:var(--t-forest);color:var(--forest)">1</span>
-      <span class="t"><b>Pick a habit</b><span>${s.t.toLowerCase()}, or choose another. One to start and one to stop, at most</span></span>
+      <span class="t"><b>Pick a habit</b><span>${s.t.toLowerCase()}, or choose another. Up to three at once, though one or two is easier to keep</span></span>
       <span class="chev">›</span></button>`;
   } else out+=habitRowFor('start');
   return out+habitRowFor('stop');
@@ -2534,7 +2602,21 @@ function habitRow(){
 /* Today's numbers, as a row you can tap to log. Calories first, because food
    is the thing people stop logging first and the thing the whole forecast
    rests on. */
+/* A teenager's home screen: meals, sleep and steps, never calories. */
+function teenGlanceRow(){
+  const k=todayKey(), meals=new Set(dayFood(k).map(x=>x.meal||'s')).size;
+  const last=S.days[addDays(k,-1)]||{}, tonight=S.days[k]||{};
+  const sleep=tonight.sleep||last.sleep||null;
+  const st=(typeof stepsToday==='function')? stepsToday() : null;
+  const cell=(id,top,label,sub)=>`<button class="glance" data-glance="${id}"><div class="gv">${top}</div><div class="gl">${label}</div><div class="gs">${sub}</div></button>`;
+  return `<div class="glances">
+    ${cell('food', String(meals), meals===1?'meal logged':'meals logged', 'eat regularly, and plenty of variety')}
+    ${cell('checkin', sleep? sleep+'h':'–', 'sleep', '8 to 10 hours is right at your age')}
+    ${cell('steps', st===null?'–':num(st), 'steps', st===null?'no tracker':'of '+num(stepTarget()))}
+  </div>`;
+}
 function glanceRow(){
+  if(isTeen()) return teenGlanceRow();
   const k=todayKey(), t=S.targets||{}, day=S.days[k]||{};
   const food=foodTotals(k);
   const eaten=Math.round(food.kcal||0), target=+t.kcal||0;
@@ -2570,6 +2652,12 @@ function glanceRow(){
 }
 /* One tap each, and each one says where it stands rather than nagging. */
 function logRow(){
+  if(isTeen()){
+    const k=todayKey(), meals=dayFood(k).length, done=!!(S.days[k]&&S.days[k].checkedIn);
+    return `<div class="quicks">
+      <button class="quick ${meals?'done':''}" data-glance="food"><span class="ql">Log food</span><span class="qs">${meals? meals+' logged':''}</span></button>
+      <button class="quick ${done?'done':''}" data-glance="checkin"><span class="ql">Today's Check-in</span><span class="qs">${done?'done':''}</span></button></div>`;
+  }
   const k=todayKey(), logged=S.days[k]||{};
   const weighed=S.weights.length&&S.weights[S.weights.length-1].d===k;
   const meals=dayFood(k).length;
@@ -3188,7 +3276,7 @@ function renderProgress(){
         <div class="note" style="margin:4px 0 10px">${ct.source==='observed'?'Maintenance ':'Maintenance is '}${ct.sourceLabel}. ${calorieLine(ct)}</div>` : ''; })()}
         <div class="numline"><div>Protein <b>${proteinOf(p)}g</b>${proteinBasis(p).adjusted?' *':''}</div>
           <div>${showH(p.height,imp)}</div><div>${p.age} years</div></div>
-         <div class="note">A rough reference, not a daily target. Gauntlet does not count your food and never will.${proteinBasis(p).adjusted?' * Protein is worked from an adjusted reference weight rather than the scale, because fat mass has no protein requirement.':''}</div>`
+         <div class="note">A rough reference. If you log food, your own targets on the Today screen are what the app works from.${proteinBasis(p).adjusted?' * Protein is worked from an adjusted reference weight rather than the scale, because fat mass has no protein requirement.':''}</div>`
       : `<button class="mini" id="detailsBtn">Work out my maintenance</button>
          <div class="note">One number, shown once. No dial, no deficit, no reminders.</div>`}
   </div>
@@ -3374,10 +3462,18 @@ document.addEventListener('focusout',()=>setTimeout(fitToKeyboard,120));
 })();
 scrim.addEventListener('click',closeSheets);
 let toastTimer=null,undoFn=null;
+/* Messages keep out of the way of what they are about. Taps go straight
+   through them to whatever is underneath, except the Undo button. When a sheet
+   or a workout fills the bottom of the screen they appear at the top instead.
+   A plain message goes after about two and a half seconds; one with Undo stays
+   long enough to use it. (Review P2-05.) */
 function toast(msg,undoLabel,fn){
   const t=$('toast'); t.querySelector('.msg').textContent=msg;
   const b=$('toastAct'); b.style.display=undoLabel?'block':'none'; b.textContent=undoLabel||''; undoFn=fn||null;
-  t.classList.add('on'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('on'),3400);
+  const busyBottom=!!document.querySelector('.sheet.on')||(document.getElementById('gym')||{classList:{contains:()=>false}}).classList.contains('on');
+  t.classList.toggle('top',busyBottom);
+  t.classList.add('on'); clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('on'), undoLabel? 5000 : 2600);
 }
 $('toastAct').addEventListener('click',()=>{ if(undoFn) undoFn(); $('toast').classList.remove('on'); });
 /* Nothing in here should feel broken. If a button is ahead of the build, it says
@@ -3542,6 +3638,7 @@ document.addEventListener('click',e=>{
   if(gl){ const what=gl.dataset.glance;
     if(what==='food') openFood(false);
     else if(what==='weigh') openWeigh();
+    else if(what==='checkin') openDay();
     else openQuick(what);
     return; }
   const qs=e.target.closest('[data-quickstep]');
@@ -3644,7 +3741,7 @@ function openLog(){
     </button>
     <div class="logtiles">
       ${d&&d.type&&d.slot!=='walk'? tile('today',(dayDone(dowIdx())?'Do it again':'Start '+dayLabel(d)),daySub(d),(HUE[d.kind]||HUE.any).deep,dayDone(dowIdx())):''}
-      ${tile('weigh',weighed?'Weigh in again':'Weigh in',weighed? S.weights[S.weights.length-1].kg+' kg today':'Five seconds','var(--forest)',weighed)}
+      ${isTeen()? '' : tile('weigh',weighed?'Weigh in again':'Weigh in',weighed? S.weights[S.weights.length-1].kg+' kg today':'Five seconds','var(--forest)',weighed)}
       ${tile('day',"Today's Check-in",logged&&logged.checkedIn? 'Done for today' : 'Twenty seconds','var(--marine)',!!(logged&&logged.checkedIn))}
       ${tile('week','Weekly check in',checkinDone()?'Done for this week':'Next week is built from it','var(--marigold)',checkinDone())}
       ${tile('templates','Something else','Any template, circuit or run','var(--ink)')}
@@ -3998,7 +4095,8 @@ function onbRender(){
         ? (AIM_DEFAULTS[onbDraft.aim]||AIM_DEFAULTS.lose).lift : onbDraft.liftDays,
       detailsSet:true,__preview:true});
     const entered=sex&&onbDraft.age&&onbDraft.height&&onbDraft.weight;
-    const ready=entered&&plausibleBody(p);
+    const teen=isTeen({age:onbDraft.age});
+    const ready=entered&&plausibleBody(p)&&!teen;
     const pt=ready? plannedTdee(p) : null;
     const kcal=pt? pt.kcal : null, pro=ready? proteinOf(p) : null;
     /* what the goal weight would mean, worked out the same way the app will */
@@ -4026,19 +4124,26 @@ function onbRender(){
         <div class="nf"><label>Age</label><input id="onbAge" type="number" inputmode="numeric" value="${onbDraft.age||''}" placeholder="36"></div>
         <div class="nf"><label>Height, cm</label><input id="onbHeight" type="number" inputmode="numeric" value="${onbDraft.height||''}" placeholder="178"></div></div>
       <div class="twoup" style="gap:10px;margin-top:10px">
-        <div class="nf"><label>Weight now, kg</label><input id="onbWeight" type="number" inputmode="decimal" step="0.1" value="${onbDraft.weight||''}" placeholder="82"></div>
-        <div class="nf"><label>Goal weight, kg</label><input id="onbGoal" type="number" inputmode="decimal" step="0.1" value="${onbDraft.goal||''}" placeholder="optional"></div></div>
-      <div class="nf" style="margin-top:10px"><label>Body fat %, if you know it</label>
+        <div class="nf"><label>${isTeen({age:onbDraft.age})?'Weight, kg (optional)':'Weight now, kg'}</label><input id="onbWeight" type="number" inputmode="decimal" step="0.1" value="${onbDraft.weight||''}" placeholder="82"></div>
+        <div class="nf" style="${isTeen({age:onbDraft.age})?'display:none':''}"><label>Goal weight, kg</label><input id="onbGoal" type="number" inputmode="decimal" step="0.1" value="${onbDraft.goal||''}" placeholder="optional"></div></div>
+      <div class="nf" style="margin-top:10px;${isTeen({age:onbDraft.age})?'display:none':''}"><label>Body fat %, if you know it</label>
         <input id="onbBf" type="number" inputmode="decimal" step="0.1" value="${onbDraft.bf||''}" placeholder="optional, from a scan or scale"></div>
       ${onbDraft.bf&&!validBodyFat(onbDraft.bf)? `<div class="warn" style="margin-top:8px">Body fat should be between 3 and 70%. Leave it blank and it will be estimated.</div>`:''}
-      ${entered&&!ready? `<div class="warn" style="margin-top:10px">One of those does not look like a real number yet. Keep going.</div>`:''}
+      ${tooYoung(onbDraft.age)? `<div class="warn" style="margin-top:10px">Gauntlet is for people aged 13 and over. A parent, PE teacher or coach is the best person to help with being active at your age.</div>`
+        : isTeen({age:onbDraft.age})? `<div class="teencard">
+            <b>You are under 18, so Gauntlet works a bit differently for you.</b>
+            <span>No calorie targets, no diets, no weight goals. The research on teenagers is clear that those do more harm than good while you are still growing. Instead your plan is built around moving, getting stronger with good technique, sleep, eating regularly, and how you feel.</span>
+            <span>Weight is optional here. Leave it blank if you would rather.</span>
+            ${onbDraft.aim==='lose'? `<span>You picked losing fat, so your plan will focus on getting fitter and feeling better instead. That is what actually helps.</span>`:''}
+          </div>`
+        : (entered&&!ready? `<div class="warn" style="margin-top:10px">One of those does not look like a real number yet. Keep going.</div>`:'')}
       <div class="slab">Daily step target</div>
       <div class="nf"><label>Steps a day you are aiming for</label>
         <input id="onbSteps" type="number" inputmode="numeric" step="500" min="1000" max="40000" value="${onbDraft.steps||''}" placeholder="8000"></div>
       <div class="chips" style="margin-top:8px">${STEP_BANDS.map(b=>`<button class="${+onbDraft.steps===b.n?'on':''}" data-onbsteps="${b.n}">${num(b.n)}</button>`).join('')}</div>
       <div class="note">${stepsOk
         ? (()=>{ const b=STEP_BANDS.slice().reverse().find(x=>+onbDraft.steps>=x.n);
-            return (b? b.t+' ('+b.s+'). ' : 'Under 5,000 is classed as sedentary. ')
+            return (b? b.t+' ('+b.s+'), one of the standard descriptive bands, not a health threshold. ' : 'Under 5,000 is described as sedentary. ')
               +'Count everything your phone or watch would, runs included. This sets your calories, so aim for what you will actually do rather than what you would like to do.'; })()
         : 'Somewhere between 1,000 and 40,000.'}</div>
       ${ready? `<div class="revday" style="margin-top:14px"><div class="revhead">What that gives you <span>an estimate</span></div>
@@ -4109,6 +4214,11 @@ function onbRender(){
       DAYS.map((d,i)=>`<button class="opt ${onbDraft.checkinDay===i?'on':''}" data-onbday="${i}">
         <div class="txt"><div class="t">${d}</div><div class="s">${i===5||i===6?'weekend, quieter':'midweek, before things slip'}</div></div><div class="rad"></div></button>`).join('');
   }
+  if(step===5&&!canHaveAccount({age:onbDraft.age})){
+    b.innerHTML=`<h2>Kept on this phone</h2><p class="lead">Under 16, an account needs a parent or guardian to agree to it, so everything you log stays on this phone and nowhere else. You can add an account when you turn 16, and nothing will be lost.</p>`;
+    onbDraft.email=''; $('onbNext').textContent='Build my week';
+    return;
+  }
   if(step===5){
     b.innerHTML=`<h2>Keep it safe?</h2><p class="lead">An account backs your week up, puts it on any device you sign in on, and lets you see what the others are doing. No password: you get a link by email.</p>
       <div class="nf" style="margin-bottom:10px"><label>Email</label>
@@ -4123,9 +4233,9 @@ function onbRender(){
   onbCta();
 }
 function onbCta(){
-  $('onbNext').disabled = step===0 && onbDraft.handle.length<2;
+  $('onbNext').disabled = (step===0 && onbDraft.handle.length<2) || tooYoung(onbDraft.age);
   if(step===5) $('onbNext').textContent = onbDraft.email? 'Send me a link' : 'Skip for now';
-  if(step===2) $('onbNext').disabled = !onbDraft.sex;
+  if(step===2) $('onbNext').disabled = (!onbDraft.sex&&!isTeen({age:onbDraft.age})) || tooYoung(onbDraft.age) || (!isTeen({age:onbDraft.age})&&!onbDraft.age);
   if(step===1) $('onbNext').disabled = (onbDraft.liftDays+onbDraft.cardioDays)>6
     || !(onbDraft.kit&&onbDraft.kit.length);
 }
@@ -4346,6 +4456,27 @@ document.addEventListener('click',e=>{
     toast(r.changed+' movement'+(r.changed===1?'':'s')+' updated','Undo',()=>{ S.templates=r.snap; buildPlan(); save(); renderAll(); });
     return; }
 });
+/* The pace is theirs to choose, inside the range the research supports. Each
+   option says what it means and who the evidence came from. */
+function openPaceSheet(){
+  const cur=(S.profile&&S.profile.pace)||'standard', dir=goalDirection();
+  const rows=[
+    ['gentle','Gentle', dir==='gain'? '0.25% of your weight a week' : '0.5% of your weight a week', 'Easiest to keep up, and the most muscle kept.'],
+    ['standard','Standard', dir==='gain'? 'about 0.375% a week' : '0.75% a week', 'The middle of the range.'],
+    ['faster','Faster', dir==='gain'? '0.5% a week' : '1% a week', 'Quicker, and harder to sustain. Worth it for a short, fixed stretch.']];
+  document.getElementById('altTitle').textContent='Pace';
+  document.getElementById('altSub').textContent= dir==='gain'
+    ? 'These come from research on bodybuilders in the off-season. They are sensible defaults, not rules for everyone.'
+    : 'These come from research on natural bodybuilders preparing for competition. They are sensible defaults, not rules for everyone, and there is still a deficit cap and a calorie floor underneath.';
+  document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 8px">${rows.map(([id,t,rate,why])=>`
+    <button class="opt ${cur===id?'on':''}" data-pace="${id}"><div class="txt"><div class="t">${t} · ${rate}</div><div class="s">${why}</div></div><div class="rad"></div></button>`).join('')}</div>`;
+  openSheet('altSheet');
+}
+document.addEventListener('click',e=>{
+  const pc=e.target.closest('[data-pace]');
+  if(pc){ S.profile.pace=pc.dataset.pace; S.targets=ownTargets(); save(); closeSheets(); renderAll();
+    toast('Pace: '+PACE[pc.dataset.pace].label+'. Your calorie target has been updated.'); }
+});
 function openHabitOne(slot){
   const h=currentHabit(slot); if(!h) return;
   const meta=habitOf(h.id), week=habitWeek(slot), today=week[week.length-1], stop=meta.kind==='stop';
@@ -4365,7 +4496,7 @@ function openHabitOne(slot){
 function openHabitSheet(){
   const s=suggestHabit();
   document.getElementById('altTitle').textContent='Habits';
-  document.getElementById('altSub').textContent='One to start and one to stop, at most. Doing one thing until it is boring beats doing five badly.';
+  document.getElementById('altSub').textContent='Up to three at once. Doing one or two until they are boring beats doing five badly.';
   const section=(kind,title)=>{
     const cur=currentHabit(kind), list=HABITS.filter(h=>h.kind===kind);
     const tags=[...new Set(list.map(h=>h.tag))];
@@ -4471,6 +4602,7 @@ $('onbNext').addEventListener('click',async()=>{
 });
 $('onbBack').addEventListener('click',()=>{ if(step>0){ step--; onbRender(); } });
 function finishOnboarding(keepOpen){
+  if(isTeen({age:onbDraft.age})){ if(onbDraft.aim==='lose') onbDraft.aim='hold'; onbDraft.goal=null; onbDraft.bf=null; }
   S.profile=Object.assign({},S.profile,{handle:onbDraft.handle,aim:onbDraft.aim,checkinDay:onbDraft.checkinDay,
     sex:onbDraft.sex||S.profile.sex,
     liftDays:onbDraft.liftDays, cardioDays:onbDraft.cardioDays,
@@ -4802,6 +4934,9 @@ function loggedTraining(){
 const DEFAULT_TARGETS={kcal:null,protein:null,carbs:null,fat:null,fibre:30,steps:8000,sleep:7};
 function ownTargets(){
   const p=S.profile;
+  /* a profile from before the age limit, under 18: no calorie or protein
+     target, rather than generic adult numbers */
+  if(p&&isMinorAge(p.age)) return Object.assign({},DEFAULT_TARGETS,{kcal:null,protein:null,maintenance:null,steps:stepTarget(p),minor:true,teen:isTeen(p),sleep:[8,10]});
   if(!p||!p.detailsSet||!plausibleBody(p)) return Object.assign({},DEFAULT_TARGETS,{steps:stepTarget(p)});
   const ct=calorieTarget();
   const kcal=ct? ct.kcal : plannedTdee(p).kcal, protein=proteinOf(p);
@@ -4875,7 +5010,7 @@ function steers(){
   }
   if(c){
     if(c.recovery<=5 && typeof c.sessionsHit==='number' && c.sessionsHit>=7)
-      out.push({tone:'warn',t:`<b>You trained hard and recovery came in at ${c.recovery}.</b> That combination is the week before something gives. An easier week now is a choice, later it is not.`});
+      out.push({tone:'warn',t:`<b>You trained hard and recovery came in at ${c.recovery}.</b> Your logs suggest more fatigue than usual. How do you actually feel? If it matches, an easier week is a sensible choice. Pain that lasts or keeps coming back is one for a GP or physio.`});
     if(c.pain && c.pain.length)
       out.push({tone:'warn',t:`<b>${c.pain.join(', ')} flagged as painful.</b> Those stay out until they are not. If it persists, that is a physio question, not an app question.`});
     if(typeof c.proteinHit==='number'&&c.proteinHit<=4)
@@ -4981,7 +5116,10 @@ function openDay(){
   /* No rating is filled in for them. It used to start at 6, so saving the
      check-in for any other reason stored a 6 they never gave, and the home
      screen took that as "checked in". */
-  dayDraft=Object.assign({sleep:7,wb:null,stress:5,note:''},prev,{training:start});
+  /* Sleep and stress start empty too. They used to start at 7 hours and 5 out
+     of 10 and were saved even if never touched, which meant the plan could be
+     adjusting to a night's sleep nobody reported. (Review P0 01.) */
+  dayDraft=Object.assign({sleep:null,wb:null,stress:null,note:''},prev,{training:start});
   if(weighedToday&&(dayDraft.w===undefined||dayDraft.w===null||dayDraft.w==='')) dayDraft.w=weighedToday.kg;
   drawDay(); openSheet('dayCheck');
 }
@@ -4993,8 +5131,9 @@ function drawDay(){
   $('dayBody').innerHTML=`
     <div class="field"><div class="fl"><div class="k">How did today go?</div><div class="v" id="outwb">${d.wb? d.wb+' / 10' : 'not rated'}</div></div>
       <input type="range" min="1" max="10" step="1" value="${d.wb||6}" data-dayrange="wb" aria-label="How today went"></div>
-    <div class="field"><div class="fl"><div class="k">How stressed</div><div class="v" id="outstress">${d.stress} / 10</div></div>
-      <input type="range" min="1" max="10" step="1" value="${d.stress}" data-dayrange="stress" aria-label="How stressed you were"></div>
+    <div class="field"><div class="fl"><div class="k">How stressed</div><div class="v" id="outstress">${d.stress? d.stress+' / 10' : 'not answered'}</div></div>
+      <input type="range" min="1" max="10" step="1" value="${d.stress||5}" data-dayrange="stress" class="${d.stress?'':'unset'}" aria-label="How stressed you were"></div>
+    ${isTeen()&&(d.stress>=7)? `<div class="teencard"><b>That sounds like a hard day.</b><span>Childline is free and there all day and night: 1800 66 66 66, or text 50101. Text About It: text HELLO to 50808.</span></div>`:''}
     <textarea class="ta" data-daynote="1" placeholder="A line about the day, if there is one. This is the bit a coach actually reads.">${(d.note||'').replace(/</g,'&lt;')}</textarea>
     <div class="slab">What you did</div>
     <div class="chips">${TRAIN_DAYS.map(([k,l])=>{
@@ -5010,8 +5149,8 @@ function drawDay(){
           <span class="ic" style="background:var(--t-marine);color:var(--marine)">⌚</span>
           <span class="t"><b>${num(auto.steps)} steps · ${auto.sleep}h sleep</b><span>from ${sourceName()}</span></span>
           <span class="autotag">automatic</span></div>`
-      : `<div class="field"><div class="fl"><div class="k">Sleep</div><div class="v" id="outsleep">${d.sleep} h</div></div>
-          <input type="range" min="3" max="11" step="0.5" value="${d.sleep}" data-dayrange="sleep" aria-label="Sleep"></div>
+      : `<div class="field"><div class="fl"><div class="k">Sleep${isTeen()?' <small>8 to 10 hours at your age</small>':''}</div><div class="v" id="outsleep">${d.sleep? d.sleep+' h' : 'not answered'}</div></div>
+          <input type="range" min="3" max="11" step="0.5" value="${d.sleep||7}" data-dayrange="sleep" class="${d.sleep?'':'unset'}" aria-label="Sleep"></div>
          <div class="note" style="margin:-8px 0 16px">Connect a tracker and sleep and steps stop being your job.</div>`}
     <div class="slab">Food</div>
     <button class="logrow" id="foodBtn"><span class="ic" style="background:var(--t-burnt);color:var(--burnt)">+</span>
@@ -5042,12 +5181,18 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{
   const r=e.target.closest('[data-dayrange]');
-  if(r&&dayDraft){ const k=r.dataset.dayrange; dayDraft[k]=+r.value;
+  if(r&&dayDraft){ const k=r.dataset.dayrange; dayDraft[k]=+r.value; r.classList.remove('unset');
     const o=$('out'+k); if(o) o.textContent = k==='sleep'? dayDraft.sleep+' h' : dayDraft[k]+' / 10'; }
   const dn=e.target.closest('[data-daynote]');
   if(dn&&dayDraft) dayDraft.note=dn.value;
   const nfld=e.target.closest('[data-day]');
   if(nfld&&dayDraft){ const k=nfld.dataset.day; dayDraft[k]= nfld.value===''? undefined : +nfld.value; }
+});
+document.addEventListener('change',e=>{
+  const r=e.target.closest&&e.target.closest('[data-dayrange]');
+  if(r&&dayDraft&&(dayDraft[r.dataset.dayrange]===null||dayDraft[r.dataset.dayrange]===undefined)){
+    const k=r.dataset.dayrange; dayDraft[k]=+r.value; r.classList.remove('unset');
+    const o=$('out'+k); if(o) o.textContent = k==='sleep'? dayDraft.sleep+' h' : dayDraft[k]+' / 10'; }
 });
 $('saveDay').addEventListener('click',()=>{
   const k=todayKey(), d={};
@@ -5191,7 +5336,7 @@ function copyBrief(){
 
 renderProgress();
 Object.assign(window.__G,{TRAIN_DAYS,DEFAULT_TARGETS,ownTargets,allMovements,drawWeekStep,
-  lastNDays,avg,steers,coachBrief,eatingPlan,nextEating,openEating,openEatTimes,eatingRow,perMealProtein,mealSlots,timingStats,MEAL_NAMES,proteinBasis,hhmmToMin,minToHhmm,todayTrains,activeHabits,habitCount,habitRoom,HABIT_MAX,slotForNew,habitSlotOf,trainingList,trainingText,plannedTraining,loggedTraining,TRAIN_DAYS,plannedCardioKcalPerDay,openDay,openWeek,
+  lastNDays,avg,steers,coachBrief,isTeen,tooYoung,canHaveAccount,SUPPORT_TEEN,TEEN_MIN,PACE,paceOf,openPaceSheet,isMinorAge,ADULT_AGE,eatingPlan,nextEating,openEating,openEatTimes,eatingRow,perMealProtein,mealSlots,timingStats,MEAL_NAMES,proteinBasis,hhmmToMin,minToHhmm,todayTrains,activeHabits,habitCount,habitRoom,HABIT_MAX,slotForNew,habitSlotOf,trainingList,trainingText,plannedTraining,loggedTraining,TRAIN_DAYS,plannedCardioKcalPerDay,openDay,openWeek,
   HABITS,habitOf,currentHabit,startHabit,retireHabit,toggleHabitDay,habitWeek,habitStreak,habitRate,suggestHabit,openHabitSheet,habitRow,habitRowFor,habitApplies,habitSlots,addOwnHabit,ownHabits,escHabit,OWN_MAX,colophonText,
   TARGET_KINDS,setTarget,clearTarget,targetNow,targetProgress,openTargetSheet,targetLine,
   nudgeState,nextNudgeAt,scheduleNudge,enableNudges,disableNudges,fireNudge,nudgeHelp,onIOS,installed,NUDGE_KEY,
@@ -5765,6 +5910,11 @@ const RX_CLASS=[
      the legs than the upper body (same 2021 review), with short rests.
    Every range here is a starting point; each one is editable. */
 const LIFT_FOCUS={
+  youth:{t:'Technique first',s:'Learn it well, then add weight slowly',
+    effort:'Stop each set with two or three good reps still in you. Clean reps beat heavy ones, and a coach or PE teacher checking your form is worth more than any weight.',
+    rx:{heavy:{sets:2,repMin:8,reps:12,rest:120},compound:{sets:2,repMin:8,reps:12,rest:90},
+        accessory:{sets:2,repMin:10,reps:15,rest:75},isolation:{sets:2,repMin:10,reps:15,rest:60},
+        core:{sets:2,repMin:8,reps:12,rest:45},hold:{sets:2,repMin:20,reps:30,rest:45}}},
   strength:{t:'Strength',s:'Heavier, fewer reps, longer rests',
     effort:'Heavy sets: stop with one to three reps left in the tank. Rest fully, three minutes or more on the big lifts.',
     rx:{heavy:{sets:4,repMin:3,reps:6,rest:210},compound:{sets:3,repMin:5,reps:8,rest:150},
@@ -5790,6 +5940,7 @@ const LIFT_FOCUS={
 const AIM_FOCUS={strong:'strength',build:'muscle',lose:'keep',endure:'endurance',hold:'muscle',eat:'muscle'};
 function liftFocus(){
   const p=S.profile||{};
+  if(isTeen(p)) return 'youth';
   if(p.liftFocus&&LIFT_FOCUS[p.liftFocus]) return p.liftFocus;
   return AIM_FOCUS[p.aim]||'muscle';
 }
@@ -6042,7 +6193,22 @@ function setPR(exId,st){
   if(e1RM(kg,reps)>pre.best1) return 'e1rm';
   return null;
 }
-const exHasPR=e=>e.sets.some(st=>!!setPR(e.exId,st));
+/* One gold PR per movement, on the set that earned it. Every set after it at
+   the same weight used to light up too, because each was compared with the
+   record from before the session rather than with the best set so far.
+   A set that fell short of the bottom of the rep range is not a PR, whatever
+   the weight: it gets a red cross instead. */
+const setShort=(e,s)=>!!(s&&s.done&&!s.warm&&s.reps!==''&&+s.reps<repRangeFor({reps:e.reps,repMin:e.repMin}).bottom);
+function prIndex(e){
+  let best=-1, bk=null;
+  e.sets.forEach((s,j)=>{
+    if(!setPR(e.exId,s)||setShort(e,s)) return;
+    const key=[+s.kg, e1RM(+s.kg,+s.reps)];
+    if(best<0||key[0]>bk[0]||(key[0]===bk[0]&&key[1]>bk[1])){ best=j; bk=key; }
+  });
+  return best;
+}
+const exHasPR=e=>prIndex(e)>=0;
 const workingIndex=(e,j)=>e.sets.slice(0,j+1).filter(s2=>!s2.warm).length;
 
 /* ---------- warm ups and plate maths ----------
@@ -6093,6 +6259,59 @@ function plateLine(exId,kg){
 
 /* ---------- the active workout ---------- */
 let GYM=null, gymTick=null, restTick=null, rest={left:0,label:''};
+/* ---------- supersets and giant sets ----------
+   Two movements done back to back, one set of each with no rest between, is a
+   superset; three or more is a giant set. The same rules run in the template
+   editor and in a live workout:
+     a group is an unbroken run of movements sharing a group id
+     a group of one is not a group, so it quietly goes away
+     moving or removing a movement can split a group; each piece is re-checked
+   In the workout, ticking a set that is not the last in its group starts no
+   rest and says which movement is next; the rest comes after the last one,
+   and it is the longest rest of anything in the group. */
+const newGroupId=()=>'g'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function normaliseGroups(list){
+  const seen=new Set(); let i=0;
+  while(i<list.length){
+    const g=list[i]&&list[i].group; if(!g){ i++; continue; }
+    let j=i; while(j+1<list.length&&list[j+1].group===g) j++;
+    const id=seen.has(g)? newGroupId() : g; seen.add(id);
+    if(j===i) delete list[i].group; else for(let k=i;k<=j;k++) list[k].group=id;
+    i=j+1;
+  }
+  return list;
+}
+/* join a movement to the one after it, or split them if they are joined */
+function toggleLinkNext(list,i){
+  if(i<0||i>=list.length-1) return list;
+  const a=list[i], b=list[i+1];
+  if(a.group&&b.group===a.group){
+    const g=a.group, fresh=newGroupId();
+    for(let k=i+1;k<list.length&&list[k].group===g;k++) list[k].group=fresh;
+  } else {
+    const g=a.group||b.group||newGroupId(), old=b.group&&b.group!==g? b.group : null;
+    a.group=g; b.group=g;
+    if(old) list.forEach(x=>{ if(x.group===old) x.group=g; });
+  }
+  return normaliseGroups(list);
+}
+function groupInfo(list){
+  const info={}; let letter=0, i=0;
+  while(i<list.length){
+    const g=list[i]&&list[i].group; if(!g){ i++; continue; }
+    let j=i; while(j+1<list.length&&list[j+1].group===g) j++;
+    const size=j-i+1, L=String.fromCharCode(65+(letter++%26));
+    for(let k=i;k<=j;k++) info[k]={id:g,letter:L,pos:k-i+1,size,start:i,end:j,first:k===i,last:k===j,
+      label:size>=3?'Giant set':'Superset'};
+    i=j+1;
+  }
+  return info;
+}
+const groupRest=(list,gi)=>Math.max(...list.slice(gi.start,gi.end+1).map(x=>+x.rest||0));
+function groupHead(list,gi){
+  const names=list.slice(gi.start,gi.end+1).length;
+  return `<div class="grouphead"><b>${gi.label} ${gi.letter}</b><span>${names} movements: one set of each back to back, then rest ${groupRest(list,gi)}s. Repeat.</span></div>`;
+}
 function newExEntry(row){
   const rest=S.restPrefs[row.exId]!==undefined? S.restPrefs[row.exId] : (row.rest||90);
   const prev=lastSets(row.exId);
@@ -6103,14 +6322,14 @@ function newExEntry(row){
      screen can say exactly what next week goes back to. */
   if(GYM&&GYM.deload){
     const dp=deloadPrescription(row.exId,row,DELOAD_TIERS[GYM.deload]);
-    return {exId:row.exId, tempo:row.tempo||tempoOf(row.exId), reps:row.reps||12, repMin:row.repMin,
+    return {exId:row.exId, group:row.group||undefined, tempo:row.tempo||tempoOf(row.exId), reps:row.reps||12, repMin:row.repMin,
       rx, dp, rest, note:row.note||'',
       sets:Array.from({length:dp.sets},()=>({kg: dp.kg!==null? dp.kg : '', reps: dp.reps, warm:false, done:false}))};
   }
   /* planSets is fixed here, when the session starts. Counting it at the end
      from whatever sets were left made "planned" silently match "done" as soon
      as a set was added, removed or marked as a warm up. */
-  return {exId:row.exId, tempo:row.tempo||tempoOf(row.exId), reps:row.reps||12, repMin:row.repMin, rx, rest, note:row.note||'',
+  return {exId:row.exId, group:row.group||undefined, tempo:row.tempo||tempoOf(row.exId), reps:row.reps||12, repMin:row.repMin, rx, rest, note:row.note||'',
     planSets:row.sets||3,
     sets:Array.from({length:row.sets||3},(_,i)=>({
       kg: rx.kg!==null? rx.kg : (prev&&prev[i]? prev[i].kg : ''),
@@ -6154,16 +6373,27 @@ function deloadBanner(){
     ${rows}
     <div class="dls">These should feel easy. Stop each set with plenty left. Next week goes back to your working weights, not these.</div></div>`;
 }
+/* A weight like 102.5 is wider than the box on a small phone. Rather than a
+   fixed smaller size for everyone, each number is measured and its text only
+   shrinks, a pixel at a time, until it fits. */
+function fitNumbers(root){
+  (root||document).querySelectorAll('.stepper input').forEach(i=>{
+    i.style.fontSize='';
+    let fs=parseFloat(getComputedStyle(i).fontSize)||16;
+    while(i.scrollWidth>i.clientWidth+1&&fs>11){ fs-=1; i.style.fontSize=fs+'px'; }
+  });
+}
+document.addEventListener('input',e=>{ if(e.target.closest&&e.target.closest('.stepper')) fitNumbers(e.target.closest('.stepper')); });
 function drawGym(){
   if(!GYM) return;
   $('gymName').textContent=GYM.name;
   $('gymSub').textContent=elapsed();
+  const GI=groupInfo(GYM.ex);
   $('gymBody').innerHTML=deloadBanner()+GYM.ex.map((e,i)=>{
-    const x=exOf(e.exId), prev=lastSets(e.exId), pre=GYM.pre? GYM.pre[e.exId] : null;
+    const x=exOf(e.exId), prev=lastSets(e.exId), pre=GYM.pre? GYM.pre[e.exId] : null, gi=GI[i];
     const range=repRangeFor({reps:e.reps,repMin:e.repMin});
-    return `<div class="exc" data-ex="${i}">
-      ${i===0? `<div class="focusnote gymfocus"><b>${LIFT_FOCUS[liftFocus()].t}</b><span>${LIFT_FOCUS[liftFocus()].effort}</span></div>` : ''}
-      <div class="exh"><div class="n">${x.n}</div>${exHasPR(e)?`<span class="pr" title="Personal record">PR</span>`:''}<button class="dots" data-exmenu="${i}" aria-label="Options">···</button></div>
+    return `${i===0? `<div class="focusnote gymfocus"><b>${LIFT_FOCUS[liftFocus()].t}</b><span>${LIFT_FOCUS[liftFocus()].effort}</span></div>` : ''}${gi&&gi.first? groupHead(GYM.ex,gi) : ''}<div class="exc ${gi?'ingroup':''} ${gi&&gi.last?'grouplast':''}" data-ex="${i}">
+      <div class="exh">${gi?`<span class="gbadge">${gi.letter}${gi.pos}</span>`:''}<div class="n">${x.n}</div>${exHasPR(e)?`<span class="pr" title="Personal record">PR</span>`:''}<button class="dots" data-exmenu="${i}" aria-label="Options">···</button></div>
       <div class="cue">${e.sets.length} × ${range.bottom===range.top? e.reps : range.bottom+' to '+range.top}${e.tempo&&showTempo()?' @ '+e.tempo:''} · rest ${e.rest}s${pre&&pre.heaviest?` · best ${pre.heaviest}kg`:''}</div>
       ${prev&&prev.length? `<div class="prevline">Last time <b>${prev.map(p2=>p2.kg+' × '+p2.reps).join(', ')}</b></div>`:''}
       ${e.rx? `<div class="rxline"><b>${e.rx.kind==='load'?'Weight up today':(e.rx.kind==='first'?'First time':'Chase the reps')}</b> ${e.rx.why}
@@ -6171,8 +6401,8 @@ function drawGym(){
       ${e.tempo&&showTempo()&&tempoMatters(e.tempo)?`<div class="tempo">${tempoWords(e.tempo)}</div>`:''}
       ${e.note?`<div class="note">${e.note}</div>`:''}
       <div class="sethead"><div>Set</div><div>Previous</div><div>${isBodyweight(e.exId)?'+kg':'kg'}</div><div>Reps</div><div></div></div>
-      ${e.sets.map((s,j)=>{ const pr=setPR(e.exId,s); const inc=incrementFor(e.exId);
-        return `<div class="setline ${s.done?'done':''} ${pr?'ispr':''} ${s.warm?'warm':''}">
+      ${(()=>{ const pi=prIndex(e); return e.sets.map((s,j)=>{ const pr=j===pi; const short=!pr&&setShort(e,s); const inc=incrementFor(e.exId);
+        return `<div class="setline ${s.done?'done':''} ${pr?'ispr':''} ${short?'short':''} ${s.warm?'warm':''}">
         <div class="sn">${s.warm?'W':workingIndex(e,j)}</div>
         <div class="stepper">
           <button class="step" data-step="${i}:${j}:kg:-${inc}" aria-label="Less weight">−</button>
@@ -6184,9 +6414,9 @@ function drawGym(){
           <input type="number" inputmode="numeric" value="${s.reps}" data-set="${i}:${j}:reps" placeholder="${e.reps}" aria-label="Reps">
           <button class="step" data-step="${i}:${j}:reps:1" aria-label="More reps">+</button>
         </div>
-        <button class="tick" data-done="${i}:${j}" aria-label="Complete set">
-          ${pr? `<span class="prtick">PR</span>` : `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg>`}</button>
-      </div>`; }).join('')}
+        <button class="tick" data-done="${i}:${j}" aria-label="${pr?'Personal best':(short?'Short of the target reps':'Complete set')}">
+          ${pr? `<span class="prtick">PR</span>` : short? `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>` : `<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"/></svg>`}</button>
+      </div>`; }).join(''); })()}
       ${(()=>{ const work=e.sets.filter(s=>!s.warm&&s.kg!=='').map(s=>+s.kg);
         const kg=work.length? Math.max(...work) : null;
         const pl=kg? plateLine(e.exId,kg) : '';
@@ -6199,6 +6429,7 @@ function drawGym(){
   + `<div class="addex"><button id="addExBtn">+ Add exercise</button></div>`;
   $('gymFoot').innerHTML=`<div>Volume <b>${num(Math.round(gymVolume()))} kg</b></div>
     <div>Sets <b>${gymSets()}</b></div><div class="hint">Tap the tick to start the rest clock</div>`;
+  fitNumbers($('gymBody'));
 }
 function startRest(sec,label){
   rest={left:sec,label};
@@ -6224,7 +6455,16 @@ document.addEventListener('click',e=>{
     if(st.done){
       if(st.reps==='') st.reps=GYM.ex[i].reps;
       fillForward(i,j);
-      startRest(st.warm?0:GYM.ex[i].rest, exOf(GYM.ex[i].exId).n);
+      const gi=groupInfo(GYM.ex)[i];
+      if(gi&&!gi.last&&!st.warm){
+        /* not the last in its group: straight on to the next, no rest */
+        startRest(0);
+        toast('Now '+gi.letter+(gi.pos+1)+': '+exOf(GYM.ex[i+1].exId).n+', no rest');
+      } else if(gi&&!st.warm){
+        startRest(groupRest(GYM.ex,gi), gi.label+' '+gi.letter);
+      } else {
+        startRest(st.warm?0:GYM.ex[i].rest, exOf(GYM.ex[i].exId).n);
+      }
     }
     drawGym(); }
   const w=e.target.closest('[data-warm]');
@@ -6241,7 +6481,7 @@ document.addEventListener('click',e=>{
     set[k]= next;
     set.touched=true;
     const box=document.querySelector(`[data-set="${i}:${j}:${k}"]`);
-    if(box) box.value=next;
+    if(box){ box.value=next; fitNumbers(box.closest('.stepper')); }
     if(navigator.vibrate) navigator.vibrate(10);
     return;
   }
@@ -6660,7 +6900,7 @@ function foodListHTML(){
   return list.map(f=>{ const p=onPlate(f.id);
     return `<div class="frow ${p?'onplate':''}">
       <div class="txt"><div class="t">${escHabit(f.n)}${f.mine?' <span class="cichip">yours</span>':''}</div>
-        <div class="s">${escHabit(f.u)} · ${f.kcal} kcal · ${f.p}g protein${f.alc?' · '+f.alc+'g alcohol':''}</div></div>
+        <div class="s">${escHabit(f.u)}${isTeen()? '' : ' · '+f.kcal+' kcal · '+f.p+'g protein'}${f.mine?' · from your label':''}${f.alc&&!isTeen()?' · '+f.alc+'g alcohol':''}</div></div>
       ${p? foodStepper(p) : `<button class="fadd half" data-foodadd="${f.id}:0.5" aria-label="Add half a portion of ${escHabit(f.n)}">½</button>
       <button class="fadd" data-foodadd="${f.id}:1" aria-label="Add ${escHabit(f.n)}">+</button>`}</div>`; }).join('')
     +`<button class="logrow" id="foodNew"><div class="txt"><div class="t">Something not on the list</div>
@@ -6668,6 +6908,13 @@ function foodListHTML(){
 }
 function drawFoodList(){ const el=$('foodList'); if(el) el.innerHTML=foodListHTML(); }
 /* minus, the count, plus: big enough for a thumb */
+/* Where a food's figures come from, in the fewest words. (Review P1-09.) */
+function foodSource(x){
+  if(x.quick) return 'numbers you typed';
+  const f=foodOf(x.id);
+  if(f&&f.mine) return 'from your label';
+  return 'typical values';
+}
 const qtyText=q=>q===0.5?'½':(Math.round(q*2)%2? Math.floor(q)+'½' : String(Math.round(q)));
 function foodStepper(x){
   const key=escHabit(x.id)+'|'+(x.meal||'s');
@@ -6700,29 +6947,29 @@ function drawFood(){
   const left=tg.kcal? tg.kcal-Math.round(t.kcal) : null;
   const yTotal=dayFood(addDays(k,-1)).length;
   $('foodBody').innerHTML=`
-    <div class="fhead">
+    ${isTeen()? `<div class="fhead"><div><b>${logged.length}</b> ${logged.length===1?'thing':'things'} logged today</div><div>regular meals, plenty of variety</div></div>` : `<div class="fhead">
       <div><b>${left===null? num(Math.round(t.kcal)) : num(Math.abs(left))}</b> kcal ${left===null? 'today' : (left>=0? 'left' : 'over')}</div>
       <div><b>${Math.round(t.protein)}</b>${tg.protein? '/'+tg.protein:''}g protein</div>
-    </div>
+    </div>`}
     ${tg.kcal? `<div class="bar" style="margin-bottom:12px"><i style="width:${Math.min(100,Math.round(t.kcal/tg.kcal*100))}%;background:${left<0?'var(--oxblood)':'var(--forest-bg)'}"></i></div>`:''}
     <div class="mealtabs" role="tablist" aria-label="Which meal">${MEALS.map(([id,label])=>`<button role="tab" aria-selected="${foodSlot===id}"
-      class="${foodSlot===id?'on':''}" data-foodslot="${id}"><span>${label}</span><small>${mealKcal(id)? mealKcal(id)+' kcal' : '–'}</small></button>`).join('')}</div>
+      class="${foodSlot===id?'on':''}" data-foodslot="${id}"><span>${label}</span><small>${isTeen()? (inMeal(id).length? inMeal(id).length+' logged':'–') : (mealKcal(id)? mealKcal(id)+' kcal' : '–')}</small></button>`).join('')}</div>
 
     <div class="foodsearch"><input id="foodSearch" type="search" enterkeyhint="search" autocomplete="off"
       placeholder="Search food to add to ${mealLabel.toLowerCase()}" value="${escHabit(foodQuery)}" aria-label="Search food"></div>
 
     ${foodQuery.trim()? '' : `
     <div class="plate">
-      <div class="platehead"><b>${mealLabel}</b><span>${plate.length? mealKcal(foodSlot)+' kcal · '+Math.round(plate.reduce((a,x)=>a+x.p*x.q,0))+'g protein' : 'nothing yet'}</span></div>
+      <div class="platehead"><b>${mealLabel}</b><span>${plate.length? (isTeen()? plate.length+' logged' : mealKcal(foodSlot)+' kcal · '+Math.round(plate.reduce((a,x)=>a+x.p*x.q,0))+'g protein') : 'nothing yet'}</span></div>
       ${plate.map(x=>`<div class="frow onplate">
         <div class="txt"><div class="t">${escHabit(x.n)}</div>
-          <div class="s">${x.quick? 'your numbers' : escHabit(x.u)} · ${Math.round(x.kcal*x.q)} kcal · ${Math.round(x.p*x.q)}g protein</div></div>
+          <div class="s">${x.quick? 'your numbers' : escHabit(x.u)}${isTeen()? '' : ' · '+Math.round(x.kcal*x.q)+' kcal · '+Math.round(x.p*x.q)+'g protein'} · <span class="src">${foodSource(x)}</span></div></div>
         ${x.quick? `<button class="fadd rm" data-foodstep="${escHabit(x.id)}|${x.meal||'s'}|-99" aria-label="Remove">&minus;</button>` : foodStepper(x)}</div>`).join('')}
       <div class="shortcuts">
         ${yTotal?`<button class="mini" id="foodYesterday">Same as yesterday</button>`:''}
         ${savedMeals().map(m=>`<button class="mini" data-savedmeal="${m.id}">${escHabit(m.name)}</button>`).join('')}
         ${plate.length?`<button class="mini" id="foodSaveMeal">Save this ${mealLabel.toLowerCase()}</button>`:''}
-        <button class="mini" id="foodQuickBtn">Quick add numbers</button>
+        ${isTeen()? '' : `<button class="mini" id="foodQuickBtn">Quick add numbers</button>`}
       </div>
       ${foodQuick? `<div class="quickadd">
         <div class="nf"><label>Calories</label><input id="qaKcal" type="number" inputmode="numeric" placeholder="650"></div>
@@ -6980,6 +7227,10 @@ function openExMenu(i){
       <div class="tag">${e1RM(s.kg,s.reps)}kg e1RM</div></div>`).join('')}<div class="note">Last session, ${st.last.d}.</div></div>`:''}
     <button class="logrow" data-exact="swap:${i}"><div class="txt"><div class="t">Swap this exercise</div><div class="s">Keeps the sets you have done</div></div></button>
     <button class="logrow" data-exact="rest:${i}"><div class="txt"><div class="t">Rest timer: ${e.rest}s</div><div class="s">Tap to cycle 60, 90, 120, 180</div></div></button>
+    ${i<GYM.ex.length-1? (()=>{ const gi=groupInfo(GYM.ex)[i], joined=gi&&!gi.last;
+      const nxt=exOf(GYM.ex[i+1].exId).n;
+      return `<button class="logrow" data-exact="link:${i}"><div class="txt"><div class="t">${joined? 'Split from '+escHabit(nxt) : (gi? 'Add '+escHabit(nxt)+' to this '+gi.label.toLowerCase() : 'Superset with '+escHabit(nxt))}</div>
+        <div class="s">${joined? 'They go back to separate movements with their own rest' : 'Back to back, one set of each, then rest. Three or more is a giant set.'}</div></div></button>`; })() : ''}
     <button class="logrow" data-exact="up:${i}"><div class="txt"><div class="t">Move up</div></div></button>
     <button class="logrow" data-exact="down:${i}"><div class="txt"><div class="t">Move down</div></div></button>
     <button class="logrow" data-exact="del:${i}"><div class="txt"><div class="t">Remove from today only</div>
@@ -6997,6 +7248,8 @@ document.addEventListener('click',e=>{
   if(act==='up'&&i>0){ const t=GYM.ex[i]; GYM.ex[i]=GYM.ex[i-1]; GYM.ex[i-1]=t; }
   if(act==='down'&&i<GYM.ex.length-1){ const t=GYM.ex[i]; GYM.ex[i]=GYM.ex[i+1]; GYM.ex[i+1]=t; }
   if(act==='del') GYM.ex.splice(i,1);
+  if(act==='link') toggleLinkNext(GYM.ex,i);
+  normaliseGroups(GYM.ex);
   if(act==='forever'){ const id=GYM.ex[i].exId, n=exOf(id).n;
     GYM.ex.splice(i,1); removeEverywhere(id); toast(n+' taken out of every day'); }
   closeSheets(); drawGym();
@@ -7037,7 +7290,7 @@ function finishWorkout(){
   const record={id:'w'+Date.now(),d:k,name:GYM.name,templateId:GYM.templateId,minutes:mins,volume:Math.round(volume),sets,
     deload:GYM.deload||null,
     started:GYM.started||null, finished:Date.now(),
-    ex:GYM.ex.map(e=>({exId:e.exId,sets:e.sets.filter(s=>s.done).map(s=>({kg:+s.kg||0,reps:+s.reps||0,warm:!!s.warm})),
+    ex:GYM.ex.map(e=>({exId:e.exId,group:e.group||undefined,sets:e.sets.filter(s=>s.done).map(s=>({kg:+s.kg||0,reps:+s.reps||0,warm:!!s.warm})),
       /* what was prescribed, kept so the session can say whether the range was hit */
       plan:{sets:(e.dp? e.dp.sets : (e.planSets||e.sets.filter(s=>!s.warm).length)), repMin:e.repMin||null, reps:e.dp? e.dp.reps : (e.reps||null),
         kg:e.dp? e.dp.kg : (e.rx&&typeof e.rx.kg==='number'? e.rx.kg : null), rest:e.rest||null}}))};
@@ -7075,8 +7328,8 @@ function templateChanged(id,gym){
   return t.ex.some((row,i)=>row.exId!==gym.ex[i].exId || row.sets!==gym.ex[i].sets.filter(s=>!s.warm).length);
 }
 function gymToTemplateRows(){
-  return GYM.ex.map(e=>({exId:e.exId,sets:Math.max(1,e.sets.filter(s=>!s.warm).length),
-    reps:e.reps,repMin:e.repMin,tempo:e.tempo,rest:e.rest,note:e.note}));
+  return normaliseGroups(GYM.ex.map(e=>{ const r={exId:e.exId,sets:Math.max(1,e.sets.filter(s=>!s.warm).length),
+    reps:e.reps,repMin:e.repMin,tempo:e.tempo,rest:e.rest,note:e.note}; if(e.group) r.group=e.group; return r; }));
 }
 $('gymFinish').addEventListener('click',()=>{
   if(!GYM||GYM.done) return;
@@ -7342,12 +7595,12 @@ function drawTplEdit(){
     <div class="nf ${errAt(-1,'name')?'bad':''}" style="margin-bottom:12px"><label for="tplName">Name</label>
       <input id="tplName" value="${escHabit(t.name)}" style="font-family:Archivo;font-size:15px;font-weight:700"></div>
     ${errs.length? `<div class="warn" role="alert" style="margin-bottom:12px"><b>Not saved yet.</b> ${errs.map(e=>escHabit(e.msg)).join(' ')}</div>`:''}
-    ${t.ex.map((r,i)=>{
+    ${(()=>{ const TGI=groupInfo(t.ex); return t.ex.map((r,i)=>{ const tgi=TGI[i];
       const x=exOf(r.exId), hold=rxClass(r.exId)==='hold', last=i===t.ex.length-1;
       const field=(k,label,val,min,max)=>`<label class="tf ${errAt(i,k)?'bad':''}"><span>${label}</span>
         <input type="number" inputmode="numeric" min="${min}" max="${max}" value="${val===null||val===undefined?'':val}" data-tpl="${i}:${k}"
           aria-label="${escHabit(x.n)}: ${label}${k==='rest'?' in seconds':''}"></label>`;
-      return `<div class="tcard">
+      return `${tgi&&tgi.first? groupHead(t.ex,tgi) : ''}<div class="tcard ${tgi?'ingroup':''}">
         <div class="tch"><span class="tcn">${i+1}</span>
           <div class="tt"><b>${escHabit(x.n)}</b><span>${rxClass(r.exId)}${x.eq? ' · '+(EQUIP[x.eq]||x.eq).toLowerCase() : ''}</span></div></div>
         ${(()=>{ const rec=recommendedFor(r.exId); if(rowMatches(r)) return `<div class="recline ok">Matches your focus: ${LIFT_FOCUS[liftFocus()].t.toLowerCase()}</div>`;
@@ -7363,11 +7616,12 @@ function drawTplEdit(){
         <div class="tacts">
           <button class="tact" data-showmove="${r.exId}">How to</button>
           <button class="tact" data-tplswap="${r.exId}">Swap</button>
+          ${!last? `<button class="tact ${r.group&&tplDraft.ex[i+1]&&tplDraft.ex[i+1].group===r.group?'on':''}" data-tpllink="${i}" aria-pressed="${!!(r.group&&tplDraft.ex[i+1]&&tplDraft.ex[i+1].group===r.group)}">${r.group&&tplDraft.ex[i+1]&&tplDraft.ex[i+1].group===r.group? 'Split' : 'Superset'}</button>` : ''}
           <button class="tact icon" data-tplmove="${i}:-1" aria-label="Move ${escHabit(x.n)} up" ${i===0?'disabled':''}>&uarr;</button>
           <button class="tact icon" data-tplmove="${i}:1" aria-label="Move ${escHabit(x.n)} down" ${last?'disabled':''}>&darr;</button>
           <button class="tact bad" data-tpldel="${i}">Remove</button>
         </div></div>`;
-    }).join('')}
+    }).join(''); })()}
     <button class="tadd" id="tplAddEx">+ Add a movement</button>`;
 }
 document.addEventListener('input',e=>{
@@ -7381,11 +7635,14 @@ document.addEventListener('input',e=>{
 document.addEventListener('click',e=>{
   const del=e.target.closest('[data-tpldel]');
   if(del&&tplDraft){ const i=+del.dataset.tpldel, gone=tplDraft.ex[i];
-    tplDraft.ex.splice(i,1); drawTplEdit();
-    if(gone) toast(exOf(gone.exId).n+' removed','Undo',()=>{ tplDraft.ex.splice(i,0,gone); drawTplEdit(); }); }
+    const keep=JSON.parse(JSON.stringify(tplDraft.ex));
+    tplDraft.ex.splice(i,1); normaliseGroups(tplDraft.ex); drawTplEdit();
+    if(gone) toast(exOf(gone.exId).n+' removed','Undo',()=>{ tplDraft.ex=keep; drawTplEdit(); }); }
+  const tl=e.target.closest('[data-tpllink]');
+  if(tl&&tplDraft){ toggleLinkNext(tplDraft.ex,+tl.dataset.tpllink); drawTplEdit(); return; }
   const mv=e.target.closest('[data-tplmove]');
   if(mv&&tplDraft&&!mv.disabled){ const [i,d]=mv.dataset.tplmove.split(':').map(Number), j=i+d;
-    if(j>=0&&j<tplDraft.ex.length){ const tmp=tplDraft.ex[i]; tplDraft.ex[i]=tplDraft.ex[j]; tplDraft.ex[j]=tmp; drawTplEdit();
+    if(j>=0&&j<tplDraft.ex.length){ const tmp=tplDraft.ex[i]; tplDraft.ex[i]=tplDraft.ex[j]; tplDraft.ex[j]=tmp; normaliseGroups(tplDraft.ex); drawTplEdit();
       /* keep focus on the card that moved, so moving it again is one more tap */
       const card=document.querySelectorAll('#tplEditBody .tcard')[j];
       const moved=card&&(card.querySelector('[data-tplmove="'+j+':'+d+'"]:not([disabled])')||card.querySelector('.tact'));
@@ -7444,8 +7701,8 @@ coachBrief=function(){
   return t;
 };
 
-Object.assign(window.__G,{tplErrors,tplRowErrors,drawTplEdit,TPL_LIMITS,LIBRARY,EQUIP,DIFF,exBlurb,drawExList,exOf,exHistory,nextPrescription,rxClass,prescribe,repText,LIFT_FOCUS,AIM_FOCUS,liftFocus,rxOf,recommendedFor,rowMatches,applyFocusToTemplates,RX_CLASS,warmSetsFor,platesFor,plateLine,fitToKit,fitTemplatesToKit,kitOf,hasKit,KIT,KIT_PRESETS,ALL_KIT,openKitSheet,applyKitChange,loggedMealMacros,mealArt,simulatedHealth,keyOf,dateOf,incrementFor,repRangeFor,nextPrescription,tonnageOf,progressLines,fillForward,suggestFor,openCircEdit,drawCircEdit,drawTemplates,seedTemplates,
-  FOODS,FOOD_CATS,FOOD_COMMON,foodOf,addFood,setFoodQty,mergeDayFood,quickAddFood,qtyText,removeFood,dayFood,foodTotals,openFood,closeFood,drawFood,drawFoodList,drawFoodNew,recentFoods,MEALS,slotNow,repeatYesterday,addCustomFood,saveMealAs,addSavedMeal,allFoods,customFoods,savedMeals,seedRunPlans,seedCircuits,circuitOf,startCircuit,finishCircuit,drawCircuit,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
+Object.assign(window.__G,{fitNumbers,normaliseGroups,toggleLinkNext,groupInfo,groupRest,prIndex,setShort,gymToTemplateRows,tplErrors,tplRowErrors,drawTplEdit,TPL_LIMITS,LIBRARY,EQUIP,DIFF,exBlurb,drawExList,exOf,exHistory,nextPrescription,rxClass,prescribe,repText,LIFT_FOCUS,AIM_FOCUS,liftFocus,rxOf,recommendedFor,rowMatches,applyFocusToTemplates,RX_CLASS,warmSetsFor,platesFor,plateLine,fitToKit,fitTemplatesToKit,kitOf,hasKit,KIT,KIT_PRESETS,ALL_KIT,openKitSheet,applyKitChange,loggedMealMacros,mealArt,simulatedHealth,keyOf,dateOf,incrementFor,repRangeFor,nextPrescription,tonnageOf,progressLines,fillForward,suggestFor,openCircEdit,drawCircEdit,drawTemplates,seedTemplates,
+  FOODS,FOOD_CATS,FOOD_COMMON,foodOf,addFood,foodSource,setFoodQty,mergeDayFood,quickAddFood,qtyText,removeFood,dayFood,foodTotals,openFood,closeFood,drawFood,drawFoodList,drawFoodNew,recentFoods,MEALS,slotNow,repeatYesterday,addCustomFood,saveMealAs,addSavedMeal,allFoods,customFoods,savedMeals,seedRunPlans,seedCircuits,circuitOf,startCircuit,finishCircuit,drawCircuit,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
   openExMenu,openTplEdit,drawTemplates,exerciseStats,e1RM,lastSets,gymVolume,gymSets,templateChanged,startRest,isBodyweight,isBwFull,bodyweightNow,setVolume,BW_FULL,openQuick,QUICK,saveQuick,fitToKeyboard,
   get GYM(){return GYM}, get tplDraft(){return tplDraft}});
 Object.defineProperties(window.__G,{
@@ -8124,8 +8381,10 @@ function renderTrends(){
   $('dash').innerHTML=`
   ${hero}
   <div class="panel">
-    <div class="ph"><h3>Weight</h3><button data-weigh="1">Weigh in</button></div>
-    ${weightPanel()}
+    ${isTeen()? `<div class="ph"><h3>Growing</h3></div>
+      <div class="note" style="margin:0">Weight is not tracked while you are under 18. Bodies change a lot while you are growing, and research on teenagers finds that focusing on weight does more harm than good. What you do each day is what counts, and that is all here: moving, getting stronger, sleep, food and how you feel.</div>`
+    : `<div class="ph"><h3>Weight</h3><button data-weigh="1">Weigh in</button></div>
+    ${weightPanel()}`}
     ${waterWindow(todayKey())? `<div class="note" style="color:var(--burnt)">Fluid retention is typically highest around now, averaging about half a kilo in the study that measured it. Read the line, not today's number.</div>`:''}
   </div>
   <div class="panel">
@@ -8145,7 +8404,8 @@ function renderTrends(){
     </div>
     <div class="note">Against the week before. A dot means it barely moved, which is usually fine.</div>
   </div>
-  ${cycleStrip()}`;
+  ${cycleStrip()}
+  ${isTeen()? supportCard() : ''}`;
 }
 function openHow(){
   const f=ensureForecast(), obs=tdeeObserved(21);
@@ -8156,9 +8416,10 @@ function openHow(){
     <div class="method"><b>Resting burn</b><span>Mifflin St Jeor, 1990. The equation most clinical tools use. An estimate rather than a measurement: for an individual it can be out by a couple of hundred calories either way, which is why it is replaced by your own numbers as soon as there are enough of them.</span></div>
     <div class="method"><b>Movement</b><span>ACSM: kcal per minute = METs × 3.5 × kg ÷ 200. Walking is taken at 3 METs, since 100 steps a minute is the established threshold for moderate intensity. Lifting at 4 METs. Both counted net of resting burn so it is not double counted.</span></div>
     <div class="method"><b>Your expenditure</b><span>${obs? `Measured, not guessed: over the last ${obs.days} days you averaged ${num(obs.intake)} kcal and your trend weight moved, so your expenditure works out at about ${num(obs.tdee)} kcal a day. This is the intake balance method, which agrees with doubly labelled water to within roughly 200 kcal a day across a group. For one person it can be further out.` : 'Estimated from your details and your tracker until there are ten days of food logs and two weigh ins, at which point it gets measured from your own data instead. That measurement, the intake balance method, agrees with doubly labelled water to within roughly 200 kcal a day across a group, and can be further out for one person.'}</span></div>
-    <div class="method"><b>Protein</b><span>1.8 g per kilo. The meta-analysis on protein and resistance training supports roughly 1.6 to 2.2 g/kg, so this sits in the middle, and eating more of it while losing weight helps hold onto muscle. ${(()=>{const b=proteinBasis(S.profile); return b.adjusted? `Above a BMI of about 30 the kilo is an adjusted reference weight, ${b.kg} kg in your case rather than ${S.profile.weight} kg, because fat mass carries no protein requirement and total bodyweight would overshoot.` : 'Above a BMI of about 30 it is taken from an adjusted reference weight instead, since fat mass carries no protein requirement.';})()}</span></div>
+    <div class="method"><b>Protein</b><span>1.8 g per kilo. The meta-analysis on protein and resistance training supports roughly 1.6 to 2.2 g/kg, so this sits in the middle, and eating more of it while losing weight helps hold onto muscle. ${(()=>{const b=proteinBasis(S.profile); return b.adjusted? `Above a BMI of about 30 the kilo is an adjusted reference weight, ${b.kg} kg in your case rather than ${S.profile.weight} kg, because fat mass carries no protein requirement and total bodyweight would overshoot.` : 'Above a BMI of about 30 it is taken from an adjusted reference weight instead, since fat mass carries no protein requirement.';})()} The 1.8 figure, the BMI 30 cut off and the reference weight at a BMI of 27.5 are this app's choices within that evidence, not fixed rules.</span></div>
     <div class="method"><b>Maintenance</b><span>One figure, from the best evidence the app has. To start: resting burn by Mifflin St Jeor, times 1.2 for a sedentary day, plus your step target and the lifting in your plan. Walking is 3 METs for every 100 steps a minute, net of rest, counted above 2,500 a day because a sedentary day already contains those (under 2,500 is what Tudor-Locke and colleagues class as basal activity; using it as the baseline is a judgement). Lifting is 4 METs for as long as your templates take. Once a tracker is connected, your real steps replace the target. Once you have about three weeks of food and weigh ins, what you actually ate minus what the scale says you stored replaces both, and that is the most accurate of the three. Running is counted as steps, which under-counts it a little; physical work a step count cannot see is missed; the three-week figure catches both.</span></div>
-    <div class="method"><b>Your calorie target</b><span>Losing: three limits, and the tightest wins. 0.75% of your bodyweight a week, or what your goal date needs up to 1%, the range that keeps muscle while dieting (Helms and colleagues, 2014). A deficit of no more than 750 kcal a day, the top of what the 2013 AHA/ACC/TOS guideline prescribes, because a percentage keeps growing with size and clinical guidance does not. And about 69 kcal a day per kilo of body fat, Alpert's (2005) estimate of the most the fat store can supply; a theoretical model rather than a tested rule, so it is only a ceiling, and in practice it only matters for lean people asking for a fast date. Body fat is yours if you give it, otherwise estimated from BMI, age and sex by the Deurenberg equation, which is about 4 points out either way and cannot tell muscle from fat. Gaining: 0.25 to 0.5% a week, about 10 to 20% over maintenance (Iraki and colleagues, 2019). Never below 1,500 kcal for men or 1,200 for women, and never above maintenance while losing. When you reach your goal weight, the target goes back to maintenance.</span></div>
+    <div class="method"><b>If you are under 18</b><span>You get a version built for teenagers. No calorie targets, no diets and no weight goals: the American Academy of Pediatrics (Golden and colleagues, 2016, reaffirmed 2022) finds that dieting, weight talk and skipping meals are linked to both obesity and eating disorders in teenagers, and that what helps is regular meals, being active, sleep and feeling good about your body. Activity follows the World Health Organization's guidance for 5 to 17 year olds (2020): about an hour a day, with muscle and bone strengthening three days a week. Sleep aims at 8 to 10 hours (American Academy of Sleep Medicine, 2016). Lifting is technique first, fewer sets and more reps, which is safe and useful when supervised (Lloyd and colleagues, 2014). Under 16, everything stays on your phone, because an account needs a parent or guardian's consent in Ireland.</span></div>
+    <div class="method"><b>Your calorie target</b><span>Losing: you choose the pace, gentle, standard or faster, which is 0.5, 0.75 or 1% of your bodyweight a week. That range comes from research on natural bodybuilders preparing for competition (Helms and colleagues, 2014), so treat it as a sensible default rather than a rule for everyone. Underneath it, the deficit is capped at 750 kcal a day, from clinical guidance for adults with overweight or obesity (AHA/ACC/TOS, 2013), and about 69 kcal a day per kilo of body fat, a theoretical ceiling (Alpert, 2005). Gaining: 0.25 to 0.5% a week, from bodybuilding off-season research (Iraki and colleagues, 2019), again your choice of pace. The app will not set below 1,500 kcal for men or 1,200 for women, a common clinical minimum for adults, and never above maintenance while losing. Reaching your goal weight takes the target back to maintenance. All of this is for adults: the resting burn equation was derived in adults aged 19 to 78.</span></div>
     <div class="method"><b>How many reps</b><span>Set by your lifting focus. Strength: heavy loads of roughly 1 to 5 reps at 80 to 100% of your max build maximal strength best, so the main lifts sit at 3 to 6 (Schoenfeld and colleagues, 2021). Muscle: similar growth comes from a wide range of loads down to about 30% of your max, as long as sets finish close to failure, so the big lifts sit at 6 to 12 and smaller ones higher. Losing fat: keep lifting heavy enough to hold on to muscle, mostly 6 to 12 reps at 70 to 80% of max with 1 to 3 minutes rest, and no grinding to failure on heavy lifts (Helms and colleagues, 2015). Endurance: 15 reps and up, with short rests. Every range is a starting point you can change.</span></div>
     <div class="method"><b>When the forecast starts</b><span>A trend line needs two weigh ins and a direction needs three. A forecast starts at three weigh ins, or four days of food logged. It is working from an estimate of what you burn until you have ten days of food inside three weeks along with three weigh ins, at which point it works your burn out from your own weight and intake instead. After three weeks of forecasts it scores itself, and the range you see comes from how wrong it has actually been rather than a default. The note under the chart always says which of those you are at.</span></div>
     <div class="method"><b>Why the line is smoothed</b><span>Bodyweight swings a kilo or two a day on water and gut contents, so the dots are what the scale said and the line is the trend underneath them, smoothed exponentially the way Libra and the Hacker's Diet do it. The forecast, your maintenance calories and your rate of loss are all worked from that trend rather than your last reading, which is why the number on the chart is not the number you saw on the scale this morning.</span></div>
@@ -8166,7 +8427,8 @@ function openHow(){
     <div class="method"><b>Meals and timing</b><span>Total protein for the day matters most, so that is what the home screen leads with. Spreading it helps on top: about 0.4 g per kg of bodyweight a meal across at least four meals (Schoenfeld and Aragon, 2018), though the difference is modest once the total is matched. The meal times come from when you wake, train and sleep. Nothing extra is asked of you: each food you log already records the time, which is how the app knows which meal it belongs to and, over a week, how many meals reached the mark and how long before bed you last ate. Timing does not change how many calories you burn, so it never touches your targets.</span></div>
     <div class="method"><b>The food list</b><span>Typical values for the portion named, for ${FOODS.length} foods people here actually eat. Composition figures in Ireland come from McCance and Widdowson's Composition of Foods Integrated Dataset, which the Food Safety Authority of Ireland names as the accepted source. Brands vary, so anything with a label on it is better taken from the label: "Something not on the list" saves it for good. Alcohol carries about 7 kcal a gram, which is why a pint's calories are mostly not protein, carbs or fat.</span></div>
     <div class="method"><b>What your steps are worth</b><span>Steps are part of what you burn, so they are already inside your maintenance. The deficit splits into the part food makes, eating less than you burn without walking, and the part the steps make, and the two add up to the whole. That is why skipping the steps at the same food slows the loss by exactly what they were burning.</span></div>
-    <div class="method"><b>Easy weeks</b><span>Every ${+S.profile.deloadEvery||DELOAD_EVERY} weeks by default, from the 4 to 8 week range in Bell and colleagues' 2025 recommendations and the roughly five and a half week gap reported by 246 competitive lifters (Rogerson and colleagues, 2024). About 10% lighter and 25 to 90% less work depending on recovery. Easy-week sessions never set your next weights.</span></div>
+    <div class="method"><b>When the plan suggests easing off</b><span>Sleep under 6.5 hours, recovery of 5 or less, or stress of 7 or more are this app's rules of thumb for suggesting an easier day or week. They are prompts to check in with yourself, not validated predictions of injury or burnout, and how you actually feel matters more than the number.</span></div>
+    <div class="method"><b>Easy weeks</b><span>Every ${+S.profile.deloadEvery||DELOAD_EVERY} weeks by default, from the 4 to 8 week range in Bell and colleagues' 2025 recommendations and the roughly five and a half week gap reported by 246 competitive lifters (Rogerson and colleagues, 2024). About 10% lighter and 25 to 90% less work depending on recovery. Easy-week sessions never set your next weights. It is a sensible rule of thumb, not a requirement: you can change how often, move them, or add one early, and how you feel should win over the calendar.</span></div>
     <div class="method"><b>Fat and carbohydrate</b><span>Fat at 28% of your calories, which sits inside the 20 to 35% the dietary guidelines give, and carbohydrate is simply what is left once protein and fat are paid for. Neither is a finding: protein and total calories are the two that have evidence behind them, and the split of the rest is largely preference. Move it if you train better on more of one.</span></div>
     <div class="method"><b>Energy per kilo</b><span>7700 kcal per kg. A long run average. Early weight change is mostly water and carries far less energy, so the first fortnight usually moves faster than the maths.</span></div>
     <div class="method"><b>Beyond this week</b><span>Recalculated week by week with your new weight rather than drawn in a straight line. A lighter body burns less, and the old 3500 kcal rule overestimates because it ignores that.</span></div>
@@ -8189,7 +8451,8 @@ function openCycle(){
       <input type="date" id="cycDate" value="${c.lastPeriod||''}" style="border:1px solid var(--line);border-radius:8px;padding:10px;width:100%;font-weight:600"></div>
     <div class="field"><div class="fl"><div class="k">Usual cycle length</div><div class="v" id="outlen">${c.length||28} days</div></div>
       <input type="range" min="21" max="35" value="${c.length||28}" data-cycrange="length" aria-label="Cycle length"></div>
-    <div class="note">Used for two things only: widening the weight forecast where fluid retention peaks, and saying so on the day. The measured average is about half a kilo, from one study of 42 women, so treat it as a reason not to panic rather than a precise prediction. It never changes your training on its own, because the evidence on phase based training is genuinely mixed.</div>`;
+    <div class="note">Used for two things only: widening the weight forecast where fluid retention peaks, and saying so on the day. The measured average is about half a kilo, from one study of 42 women, so treat it as a reason not to panic rather than a precise prediction. It never changes your training on its own, because the evidence on phase based training is genuinely mixed.</div>
+    <div class="note">It may not apply to you. Cycles vary a lot from person to person, and irregular cycles, hormonal contraception, pregnancy, breastfeeding and perimenopause can all change the pattern or remove it. If your weight does not follow it, trust your own trend over this, and you can switch it off at any time.</div>`;
   openSheet('cycleSheet');
 }
 document.addEventListener('click',e=>{
@@ -8452,8 +8715,73 @@ function exportPayload(){
     checkins:S.checkins, lifts:S.lifts, workouts:S.workouts, templates:S.templates,
     circuits:S.circuits, runPlans:S.runPlans, customFoods:S.customFoods, savedMeals:S.savedMeals,
     cycle:S.cycle, forecasts:S.forecasts, health:S.health, posts:S.mine,
-    account: signedIn()? {email:(C.session&&C.session.email)||null, id:myId()} : null};
+    account: signedIn()? {email:(C.session&&C.session.email)||null, id:myId()} : null,
+    /* the fields above are for reading; this is everything, for restoring.
+       Habits, targets and easy weeks used to be missing, so "everything" was
+       not true. */
+    state: JSON.parse(JSON.stringify(S))};
 }
+/* ---------- restoring from a download (Review P2-04) ----------
+   Takes a Gauntlet download, says what is in it, and only replaces this
+   phone's data after a second tap. The data it replaces is kept aside, so the
+   restore can be undone. Older downloads, from before the full copy was
+   included, are rebuilt from their readable fields. */
+const RESTORE_BACKUP='gauntlet.beforeRestore';
+let restorePending=null;
+function stateFromExport(x){
+  if(!x||typeof x!=='object') throw new Error('That file is not a Gauntlet download.');
+  if(x.app!=='Gauntlet') throw new Error('That file is not a Gauntlet download.');
+  let st;
+  if(x.state&&typeof x.state==='object') st=x.state;
+  else {
+    st=freshState();
+    ['profile','plan','goal','days','weights','checkins','lifts','workouts','templates','circuits','runPlans',
+     'customFoods','savedMeals','cycle','forecasts','health'].forEach(k=>{ if(x[k]!==undefined) st[k]=x[k]; });
+    if(Array.isArray(x.posts)) st.mine=x.posts;
+  }
+  if(!st.profile||typeof st.profile!=='object') throw new Error('That download has no profile in it.');
+  ['weights','checkins','workouts'].forEach(k=>{ if(st[k]!==undefined&&!Array.isArray(st[k])) throw new Error('That download looks damaged.'); });
+  if(st.days&&typeof st.days!=='object') throw new Error('That download looks damaged.');
+  return st;
+}
+function restoreSummary(st,x){
+  const w=(st.weights||[]).length, d=Object.keys(st.days||{}).length, s=(st.workouts||[]).length;
+  const when=x&&x.exported? new Date(x.exported) : null;
+  return (when&&!isNaN(when)? 'Downloaded '+when.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][when.getMonth()]+' '+when.getFullYear()+'. ' : '')
+    +w+' weigh in'+(w===1?'':'s')+', '+d+' day'+(d===1?'':'s')+' logged, '+s+' workout'+(s===1?'':'s')+'.';
+}
+function applyRestore(st){
+  try{ localStorage.setItem(RESTORE_BACKUP,JSON.stringify(S)); localStorage.setItem(STORE_KEY,JSON.stringify(st)); }
+  catch(e){ return false; }
+  reloadApp(); return true;
+}
+function undoRestore(){
+  let back=null; try{ back=localStorage.getItem(RESTORE_BACKUP); }catch(e){}
+  if(!back) return false;
+  try{ localStorage.setItem(STORE_KEY,back); localStorage.removeItem(RESTORE_BACKUP); }catch(e){ return false; }
+  reloadApp(); return true;
+}
+document.addEventListener('change',e=>{
+  if(e.target.id!=='restoreFile') return;
+  const f=e.target.files&&e.target.files[0], note=document.getElementById('restoreNote'); if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const x=JSON.parse(String(r.result)); const st=stateFromExport(x);
+      restorePending=st;
+      note.innerHTML=escHabit(restoreSummary(st,x))+' <button class="inlinebtn" id="restoreGo">Replace this phone\'s data with it</button>';
+    }catch(err){ restorePending=null; note.textContent=err.message||'That file could not be read.'; }
+  };
+  r.readAsText(f);
+});
+document.addEventListener('click',e=>{
+  if(e.target.closest('#restoreBtn')){ const i=document.getElementById('restoreFile'); if(i) i.click(); return; }
+  const go=e.target.closest('#restoreGo');
+  if(go&&restorePending){
+    if(!go.dataset.armed){ go.dataset.armed='1'; go.textContent='Tap again to replace it. You can undo this.'; return; }
+    applyRestore(restorePending); return; }
+  if(e.target.closest('#restoreUndo')){ undoRestore(); }
+});
 function downloadData(){
   try{
     const blob=new Blob([JSON.stringify(exportPayload(),null,2)],{type:'application/json'});
@@ -8493,6 +8821,16 @@ async function eraseRemote(){
       else if(rows.length) left.push(label);
     }catch(e){ left.push(label+' (no connection)'); }
   }
+  /* Last, once the data is gone: the sign-in account itself, through a
+     database function that only ever deletes the caller. If the function has
+     not been set up yet this says so, and the device is kept, the same as any
+     other refusal. (Review P0 05.) */
+  if(!left.length){
+    try{
+      const res=await fetch(base()+'/rest/v1/rpc/delete_my_account',{method:'POST',headers:authHeaders(),body:'{}'});
+      if(!res.ok) left.push('your sign-in account (the database is not set up to remove it yet)');
+    }catch(e){ left.push('your sign-in account (no connection)'); }
+  }
   return {done:!left.length,left};
 }
 function eraseLocal(){
@@ -8512,8 +8850,11 @@ function openData(){
     <div class="method"><b>What is never held</b><span>No advertising identifiers, no third party analytics, no location. The only thing that leaves this device on its own is the request that fetches the typeface.</span></div>
     <div class="method"><b>Take it with you</b><span>One file, plain JSON, everything in it. Readable in any text editor and not locked to this app.</span></div>
     <button class="sheetcta" id="dlData">Download everything</button>
+    <button class="sheetcta" id="restoreBtn" style="background:var(--grey-btn);color:var(--ink);margin-top:8px">Restore from a download</button>
+    <input type="file" id="restoreFile" accept="application/json,.json" style="display:none" aria-label="Choose a Gauntlet download">
+    <div class="note" id="restoreNote">${(()=>{ try{ return localStorage.getItem(RESTORE_BACKUP)? 'This phone was restored from a download. <button class="inlinebtn" id="restoreUndo">Undo the restore</button>' : 'For a new phone, or to go back to an earlier copy. It shows what is in the file before replacing anything.'; }catch(e){ return ''; } })()}</div>
     <div class="method" style="margin-top:14px"><b>Delete it all</b><span>${signed
-      ? 'Deletes your saved data, profile, feed posts and follows from the database, checks each one is really gone, then wipes this device and starts you again from the first screen. If the database refuses any of it, nothing is wiped here, so you can try again. Your sign-in itself stays; the person running the project can remove that.'
+      ? 'Deletes your saved data, profile, feed posts and follows from the database, checks each one is really gone, then wipes this device and starts you again from the first screen. Last, it removes your sign-in account itself. If the database refuses any of it, nothing is wiped here, so you can try again.'
       : 'Wipes this device and starts you again from the first screen.'} It cannot be undone, so take the download first if you want a copy.</span></div>
     <button class="sheetcta" id="wipeData" style="background:var(--oxblood)">Delete everything</button>
     <div class="note" id="wipeNote"></div>`;
@@ -8623,7 +8964,7 @@ renderProgress=function(){
     await loadRemote(); renderAll();
   }
 })();
-Object.assign(window.__G,{renderFeed,renderPeople,logSession,renderProgress,exportPayload,downloadData,eraseEverything,eraseRemote,eraseLocal,ERASE_TABLES,openData,cardHTML:typeof cardHTML==='function'?cardHTML:undefined});
+Object.assign(window.__G,{renderFeed,renderPeople,logSession,renderProgress,exportPayload,downloadData,eraseEverything,eraseRemote,eraseLocal,ERASE_TABLES,openData,stateFromExport,restoreSummary,applyRestore,undoRestore,RESTORE_BACKUP,cardHTML:typeof cardHTML==='function'?cardHTML:undefined});
 /* onboarding may already be on screen from the boot script above, and it rendered
    before this file existed, so give it the chance to recount its steps */
 (function(){ const onb=document.getElementById('onb');
@@ -8634,7 +8975,7 @@ window.__CLOUD={get C(){return C},set C(v){C=v}, CLOUD_CONFIG, cloudReady, setBu
   loadCloud,saveCloud,configured,signedIn,myId,base,authHeaders,sendMagicLink,readAuthHash,fetchUser,
   refreshSession,ensureSession,signOut,api,upsert,pushState,pullState,loadRemote,publishPost,recordTry,
   toggleRemoteFollow,ensureProfile,cloudStatus,renderCloudPanel,personFor,CLOUD_KEY,
-  exportPayload,downloadData,eraseEverything,eraseRemote,eraseLocal,ERASE_TABLES,openData};
+  exportPayload,downloadData,eraseEverything,eraseRemote,eraseLocal,ERASE_TABLES,openData,stateFromExport,restoreSummary,applyRestore,undoRestore,RESTORE_BACKUP};
 </script>
 
 <script>
@@ -9029,6 +9370,7 @@ Object.assign(window.__G||{},{figureSVG,openMove,MOVE_POSES,PATTERN_POSE,EX_POSE
       not make things up, and handing it to something that does would undo the
       lot. */
 const COACH_SYS = [
+'0. If the brief says the person is under 18, never suggest calorie targets, deficits, dieting, meal skipping, weight goals or weighing. Talk about moving, strength with good technique, sleep, eating regularly and how they feel, and point to Childline (1800 66 66 66) or Text About It (text HELLO to 50808) if they sound low.',
 'You are reading a training record produced by an app called Gauntlet, for the person who wrote it. Talk to them directly, as a coach would.',
 '',
 'What the app is: it builds one week of training at a time, rebuilds it from a weekly check in, forecasts bodyweight from calorie balance, and then scores its own forecasts against what happened and widens its own error bars when it gets things wrong. It shows its workings for every number. It does not count food for people and it does not pretend to certainty it has not got.',
@@ -9212,6 +9554,8 @@ function renderSettings(){
     ${setRow('steps','marine','Daily steps', num(stepTarget())+' a day')}
     ${setRow('habits','forest','Habits', habits.length? habits.join('<br>') : 'None yet. One to start, one to stop')}
     ${setRow('focus','burnt','Lifting focus', LIFT_FOCUS[liftFocus()].t+' · '+(()=>{ const r=LIFT_FOCUS[liftFocus()].rx.heavy; return 'big lifts '+r.repMin+' to '+r.reps+' reps'; })()+(S.profile.liftFocus?'':' (from your aim)'))}
+    ${(()=>{ const dir=goalDirection(); return dir==='hold'? '' :
+      setRow('pace','forest','Pace', paceOf().label+' · '+(dir==='lose'? (paceOf().lose*100)+'% of your weight a week' : (paceOf().gain*100)+'% a week')); })()}
     ${setRow('deload','marigold','Easy weeks', dl)}
     ${setRow('kit','grey','Kit you train with', kit)}
   </div>`;
@@ -9276,6 +9620,7 @@ document.addEventListener('click',e=>{
   else if(k==='habits') openHabitSheet();
   else if(k==='deload') openDeloadSheet();
   else if(k==='focus') openFocusSheet();
+  else if(k==='pace') openPaceSheet();
   else if(k==='kit') openKitSheet();
   else if(k==='cycle') openCycle();
   else if(k==='records') openYou();

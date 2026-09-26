@@ -39,5 +39,29 @@ create policy        "gauntlet delete own follows" on public.follows
 --   alter table public.posts add constraint posts_origin_post_fkey
 --     foreign key (origin_post) references public.posts(id) on delete set null;
 --
--- The person's sign-in account itself (auth.users) cannot be deleted from the
--- app with the public key. Remove it in Authentication, Users, if asked.
+-- The sign-in account itself is removed by delete_my_account() below; before
+-- build 40 it had to be removed by hand in Authentication, Users.
+
+-- ---------------------------------------------------------------------------
+-- Build 40: let a signed-in person delete their own sign-in account.
+-- "Delete everything" calls this last, after their data is gone, so the
+-- account itself does not linger. It can only ever delete the caller:
+-- auth.uid() is the person making the request, and nobody else.
+-- Safe to run more than once.
+
+create or replace function public.delete_my_account()
+returns void
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'not signed in';
+  end if;
+  delete from auth.users where id = auth.uid();
+end;
+$$;
+
+revoke all on function public.delete_my_account() from public, anon;
+grant execute on function public.delete_my_account() to authenticated;

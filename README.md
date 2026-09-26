@@ -34,7 +34,7 @@ TZ=America/Los_Angeles node test.js
 |---|---|
 | `regression.js` | Every fix made during the review, asserted individually. If a change here goes red, something that was broken and got fixed is broken again. |
 | `cta.js` | Two halves. A **static audit** that pulls every id and `data-` attribute written onto an interactive element and checks something in the source listens for it, plus that every `go()` names a real screen and every `openSheet()` names a real sheet. Then a **runtime sweep** that opens every screen and sheet and clicks every control in them. |
-| `uat.js` | Forty-one end-to-end journeys, each on a clean install. These assert the outcome the person came for, not the mechanism underneath. |
+| `uat.js` | Forty-five end-to-end journeys, each on a clean install. These assert the outcome the person came for, not the mechanism underneath. |
 
 | `sw.test.js` | Runs the real `sw.js` in a simulated service worker against a fake GitHub Pages: publish a new version, open the app, get it. Also offline, slow and failing networks, and that Supabase is never touched. |
 
@@ -83,6 +83,10 @@ TZ=America/Los_Angeles node test.js
 39. Rep ranges follow what you are training for, from onboarding to the last set
 40. One row per food per meal, with a counter, on a screen built for adding
 41. A weight panel you can read at a glance
+42. The third-party review's immediate items
+43. A version built for teenagers: habits, not weight
+44. Review quick wins: restore, sources, toasts, and rules of thumb said as such
+45. Supersets and giant sets, one PR per movement, and a red cross for short sets
 
 ## Things the tests cannot cover
 

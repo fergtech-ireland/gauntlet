@@ -2774,6 +2774,352 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('41 · it can be scrolled past on a phone without grabbing the page', /\.chart\.wchart\{[^}]*touch-action:pan-y/.test(require('fs').readFileSync(require('path').join(__dirname, 'index.html'), 'utf8')));
   }
 
+  /* ---------------------------------------------------------- 42 */
+  journey(42, 'The third-party review\'s immediate items (P0 01, 02, 04, 05, 06, 07)');
+  {
+    const { w, d, G, errs, source } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+
+    /* 01 · nothing saved that was not said */
+    G.openDay();
+    t('P0 01 · sleep starts unanswered', /not answered/.test(txt(d.getElementById('outsleep'))));
+    t('P0 01 · stress starts unanswered', /not answered/.test(txt(d.getElementById('outstress'))));
+    d.getElementById('saveDay').click();
+    const saved = S.days[G.todayKey()];
+    t('P0 01 · saving without touching them stores no sleep, stress or rating',
+      saved.sleep === undefined && saved.stress === undefined && saved.wb === undefined, JSON.stringify(saved));
+    G.openDay();
+    const sl = d.querySelector('[data-dayrange="sleep"]');
+    sl.value = '6.5'; sl.dispatchEvent(new w.Event('input', { bubbles: true }));
+    const st = d.querySelector('[data-dayrange="stress"]');
+    st.dispatchEvent(new w.Event('change', { bubbles: true }));
+    d.getElementById('saveDay').click();
+    t('P0 01 · an answer they give is kept', S.days[G.todayKey()].sleep === 6.5);
+    t('P0 01 · even one left at the starting position, once they tap it', S.days[G.todayKey()].stress === 5);
+
+    /* 02 · adults only */
+    const b2 = await boot(); allErrs.push(...b2.errs);
+    const type = (id, v) => { const el = b2.d.getElementById(id); el.value = String(v); el.dispatchEvent(new b2.w.Event('input', { bubbles: true })); };
+    b2.G.startOnboarding(); b2.G.onbDraft.aim = 'lose'; b2.G.step = 2; b2.G.onbRender();
+    b2.d.querySelector('[data-onbsex="m"]').click();
+    type('onbAge', 16); type('onbHeight', 175); type('onbWeight', 70); b2.G.onbRender();
+    t('P0 02 · a 16 year old is welcomed, with the teen version explained', /works a bit differently for you/.test(txt(b2.d.getElementById('onbBody'))));
+    t('P0 02 · and can carry on', !b2.d.getElementById('onbNext').disabled);
+    t('P0 02 · no calorie figures are shown to them', !/kcal a day to/.test(txt(b2.d.getElementById('onbBody'))));
+    type('onbAge', 12); b2.G.onbRender();
+    t('P0 02 · under 13 is not supported, and says so', /for people aged 13 and over/.test(txt(b2.d.getElementById('onbBody'))) && b2.d.getElementById('onbNext').disabled);
+    type('onbAge', 18); b2.G.onbRender();
+    t('P0 02 · at 18 it goes ahead', !b2.d.getElementById('onbNext').disabled && /kcal a day to stay/.test(txt(b2.d.getElementById('onbBody'))));
+    S.profile.age = 15; S.targets = G.ownTargets();
+    t('P0 02 · an existing profile under 18 gets no calorie or protein target', S.targets.kcal === null && S.targets.protein === null && S.targets.minor);
+    S.profile.age = 38; S.targets = G.ownTargets();
+
+    /* 04 · the copy matches the app */
+    t('P0 04 · no claim that food is never counted', !/does not count your food/.test(source));
+    t('P0 04 · no claim that habits stop at one to start and one to stop', !/One to start and one to stop, at most/.test(source));
+    G.openHabitSheet();
+    t('P0 04 · the habit sheet says up to three', /Up to three at once/.test(txt(d.getElementById('altSub'))));
+    G.closeSheets();
+
+    /* 06 · whose rule it is, and a choice of pace */
+    S.profile.aim = 'lose'; S.target = { kind: 'weight', value: 85, by: null, from: S.profile.weight };
+    S.targets = G.ownTargets();
+    const line = G.calorieLine(G.calorieTarget());
+    t('P0 06 · the calorie line says who the rate came from', /natural bodybuilders|clinical guidance for adults|common clinical minimum/.test(line), line);
+    const rush = (() => { const keep = S.target; S.target = { kind: 'weight', value: S.profile.weight - 10, by: G.addDays(G.todayKey(), 28), from: S.profile.weight };
+      const l = G.calorieLine(G.calorieTarget()); S.target = keep; return l; })();
+    t('P0 06 · a goal date that asks too much says where the limit comes from', /natural bodybuilders|clinical guidance for adults/.test(rush), rush);
+    t('P0 06 · the method sheet names every population', (() => { G.openHow(); const h = d.body.textContent; G.closeSheets();
+      return /natural bodybuilders preparing for competition/.test(h) && /overweight or obesity/.test(h) && /off-season/.test(h) && /adults aged 19 to 78/.test(h); })());
+    G.go('progress'); G.renderAll();
+    const paceRow = d.querySelector('[data-setting="pace"]');
+    t('P0 06 · there is a pace setting', !!paceRow && /Standard/.test(txt(paceRow)));
+    paceRow.click();
+    t('P0 06 · offering gentle, standard and faster, each explained', d.querySelectorAll('#altBody [data-pace]').length === 3
+      && /natural bodybuilders/.test(txt(d.getElementById('altSub'))));
+    const before = G.calorieTarget();
+    d.querySelector('[data-pace="gentle"]').click();
+    const after = G.calorieTarget();
+    t('P0 06 · gentle slows the loss and raises the calories', after.deficit <= before.deficit && after.kcal >= before.kcal, before.kcal + ' -> ' + after.kcal);
+    t('P0 06 · and the pace row shows the choice', /Gentle/.test(txt(d.querySelector('[data-setting="pace"]'))));
+    S.profile.pace = 'standard'; S.targets = G.ownTargets();
+
+    /* 07 · cautious, and asks */
+    t('P0 07 · no predictive injury wording', !/before something gives/.test(source));
+    t('P0 07 · the fatigue note asks how they feel and points pain to a professional',
+      /Your logs suggest more fatigue than usual\. How do you actually feel\?/.test(source) && /GP or physio/.test(source));
+
+    /* 05 · the sign-in account too */
+    const ME = '11111111-1111-1111-1111-111111111111';
+    const mk = rpcOk => { const calls = [];
+      return { calls, fetch: (url, init) => { const u = new URL(url), method = (init && init.method) || 'GET'; calls.push(method + ' ' + u.pathname);
+        if (/\/rpc\/delete_my_account$/.test(u.pathname)) return Promise.resolve({ ok: rpcOk, status: rpcOk ? 204 : 404, json: async () => ({}) });
+        return Promise.resolve({ ok: true, status: method === 'GET' ? 200 : 204, json: async () => [] }); } }; };
+    const signIn = w2 => w2.localStorage.setItem('gauntlet.cloud', JSON.stringify({ url: 'https://fake.supabase.co', key: 'anon', auto: false,
+      session: { access_token: 'tok', user_id: ME, email: 'x@y.z' } }));
+    const good = mk(true);
+    const A = await boot({ fetch: good.fetch, before: signIn }); allErrs.push(...A.errs); onboard(A.G);
+    const ra = await A.G.eraseEverything();
+    t('P0 05 · the sign-in account is deleted as the last step', ra.ok && good.calls[good.calls.length - 1] === 'POST /rest/v1/rpc/delete_my_account');
+    t('P0 05 · only after every data table is cleared', good.calls.indexOf('POST /rest/v1/rpc/delete_my_account') > good.calls.lastIndexOf('GET /rest/v1/state'));
+    const bad = mk(false);
+    const B = await boot({ fetch: bad.fetch, before: signIn }); allErrs.push(...B.errs); onboard(B.G);
+    const rb = await B.G.eraseEverything();
+    t('P0 05 · if the database cannot remove the account yet, it says so', !rb.ok && /sign-in account/.test(rb.left.join()));
+    t('P0 05 · and keeps the device, so they can try again', !!B.w.localStorage.getItem('gauntlet.cloud'));
+    t('P0 05 · the screen says the account is removed too', /removes your sign-in account itself/.test(source) && !/Your sign-in itself stays/.test(source));
+  }
+
+  /* ---------------------------------------------------------- 43 */
+  journey(43, 'A version built for teenagers: habits, not weight');
+  {
+    const { w, d, G, errs, source } = await boot(); allErrs.push(...errs);
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const type = (id, v) => { const el = d.getElementById(id); el.value = String(v); el.dispatchEvent(new w.Event('input', { bubbles: true })); };
+    G.startOnboarding(); G.onbDraft.aim = 'lose'; G.onbDraft.liftDays = 3; G.step = 2; G.onbRender();
+    type('onbAge', 15); G.onbRender();
+    const ob = txt(d.getElementById('onbBody'));
+    t('43 · a 15 year old is told how it works for them', /No calorie targets, no diets, no weight goals/.test(ob));
+    t('43 · and that picking fat loss becomes a fitness plan', /focus on getting fitter and feeling better instead/.test(ob));
+    t('43 · weight is optional', /Weight, kg \(optional\)/.test(ob));
+    t('43 · no goal weight is asked for', d.getElementById('onbGoal').closest('.nf').style.display === 'none');
+    t('43 · nor body fat', d.getElementById('onbBf').closest('.nf').style.display === 'none');
+    t('43 · they can carry on without sex, height or weight', !d.getElementById('onbNext').disabled);
+    Object.assign(G.onbDraft, { handle: 'teen', cardioDays: 2, checkinDay: 6, kit: G.ALL_KIT.slice() });
+    G.step = 5; G.onbRender();
+    t('43 · under 16, there is no account: everything stays on the phone', /Kept on this phone/.test(txt(d.getElementById('onbBody'))) && !d.getElementById('onbEmail'));
+    G.finishOnboarding();
+    const S = G.S;
+    t('43 · fat loss became a fitness aim', S.profile.aim === 'hold');
+    t('43 · no calorie, protein or maintenance target', S.targets.kcal === null && S.targets.protein === null && S.targets.maintenance === null && S.targets.teen);
+    t('43 · no weight goal', !S.target);
+
+    G.go('today'); G.renderAll();
+    const home = txt(d.getElementById('todayView'));
+    t('43 · home shows meals, sleep and steps, never calories', /meals? logged/.test(home) && /sleep/.test(home) && !/kcal/.test(home), home.slice(0, 160));
+    t('43 · no weigh in on the home screen', !d.querySelector('#todayView [data-glance="weigh"]'));
+    t("43 · Today's Check-in is one tap away instead", !!d.querySelector('.quicks [data-glance="checkin"]'));
+    G.openLog();
+    t('43 · no weigh in in the log sheet either', !d.querySelector('#logBody [data-log="weigh"]'));
+    G.closeSheets();
+    G.openFood(false);
+    d.querySelector('#foodList [data-foodadd="egg:1"]').click();
+    const food = txt(d.getElementById('foodBody'));
+    t('43 · the food screen shows no calories anywhere', !/kcal/.test(food), food.slice(0, 200));
+    t('43 · and no quick add of calories', !d.getElementById('foodQuickBtn'));
+    t('43 · food still logs normally', G.dayFood(G.todayKey()).length === 1);
+    G.closeSheets();
+
+    G.go('progress'); G.renderAll();
+    const you = txt(d.getElementById('s-progress'));
+    t('43 · the You screen has no weight chart', !d.querySelector('svg.wchart') && /Weight is not tracked while you are under 18/.test(you));
+    t('43 · and someone to talk to, with verified contacts', /Someone to talk to/.test(you) && /1800 66 66 66/.test(you) && /50808/.test(you));
+
+    t('43 · lifting is technique first', G.liftFocus() === 'youth');
+    G.startWorkout('t_push');
+    t('43 · two sets of eight to twelve on the big lifts', G.GYM.ex[0].sets.filter(s => !s.warm).length === 2);
+    t('43 · and the session says a coach checking form beats any weight', /coach or PE teacher checking your form/.test(txt(d.getElementById('gymBody'))));
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+
+    G.openDay();
+    t('43 · sleep in the check-in shows the aim for their age', /8 to 10 hours at your age/.test(txt(d.getElementById('dayBody'))));
+    const st = d.querySelector('[data-dayrange="stress"]');
+    st.value = '8'; st.dispatchEvent(new w.Event('input', { bubbles: true }));
+    G.drawDay && G.drawDay();
+    G.closeSheets(); S.days[G.todayKey()] = Object.assign({}, S.days[G.todayKey()], { stress: 8 }); G.openDay();
+    t('43 · a hard day brings support to the check-in', /That sounds like a hard day/.test(txt(d.getElementById('dayBody'))));
+    G.closeSheets();
+    t('43 · the coach is told never to suggest dieting to a teenager', /under 18, never suggest calorie targets, deficits, dieting/.test(source));
+    t('43 · and the method sheet explains all of it with sources', (() => { G.openHow(); const h = d.body.textContent; G.closeSheets();
+      return /If you are under 18/.test(h) && /Golden and colleagues, 2016/.test(h) && /World Health Organization/.test(h) && /8 to 10 hours/.test(h); })());
+
+    /* the adult experience is untouched */
+    S.profile.age = 38; S.profile.weight = 92; S.profile.height = 180; S.profile.sex = 'm'; S.profile.detailsSet = true;
+    S.targets = G.ownTargets();
+    t('43 · an adult still gets calorie targets', S.targets.kcal > 1200 && !S.targets.teen);
+    t('43 · and the adult lifting focus', G.liftFocus() !== 'youth');
+  }
+
+  /* ---------------------------------------------------------- 44 */
+  journey(44, 'Review quick wins: restore, sources, toasts, and rules of thumb said as such');
+  {
+    let reloads = 0;
+    const { w, d, G, errs, source } = await boot({ before: w2 => { w2.__reload = () => { reloads++; }; } }); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+
+    /* P2-04 · the download really is everything, and it restores */
+    G.startHabit('walk_after'); G.toggleHabitDay(G.todayKey(), 'start');
+    G.setTarget('weight', 85, G.addDays(G.todayKey(), 120)); S.target.from = S.profile.weight;
+    S.weights.push({ d: G.todayKey(), kg: 91.4 }); G.addFood('egg', 2, 'b'); S.profile.pace = 'gentle'; G.save();
+    const x = JSON.parse(JSON.stringify(G.exportPayload()));
+    t('P2-04 · the download now includes habits, the goal and every setting', !!x.state && !!x.state.habits && !!x.state.target && x.state.profile.pace === 'gentle');
+    const st = G.stateFromExport(x);
+    t('P2-04 · it reads back as a complete copy', JSON.stringify(st) === JSON.stringify(JSON.parse(JSON.stringify(S))));
+    t('P2-04 · with a plain summary of what is in it', /1 weigh in/.test(G.restoreSummary(st, x)) && /workout/.test(G.restoreSummary(st, x)), G.restoreSummary(st, x));
+    /* change this phone, then restore */
+    S.weights = []; S.habits = {}; S.profile.pace = 'faster'; G.save();
+    G.openData();
+    t('P2-04 · the data sheet offers a restore', !!d.getElementById('restoreBtn') && !!d.getElementById('restoreFile'));
+    G.closeSheets();
+    t('P2-04 · restoring replaces the data and reloads', G.applyRestore(st) && reloads === 1);
+    const again = await boot({ before: w2 => { for (const k of Object.keys(w.localStorage)) w2.localStorage.setItem(k, w.localStorage.getItem(k)); } });
+    allErrs.push(...again.errs);
+    const R = again.G.S;
+    t('P2-04 · after the restore the weigh ins are back', R.weights.some(p => p.kg === 91.4));
+    t('P2-04 · and the habit, with its tick', !!again.G.currentHabit('start') && again.G.habitWeek('start').slice(-1)[0].done);
+    t('P2-04 · and the goal and the pace', R.target && R.target.value === 85 && R.profile.pace === 'gentle');
+    t('P2-04 · and the food', again.G.dayFood(again.G.todayKey()).some(f => f.id === 'egg' && f.q === 2));
+    t('P2-04 · the data it replaced was kept, so it can be undone', !!w.localStorage.getItem(G.RESTORE_BACKUP));
+    again.G.openData();
+    t('P2-04 · and the data sheet offers the undo', !!again.d.getElementById('restoreUndo'));
+    again.G.closeSheets();
+    /* an older download, before the full copy was included */
+    const old = Object.assign({}, x); delete old.state;
+    const oldSt = G.stateFromExport(old);
+    t('P2-04 · an older download still restores its weigh ins, days and workouts',
+      oldSt.weights.length === x.weights.length && Object.keys(oldSt.days).length === Object.keys(x.days).length && Array.isArray(oldSt.workouts));
+    let refused = 0;
+    [null, {}, { app: 'Other' }, { app: 'Gauntlet', state: { weights: [] } }, { app: 'Gauntlet', state: { profile: {}, weights: 'x' } }]
+      .forEach(bad => { try { G.stateFromExport(bad); } catch (e) { refused++; } });
+    t('P2-04 · files that are not a Gauntlet download, or are damaged, are refused', refused === 5, refused + ' of 5');
+
+    /* P1-09 · where the figures come from */
+    G.addCustomFood({ id: 'cf_bread', n: "Mam's brown bread", u: 'slice', mine: true, kcal: 180, p: 6, c: 30, f: 2 });
+    G.addFood('cf_bread', 1, 'b');
+    G.openFood(false); d.querySelector('[data-foodslot="b"]').click();
+    const plate = txt(d.querySelector('.plate'));
+    t('P1-09 · a built in food says typical values', /typical values/.test(plate), plate.slice(0, 160));
+    t('P1-09 · your own food says it came from your label', /from your label/.test(plate));
+    G.quickAddFood(500, 20, 'b'); G.drawFood();
+    t('P1-09 · quick add says it is numbers you typed', /numbers you typed/.test(txt(d.querySelector('.plate'))));
+    t('P1-09 · the serving basis is shown beside it', /egg ·/.test(txt(d.querySelector('.plate'))));
+
+    /* P2-05 · toasts out of the way */
+    G.toast('Test');
+    t('P2-05 · with a sheet open, a message appears at the top, not over the sheet', d.getElementById('toast').classList.contains('top'));
+    G.closeSheets(); G.toast('Test');
+    t('P2-05 · otherwise at the bottom', !d.getElementById('toast').classList.contains('top'));
+    t('P2-05 · taps go through it, except for Undo', /\.toast\.on\{[^}]*pointer-events:none/.test(source) && /\.toast\.on button\{pointer-events:auto\}/.test(source));
+
+    /* P2-06 · the colour defined as itself */
+    t('P2-06 · the completed set border has a real colour in light mode', /--good-line:#[0-9a-f]{6};/.test(source) && !/--good-line:var\(--good-line\)/.test(source));
+
+    /* P1-14 and the evidence audit */
+    t('P1-14 · cycle context says it may not apply', /It may not apply to you/.test(source) && /irregular cycles, hormonal contraception/.test(source));
+    G.openHow(); const how = d.body.textContent; G.closeSheets();
+    t('evidence · the protein choices are called choices', /this app's choices within that evidence/.test(how));
+    t('evidence · easy weeks are a rule of thumb', /sensible rule of thumb, not a requirement/.test(how));
+    t('evidence · the easing off thresholds are prompts, not predictions', /not validated predictions of injury or burnout/.test(how));
+    t('evidence · step bands are descriptive, not health thresholds', /descriptive bands, not a health threshold/.test(source));
+  }
+
+  /* ---------------------------------------------------------- 45 */
+  journey(45, 'Supersets and giant sets, one PR per movement, and a red cross for short sets');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const L = () => [{ exId: 'a', rest: 60 }, { exId: 'b', rest: 90 }, { exId: 'c', rest: 120 }, { exId: 'd', rest: 60 }];
+
+    /* the rules */
+    let l = G.toggleLinkNext(L(), 0);
+    let gi = G.groupInfo(l);
+    t('45 · joining two makes a superset', gi[0] && gi[1] && gi[0].id === gi[1].id && gi[0].label === 'Superset' && !gi[2]);
+    l = G.toggleLinkNext(l, 1); gi = G.groupInfo(l);
+    t('45 · a third makes it a giant set', gi[2] && gi[2].id === gi[0].id && gi[0].label === 'Giant set' && gi[0].size === 3);
+    t('45 · labelled A1, A2, A3', gi[0].letter === 'A' && gi[1].pos === 2 && gi[2].pos === 3);
+    l = G.toggleLinkNext(l, 1); gi = G.groupInfo(l);
+    t('45 · splitting after the second leaves a superset and a single', gi[0] && gi[1] && !gi[2] && gi[0].label === 'Superset');
+    l = G.toggleLinkNext(L(), 0); l = G.toggleLinkNext(l, 2); gi = G.groupInfo(l);
+    t('45 · two separate groups are A and B', gi[0].letter === 'A' && gi[2].letter === 'B' && gi[0].id !== gi[2].id);
+    l = G.toggleLinkNext(L(), 0); const moved = [l[1], l[0], l[2], l[3]]; G.normaliseGroups(moved);
+    t('45 · swapping within a group keeps it', G.groupInfo(moved)[0] && G.groupInfo(moved)[1]);
+    const broke = [l[0], l[2], l[1], l[3]]; G.normaliseGroups(broke);
+    t('45 · moving one away breaks a pair, with no orphan group left', !G.groupInfo(broke)[0] && !G.groupInfo(broke)[2] && broke.every(x => !x.group));
+    t('45 · the rest after a group is the longest in it', G.groupRest(L().map((x, i) => i < 3 ? Object.assign(x, { group: 'g' }) : x), G.groupInfo(L().map((x, i) => i < 3 ? Object.assign(x, { group: 'g' }) : x))[0]) === 120);
+
+    /* the template editor */
+    const tid = S.templates[0].id;
+    G.openTplEdit(tid);
+    t('45 · the editor offers a superset button between movements', !!d.querySelector('[data-tpllink="0"]'));
+    d.querySelector('[data-tpllink="0"]').click();
+    t('45 · pressing it groups the pair and says so', /Superset A/.test(txt(d.getElementById('tplEditBody')))
+      && d.querySelector('[data-tpllink="0"]').textContent.trim() === 'Split');
+    d.querySelector('[data-tpllink="1"]').click();
+    t('45 · pressing the next one makes a giant set', /Giant set A/.test(txt(d.getElementById('tplEditBody'))));
+    d.getElementById('tplSave').click();
+    const saved = S.templates.find(x => x.id === tid).ex;
+    t('45 · the grouping is saved with the template', saved[0].group && saved[0].group === saved[1].group && saved[1].group === saved[2].group);
+    G.openTplEdit(tid); d.querySelector('[data-tpldel="1"]').click();
+    t('45 · removing a member tidies the group', G.groupInfo(G.tplDraft.ex)[0] && G.groupInfo(G.tplDraft.ex)[0].size === 2);
+    d.getElementById('toastAct').click();
+    t('45 · and Undo puts the giant set back', G.groupInfo(G.tplDraft.ex)[0].size === 3);
+    G.closeSheets();
+
+    /* the workout */
+    G.startWorkout(tid);
+    const body = () => txt(d.getElementById('gymBody'));
+    t('45 · the workout shows the giant set with badges', /Giant set A/.test(body()) && /A1/.test(body()) && /A3/.test(body()));
+    const tick = (i, j, kg, reps) => { const s = G.GYM.ex[i].sets[j]; s.kg = kg; s.reps = reps; d.querySelector('[data-done="' + i + ':' + j + '"]').click(); };
+    tick(0, 0, 40, 8);
+    t('45 · after A1 there is no rest, and it says what is next', !d.getElementById('restBar').classList.contains('on') && /Now A2/.test(txt(d.getElementById('toast'))));
+    tick(1, 0, 20, 10);
+    t('45 · nor after A2', !d.getElementById('restBar').classList.contains('on'));
+    tick(2, 0, 30, 10);
+    t('45 · after A3 the rest clock starts for the whole group', d.getElementById('restBar').classList.contains('on') && /Giant set A/.test(txt(d.getElementById('restBar'))));
+    /* the menu can split and join in the workout too */
+    G.openExMenu(0);
+    t('45 · the exercise menu can split it', /Split from/.test(txt(d.getElementById('exMenuBody'))));
+    d.querySelector('[data-exact="link:0"]').click();
+    t('45 · splitting A1 off leaves a superset of the other two', !G.groupInfo(G.GYM.ex)[0] && G.groupInfo(G.GYM.ex)[1] && G.groupInfo(G.GYM.ex)[1].label === 'Superset');
+    G.openExMenu(0); d.querySelector('[data-exact="link:0"]').click();
+    t('45 · and joining it back makes the giant set again', G.groupInfo(G.GYM.ex)[0] && G.groupInfo(G.GYM.ex)[0].size === 3);
+    t('45 · updating the template from the workout keeps the grouping', (() => { const r = G.gymToTemplateRows(); return r[0].group && r[0].group === r[2].group; })());
+    G.GYM = null; d.getElementById('gym').classList.remove('on'); G.closeSheets();
+
+    /* one PR per movement */
+    const bench = S.templates.find(x => x.ex.some(r => r.exId === 'bench')) || S.templates[0];
+    S.lifts.bench = [{ d: G.addDays(G.todayKey(), -7), sets: [{ kg: 60, reps: 8 }, { kg: 60, reps: 8 }] }];
+    G.startWorkout(bench.id);
+    const bi = G.GYM.ex.findIndex(e => e.exId === 'bench');
+    const E = G.GYM.ex[bi];
+    const work = E.sets.map((s, j) => j).filter(j => !E.sets[j].warm);
+    const range = G.repRangeFor({ reps: E.reps, repMin: E.repMin });
+    const set = (j, kg, reps) => { Object.assign(E.sets[j], { kg, reps, done: true }); };
+    set(work[0], 65, range.bottom); set(work[1], 65, range.bottom); if (work[2] !== undefined) set(work[2], 65, range.bottom);
+    G.drawGym();
+    const golds = () => d.querySelectorAll('.exc[data-ex="' + bi + '"] .setline.ispr').length;
+    t('45 · three sets at a new best weight show one gold PR, not three', golds() === 1, String(golds()));
+    t('45 · on the first set that earned it', G.prIndex(E) === work[0]);
+    set(work[1], 67.5, range.bottom); G.drawGym();
+    t('45 · a heavier later set takes the one PR', golds() === 1 && G.prIndex(E) === work[1]);
+
+    /* the red cross */
+    set(work[0], 60, range.bottom - 2); G.drawGym();
+    const firstLine = d.querySelectorAll('.exc[data-ex="' + bi + '"] .setline')[work[0]];
+    t('45 · a set short of the minimum reps shows a red cross', firstLine.classList.contains('short') && /M6 6l12 12/.test(firstLine.innerHTML));
+    t('45 · and says so to a screen reader', /Short of the target reps/.test(firstLine.querySelector('.tick').getAttribute('aria-label')));
+    set(work[1], 80, range.bottom - 1); G.drawGym();
+    t('45 · a heavy set that falls short is never the PR', G.prIndex(E) !== work[1] && d.querySelectorAll('.exc[data-ex="' + bi + '"] .setline')[work[1]].classList.contains('short'));
+    set(work[1], 67.5, range.bottom); G.drawGym();
+    t('45 · hitting the minimum exactly is not short', !d.querySelectorAll('.exc[data-ex="' + bi + '"] .setline')[work[1]].classList.contains('short'));
+    E.sets.forEach(s => { if (s.warm) { s.done = true; s.reps = 1; } }); G.drawGym();
+    t('45 · warm up sets never get a cross', !d.querySelector('.exc[data-ex="' + bi + '"] .setline.warm.short'));
+    /* numbers fit their boxes (found by looking at it in a real browser: 62.5 read as "62.") */
+    const css = require('fs').readFileSync(require('path').join(__dirname, 'index.html'), 'utf8');
+    t('45 · the browser\'s own number arrows no longer take room from the weight',
+      /\.stepper input::-webkit-inner-spin-button\{-webkit-appearance:none/.test(css) && /\.stepper input\{[^}]*appearance:textfield/.test(css));
+    t('45 · each number is fitted to its box, on drawing, typing and tapping plus', typeof G.fitNumbers === 'function'
+      && /fitNumbers\(\$\('gymBody'\)\)/.test(css) && /fitNumbers\(box\.closest\('\.stepper'\)\)/.test(css));
+    t('45 · small phones get narrower plus and minus buttons', /@media \(max-width:340px\)\{ \.stepper\{grid-template-columns:28px/.test(css));
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+  }
+
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);
 })();

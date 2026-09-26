@@ -8,7 +8,7 @@ const { spawn } = require('child_process');
 const SUITES = [
   ['regression', 'regression.js', 'Every fix made, asserted individually'],
   ['cta',        'cta.js',        'Every control audited statically and clicked'],
-  ['uat',        'uat.js',        'Thirty-seven end to end journeys on clean installs'],
+  ['uat',        'uat.js',        'Forty-one end to end journeys on clean installs'],
   ['sw',         'sw.test.js',    'The service worker, against a simulated GitHub Pages']
 ];
 

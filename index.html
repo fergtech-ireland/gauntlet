@@ -110,8 +110,67 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .why{font-size:12.5px;color:var(--warm-ink);background:var(--warm-tint);border-radius:8px;padding:10px 12px;margin-bottom:14px}
 .why b{font-weight:700}
 .foodsearch{position:sticky;top:0;z-index:3;background:var(--paper);padding:8px 0 10px;margin:0 0 2px}
-.foodsearch input{width:100%}
+.foodsearch input{width:100%;min-height:48px;border:1px solid var(--line);border-radius:12px;padding:0 14px;
+  font:inherit;font-size:15px;font-weight:600;background:var(--grey-btn);color:var(--ink);outline:none}
+.foodsearch input:focus{background:var(--paper);border-color:var(--ink)}
+.fhead{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 6px;font-size:12.5px;color:var(--mute);font-weight:600}
+.fhead b{font-family:"Archivo Black",Archivo,sans-serif;font-size:20px;letter-spacing:-.03em;color:var(--ink)}
+.mealtabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--grey-btn);border-radius:12px;padding:4px;margin:0 0 4px}
+.mealtabs button{min-height:48px;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.mealtabs button span{font-size:12.5px;font-weight:700;color:var(--mute)}
+.mealtabs button small{font-size:10px;font-weight:600;color:var(--mute)}
+.mealtabs button.on{background:var(--paper);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.mealtabs button.on span{color:var(--ink)}
+.plate{border:1px solid var(--line);border-radius:12px;padding:10px 12px 12px;margin:0 0 12px}
+.platehead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px}
+.platehead b{font-size:14px}.platehead span{font-size:12px;color:var(--mute);font-weight:600}
+.shortcuts{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.quickadd{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-top:10px}
+.quickadd .mini{min-height:44px}
+.fadd{min-width:44px;min-height:44px;border-radius:12px;background:var(--ink);color:var(--on-ink);font-size:22px;font-weight:700;line-height:1;flex:0 0 auto}
+.fadd.half{background:var(--grey-btn);color:var(--ink);font-size:15px;margin-right:6px}
+.fadd.rm{background:var(--grey-btn);color:var(--oxblood)}
+.fstep{display:flex;align-items:center;gap:2px;background:var(--grey-btn);border-radius:12px;padding:2px;flex:0 0 auto}
+.fstep button{min-width:40px;min-height:40px;border-radius:10px;font-size:20px;font-weight:700;color:var(--ink)}
+.fstep .fq{min-width:28px;text-align:center;font-family:"Archivo Black",Archivo,sans-serif;font-size:16px}
+.frow.onplate .t{font-weight:700}
+.fdone{position:sticky;bottom:0;background:var(--paper);padding-top:6px}
 .keyboard-open .foodsearch{box-shadow:0 6px 12px -8px rgba(0,0,0,.25)}
+.whead{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:2px 0 10px;min-height:52px}
+.wbig{display:flex;align-items:baseline;gap:6px}
+.wbig b{font-family:"Archivo Black",Archivo,sans-serif;font-size:34px;letter-spacing:-.04em;line-height:1}
+.wbig span{font-size:13px;font-weight:700;color:var(--mute);white-space:nowrap}
+.wstats{display:flex;flex-direction:column;align-items:flex-end;gap:3px;text-align:right;min-width:0}
+.wpill{font-size:12.5px;font-weight:700;padding:4px 9px;border-radius:999px;background:var(--grey-btn);white-space:nowrap}
+.wpill.down{background:var(--t-forest);color:var(--forest)}
+.wpill.up{background:var(--t-burnt,var(--grey-btn));color:var(--burnt)}
+.wsub{font-size:11.5px;color:var(--mute);font-weight:600;white-space:nowrap}
+.wranges{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--grey-btn);border-radius:10px;padding:3px;margin:0 0 10px}
+.wranges button{min-height:36px;border-radius:8px;font-size:12.5px;font-weight:700;color:var(--mute)}
+.wranges button.on{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.chart.wchart{width:100%;height:auto;aspect-ratio:360/236;display:block;touch-action:pan-y;margin:0}
+.wchart .wgrid{stroke:var(--line-soft);stroke-width:1}
+.wchart .wlab{font-family:Archivo,sans-serif;font-size:11px;font-weight:600;fill:var(--mute)}
+.wchart .wlab.strong{fill:var(--ink);font-weight:700}
+.wchart .wlab.goal{fill:var(--forest);font-weight:700}
+.wchart .wlab.fc{fill:var(--burnt-ink,var(--burnt));font-weight:700}
+.wchart .wtoday{stroke:var(--line);stroke-width:1;stroke-dasharray:3 3}
+.wchart .wgoal{stroke:var(--forest);stroke-width:1.5;stroke-dasharray:5 4}
+.wchart .wband{fill:var(--marigold);opacity:.18}
+.wchart .wfc{stroke:var(--marigold);stroke-width:2.2;stroke-dasharray:5 4;fill:none;stroke-linecap:round}
+.wchart .wfcdot{fill:var(--marigold)}
+.wchart .raw{fill:var(--mute);opacity:.45}
+.wchart .wtrend{fill:none;stroke:var(--marine);stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.wchart .wnow{fill:var(--marine);stroke:var(--paper);stroke-width:2}
+.wchart .wcursor{stroke:var(--ink);stroke-width:1}
+.wkey{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0 8px;font-size:11.5px;font-weight:700;color:var(--mute)}
+.wkey span{display:flex;align-items:center;gap:6px}
+.wkey i{display:inline-block}
+.wkey .k-dot{width:7px;height:7px;border-radius:50%;background:var(--mute);opacity:.6}
+.wkey .k-line{width:16px;height:3px;border-radius:2px;background:var(--marine)}
+.wkey .k-fc{width:16px;height:0;border-top:2.5px dashed var(--marigold)}
+.wkey .k-goal{width:16px;height:0;border-top:2px dashed var(--forest)}
+.wsentence{margin:4px 0 0}
 .chartempty{border:1px dashed var(--line);border-radius:12px;padding:16px 14px;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
 .chartempty .ce-h{font-size:15px;font-weight:700}
 .chartempty .ce-s{font-size:12.5px;color:var(--mute);line-height:1.45}
@@ -122,6 +181,21 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
   font:inherit;font-family:"Archivo Black",Archivo,sans-serif;font-size:26px;letter-spacing:-.04em;
   text-align:center;background:var(--paper);color:var(--ink)}
 .qstep{min-width:52px;min-height:56px;border-radius:12px;background:var(--grey-btn);font-weight:700;font-size:15px}
+.mealstrip{display:flex;gap:8px;overflow-x:auto;padding:0 14px 8px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+.mealstrip::-webkit-scrollbar{display:none}
+.meal{flex:0 0 auto;min-width:104px;min-height:92px;scroll-snap-align:start;border-radius:12px;background:var(--paper);
+  border:1px solid var(--line);padding:10px 10px 9px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left}
+.meal .mt{font-size:11px;font-weight:700;color:var(--mute);letter-spacing:.02em}
+.meal .mn{font-size:13.5px;font-weight:700;color:var(--ink)}
+.meal .mp{font-family:"Archivo Black",Archivo,sans-serif;font-size:17px;letter-spacing:-.03em;margin-top:auto}
+.meal .mp small{font-family:Archivo,sans-serif;font-size:11px;font-weight:700;color:var(--mute);letter-spacing:0}
+.meal .mbar{display:block;width:100%;height:4px;border-radius:3px;background:var(--line-soft);overflow:hidden;margin-top:4px}
+.meal .mbar b{display:block;height:100%;background:var(--marine-bg)}
+.meal.next{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink) inset}
+.meal.some .mbar b{background:var(--burnt)}
+.meal.done{background:var(--t-forest);border-color:transparent}
+.meal.done .mbar b{background:var(--forest)}
+.meal.opt{opacity:.8;border-style:dashed}
 .glances{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 10px}
 .glance{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:11px 10px;text-align:left;min-height:88px;display:flex;flex-direction:column;gap:3px}
 .glance .gv{font-family:"Archivo Black",Archivo,sans-serif;font-size:22px;letter-spacing:-.04em;line-height:1}
@@ -131,7 +205,7 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .glance.over .gv{color:var(--burnt)}
 .glance.over.past .gv{color:var(--oxblood)}
 .glance .gs{font-size:10.5px;color:var(--mute);font-weight:600;margin-top:auto}
-.quicks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 14px}
+.quicks{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:0 14px 14px}
 .quick{min-height:46px;border-radius:12px;background:var(--grey-btn);display:flex;flex-direction:column;justify-content:center;gap:1px;padding:0 10px;text-align:left}
 .quick .ql{font-size:13px;font-weight:700}
 .quick .qs{font-size:10.5px;color:var(--mute);font-weight:600}
@@ -644,6 +718,13 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
   margin:0 14px 10px;min-height:48px;padding:0 14px;border-radius:12px;border:1px dashed var(--line);
   font-size:13.5px;font-weight:700;color:var(--marine)}
 .addhabit span{font-size:11.5px;font-weight:700;color:var(--mute)}
+.focusnote{display:flex;flex-direction:column;gap:3px;padding:11px 12px;border-radius:10px;background:var(--t-burnt);margin:10px 0}
+.focusnote b{font-size:13px}
+.focusnote span{font-size:12px;color:var(--burnt-ink);line-height:1.45}
+.gymfocus{margin:10px 14px 4px}
+.recline{font-size:11.5px;color:var(--burnt-ink);font-weight:600;margin:0 0 6px}
+.recline.ok{color:var(--forest)}
+.habitopen{text-align:left;flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;min-height:44px;background:none;border:0;padding:0;color:inherit;font:inherit}
 .habitdots{display:flex;gap:5px;margin-top:7px}
 .habitdots i{width:9px;height:9px;border-radius:50%;background:var(--line);display:block}
 .habitdots i.on{background:var(--forest)}
@@ -890,7 +971,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 </div>
 
 <div class="sheet" id="dayCheck" role="dialog" aria-modal="true" tabindex="-1">
-  <div class="grab"></div><h3>Today</h3>
+  <div class="grab"></div><h3>Today's Check-in</h3>
   <p class="sub">Twenty seconds. Skip anything you do not know.</p>
   <div id="dayBody" style="padding:0 14px"></div>
   <button class="sheetcta" id="saveDay">Save today</button>
@@ -1054,7 +1135,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='34';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='39';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -1220,6 +1301,7 @@ function suggestHabit(){
 const AIMS=[
   {id:'lose',   t:'Lose fat',     s:'Move often, eat a bit less'},
   {id:'build',  t:'Build muscle', s:'Lift, and lift heavier'},
+  {id:'strong', t:'Get stronger', s:'Heavier weights, fewer reps'},
   {id:'endure', t:'Run further',  s:'Miles in the legs'},
   {id:'hold',   t:'Hold steady',  s:'Keep the habit ticking over'},
   {id:'eat',    t:'Eat better',   s:'Cook more than you order'}
@@ -1977,11 +2059,11 @@ function slotFor(code){
   return {slot:code, templateId:code, label:(t?t.name:'Lift')+' day', sub:t? t.ex.length+' movements':'Lift',
     mins:50, kind:'workout', type:'workout', exclude:[], setDelta:0};
 }
-const AIM_DEFAULTS={lose:{lift:3,cardio:2},build:{lift:4,cardio:1},endure:{lift:1,cardio:4},
+const AIM_DEFAULTS={lose:{lift:3,cardio:2},build:{lift:4,cardio:1},strong:{lift:4,cardio:1},endure:{lift:1,cardio:4},
   hold:{lift:3,cardio:1},eat:{lift:2,cardio:1}};
 const LIFT_ORDER=['t_push','t_lower','t_pull'];
 const CARDIO_BY_AIM={endure:['r_easy','r_intervals','r_easy','r_long'],
-  lose:['r_easy','walk','r_easy','walk'], build:['walk','r_easy','walk','r_easy'],
+  lose:['r_easy','walk','r_easy','walk'], build:['walk','r_easy','walk','r_easy'], strong:['walk','r_easy','walk','r_easy'],
   hold:['r_easy','walk','r_easy','walk'], eat:['walk','r_easy','walk','r_easy']};
 function dayCounts(){
   const p=S.profile, d=AIM_DEFAULTS[p.aim]||AIM_DEFAULTS.lose;
@@ -2417,8 +2499,8 @@ function habitRowFor(slot){
   const label= today.off? 'Not one of its days' : (today.done? 'Undo today' : (stop? 'Mark today: went without' : 'Mark today done'));
   return `<div class="todo habit ${stop?'stop':''} ${today.done?'done':''}">
     <span class="ic" style="background:${stop?'var(--t-oxblood)':'var(--t-forest)'};color:${stop?'var(--oxblood)':'var(--forest)'}">${stop?'×':(streak||'1')}</span>
-    <span class="t"><b>${stop?'Stop: ':''}${escHabit(meta.t)}</b><span>${line}</span>
-      <span class="habitdots">${week.map(d=>`<i class="${d.done?'on':''} ${d.before?'pre':''} ${d.today?'now':''} ${d.off?'off':''}"></i>`).join('')}</span></span>
+    <button class="t habitopen" data-habitopen="${slot}" aria-label="${escHabit(meta.t)}: see it, untick it or remove it"><b>${stop?'Stop: ':''}${escHabit(meta.t)}</b><span>${line}</span>
+      <span class="habitdots">${week.map(d=>`<i class="${d.done?'on':''} ${d.before?'pre':''} ${d.today?'now':''} ${d.off?'off':''}"></i>`).join('')}</span></button>
     <button class="tick habittick" data-habittoggle="${slot}" aria-label="${label}"${today.off?' disabled':''}>${today.done?'✓':''}</button>
   </div>`;
 }
@@ -2499,7 +2581,7 @@ function logRow(){
   return `<div class="quicks">
     ${btn('food','Log food', meals? meals+' in':'', meals>0)}
     ${btn('weigh','Weigh in', weighed? showW(S.weights[S.weights.length-1].kg,S.profile.units==='imperial') : '', weighed)}
-    ${btn('day','Rate today', logged.wb? logged.wb+'/10':'', !!logged.wb)}
+
   </div>`;
 }
 /* How the week is actually going, in one honest sentence. */
@@ -2649,13 +2731,96 @@ function nextEating(){
   const next=plan.items.find(i=>hhmmToMin(i.time)>=now);
   return {plan,next};
 }
+/* ---------- meals, where they are logged ----------
+   The evidence ranks this clearly, and the screen should too. What matters
+   most is total protein for the day. After that, spreading it helps: about
+   0.4 g per kg of bodyweight a meal, across at least four meals (Schoenfeld and
+   Aragon, 2018), with modest differences once the total is matched. Timing
+   does not change energy balance, so it never touches the calorie maths.
+   So this is not a card to read. It is the day's meals as a row you log into:
+   each one shows its time, what you have eaten against the per-meal mark, and
+   one tap opens the food list for that meal. Nothing extra is asked of anyone:
+   every food entry already records when it was logged, and that is all this
+   needs. */
+function perMealProtein(){
+  const p=S.profile||{};
+  if(!p.weight) return null;
+  return Math.round(0.4*proteinBasis(p).kg);
+}
+const MEAL_NAMES={breakfast:'Breakfast',lunch:'Lunch',last:'Dinner',pre:'Before training',post:'After training',presleep:'Before bed'};
+const mealName=tag=>MEAL_NAMES[tag]||'Snack';
+const mealLetter=tag=>tag==='breakfast'?'b':(tag==='lunch'?'l':(tag==='last'?'d':'s'));
+/* The day's planned meals, with what was actually eaten placed against the
+   nearest one by the time it was logged. */
+function mealSlots(k){
+  k=k||todayKey();
+  const plan=eatingPlan();
+  const slots=plan.items.filter(i=>!['train','coffee'].includes(i.tag))
+    .map(i=>({tag:i.tag,time:i.time,min:hhmmToMin(i.time),p:0,kcal:0,n:0,optional:i.tag==='presleep'}));
+  if(!slots.length) return {slots,per:perMealProtein()};
+  dayFood(k).forEach(f=>{
+    /* The meal they chose wins: lunch logged at four o'clock is still lunch.
+       Only snacks are placed by the time they were logged. */
+    const want=f.meal==='b'?'breakfast':(f.meal==='l'?'lunch':(f.meal==='d'?'last':null));
+    let best=want&&slots.find(x=>x.tag===want);
+    if(!best){
+      /* no slot of that name today (a training meal took its place): fall back to the clock */
+      let t;
+      if(f.at){ const d=new Date(f.at); t=d.getHours()*60+d.getMinutes(); }
+      else t=slots[0].min;
+      const pool=want? slots : (slots.filter(x=>!['breakfast','lunch','last'].includes(x.tag)).length? slots.filter(x=>!['breakfast','lunch','last'].includes(x.tag)) : slots);
+      let gap=1e9; best=pool[0];
+      pool.forEach(x=>{ const g=Math.min(Math.abs(x.min-t),1440-Math.abs(x.min-t)); if(g<gap){gap=g;best=x;} });
+    }
+    best.p+=(+f.p||0)*(+f.q||1); best.kcal+=(+f.kcal||0)*(+f.q||1); best.n++;
+  });
+  return {slots,per:perMealProtein()};
+}
 function eatingRow(){
   if(!(S.targets&&S.targets.protein)) return '';
-  const {plan,next}=nextEating();
-  const line=next? `${next.time} · ${next.what}` : 'That is the day. Nothing else due.';
-  return `<button class="eatrow" id="eatBtn">
-    <span class="t"><b>Eating around today</b><span>${line}</span></span>
-    <span class="chev">›</span></button>`;
+  const {slots,per}=mealSlots();
+  if(!slots.length) return '';
+  const now=new Date().getHours()*60+new Date().getMinutes();
+  const nextI=slots.findIndex(s=>s.min>=now&&!s.n);
+  const eaten=Math.round(foodTotals(todayKey()).protein||0), target=+S.targets.protein||0;
+  const counted=slots.filter(s=>!s.optional);
+  const hit=counted.filter(s=>per&&s.p>=per).length;
+  const chip=(s,i)=>{
+    const pct=per? Math.min(100,Math.round(s.p/per*100)) : 0;
+    const done=per&&s.p>=per, some=s.n>0;
+    return `<button class="meal ${done?'done':''} ${some&&!done?'some':''} ${i===nextI?'next':''} ${s.optional?'opt':''}"
+      data-mealslot="${mealLetter(s.tag)}" aria-label="${mealName(s.tag)} at ${s.time}: ${Math.round(s.p)} of ${per} grams protein. Tap to log.">
+      <span class="mt">${s.time}</span><span class="mn">${mealName(s.tag)}</span>
+      <span class="mp">${some? Math.round(s.p)+'g' : (s.optional?'if hungry':'–')}<small>/${per}g</small></span>
+      <i class="mbar"><b style="width:${pct}%"></b></i></button>`;
+  };
+  return `<div class="sechead"><h2>Today's meals</h2><button id="eatBtn">Why these times</button></div>
+    <div class="mealstrip">${slots.map(chip).join('')}</div>
+    <div class="note" style="margin:0 14px 12px">${eaten} of ${target}g protein today, which matters most. ${hit} of ${counted.length} meals at ${per}g, which helps on top.</div>`;
+}
+/* The week, for the check in and the coach: how many meals reached the mark,
+   and how long before bed the last food came. */
+function timingStats(days){
+  days=days||7;
+  const per=perMealProtein(), bed=hhmmToMin((S.profile&&S.profile.bedtime)||EAT_CLOCK.bed);
+  let meals=0, hits=0, gaps=[], logged=0;
+  for(let i=0;i<days;i++){
+    const k=addDays(todayKey(),-i), food=dayFood(k).filter(f=>f.at);
+    if(!food.length) continue;
+    logged++;
+    /* group entries logged within 45 minutes of each other into one meal */
+    const times=food.map(f=>({t:f.at,p:(+f.p||0)*(+f.q||1)})).sort((a,b)=>a.t-b.t);
+    const groups=[];
+    times.forEach(x=>{ const g=groups[groups.length-1];
+      if(g&&x.t-g.end<=45*60e3){ g.p+=x.p; g.end=x.t; } else groups.push({start:x.t,end:x.t,p:x.p}); });
+    meals+=groups.length; hits+=groups.filter(g=>per&&g.p>=per).length;
+    const last=new Date(groups[groups.length-1].end), lm=last.getHours()*60+last.getMinutes();
+    gaps.push(((bed-lm)+1440)%1440);
+  }
+  if(!logged) return null;
+  return {days:logged, meals, hits, per,
+    mealsPerDay:+(meals/logged).toFixed(1),
+    lastBeforeBedH: gaps.length? +(gaps.reduce((a,b)=>a+b,0)/gaps.length/60).toFixed(1) : null};
 }
 function openEating(){
   const plan=eatingPlan();
@@ -2689,6 +2854,8 @@ function openEatTimes(){
 }
 document.addEventListener('click',e=>{
   if(e.target.closest('#eatBtn')) openEating();
+  const ms=e.target.closest('[data-mealslot]');
+  if(ms){ openFood(false); foodSlot=ms.dataset.mealslot; drawFood(); return; }
   if(e.target.closest('#eatTimes')) openEatTimes();
   if(e.target.closest('#eatBack')) openEating();
 });
@@ -2726,6 +2893,7 @@ function renderToday(){
   </div>
   ${glanceRow()}
   ${logRow()}
+  ${eatingRow()}
   <div class="sechead"><h2>Your week so far</h2><button data-go="plan">The whole week</button></div>
   <div class="weekstrip">${plan.days.map((x,n)=>`<button data-planday="${n}" class="${n===i?'today':''} ${n<i?'past':''}">
       <span class="d">${DAYS[n][0]}</span>
@@ -2738,7 +2906,7 @@ function renderToday(){
     <span class="tick">${weighedToday?'✓':''}</span></button>
   <button class="todo ${logged&&logged.wb?'done':''}" id="todoDay">
     <span class="ic" style="background:var(--t-burnt);color:var(--burnt)">✎</span>
-    <span class="t"><b>How did today go?</b><span>${logged&&logged.wb? 'you said '+logged.wb+' out of 10' : 'one slider, and food if you track it'}</span></span>
+    <span class="t"><b>Today's Check-in</b><span>${logged&&logged.wb? 'you said '+logged.wb+' out of 10' : 'one slider, and food if you track it'}</span></span>
     <span class="tick">${logged&&logged.wb?'✓':''}</span></button>
   ${healthOn()
     ? `<div class="todo auto"><span class="ic" style="background:var(--t-marine);color:var(--marine)">⌚</span>
@@ -2747,7 +2915,6 @@ function renderToday(){
     : `<button class="todo" id="connectBtn"><span class="ic" style="background:var(--t-marine);color:var(--marine)">⌚</span>
         <span class="t"><b>Connect your watch or phone</b><span>Steps and sleep fill themselves in. You never log them.</span></span>
         <span class="chev">›</span></button>`}
-  ${eatingRow()}
   ${activeHabits().map(h=>habitRowFor(h.slot)).join('')||habitRow()}
   ${habitCount()&&habitRoom()? `<button class="addhabit" data-habitadd="1">Add another habit<span>${habitCount()} of ${HABIT_MAX}</span></button>`:''}
   ${checkinRow()}
@@ -2779,7 +2946,7 @@ const QUICK={
     unit:' steps',steps:[-1000,-500,500,1000],
     get:()=>{ const s=(typeof stepsToday==='function')? stepsToday() : null; return s===null? 0 : s; },
     set:v=>{ const k=todayKey(); S.days[k]=Object.assign({},S.days[k],{steps:v}); }},
-  day:{title:'How did today go?',sub:'One number, out of ten. Everything else about the day is in the full log.',
+  day:{title:"Today's Check-in",sub:'One number, out of ten. Everything else about the day is in the full log.',
     unit:'/10',min:1,max:10,steps:[-1,1],
     get:()=>{ const d=S.days[todayKey()]; return (d&&d.wb)||6; },
     set:v=>{ const k=todayKey(); S.days[k]=Object.assign({},S.days[k],{wb:Math.max(1,Math.min(10,v))}); }}
@@ -3319,6 +3486,11 @@ document.addEventListener('click',e=>{
   if(e.target.closest('[data-habitadd]')){ openHabitSheet(); return; }
   const hp=e.target.closest('[data-habitpick]');
   if(hp&&!e.target.closest('#habitSheet')){ openHabitSheet(); return; }
+  if(e.target.closest('#altBody [data-habittoggle]')){
+    const slot=e.target.closest('[data-habittoggle]').dataset.habittoggle;
+    const was=habitWeek(slot).slice(-1)[0].done;
+    toggleHabitDay(todayKey(),slot); closeSheets(); renderAll();
+    toast(was? 'Unticked' : 'Ticked'); return; }
   const ht=e.target.closest('[data-habittoggle]');
   if(ht){
     const slot=ht.dataset.habittoggle==='stop'? 'stop' : 'start';
@@ -3345,9 +3517,21 @@ document.addEventListener('click',e=>{
     startHabit(r.habit.id); closeSheets(); renderAll();
     toast((kind==='stop'? 'Stop: ' : '')+r.habit.t+(kind==='stop'? '. One day at a time.' : '. One thing.'),'Undo',()=>{ S.habits=beforeH; save(); renderAll(); });
     return; }
+  const trec=e.target.closest('[data-tplrec]');
+  if(trec&&tplDraft){ const i=+trec.dataset.tplrec, r=tplDraft.ex[i];
+    const before=Object.assign({},r); Object.assign(r,recommendedFor(r.exId)); drawTplEdit();
+    toast('Set to the recommendation','Undo',()=>{ Object.assign(tplDraft.ex[i],before); drawTplEdit(); }); return; }
+  if(e.target.closest('#tplRecAll')&&tplDraft){
+    const before=JSON.parse(JSON.stringify(tplDraft.ex));
+    tplDraft.ex.forEach(r=>Object.assign(r,recommendedFor(r.exId))); drawTplEdit();
+    toast('All set to the recommendation','Undo',()=>{ tplDraft.ex=before; drawTplEdit(); }); return; }
+  const hopen=e.target.closest('[data-habitopen]');
+  if(hopen){ openHabitOne(hopen.dataset.habitopen); return; }
   const hr=e.target.closest('[data-habitretire]');
   if(hr){
-    const slot=hr.dataset.habitretire==='stop'? 'stop' : 'start';
+    /* any slot, not just the first two: the third habit could never be
+       removed because everything that was not "stop" was treated as "start" */
+    const slot=HABIT_SLOTS.indexOf(hr.dataset.habitretire)>=0? hr.dataset.habitretire : 'start';
     const cur=currentHabit(slot), meta=cur? habitOf(cur.id) : null;
     const snapshot=JSON.parse(JSON.stringify(habitSlots()));
     retireHabit(slot); closeSheets(); renderAll();
@@ -3461,7 +3645,7 @@ function openLog(){
     <div class="logtiles">
       ${d&&d.type&&d.slot!=='walk'? tile('today',(dayDone(dowIdx())?'Do it again':'Start '+dayLabel(d)),daySub(d),(HUE[d.kind]||HUE.any).deep,dayDone(dowIdx())):''}
       ${tile('weigh',weighed?'Weigh in again':'Weigh in',weighed? S.weights[S.weights.length-1].kg+' kg today':'Five seconds','var(--forest)',weighed)}
-      ${tile('day','How today went',logged&&logged.wb? 'You said '+logged.wb+' out of 10':'A slider and a line','var(--marine)',!!(logged&&logged.wb))}
+      ${tile('day',"Today's Check-in",logged&&logged.checkedIn? 'Done for today' : 'Twenty seconds','var(--marine)',!!(logged&&logged.checkedIn))}
       ${tile('week','Weekly check in',checkinDone()?'Done for this week':'Next week is built from it','var(--marigold)',checkinDone())}
       ${tile('templates','Something else','Any template, circuit or run','var(--ink)')}
       ${tile('coach','Ask about your record','Everything the app knows','var(--marine-bg)')}
@@ -3786,6 +3970,10 @@ function onbRender(){
     b.innerHTML=`<h2>What are you after?</h2><p class="lead">This builds your first week. Every day in it can be changed, and it rebuilds itself from your check ins.</p>`+
       AIMS.map(a=>`<button class="opt ${onbDraft.aim===a.id?'on':''}" data-onbaim="${a.id}">
         <div class="txt"><div class="t">${a.t}</div><div class="s">${a.s}</div></div><div class="rad"></div></button>`).join('')+
+      (()=>{ const f=LIFT_FOCUS[AIM_FOCUS[onbDraft.aim]||'muscle'];
+        const heavy=f.rx.heavy, iso=f.rx.isolation;
+        return `<div class="focusnote"><b>Your lifting: ${f.t.toLowerCase()}</b>
+          <span>Big lifts ${heavy.repMin} to ${heavy.reps} reps, smaller ones ${iso.repMin} to ${iso.reps}. ${f.effort} You can change this any time.</span></div>`; })()+
       `<div class="slab">How many days a week</div>
        <div class="field" style="margin-bottom:12px"><div class="fl"><div class="k">Lifting</div><div class="v">${onbDraft.liftDays}</div></div>
          <div class="chips">${[0,1,2,3,4,5,6].map(n=>`<button class="${onbDraft.liftDays===n?'on':''}" data-onblift="${n}">${n}</button>`).join('')}</div></div>
@@ -4123,6 +4311,57 @@ function drawTargetSheet(){
       ${S.target? `<button class="skipbtn" id="targetClear">Take the target off</button>`:''}
     </div>`;
 }
+/* One habit on its own: how it is going, tick or untick today, or remove it.
+   Removing used to mean finding the picker and a button that said "Put this
+   one down for now" without saying which one. */
+/* Pick a focus, see exactly what it means, and choose whether your templates
+   follow. Nothing changes silently: templates only move if asked, with Undo. */
+function openFocusSheet(){
+  const cur=liftFocus(), fromAim=!S.profile.liftFocus;
+  const off=(S.templates||[]).reduce((a,t)=>a+t.ex.filter(r=>!rowMatches(r,cur)).length,0);
+  document.getElementById('altTitle').textContent='Lifting focus';
+  document.getElementById('altSub').textContent='How many reps, how heavy and how long to rest, set by what you are after.';
+  document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 6px">
+    ${Object.keys(LIFT_FOCUS).map(k=>{ const f=LIFT_FOCUS[k];
+      return `<button class="opt ${cur===k?'on':''}" data-focus="${k}">
+        <div class="txt"><div class="t">${f.t}${AIM_FOCUS[S.profile.aim]===k?' <span class="cichip">your aim</span>':''}</div>
+        <div class="s">${f.s}. Big lifts ${f.rx.heavy.repMin} to ${f.rx.heavy.reps}, smaller ones ${f.rx.isolation.repMin} to ${f.rx.isolation.reps}.</div></div><div class="rad"></div></button>`; }).join('')}
+    ${fromAim? '' : `<button class="skipbtn" data-focus="aim">Follow my aim instead</button>`}
+    ${off? `<div class="method" style="margin-top:10px"><b>${off} movement${off>1?'s':''} in your templates ${off>1?'are':'is'} set differently</b>
+      <span>Either you changed them, or they were set before this focus. Your changes are kept unless you ask.</span></div>
+      <button class="sheetcta" id="focusApply" style="margin:0;width:100%">Set my templates to ${LIFT_FOCUS[cur].t.toLowerCase()}</button>` 
+      : `<div class="note" style="margin-top:10px">Your templates already match this focus.</div>`}
+    <div class="note">${LIFT_FOCUS[cur].effort}</div>
+  </div>`;
+  openSheet('altSheet');
+}
+document.addEventListener('click',e=>{
+  const fb=e.target.closest('[data-focus]');
+  if(fb){ const v=fb.dataset.focus;
+    S.profile.liftFocus= v==='aim'? null : v; save(); openFocusSheet(); renderAll();
+    toast('Lifting focus: '+LIFT_FOCUS[liftFocus()].t.toLowerCase()); return; }
+  if(e.target.closest('#focusApply')){
+    const r=applyFocusToTemplates(liftFocus());
+    buildPlan(); save(); closeSheets(); renderAll();
+    toast(r.changed+' movement'+(r.changed===1?'':'s')+' updated','Undo',()=>{ S.templates=r.snap; buildPlan(); save(); renderAll(); });
+    return; }
+});
+function openHabitOne(slot){
+  const h=currentHabit(slot); if(!h) return;
+  const meta=habitOf(h.id), week=habitWeek(slot), today=week[week.length-1], stop=meta.kind==='stop';
+  const streak=habitStreak(slot), kept=Object.keys(h.days||{}).length;
+  document.getElementById('altTitle').textContent=(stop?'Stop: ':'')+meta.t;
+  document.getElementById('altSub').textContent='Since '+prettyDate(h.started)+'. '
+    +(stop? streak+' day'+(streak===1?'':'s')+' without in a row, '+kept+' in all.'
+          : streak+' day'+(streak===1?'':'s')+' running, '+kept+' in all.');
+  document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 6px">
+    ${today.off? `<div class="note">Today is not one of its days.</div>`
+      : `<button class="sheetcta" data-habittoggle="${slot}" style="margin:0 0 10px;width:100%">${today.done? 'Untick today' : (stop? 'Mark today: went without' : 'Mark today done')}</button>`}
+    <button class="sheetcta" data-habitretire="${slot}" style="margin:0 0 10px;width:100%;background:var(--oxblood-bg)">Remove this habit</button>
+    <div class="note">Removing it keeps nothing hidden: the days you kept stay in your history, and Undo brings it straight back.</div>
+  </div>`;
+  openSheet('altSheet');
+}
 function openHabitSheet(){
   const s=suggestHabit();
   document.getElementById('altTitle').textContent='Habits';
@@ -4132,7 +4371,7 @@ function openHabitSheet(){
     const tags=[...new Set(list.map(h=>h.tag))];
     return `<div class="slab" style="font-size:13px;color:var(--ink)">${title}</div>
       ${cur? `<div class="method"><b>Now: ${escHabit(habitOf(cur.id).t)}</b><span>Since ${prettyDate(cur.started)}. ${habitStreak(kind)? habitStreak(kind)+(kind==='stop'?' days without in a row.':' days running.') : ''} Choosing another resets the count.</span></div>
-        <button class="skipbtn" data-habitretire="${kind}">Put this one down for now</button>` : ''}
+        <button class="skipbtn" data-habitretire="${kind}">Remove ${escHabit(habitOf(cur.id).t)}</button>` : ''}
       ${tags.map(tag=>`<div class="slab">${HABIT_TAGS[tag]||tag}</div>`
         +list.filter(h=>h.tag===tag).map(h=>`<button class="opt ${cur&&cur.id===h.id?'on':''}" data-habitchoose="${h.id}">
           <div class="txt"><div class="t">${escHabit(h.t)}${kind==='start'&&s&&s.id===h.id&&!cur?' <span class="cichip">suggested</span>':''}</div>
@@ -4255,6 +4494,8 @@ function finishOnboarding(keepOpen){
   }
   if(typeof ownTargets==='function') S.targets=ownTargets();
   if(onbDraft.cycle){ S.cycle=Object.assign({},S.cycle,{tracking:true,lastPeriod:onbDraft.lastPeriod||S.cycle.lastPeriod}); }
+  /* The seeded templates are built to the focus the aim implies. */
+  if(typeof applyFocusToTemplates==='function') applyFocusToTemplates(liftFocus());
   /* Fit the templates to the room before the week is built from them. */
   const swapped = typeof fitTemplatesToKit==='function'? fitTemplatesToKit() : [];
   buildPlan(onbDraft.runSwaps);
@@ -4661,6 +4902,9 @@ function coachBrief(){
     L.push(`Nothing logged in the last 7 days. Targets: ${tg(t.kcal,' kcal')}, ${tg(t.protein,'g protein')}, ${tg(t.steps,' steps')}.`);
   } else {
     L.push(`Averages: ${v('kcal',0,' kcal')} (target ${tg(t.kcal,' kcal')}), protein ${v('protein',0,'g')} (target ${tg(t.protein,'g')}), carbs ${v('carbs',0,'g')}, fat ${v('fat',0,'g')}, fibre ${v('fibre',0,'g')}`);
+    const ts=timingStats(7);
+    if(ts&&ts.per) L.push(`Meals: about ${ts.mealsPerDay} a day across ${ts.days} logged days; ${ts.hits} of ${ts.meals} reached ${ts.per}g protein`
+      +(ts.lastBeforeBedH!==null? `; last food on average ${ts.lastBeforeBedH}h before bed.` : '.'));
     L.push(`Steps ${v('steps',0,'')} (target ${tg(t.steps,'')}), sleep ${v('sleep',1,'h')}, wellbeing ${v('wb',1,'/10')}, stress ${v('stress',1,'/10')}`);
   }
   if(typeof calorieTarget==='function'){
@@ -4734,7 +4978,10 @@ function openDay(){
   const already=prev&&prev.training!==undefined? trainingList(prev.training) : null;
   const start=(already&&already.length)? already
     : (loggedTraining().length? loggedTraining() : plannedTraining());
-  dayDraft=Object.assign({sleep:7,wb:6,stress:5,note:''},prev,{training:start});
+  /* No rating is filled in for them. It used to start at 6, so saving the
+     check-in for any other reason stored a 6 they never gave, and the home
+     screen took that as "checked in". */
+  dayDraft=Object.assign({sleep:7,wb:null,stress:5,note:''},prev,{training:start});
   if(weighedToday&&(dayDraft.w===undefined||dayDraft.w===null||dayDraft.w==='')) dayDraft.w=weighedToday.kg;
   drawDay(); openSheet('dayCheck');
 }
@@ -4744,8 +4991,8 @@ function drawDay(){
     <input type="number" inputmode="decimal" step="${step||1}" data-day="${k}" value="${d[k]!==undefined&&d[k]!==null?d[k]:''}" placeholder="-">
     ${target?`<div class="tg">target ${target}</div>`:''}</div>`;
   $('dayBody').innerHTML=`
-    <div class="field"><div class="fl"><div class="k">How did today go?</div><div class="v" id="outwb">${d.wb} / 10</div></div>
-      <input type="range" min="1" max="10" step="1" value="${d.wb}" data-dayrange="wb" aria-label="How today went"></div>
+    <div class="field"><div class="fl"><div class="k">How did today go?</div><div class="v" id="outwb">${d.wb? d.wb+' / 10' : 'not rated'}</div></div>
+      <input type="range" min="1" max="10" step="1" value="${d.wb||6}" data-dayrange="wb" aria-label="How today went"></div>
     <div class="field"><div class="fl"><div class="k">How stressed</div><div class="v" id="outstress">${d.stress} / 10</div></div>
       <input type="range" min="1" max="10" step="1" value="${d.stress}" data-dayrange="stress" aria-label="How stressed you were"></div>
     <textarea class="ta" data-daynote="1" placeholder="A line about the day, if there is one. This is the bit a coach actually reads.">${(d.note||'').replace(/</g,'&lt;')}</textarea>
@@ -4808,6 +5055,8 @@ $('saveDay').addEventListener('click',()=>{
     if(dayDraft[f]!==undefined&&dayDraft[f]!==null&&!Number.isNaN(dayDraft[f])) d[f]=dayDraft[f];
   });
   if(dayDraft.note&&String(dayDraft.note).trim()) d.note=String(dayDraft.note).trim();
+  /* done means they actually saved the check-in, not that some number exists */
+  d.checkedIn=Date.now();
   if(S.days[k]&&Array.isArray(S.days[k].food)) d.food=S.days[k].food;
   S.days[k]=Object.assign({}, S.days[k]&&S.days[k].auto? {auto:S.days[k].auto}:{}, d);
   if(typeof d.w==='number'){
@@ -4942,7 +5191,7 @@ function copyBrief(){
 
 renderProgress();
 Object.assign(window.__G,{TRAIN_DAYS,DEFAULT_TARGETS,ownTargets,allMovements,drawWeekStep,
-  lastNDays,avg,steers,coachBrief,eatingPlan,nextEating,openEating,openEatTimes,eatingRow,hhmmToMin,minToHhmm,todayTrains,activeHabits,habitCount,habitRoom,HABIT_MAX,slotForNew,habitSlotOf,trainingList,trainingText,plannedTraining,loggedTraining,TRAIN_DAYS,plannedCardioKcalPerDay,openDay,openWeek,
+  lastNDays,avg,steers,coachBrief,eatingPlan,nextEating,openEating,openEatTimes,eatingRow,perMealProtein,mealSlots,timingStats,MEAL_NAMES,proteinBasis,hhmmToMin,minToHhmm,todayTrains,activeHabits,habitCount,habitRoom,HABIT_MAX,slotForNew,habitSlotOf,trainingList,trainingText,plannedTraining,loggedTraining,TRAIN_DAYS,plannedCardioKcalPerDay,openDay,openWeek,
   HABITS,habitOf,currentHabit,startHabit,retireHabit,toggleHabitDay,habitWeek,habitStreak,habitRate,suggestHabit,openHabitSheet,habitRow,habitRowFor,habitApplies,habitSlots,addOwnHabit,ownHabits,escHabit,OWN_MAX,colophonText,
   TARGET_KINDS,setTarget,clearTarget,targetNow,targetProgress,openTargetSheet,targetLine,
   nudgeState,nextNudgeAt,scheduleNudge,enableNudges,disableNudges,fireNudge,nudgeHelp,onIOS,installed,NUDGE_KEY,
@@ -5497,7 +5746,76 @@ const RX_CLASS=[
   {k:'core',    sets:3, repMin:8,  reps:15, rest:45},
   {k:'hold',    sets:3, repMin:30, reps:45, rest:45}
 ];
-const rxOf=k=>RX_CLASS.find(x=>x.k===k)||RX_CLASS[1];
+/* ---------- how many reps, for what ----------
+   The old rule, low reps for strength, medium for size, high for endurance, is
+   half right, and this table follows the half that holds up:
+   - Strength: heavy loads, roughly 1 to 5 reps at 80 to 100% of max, optimise
+     maximal strength (Schoenfeld, Grgic, Van Every and Plotkin, 2021). The
+     main lifts sit at 3 to 6; accessories stay in a building range because
+     muscle is what strength is built on.
+   - Muscle: similar growth comes from a wide range of loads, down to about 30%
+     of max, provided sets are taken close to failure (same review). 6 to 12 on
+     the big lifts is the practical middle; lighter, higher reps suit isolation
+     work, which is easier on joints.
+   - Losing fat: keep lifting heavy enough to tell your body the muscle is still
+     needed. During a diet, most reps in 6 to 12 at 70 to 80% of max, 1 to 3
+     minutes rest, and no grinding to failure on heavy compound lifts (Helms and
+     colleagues, 2015). "Light weights and high reps to tone" is not a thing.
+   - Endurance: 15 or more reps for local muscular endurance, more relevant to
+     the legs than the upper body (same 2021 review), with short rests.
+   Every range here is a starting point; each one is editable. */
+const LIFT_FOCUS={
+  strength:{t:'Strength',s:'Heavier, fewer reps, longer rests',
+    effort:'Heavy sets: stop with one to three reps left in the tank. Rest fully, three minutes or more on the big lifts.',
+    rx:{heavy:{sets:4,repMin:3,reps:6,rest:210},compound:{sets:3,repMin:5,reps:8,rest:150},
+        accessory:{sets:3,repMin:8,reps:12,rest:90},isolation:{sets:3,repMin:10,reps:15,rest:60},
+        core:{sets:3,repMin:8,reps:12,rest:60},hold:{sets:3,repMin:20,reps:40,rest:60}}},
+  muscle:{t:'Build muscle',s:'Moderate weights, close to failure',
+    effort:'Finish each set one to three reps short of failure. The last reps should be hard, not heroic.',
+    rx:{heavy:{sets:4,repMin:6,reps:10,rest:150},compound:{sets:3,repMin:8,reps:12,rest:120},
+        accessory:{sets:3,repMin:10,reps:15,rest:90},isolation:{sets:3,repMin:12,reps:20,rest:60},
+        core:{sets:3,repMin:10,reps:15,rest:45},hold:{sets:3,repMin:30,reps:45,rest:45}}},
+  keep:{t:'Keep muscle while losing fat',s:'Keep the weight on the bar',
+    effort:'Keep the weights up even when energy is low. Leave a rep or two in the tank on the heavy lifts; no grinding.',
+    rx:{heavy:{sets:4,repMin:5,reps:8,rest:180},compound:{sets:3,repMin:6,reps:10,rest:120},
+        accessory:{sets:3,repMin:8,reps:12,rest:90},isolation:{sets:3,repMin:10,reps:15,rest:60},
+        core:{sets:3,repMin:10,reps:15,rest:45},hold:{sets:3,repMin:30,reps:45,rest:45}}},
+  endurance:{t:'Endurance',s:'Lighter, more reps, short rests',
+    effort:'Go close to failure on the last set. Keep rests short: that is the point.',
+    rx:{heavy:{sets:3,repMin:10,reps:15,rest:90},compound:{sets:3,repMin:12,reps:15,rest:60},
+        accessory:{sets:3,repMin:15,reps:20,rest:45},isolation:{sets:2,repMin:15,reps:25,rest:45},
+        core:{sets:3,repMin:15,reps:20,rest:30},hold:{sets:3,repMin:45,reps:60,rest:30}}}
+};
+/* which focus an aim implies, until the person picks their own */
+const AIM_FOCUS={strong:'strength',build:'muscle',lose:'keep',endure:'endurance',hold:'muscle',eat:'muscle'};
+function liftFocus(){
+  const p=S.profile||{};
+  if(p.liftFocus&&LIFT_FOCUS[p.liftFocus]) return p.liftFocus;
+  return AIM_FOCUS[p.aim]||'muscle';
+}
+const rxOf=(k,focus)=>{
+  const f=LIFT_FOCUS[focus||liftFocus()]||LIFT_FOCUS.muscle;
+  const r=f.rx[k]||f.rx.compound;
+  return Object.assign({k},r);
+};
+/* the recommended numbers for one template row, for the current focus */
+function recommendedFor(exId,focus){ const r=rxOf(rxClass(exId),focus); return {sets:r.sets,repMin:r.repMin,reps:r.reps,rest:r.rest}; }
+function rowMatches(row,focus){
+  const r=recommendedFor(row.exId,focus);
+  return +row.sets===r.sets&&+row.repMin===r.repMin&&+row.reps===r.reps&&+row.rest===r.rest;
+}
+/* set every row of every template to the focus. Returns what it changed, and a
+   snapshot so the change can be undone in one tap. */
+function applyFocusToTemplates(focus){
+  const snap=JSON.parse(JSON.stringify(S.templates||[]));
+  let changed=0;
+  (S.templates||[]).forEach(t=>t.ex.forEach(r=>{
+    if(rowMatches(r,focus)) return;
+    Object.assign(r,recommendedFor(r.exId,focus)); changed++;
+  }));
+  if(changed) save();
+  return {changed,snap};
+}
 const HEAVY_PATTERNS=['squat','hinge','horizontal push','vertical push','horizontal pull','vertical pull','lunge'];
 const HOLD_MOVES=['plank','sidplank','hollow','deadbug','birddog','copenhagen','suitcase_hold','bearcrawl','90_90','catcow'];
 /* what class a movement falls into, from the library's own pattern and kit */
@@ -5513,8 +5831,8 @@ function rxClass(exId){
   }
   return 'accessory';
 }
-function prescribe(exId,over){
-  const r=rxOf(rxClass(exId));
+function prescribe(exId,over,focus){
+  const r=rxOf(rxClass(exId),focus);
   return Object.assign({exId,sets:r.sets,reps:r.reps,repMin:r.repMin,rest:r.rest,
     tempo:tempoOf(exId),note:''},over||{});
 }
@@ -5844,6 +6162,7 @@ function drawGym(){
     const x=exOf(e.exId), prev=lastSets(e.exId), pre=GYM.pre? GYM.pre[e.exId] : null;
     const range=repRangeFor({reps:e.reps,repMin:e.repMin});
     return `<div class="exc" data-ex="${i}">
+      ${i===0? `<div class="focusnote gymfocus"><b>${LIFT_FOCUS[liftFocus()].t}</b><span>${LIFT_FOCUS[liftFocus()].effort}</span></div>` : ''}
       <div class="exh"><div class="n">${x.n}</div>${exHasPR(e)?`<span class="pr" title="Personal record">PR</span>`:''}<button class="dots" data-exmenu="${i}" aria-label="Options">···</button></div>
       <div class="cue">${e.sets.length} × ${range.bottom===range.top? e.reps : range.bottom+' to '+range.top}${e.tempo&&showTempo()?' @ '+e.tempo:''} · rest ${e.rest}s${pre&&pre.heaviest?` · best ${pre.heaviest}kg`:''}</div>
       ${prev&&prev.length? `<div class="prevline">Last time <b>${prev.map(p2=>p2.kg+' × '+p2.reps).join(', ')}</b></div>`:''}
@@ -6222,12 +6541,56 @@ function foodTotals(k){
   return dayFood(k).reduce((t,x)=>({kcal:t.kcal+x.kcal*x.q, protein:t.protein+x.p*x.q,
     carbs:t.carbs+x.c*x.q, fat:t.fat+x.f*x.q}),{kcal:0,protein:0,carbs:0,fat:0});
 }
+/* One row per food per meal, with a count, rather than a new row every time
+   the same thing is tapped. Two eggs at breakfast is one line that says 2,
+   and an egg at lunch is still its own line, so the meal split stays. Saved
+   meals and "same as yesterday" go through here too, so they merge the same
+   way. The time of the first one is kept, which is when the meal started. */
 function addFood(id,q,meal){
   const f=foodOf(id); if(!f) return null;
-  const k=todayKey();
+  const k=todayKey(), m=meal||foodSlot||'s', n=+q||1;
   S.days[k]=S.days[k]||{};
-  S.days[k].food=(S.days[k].food||[]).concat([{id:f.id,n:f.n,u:f.u,q:q||1,
-    meal:meal||foodSlot||'s',kcal:f.kcal,p:f.p,c:f.c,f:f.f,at:Date.now()}]);
+  const list=(S.days[k].food||[]).slice();
+  const same=list.find(x=>x.id===f.id&&(x.meal||'s')===m);
+  if(same) same.q=+(same.q+n).toFixed(2);
+  else list.push({id:f.id,n:f.n,u:f.u,q:n,meal:m,kcal:f.kcal,p:f.p,c:f.c,f:f.f,at:Date.now()});
+  S.days[k].food=list;
+  applyFoodTotals(k); save();
+  return S.days[k].food;
+}
+/* Set how many of one food are in one meal. Zero takes it off. */
+function setFoodQty(id,meal,q){
+  const k=todayKey(), list=dayFood(k);
+  const i=list.findIndex(x=>x.id===id&&(x.meal||'s')===meal);
+  if(i<0) return null;
+  if(q<=0) list.splice(i,1); else list[i].q=+(+q).toFixed(2);
+  applyFoodTotals(k); save();
+  return list[i]||null;
+}
+/* Days logged before this change can hold the same food twice in one meal.
+   They are folded together the first time the day is opened. */
+function mergeDayFood(k){
+  const r=S.days[k]; if(!r||!Array.isArray(r.food)) return 0;
+  const out=[], seen={};
+  r.food.forEach(x=>{
+    const key=x.id+'|'+(x.meal||'s');
+    if(x.id&&String(x.id).indexOf('quick:')!==0&&seen[key]){
+      seen[key].q=+(seen[key].q+(+x.q||1)).toFixed(2);
+      if(x.at&&(!seen[key].at||x.at<seen[key].at)) seen[key].at=x.at;
+    } else { const c=Object.assign({},x); out.push(c); seen[key]=c; }
+  });
+  const merged=r.food.length-out.length;
+  if(merged){ r.food=out; save(); }
+  return merged;
+}
+/* Just the numbers, for the restaurant meal or the thing off a label with no
+   time to add it properly. Each one is its own entry. */
+function quickAddFood(kcal,protein,meal){
+  const k=todayKey(), kc=Math.max(0,Math.round(+kcal||0)), pr=Math.max(0,+(+protein||0).toFixed(1));
+  if(!kc) return null;
+  S.days[k]=S.days[k]||{};
+  S.days[k].food=(S.days[k].food||[]).concat([{id:'quick:'+Date.now(),n:'Quick add',u:'entry',q:1,
+    meal:meal||foodSlot||'s',kcal:kc,p:pr,c:0,f:0,at:Date.now(),quick:true}]);
   applyFoodTotals(k); save();
   return S.days[k].food;
 }
@@ -6260,7 +6623,7 @@ function slotNow(){
 }
 let foodQuery='', foodCameFromLog=false, foodSlot=slotNow(), foodAdding=false;
 function openFood(fromLog){
-  foodQuery=''; foodCat=''; foodSlot=slotNow(); foodAdding=false;
+  foodQuery=''; foodCat=''; foodSlot=slotNow(); foodAdding=false; foodQuick=false;
   foodCameFromLog=!!fromLog || document.getElementById('dayCheck').classList.contains('on');
   closeSheets(); drawFood(); openSheet('foodSheet');
 }
@@ -6293,46 +6656,86 @@ function foodListHTML(){
   if(!list.length) return `<div class="note">Nothing matching.</div>
     <button class="logrow" id="foodNew"><div class="txt"><div class="t">Add "${foodQuery.trim()}" yourself</div>
       <div class="s">Once, and it is in your list from now on</div></div></button>`;
-  return list.map(f=>`<div class="frow">
+  const onPlate=id=>dayFood(todayKey()).find(x=>x.id===id&&(x.meal||'s')===foodSlot);
+  return list.map(f=>{ const p=onPlate(f.id);
+    return `<div class="frow ${p?'onplate':''}">
       <div class="txt"><div class="t">${escHabit(f.n)}${f.mine?' <span class="cichip">yours</span>':''}</div>
         <div class="s">${escHabit(f.u)} · ${f.kcal} kcal · ${f.p}g protein${f.alc?' · '+f.alc+'g alcohol':''}</div></div>
-      <button class="mini" data-foodadd="${f.id}:0.5">½</button>
-      <button class="mini go" data-foodadd="${f.id}:1">Add</button>
-      <button class="mini" data-foodadd="${f.id}:2">×2</button></div>`).join('')
+      ${p? foodStepper(p) : `<button class="fadd half" data-foodadd="${f.id}:0.5" aria-label="Add half a portion of ${escHabit(f.n)}">½</button>
+      <button class="fadd" data-foodadd="${f.id}:1" aria-label="Add ${escHabit(f.n)}">+</button>`}</div>`; }).join('')
     +`<button class="logrow" id="foodNew"><div class="txt"><div class="t">Something not on the list</div>
       <div class="s">Add it once and it stays in your list</div></div></button>`;
 }
 function drawFoodList(){ const el=$('foodList'); if(el) el.innerHTML=foodListHTML(); }
+/* minus, the count, plus: big enough for a thumb */
+const qtyText=q=>q===0.5?'½':(Math.round(q*2)%2? Math.floor(q)+'½' : String(Math.round(q)));
+function foodStepper(x){
+  const key=escHabit(x.id)+'|'+(x.meal||'s');
+  return `<div class="fstep" role="group" aria-label="${escHabit(x.n)}: ${qtyText(x.q)}">
+    <button data-foodstep="${key}|-1" aria-label="One less">&minus;</button>
+    <span class="fq">${qtyText(x.q)}</span>
+    <button data-foodstep="${key}|1" aria-label="One more">+</button></div>`;
+}
+/* ---------- the food screen ----------
+   Rebuilt around the one thing done most: finding a food and adding it.
+   The old screen listed everything already eaten first and put the search box
+   at the bottom, so every add meant scrolling past the day. Now, top to bottom:
+     the meal, as tabs, each with its calories so far
+     search, straight away, with the keyboard kept out of its way
+     this meal's plate: what is on it, each with a counter
+     shortcuts: same as yesterday, your saved meals, quick add numbers
+     browse by category
+   Every result shows its calories and protein, adds in one tap, and turns into
+   a counter once it is on the plate, so "another egg" is one tap, not a new
+   row. */
+let foodQuick=false;
 function drawFood(){
-  const k=todayKey(), logged=dayFood(k), t=foodTotals(k), tg=S.targets||{};
-  const bySlot=m=>logged.map((x,i)=>({x,i})).filter(o=>(o.x.meal||'s')===m);
-  const slotTotal=m=>bySlot(m).reduce((a,o)=>a+o.x.kcal*o.x.q,0);
+  const k=todayKey();
+  mergeDayFood(k);
+  const logged=dayFood(k), t=foodTotals(k), tg=S.targets||{};
+  const inMeal=m=>logged.filter(x=>(x.meal||'s')===m);
+  const mealKcal=m=>Math.round(inMeal(m).reduce((a,x)=>a+x.kcal*x.q,0));
+  const plate=inMeal(foodSlot);
+  const mealLabel=MEALS.find(m=>m[0]===foodSlot)[1];
+  const left=tg.kcal? tg.kcal-Math.round(t.kcal) : null;
   const yTotal=dayFood(addDays(k,-1)).length;
   $('foodBody').innerHTML=`
-    <div class="numline" style="margin-bottom:10px"><div><b>${num(Math.round(t.kcal))}</b> kcal${tg.kcal?' of '+num(tg.kcal):''}</div>
-      <div><b>${Math.round(t.protein)}g</b> protein${tg.protein?' of '+tg.protein:''}</div></div>
-    ${tg.kcal? `<div class="bar" style="margin-bottom:12px"><i style="width:${Math.min(100,Math.round(t.kcal/tg.kcal*100))}%;background:${t.kcal>tg.kcal*1.1?'var(--oxblood)':'var(--forest)'}"></i></div>`:''}
-    <div class="chips">${MEALS.map(([id,label])=>`<button class="${foodSlot===id?'on':''}" data-foodslot="${id}">${label}${slotTotal(id)?' · '+Math.round(slotTotal(id)):''}</button>`).join('')}</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
-      ${yTotal?`<button class="mini" id="foodYesterday">Same as yesterday (${yTotal})</button>`:''}
-      ${bySlot(foodSlot).length?`<button class="mini" id="foodSaveMeal">Save this ${MEALS.find(m=>m[0]===foodSlot)[1].toLowerCase()}</button>`:''}
+    <div class="fhead">
+      <div><b>${left===null? num(Math.round(t.kcal)) : num(Math.abs(left))}</b> kcal ${left===null? 'today' : (left>=0? 'left' : 'over')}</div>
+      <div><b>${Math.round(t.protein)}</b>${tg.protein? '/'+tg.protein:''}g protein</div>
     </div>
-    ${savedMeals().length? `<div class="slab">Your meals</div>
-      <div class="chips">${savedMeals().map(m=>`<button data-savedmeal="${m.id}">${m.name}</button>`).join('')}</div>`:''}
-    ${logged.length? MEALS.filter(([id])=>bySlot(id).length).map(([id,label])=>`<div class="slab">${label} · ${Math.round(slotTotal(id))} kcal</div>`
-      +bySlot(id).map(o=>`<div class="frow">
-        <div class="txt"><div class="t">${o.x.n}</div><div class="s">${o.x.q!==1?o.x.q+' × ':''}${o.x.u} · ${Math.round(o.x.kcal*o.x.q)} kcal · ${Math.round(o.x.p*o.x.q)}g protein</div></div>
-        <button class="x hit" data-foodrm="${o.i}" aria-label="Remove ${o.x.n}">×</button></div>`).join('')).join('')
-      : `<div class="note">Nothing logged today.</div>`}
-    <div class="slab">Add to ${MEALS.find(m=>m[0]===foodSlot)[1].toLowerCase()}</div>
-    <div class="foodsearch"><input id="foodSearch" placeholder="Search food" value="${foodQuery}" aria-label="Search food" style="border:1px solid var(--line);border-radius:9px;padding:12px;width:100%;font-size:14.5px;font-weight:600;margin-bottom:10px"></div>
+    ${tg.kcal? `<div class="bar" style="margin-bottom:12px"><i style="width:${Math.min(100,Math.round(t.kcal/tg.kcal*100))}%;background:${left<0?'var(--oxblood)':'var(--forest-bg)'}"></i></div>`:''}
+    <div class="mealtabs" role="tablist" aria-label="Which meal">${MEALS.map(([id,label])=>`<button role="tab" aria-selected="${foodSlot===id}"
+      class="${foodSlot===id?'on':''}" data-foodslot="${id}"><span>${label}</span><small>${mealKcal(id)? mealKcal(id)+' kcal' : '–'}</small></button>`).join('')}</div>
+
+    <div class="foodsearch"><input id="foodSearch" type="search" enterkeyhint="search" autocomplete="off"
+      placeholder="Search food to add to ${mealLabel.toLowerCase()}" value="${escHabit(foodQuery)}" aria-label="Search food"></div>
+
+    ${foodQuery.trim()? '' : `
+    <div class="plate">
+      <div class="platehead"><b>${mealLabel}</b><span>${plate.length? mealKcal(foodSlot)+' kcal · '+Math.round(plate.reduce((a,x)=>a+x.p*x.q,0))+'g protein' : 'nothing yet'}</span></div>
+      ${plate.map(x=>`<div class="frow onplate">
+        <div class="txt"><div class="t">${escHabit(x.n)}</div>
+          <div class="s">${x.quick? 'your numbers' : escHabit(x.u)} · ${Math.round(x.kcal*x.q)} kcal · ${Math.round(x.p*x.q)}g protein</div></div>
+        ${x.quick? `<button class="fadd rm" data-foodstep="${escHabit(x.id)}|${x.meal||'s'}|-99" aria-label="Remove">&minus;</button>` : foodStepper(x)}</div>`).join('')}
+      <div class="shortcuts">
+        ${yTotal?`<button class="mini" id="foodYesterday">Same as yesterday</button>`:''}
+        ${savedMeals().map(m=>`<button class="mini" data-savedmeal="${m.id}">${escHabit(m.name)}</button>`).join('')}
+        ${plate.length?`<button class="mini" id="foodSaveMeal">Save this ${mealLabel.toLowerCase()}</button>`:''}
+        <button class="mini" id="foodQuickBtn">Quick add numbers</button>
+      </div>
+      ${foodQuick? `<div class="quickadd">
+        <div class="nf"><label>Calories</label><input id="qaKcal" type="number" inputmode="numeric" placeholder="650"></div>
+        <div class="nf"><label>Protein g</label><input id="qaP" type="number" inputmode="decimal" placeholder="30"></div>
+        <button class="mini go" id="qaSave">Add</button></div>` : ''}
+    </div>
     <div class="pickchips" id="foodCats">
-      <button class="${foodCat?'':'on'}" data-foodcat="">Common foods</button>
+      <button class="${foodCat?'':'on'}" data-foodcat="">Common</button>
       ${FOOD_CATS.filter(c=>c[0]!=='common').map(([id,label])=>`<button class="${foodCat===id?'on':''}" data-foodcat="${id}">${label}</button>`).join('')}
       ${allFoods().some(f=>f.mine)? `<button class="${foodCat==='mine'?'on':''}" data-foodcat="mine">Yours</button>`:''}
-    </div>
+    </div>`}
     <div id="foodList">${foodListHTML()}</div>
-    <button class="sheetcta" id="foodDone">${foodCameFromLog?'Back to the log':'Done'}</button>`;
+    <div class="fdone"><button class="sheetcta" id="foodDone">${foodCameFromLog?'Back to the log':'Done'}</button></div>`;
 }
 /* Adding a food you have not got in the list, without leaving the sheet. */
 function drawFoodNew(){
@@ -6384,6 +6787,25 @@ document.addEventListener('click',e=>{
   const fa=e.target.closest('[data-foodadd]');
   if(fa){ const [id,q]=fa.dataset.foodadd.split(':'); addFood(id,+q);
     drawFood(); if(typeof drawDay==='function'&&document.getElementById('dayCheck').classList.contains('on')) drawDay(); }
+  const fst=e.target.closest('[data-foodstep]');
+  if(fst){
+    const parts=fst.dataset.foodstep.split('|'), d=+parts.pop(), meal=parts.pop(), id=parts.join('|');
+    const cur=dayFood(todayKey()).find(x=>x.id===id&&(x.meal||'s')===meal); if(!cur) return;
+    const before=JSON.parse(JSON.stringify(cur));
+    const next= d<-1? 0 : (cur.q<1&&d>0? 1 : (cur.q<=1&&d<0? 0 : cur.q+d));
+    setFoodQty(id,meal,next);
+    drawFood(); renderAll();
+    if(next<=0) toast(before.n+' taken off','Undo',()=>{
+      const k=todayKey(); S.days[k]=S.days[k]||{}; S.days[k].food=(S.days[k].food||[]).concat([before]);
+      applyFoodTotals(k); save(); drawFood(); renderAll(); });
+    return; }
+  if(e.target.closest('#foodQuickBtn')){ foodQuick=!foodQuick; drawFood();
+    if(foodQuick){ const el=document.getElementById('qaKcal'); if(el) el.focus(); } return; }
+  if(e.target.closest('#qaSave')){
+    const kc=+document.getElementById('qaKcal').value, pr=+document.getElementById('qaP').value;
+    if(!kc){ toast('Put the calories in first'); return; }
+    quickAddFood(kc,pr,foodSlot); foodQuick=false; drawFood(); renderAll();
+    toast(kc+' kcal added to '+MEALS.find(m=>m[0]===foodSlot)[1].toLowerCase()); return; }
   const fr=e.target.closest('[data-foodrm]');
   if(fr){ const i=+fr.dataset.foodrm, gone=dayFood(todayKey())[i];
     removeFood(i); drawFood();
@@ -6911,7 +7333,11 @@ function drawTplEdit(){
   const t=tplDraft, uses=(S.plan&&S.plan.days||[]).filter(d=>d.templateId===t.id).length;
   const errs=tplDraft.__showErrors? tplErrors(t) : [];
   const errAt=(i,k)=>errs.some(e=>e.i===i&&e.k===k);
+  const offRows=t.ex.filter(r=>!rowMatches(r)).length;
   $('tplEditBody').innerHTML=`
+    <div class="focusnote" style="margin:0 0 12px"><b>Lifting focus: ${LIFT_FOCUS[liftFocus()].t.toLowerCase()}</b>
+      <span>${LIFT_FOCUS[liftFocus()].effort}${offRows? ` ${offRows} movement${offRows>1?'s':''} here ${offRows>1?'are':'is'} set differently.` : ''}</span>
+      ${offRows? `<button class="inlinebtn" id="tplRecAll">Set them all to the recommendation</button>` : ''}</div>
     <div class="note" style="margin:0 0 12px">Changes apply to every ${escHabit(t.name||'')} day from now on${uses? ', including '+uses+' this week' : ''}. Sessions you have already done stay exactly as they were.</div>
     <div class="nf ${errAt(-1,'name')?'bad':''}" style="margin-bottom:12px"><label for="tplName">Name</label>
       <input id="tplName" value="${escHabit(t.name)}" style="font-family:Archivo;font-size:15px;font-weight:700"></div>
@@ -6924,6 +7350,9 @@ function drawTplEdit(){
       return `<div class="tcard">
         <div class="tch"><span class="tcn">${i+1}</span>
           <div class="tt"><b>${escHabit(x.n)}</b><span>${rxClass(r.exId)}${x.eq? ' · '+(EQUIP[x.eq]||x.eq).toLowerCase() : ''}</span></div></div>
+        ${(()=>{ const rec=recommendedFor(r.exId); if(rowMatches(r)) return `<div class="recline ok">Matches your focus: ${LIFT_FOCUS[liftFocus()].t.toLowerCase()}</div>`;
+          return `<div class="recline">Recommended for ${LIFT_FOCUS[liftFocus()].t.toLowerCase()}: ${rec.sets} × ${hold? rec.repMin+' to '+rec.reps+'s' : rec.repMin+' to '+rec.reps}, rest ${rec.rest}s
+            <button class="inlinebtn" data-tplrec="${i}">Use it</button></div>`; })()}
         <div class="tfields">
           ${field('sets','Sets',r.sets,1,10)}
           ${field('repMin',hold?'Seconds from':'Reps from',r.repMin!=null? r.repMin : Math.max(1,(r.reps||2)-2),1,hold?300:100)}
@@ -7015,8 +7444,8 @@ coachBrief=function(){
   return t;
 };
 
-Object.assign(window.__G,{tplErrors,tplRowErrors,drawTplEdit,TPL_LIMITS,LIBRARY,EQUIP,DIFF,exBlurb,drawExList,exOf,exHistory,nextPrescription,rxClass,prescribe,repText,RX_CLASS,warmSetsFor,platesFor,plateLine,fitToKit,fitTemplatesToKit,kitOf,hasKit,KIT,KIT_PRESETS,ALL_KIT,openKitSheet,applyKitChange,loggedMealMacros,mealArt,simulatedHealth,keyOf,dateOf,incrementFor,repRangeFor,nextPrescription,tonnageOf,progressLines,fillForward,suggestFor,openCircEdit,drawCircEdit,drawTemplates,seedTemplates,
-  FOODS,FOOD_CATS,FOOD_COMMON,foodOf,addFood,removeFood,dayFood,foodTotals,openFood,closeFood,drawFood,drawFoodList,drawFoodNew,recentFoods,MEALS,slotNow,repeatYesterday,addCustomFood,saveMealAs,addSavedMeal,allFoods,customFoods,savedMeals,seedRunPlans,seedCircuits,circuitOf,startCircuit,finishCircuit,drawCircuit,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
+Object.assign(window.__G,{tplErrors,tplRowErrors,drawTplEdit,TPL_LIMITS,LIBRARY,EQUIP,DIFF,exBlurb,drawExList,exOf,exHistory,nextPrescription,rxClass,prescribe,repText,LIFT_FOCUS,AIM_FOCUS,liftFocus,rxOf,recommendedFor,rowMatches,applyFocusToTemplates,RX_CLASS,warmSetsFor,platesFor,plateLine,fitToKit,fitTemplatesToKit,kitOf,hasKit,KIT,KIT_PRESETS,ALL_KIT,openKitSheet,applyKitChange,loggedMealMacros,mealArt,simulatedHealth,keyOf,dateOf,incrementFor,repRangeFor,nextPrescription,tonnageOf,progressLines,fillForward,suggestFor,openCircEdit,drawCircEdit,drawTemplates,seedTemplates,
+  FOODS,FOOD_CATS,FOOD_COMMON,foodOf,addFood,setFoodQty,mergeDayFood,quickAddFood,qtyText,removeFood,dayFood,foodTotals,openFood,closeFood,drawFood,drawFoodList,drawFoodNew,recentFoods,MEALS,slotNow,repeatYesterday,addCustomFood,saveMealAs,addSavedMeal,allFoods,customFoods,savedMeals,seedRunPlans,seedCircuits,circuitOf,startCircuit,finishCircuit,drawCircuit,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
   openExMenu,openTplEdit,drawTemplates,exerciseStats,e1RM,lastSets,gymVolume,gymSets,templateChanged,startRest,isBodyweight,isBwFull,bodyweightNow,setVolume,BW_FULL,openQuick,QUICK,saveQuick,fitToKeyboard,
   get GYM(){return GYM}, get tplDraft(){return tplDraft}});
 Object.defineProperties(window.__G,{
@@ -7413,8 +7842,46 @@ function forecastReadiness(){
   }
   return {stage,weighs,foodDays,food14,observed,scored,canForecast,line};
 }
+/* ---------- the weight panel, rebuilt ----------
+   Seen in a real browser at phone size, the old one failed on every count:
+   labels printed over each other, two legends that disagreed, two axis labels
+   at odd values like 96.6 and 83.9, text at nine pixels, and a paragraph
+   under it quoting a different forecast from the one on the chart.
+   Now, the way the apps people trust do it:
+     the numbers first, as text: where you are, how far you have come, how fast
+     a range to look at: one, three or six months, or everything
+     one chart: the scale as faint dots, the trend as the line, whole-kilo
+       gridlines, three dates, today marked, the next four weeks as a range,
+       your goal if it is near enough to be useful
+     tap anywhere on it to read that day
+     one legend, and one sentence about where it is heading */
+let weightRange='3m';
+const W_RANGES=[['1m','1 month',30],['3m','3 months',90],['6m','6 months',182],['all','All',100000]];
+const W_FWD=28;
+/* Never look further ahead than the weigh ins behind it: nine days of data
+   earns a nine day guess, not a four week one. One to four weeks. */
+function wHorizon(pts){
+  if(!pts||pts.length<2) return 7;
+  const span=Math.round((dateOf(pts[pts.length-1].d)-dateOf(pts[0].d))/864e5);
+  return Math.max(7,Math.min(W_FWD,span));
+}
+function wSeriesFor(range){
+  const days=(W_RANGES.find(r=>r[0]===range)||W_RANGES[1])[2];
+  const all=(S.weights||[]).filter(p=>p&&typeof p.kg==='number'&&p.d).slice().sort((a,b)=>a.d<b.d?-1:1);
+  const cut=addDays(todayKey(),-days);
+  const pts=all.filter(p=>p.d>=cut);
+  return pts.length>=2? pts : all.slice(-Math.max(2,Math.min(all.length,12)));
+}
+/* round numbers for the gridlines: 0.5, 1, 2 or 5 kg apart, three to six of them */
+function niceTicks(lo,hi){
+  const span=hi-lo;
+  const step=[0.5,1,2,5,10].find(s=>span/s<=5)||10;
+  const out=[]; for(let v=Math.ceil(lo/step)*step; v<=hi+1e-9; v+=step) out.push(+v.toFixed(1));
+  return {ticks:out,step};
+}
+const shortDate=k=>{ const d=dateOf(k); return d.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]; };
 function weightChart(){
-  const pts=weightSeries();
+  const pts=wSeriesFor(weightRange);
   if(pts.length<2){
     const r=forecastReadiness();
     return `<div class="chartempty">
@@ -7423,86 +7890,153 @@ function weightChart(){
       <button class="mini go" data-glance="weigh">Weigh in</button></div>`;
   }
   const tr=weightTrend(pts);
-  const w=320,h=158,padL=34,padR=58,padT=24,padB=30;
-  const lastDay=tr.xs[tr.xs.length-1], endDay=lastDay+CHART_DAYS_FWD;
-  const projEnd=tr.at(endDay);
-  const goal=(S.target&&S.target.kind==='weight'&&!S.target.hit)? +S.target.value : null;
-  /* Scale to the weigh ins and where they are heading. A goal months away used
-     to be included, which squashed the actual line into a fifth of the box and
-     left the rest empty. If the goal is close it is drawn; if not, it is a
-     marker at the edge with the number on it. */
-  const vals=tr.ys.concat([projEnd]);
-  const min=Math.min(...vals), max=Math.max(...vals);
-  const span=Math.max(1,(max-min))*1.3, mid=(min+max)/2;
-  let lo=mid-span/2, hi=mid+span/2;
-  if(goal!==null&&goal>lo-span*0.25&&goal<hi+span*0.25){
-    lo=Math.min(lo,goal-span*0.1); hi=Math.max(hi,goal+span*0.1);
-  }
-  const goalOn=goal!==null&&goal>=lo&&goal<=hi;
-  const x=day=>padL+(day/endDay)*(w-padL-padR);
-  const y=v=>padT+(1-(v-lo)/(hi-lo))*(h-padT-padB);
-  /* Every serious weight app draws it this way round, and for a good reason:
-     the raw number swings a kilo or two a day on water and gut contents, so the
-     smoothed trend is the signal and the readings are the noise around it. The
-     app already smooths exponentially, the same method Libra uses, and the
-     forecast already runs off that trend rather than the last reading. The
-     chart now shows what the maths is actually using. */
   const smoothAll=(typeof trendSeries==='function')? trendSeries() : [];
   const byDay={}; smoothAll.forEach(sp=>{ byDay[sp.d]=sp.kg; });
-  const smooth=pts.map((p,i)=>({x:tr.xs[i], kg: byDay[p.d]!==undefined? byDay[p.d] : p.kg}));
-  const line=smooth.map((p,i)=>`${i?'L':'M'}${x(p.x).toFixed(1)} ${y(p.kg).toFixed(1)}`).join(' ');
-  const smoothNow=smooth[smooth.length-1].kg;
-  const projPath=`M${x(lastDay).toFixed(1)} ${y(tr.at(lastDay)).toFixed(1)} L${x(endDay).toFixed(1)} ${y(projEnd).toFixed(1)}`;
-  const trendPath=`M${x(0).toFixed(1)} ${y(tr.at(0)).toFixed(1)} L${x(lastDay).toFixed(1)} ${y(tr.at(lastDay)).toFixed(1)}`;
-  const now=pts[pts.length-1];
-  const words=`Weighed ${pts.length} times over ${Math.round(lastDay)} days. Trend now ${smoothNow.toFixed(1)} kg, last reading ${now.kg} kg. `
-    +(Math.abs(tr.perWeek)<0.05? 'Holding steady.' : `Trending ${tr.perWeek<0?'down':'up'} about ${Math.abs(tr.perWeek).toFixed(2)} kg a week, which is about ${projEnd.toFixed(1)} kg in four weeks.`)
-    +(goal!==null? ` Goal ${goal} kg.` : '');
-  const legend=`<g class="legend">
-    <circle class="raw swatch" cx="${padL+4}" cy="${padT-4}" r="1.9"/>
-    <text class="clab" x="${padL+11}" y="${padT-1}">what the scale said</text>
-    <line x1="${padL+96}" y1="${padT-4}" x2="${padL+112}" y2="${padT-4}" stroke="var(--marine)" stroke-width="2.6"/>
-    <text class="clab" x="${padL+117}" y="${padT-1}">the trend</text></g>`;
-  const dateShort=k=>{ const d=dateOf(k); return d.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]; };
-  const axis=`
-    <line class="axis" x1="${padL}" y1="${y(hi).toFixed(1)}" x2="${(w-padR).toFixed(1)}" y2="${y(hi).toFixed(1)}"/>
-    <line class="axis" x1="${padL}" y1="${y(lo).toFixed(1)}" x2="${(w-padR).toFixed(1)}" y2="${y(lo).toFixed(1)}"/>
-    <text class="clab" x="${padL-4}" y="${(y(hi)+3.5).toFixed(1)}" text-anchor="end">${hi.toFixed(1)}</text>
-    <text class="clab" x="${padL-4}" y="${(y(lo)+3.5).toFixed(1)}" text-anchor="end">${lo.toFixed(1)}</text>
-    <text class="clab" x="${padL}" y="${h-8}">${dateShort(pts[0].d)}</text>
-    <text class="clab" x="${x(lastDay).toFixed(1)}" y="${h-8}" text-anchor="middle">today</text>
-    <text class="clab" x="${(w-padR).toFixed(1)}" y="${h-8}" text-anchor="middle">${dateShort(addDays(todayKey(),CHART_DAYS_FWD))}</text>
-    <line class="axis dashed" x1="${x(lastDay).toFixed(1)}" y1="${padT}" x2="${x(lastDay).toFixed(1)}" y2="${(h-padB).toFixed(1)}"/>`;
-  return `<svg viewBox="0 0 ${w} ${h}" class="chart" role="img" aria-label="${words}">
-    ${axis}${legend}
-    ${goalOn? `<line x1="${padL}" y1="${y(goal).toFixed(1)}" x2="${(w-padR+40).toFixed(1)}" y2="${y(goal).toFixed(1)}" stroke="var(--forest)" stroke-width="1.4" stroke-dasharray="2 4"/>
-      <text x="${(w-padR+44).toFixed(1)}" y="${(y(goal)+3.5).toFixed(1)}" class="clab" fill="var(--forest)">goal ${goal}</text>`
-     : ''}
-    <path d="${line}" fill="none" stroke="var(--marine)" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
-    ${pts.map((p,i)=>`<circle class="raw" cx="${x(tr.xs[i]).toFixed(1)}" cy="${y(p.kg).toFixed(1)}" r="1.9"/>`).join('')}
-    <circle cx="${x(tr.xs[pts.length-1]).toFixed(1)}" cy="${y(smoothNow).toFixed(1)}" r="3.4" fill="var(--marine)"/>
-    ${(()=>{ /* the range the forecast could be out by, drawn rather than described */
-      const band=(typeof bandFor==='function')? bandFor(mondayKey()) : 0.5;
-      const x1=x(lastDay), x2=x(endDay), y0=y(tr.at(lastDay));
-      const yHi=y(projEnd+band), yLo=y(projEnd-band);
-      return `<path d="M${x1.toFixed(1)} ${y0.toFixed(1)} L${x2.toFixed(1)} ${yHi.toFixed(1)} L${x2.toFixed(1)} ${yLo.toFixed(1)} Z"
-        fill="var(--marigold)" opacity="0.16"/>`; })()}
-    <path d="${projPath}" fill="none" stroke="var(--marigold)" stroke-width="2.2" stroke-dasharray="4 4" stroke-linecap="round"/>
-    <circle cx="${x(endDay).toFixed(1)}" cy="${y(projEnd).toFixed(1)}" r="3.4" fill="var(--marigold)"/>
-    <text class="clab" x="${(w-padR+5).toFixed(1)}" y="${(y(projEnd)+3.5).toFixed(1)}" fill="var(--marigold)">${projEnd.toFixed(1)} kg</text>
-    <text class="clab" x="${(x(lastDay)+5).toFixed(1)}" y="${(y(smoothNow)-6).toFixed(1)}" fill="var(--marine)">${smoothNow.toFixed(1)} kg</text>
-    <text x="${(x(endDay)+6).toFixed(1)}" y="${(y(projEnd)+3.5).toFixed(1)}" class="clab" fill="var(--marigold)">${projEnd.toFixed(1)}</text>
-    <text x="${padL}" y="${h-8}" class="clab" fill="var(--mute)">${prettyDate(pts[0].d)}</text>
-    <text x="${x(lastDay).toFixed(1)}" y="${h-8}" class="clab" fill="var(--mute)" text-anchor="middle">today</text>
-    <text x="${x(endDay).toFixed(1)}" y="${h-8}" class="clab" fill="var(--mute)" text-anchor="end">${prettyDate(addDays(todayKey(),CHART_DAYS_FWD))}</text>
-  </svg>
-  <div class="chartkey"><span><i style="background:var(--marine)"></i>what you weighed</span>
-    <span><i style="background:var(--marigold)"></i>four weeks ahead</span>
-    ${goal!==null? `<span><i style="background:var(--forest)"></i>goal ${goal} kg${goalOn?'':', below this'}</span>`:''}</div>`;
+  const t0=dateOf(pts[0].d).getTime();
+  const dayOf=k=>(dateOf(k).getTime()-t0)/864e5;
+  const todayX=dayOf(todayKey()), lastX=dayOf(pts[pts.length-1].d);
+  const smooth=pts.map(p=>({x:dayOf(p.d), kg: byDay[p.d]!==undefined? byDay[p.d] : p.kg, raw:p.kg, d:p.d}));
+  const nowKg=smooth[smooth.length-1].kg;
+  const fwd=wHorizon(pts);
+  const endX=Math.max(todayX,lastX)+fwd;
+  const projEnd=nowKg+tr.perDay*(endX-lastX);
+  const band=(typeof bandFor==='function')? bandFor(mondayKey()) : 0.5;
+
+  /* the vertical range: the data, the forecast, and the goal only if it is close */
+  const goal=S.target&&S.target.kind==='weight'? +S.target.value : null;
+  let lo=Math.min(...pts.map(p=>p.kg),projEnd-band), hi=Math.max(...pts.map(p=>p.kg),projEnd+band);
+  const near=goal!==null&&goal>=lo-Math.max(2,(hi-lo)*0.6)&&goal<=hi+Math.max(2,(hi-lo)*0.6);
+  if(near){ lo=Math.min(lo,goal); hi=Math.max(hi,goal); }
+  const padKg=Math.max(0.3,(hi-lo)*0.08); lo-=padKg; hi+=padKg;
+  const {ticks,step}=niceTicks(lo,hi);
+  lo=Math.min(lo,ticks[0]); hi=Math.max(hi,ticks[ticks.length-1]);
+
+  const W=360,H=236,L=38,R=14,T=14,B=30;
+  const x=d=>L+(d/endX)*(W-L-R), y=v=>T+(1-(v-lo)/(hi-lo))*(H-T-B);
+  const f=n=>n.toFixed(1);
+
+  const grid=ticks.map(v=>`<line class="wgrid" x1="${L}" x2="${W-R}" y1="${f(y(v))}" y2="${f(y(v))}"/>
+    <text class="wlab" x="${L-6}" y="${f(y(v)+4)}" text-anchor="end">${step<1? v.toFixed(1) : Math.round(v)}</text>`).join('');
+  const midX=Math.round(todayX/2);
+  const dates=`<text class="wlab" x="${L}" y="${H-9}">${shortDate(pts[0].d)}</text>
+    ${todayX>20? `<text class="wlab" x="${f(x(midX))}" y="${H-9}" text-anchor="middle">${shortDate(addDays(pts[0].d,midX))}</text>`:''}
+    <text class="wlab strong" x="${f(x(todayX))}" y="${H-9}" text-anchor="middle">Today</text>`;
+  /* a goal close enough is a line; a goal far off is named at the edge it is
+     beyond, so it is never lost and never squashes the chart flat */
+  const goalLine= goal===null? '' : (near
+    ? `<line class="wgoal" x1="${L}" x2="${W-R}" y1="${f(y(goal))}" y2="${f(y(goal))}"/>
+       <text class="wlab goal" x="${L+4}" y="${f(y(goal)-5)}">Goal ${goal} kg</text>`
+    : `<text class="wlab goal" x="${L+4}" y="${goal<lo? H-B-6 : T+12}">Goal ${goal} kg, ${Math.abs(goal-nowKg).toFixed(1)} kg ${goal<lo?'below':'above'} this</text>`);
+  const dots=smooth.map(p=>`<circle class="raw" cx="${f(x(p.x))}" cy="${f(y(p.raw))}" r="2.4"/>`).join('');
+  const line=smooth.map((p,i)=>`${i?'L':'M'}${f(x(p.x))} ${f(y(p.kg))}`).join(' ');
+  const xn=x(lastX), yn=y(nowKg), xe=x(endX), ye=y(projEnd);
+  const bandPath=`M${f(xn)} ${f(yn)} L${f(xe)} ${f(y(projEnd+band))} L${f(xe)} ${f(y(projEnd-band))} Z`;
+  /* the forecast label sits beside its end point, above or below whichever is
+     clear, and never past the edge */
+  /* The line runs from today to the end point, so a label to the left of the
+     end point sits clear of it on the side the line is not: below when the
+     line falls, above when it rises. If that would hit the edge or the goal
+     label, it moves to the other side. */
+  /* The label goes on the side of the line the line is not: below a falling
+     line, above a rising one. The only other thing it can hit is the goal
+     line, which runs the full width, so if that passes through the label it
+     moves just past the goal line, and it always stays inside the frame. */
+  const falling=ye>=yn;
+  let ly=falling? ye+19 : ye-11;
+  if(goal!==null&&near){
+    const gy=y(goal);
+    if(gy>=ly-13&&gy<=ly+4) ly= falling? gy+16 : gy-6;
+  }
+  ly=Math.min(H-B-4,Math.max(T+12,ly));
+  const flab=`<text class="wlab fc" x="${f(xe)}" y="${f(ly)}" text-anchor="end">${projEnd.toFixed(1)} kg by ${shortDate(addDays(todayKey(),fwd))}</text>`;
+  const pointsJson=escHabit(JSON.stringify(smooth.map(p=>[p.d,+p.raw.toFixed(1),+p.kg.toFixed(1),+f(x(p.x))])));
+  const words=`Weighed ${pts.length} times over ${Math.round(lastX)} days: trend ${nowKg.toFixed(1)} kg, `
+    +(tr.perWeek<0? 'down ':'up ')+Math.abs(tr.perWeek).toFixed(2)+' kg a week. About '+projEnd.toFixed(1)+' kg in '+fwd+' days at this rate.';
+
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart wchart" role="img" aria-label="${escHabit(words)}" data-points="${pointsJson}">
+    ${grid}
+    <line class="wtoday" x1="${f(x(todayX))}" x2="${f(x(todayX))}" y1="${T}" y2="${H-B}"/>
+    ${goalLine}
+    <path d="${bandPath}" class="wband"/>
+    <path d="M${f(xn)} ${f(yn)} L${f(xe)} ${f(ye)}" class="wfc"/>
+    <circle cx="${f(xe)}" cy="${f(ye)}" r="3.6" class="wfcdot"/>
+    ${dots}
+    <path d="${line}" class="wtrend"/>
+    <circle cx="${f(xn)}" cy="${f(yn)}" r="5" class="wnow"/>
+    ${flab}
+    ${dates}
+    <line class="wcursor" x1="0" x2="0" y1="${T}" y2="${H-B}" style="display:none"/>
+    <rect class="wtouch" x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="transparent"/>
+  </svg>`;
 }
-/* This treated every weigh in as a week apart: someone weighing daily was
-   told their four-day change was their four-week change. It is per day now,
-   multiplied out to real weeks. */
+/* The whole panel: numbers, range, chart, legend, one sentence. */
+function weightPanel(){
+  const pts=wSeriesFor(weightRange);
+  const head=(()=>{
+    if(pts.length<2) return '';
+    const tr=weightTrend(pts);
+    const smooth=trendSeries();
+    const now=smooth.length? smooth[smooth.length-1].kg : pts[pts.length-1].kg;
+    const firstTrend=(smooth.find(s=>s.d>=pts[0].d)||{kg:pts[0].kg}).kg;
+    const change=now-firstTrend, last=S.weights[S.weights.length-1];
+    const dir=change<0? 'down' : 'up';
+    return `<div class="whead" id="wHead">
+      <div class="wbig"><b>${now.toFixed(1)}</b><span>kg trend</span></div>
+      <div class="wstats">
+        <span class="wpill ${Math.abs(change)<0.2?'':dir}">${change<0?'−':'+'}${Math.abs(change).toFixed(1)} kg since ${shortDate(pts[0].d)}</span>
+        <span class="wsub">${tr.perWeek<0?'Down':'Up'} ${Math.abs(tr.perWeek).toFixed(2)} kg a week</span>
+        <span class="wsub">Scale said ${last.kg} kg ${last.d===todayKey()?'today':shortDate(last.d)}</span>
+      </div></div>`;
+  })();
+  const ranges=`<div class="wranges" role="tablist" aria-label="How far back">${W_RANGES.map(([id,label])=>
+    `<button role="tab" aria-selected="${weightRange===id}" class="${weightRange===id?'on':''}" data-wrange="${id}">${label}</button>`).join('')}</div>`;
+  const legend=pts.length<2? '' : `<div class="wkey">
+    <span><i class="k-dot"></i>Scale</span><span><i class="k-line"></i>Trend</span>
+    <span><i class="k-fc"></i>Where it is heading</span>${S.target&&S.target.kind==='weight'?'<span><i class="k-goal"></i>Goal</span>':''}</div>`;
+  /* one sentence about where it is heading. If the calorie forecast disagrees
+     with the weigh ins by more than a few hundred grams, say so plainly rather
+     than printing a second number without explanation. */
+  const sentence=(()=>{
+    if(pts.length<3) return '';
+    const tr=weightTrend(pts), smooth=trendSeries(), now=smooth[smooth.length-1].kg;
+    const fwd=wHorizon(pts), end=now+tr.perDay*fwd;
+    let s=`At this rate, about <b>${end.toFixed(1)} kg</b> by ${shortDate(addDays(todayKey(),fwd))}.`;
+    const proj=(typeof projectWeeks==='function')? projectWeeks(4) : null;
+    if(fwd<W_FWD) s+=` That only looks ${fwd} days ahead, because that is how much there is to go on.`;
+    else if(proj&&proj[3]&&Math.abs(proj[3].kg-end)>=0.3)
+      s+=` Your logged calories point to ${(+proj[3].kg).toFixed(1)} kg, so ${proj[3].kg<end? 'the food suggests a little faster than the scale is showing' : 'the scale is moving a little faster than the food suggests'}; the two usually meet after a couple more weeks of logging.`;
+    else if(proj&&proj[3]) s+=' Your logged calories point to the same place.';
+    return `<div class="note wsentence">${s}</div>`;
+  })();
+  return `${head}${ranges}${weightChart()}${legend}${sentence}${forecastNote()}`;
+}
+/* tap or drag on the chart to read a day */
+function wInspect(svg,clientX){
+  let pts; try{ pts=JSON.parse(svg.dataset.points); }catch(e){ return; }
+  if(!pts||!pts.length) return;
+  const r=svg.getBoundingClientRect(), vb=svg.viewBox.baseVal;
+  const vx=(clientX-r.left)/r.width*vb.width;
+  let best=pts[0]; pts.forEach(p=>{ if(Math.abs(p[3]-vx)<Math.abs(best[3]-vx)) best=p; });
+  const cur=svg.querySelector('.wcursor');
+  if(cur){ cur.setAttribute('x1',best[3]); cur.setAttribute('x2',best[3]); cur.style.display=''; }
+  const head=document.getElementById('wHead');
+  if(head) head.innerHTML=`<div class="wbig"><b>${best[1].toFixed(1)}</b><span>kg on ${shortDate(best[0])}</span></div>
+    <div class="wstats"><span class="wpill">trend ${best[2].toFixed(1)} kg</span>
+    <span class="wsub">tap outside to close</span></div>`;
+}
+document.addEventListener('pointerdown',e=>{
+  const svg=e.target.closest&&e.target.closest('svg.wchart');
+  if(svg){ wInspect(svg,e.clientX); return; }
+  if(document.getElementById('wHead')&&document.querySelector('svg.wchart .wcursor[style=""]')){ renderProgress(); }
+});
+document.addEventListener('pointermove',e=>{
+  if(!(e.buttons&1)) return;
+  const svg=e.target.closest&&e.target.closest('svg.wchart'); if(svg) wInspect(svg,e.clientX);
+});
+document.addEventListener('click',e=>{
+  const wr=e.target.closest('[data-wrange]');
+  if(wr){ weightRange=wr.dataset.wrange; renderProgress(); }
+});
 function projectionLine(){
   const pts=weightSeries();
   if(pts.length<3) return null;
@@ -7591,9 +8125,7 @@ function renderTrends(){
   ${hero}
   <div class="panel">
     <div class="ph"><h3>Weight</h3><button data-weigh="1">Weigh in</button></div>
-    ${weightChart()}
-    ${forecastNote()}
-    ${proj? `<div class="note">The dashed line follows your weigh ins. The forecast above works from calories instead and says <b>${proj[3].kg} kg</b> by ${prettyDate(addDays(todayKey(),28))}, recalculated each week as you get lighter. Two methods, so two numbers; the gap between them is worth watching.</div>`:''}
+    ${weightPanel()}
     ${waterWindow(todayKey())? `<div class="note" style="color:var(--burnt)">Fluid retention is typically highest around now, averaging about half a kilo in the study that measured it. Read the line, not today's number.</div>`:''}
   </div>
   <div class="panel">
@@ -7627,9 +8159,11 @@ function openHow(){
     <div class="method"><b>Protein</b><span>1.8 g per kilo. The meta-analysis on protein and resistance training supports roughly 1.6 to 2.2 g/kg, so this sits in the middle, and eating more of it while losing weight helps hold onto muscle. ${(()=>{const b=proteinBasis(S.profile); return b.adjusted? `Above a BMI of about 30 the kilo is an adjusted reference weight, ${b.kg} kg in your case rather than ${S.profile.weight} kg, because fat mass carries no protein requirement and total bodyweight would overshoot.` : 'Above a BMI of about 30 it is taken from an adjusted reference weight instead, since fat mass carries no protein requirement.';})()}</span></div>
     <div class="method"><b>Maintenance</b><span>One figure, from the best evidence the app has. To start: resting burn by Mifflin St Jeor, times 1.2 for a sedentary day, plus your step target and the lifting in your plan. Walking is 3 METs for every 100 steps a minute, net of rest, counted above 2,500 a day because a sedentary day already contains those (under 2,500 is what Tudor-Locke and colleagues class as basal activity; using it as the baseline is a judgement). Lifting is 4 METs for as long as your templates take. Once a tracker is connected, your real steps replace the target. Once you have about three weeks of food and weigh ins, what you actually ate minus what the scale says you stored replaces both, and that is the most accurate of the three. Running is counted as steps, which under-counts it a little; physical work a step count cannot see is missed; the three-week figure catches both.</span></div>
     <div class="method"><b>Your calorie target</b><span>Losing: three limits, and the tightest wins. 0.75% of your bodyweight a week, or what your goal date needs up to 1%, the range that keeps muscle while dieting (Helms and colleagues, 2014). A deficit of no more than 750 kcal a day, the top of what the 2013 AHA/ACC/TOS guideline prescribes, because a percentage keeps growing with size and clinical guidance does not. And about 69 kcal a day per kilo of body fat, Alpert's (2005) estimate of the most the fat store can supply; a theoretical model rather than a tested rule, so it is only a ceiling, and in practice it only matters for lean people asking for a fast date. Body fat is yours if you give it, otherwise estimated from BMI, age and sex by the Deurenberg equation, which is about 4 points out either way and cannot tell muscle from fat. Gaining: 0.25 to 0.5% a week, about 10 to 20% over maintenance (Iraki and colleagues, 2019). Never below 1,500 kcal for men or 1,200 for women, and never above maintenance while losing. When you reach your goal weight, the target goes back to maintenance.</span></div>
+    <div class="method"><b>How many reps</b><span>Set by your lifting focus. Strength: heavy loads of roughly 1 to 5 reps at 80 to 100% of your max build maximal strength best, so the main lifts sit at 3 to 6 (Schoenfeld and colleagues, 2021). Muscle: similar growth comes from a wide range of loads down to about 30% of your max, as long as sets finish close to failure, so the big lifts sit at 6 to 12 and smaller ones higher. Losing fat: keep lifting heavy enough to hold on to muscle, mostly 6 to 12 reps at 70 to 80% of max with 1 to 3 minutes rest, and no grinding to failure on heavy lifts (Helms and colleagues, 2015). Endurance: 15 reps and up, with short rests. Every range is a starting point you can change.</span></div>
     <div class="method"><b>When the forecast starts</b><span>A trend line needs two weigh ins and a direction needs three. A forecast starts at three weigh ins, or four days of food logged. It is working from an estimate of what you burn until you have ten days of food inside three weeks along with three weigh ins, at which point it works your burn out from your own weight and intake instead. After three weeks of forecasts it scores itself, and the range you see comes from how wrong it has actually been rather than a default. The note under the chart always says which of those you are at.</span></div>
     <div class="method"><b>Why the line is smoothed</b><span>Bodyweight swings a kilo or two a day on water and gut contents, so the dots are what the scale said and the line is the trend underneath them, smoothed exponentially the way Libra and the Hacker's Diet do it. The forecast, your maintenance calories and your rate of loss are all worked from that trend rather than your last reading, which is why the number on the chart is not the number you saw on the scale this morning.</span></div>
     <div class="method"><b>Cardio</b><span>Nineteen sessions across running, the bike, the rower, the pool, the machines, skipping, walking and whatever you play. What each one costs comes from the Compendium of Physical Activities (Ainsworth and colleagues, 2011), net of what you would burn sitting still. Running and walking are not added to your maintenance because their steps are already counted; a bike, a rower, a pool or a class are, because no step count can see them.</span></div>
+    <div class="method"><b>Meals and timing</b><span>Total protein for the day matters most, so that is what the home screen leads with. Spreading it helps on top: about 0.4 g per kg of bodyweight a meal across at least four meals (Schoenfeld and Aragon, 2018), though the difference is modest once the total is matched. The meal times come from when you wake, train and sleep. Nothing extra is asked of you: each food you log already records the time, which is how the app knows which meal it belongs to and, over a week, how many meals reached the mark and how long before bed you last ate. Timing does not change how many calories you burn, so it never touches your targets.</span></div>
     <div class="method"><b>The food list</b><span>Typical values for the portion named, for ${FOODS.length} foods people here actually eat. Composition figures in Ireland come from McCance and Widdowson's Composition of Foods Integrated Dataset, which the Food Safety Authority of Ireland names as the accepted source. Brands vary, so anything with a label on it is better taken from the label: "Something not on the list" saves it for good. Alcohol carries about 7 kcal a gram, which is why a pint's calories are mostly not protein, carbs or fat.</span></div>
     <div class="method"><b>What your steps are worth</b><span>Steps are part of what you burn, so they are already inside your maintenance. The deficit splits into the part food makes, eating less than you burn without walking, and the part the steps make, and the two add up to the whole. That is why skipping the steps at the same food slows the loss by exactly what they were burning.</span></div>
     <div class="method"><b>Easy weeks</b><span>Every ${+S.profile.deloadEvery||DELOAD_EVERY} weeks by default, from the 4 to 8 week range in Bell and colleagues' 2025 recommendations and the roughly five and a half week gap reported by 246 competitive lifters (Rogerson and colleagues, 2024). About 10% lighter and 25 to 90% less work depending on recovery. Easy-week sessions never set your next weights.</span></div>
@@ -7673,7 +8207,7 @@ document.addEventListener('input',e=>{
   if(r){ S.cycle.length=+r.value; const o=$('outlen'); if(o) o.textContent=S.cycle.length+' days'; }
 });
 
-Object.assign(window.__G,{prettyDate,weightSeries,weightTrend,weightChart,projectionLine,forecastReadiness,trendSeries,trendNow,forecastNote,bandFor,tdeeObserved,pastErrors,weeklyHistory,buildForecast,ensureForecast,reviewWeek,actualsFor,renderTrends,
+Object.assign(window.__G,{prettyDate,weightSeries,weightTrend,weightChart,projectionLine,weightPanel,wSeriesFor,wHorizon,niceTicks,W_RANGES,forecastReadiness,trendSeries,trendNow,forecastNote,bandFor,tdeeObserved,pastErrors,weeklyHistory,buildForecast,ensureForecast,reviewWeek,actualsFor,renderTrends,
   SCI,openHow,weightSlopePerDay,walkKcal,liftKcal,tdeeEstimate,tdeeObserved,trendSeries,trendNow,trendRatePerWeek,recentIntake,projectWeeks,bandFor,pastErrors,
   phaseOn,cycleDay,waterWindow,openCycle,weightChart,projectionLine,consistencyChart,weekOfDate,addDays,PHASES});
 </script>
@@ -8609,7 +9143,7 @@ document.addEventListener('click',async e=>{
     coachBusy=false; drawCoach();
     return; }
 });
-Object.assign(window.__G||{},{COACH_SYS,coachCfg,coachReady,setCoach,askCoach,openCoach,COACH_ASKS,ownTargets,targetKcalPreview});
+Object.assign(window.__G||{},{COACH_SYS,coachCfg,coachReady,setCoach,askCoach,openCoach,COACH_ASKS,ownTargets,targetKcalPreview,openFocusSheet,openTplEdit});
 </script>
 
 <script>
@@ -8677,6 +9211,7 @@ function renderSettings(){
     ${setRow('body','burnt','Calories and body', p.detailsSet&&ct? 'Eat '+num(ct.kcal)+' kcal · maintenance '+num(ct.maintenance) : 'Add your details to work these out')}
     ${setRow('steps','marine','Daily steps', num(stepTarget())+' a day')}
     ${setRow('habits','forest','Habits', habits.length? habits.join('<br>') : 'None yet. One to start, one to stop')}
+    ${setRow('focus','burnt','Lifting focus', LIFT_FOCUS[liftFocus()].t+' · '+(()=>{ const r=LIFT_FOCUS[liftFocus()].rx.heavy; return 'big lifts '+r.repMin+' to '+r.reps+' reps'; })()+(S.profile.liftFocus?'':' (from your aim)'))}
     ${setRow('deload','marigold','Easy weeks', dl)}
     ${setRow('kit','grey','Kit you train with', kit)}
   </div>`;
@@ -8740,6 +9275,7 @@ document.addEventListener('click',e=>{
   else if(k==='body'||k==='steps') openDetails();
   else if(k==='habits') openHabitSheet();
   else if(k==='deload') openDeloadSheet();
+  else if(k==='focus') openFocusSheet();
   else if(k==='kit') openKitSheet();
   else if(k==='cycle') openCycle();
   else if(k==='records') openYou();

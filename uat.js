@@ -1390,7 +1390,9 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('24 · the sheet closes and says so', !d.getElementById('altSheet').classList.contains('on') && /No energy <b>drinks<\/b>\. One day at a time/.test(txt(d.getElementById('toast'))));
     G.go('today'); G.renderAll();
     const today = d.getElementById('todayView').innerHTML;
-    t('24 · Today shows it exactly as written, as text', /Stop: No energy &lt;b&gt;drinks&lt;\/b&gt;/.test(today) && !/<b>drinks<\/b>/.test(today));
+    t('24 · Today shows it exactly as written, as text, and never as markup',
+      /Stop: No energy &lt;b&gt;drinks&lt;\/b&gt;/.test(today)
+      && ![...d.querySelectorAll('#todayView b')].some(el => el.textContent === 'drinks'));
     G.go('progress'); G.renderAll();
     const row = d.querySelector('[data-setting="habits"]').innerHTML;
     t('24 · the settings row shows it safely too', /No energy &lt;b&gt;drinks&lt;\/b&gt;/.test(row) && !/<b>drinks<\/b>/.test(row));
@@ -1859,15 +1861,13 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
       (xs[1] - xs[0]) > (xs[2] - xs[1]) * 5, xs.join(', '));
     t('28 · the chart is not stretched out of shape', !/preserveAspectRatio="none"/.test(svg));
     t('28 · it describes itself for anyone who cannot see it', /role="img"/.test(svg) && /aria-label="Weighed 3 times over 21 days/.test(svg), (svg.match(/aria-label="[^"]{0,80}/) || [''])[0]);
-    t('28 · the timeline is labelled at both ends and today', (() => {
-      const labels = [...svg.matchAll(/<text[^>]*class="clab"[^>]*>([^<]+)<\/text>/g)].map(m => m[1]);
-      const future = G.prettyDate(G.addDays(G.todayKey(), 28));
-      return labels.includes('today') && labels.includes(future) && labels.includes(G.prettyDate(G.addDays(G.todayKey(), -21))); })(),
-      [...svg.matchAll(/<text[^>]*class="clab"[^>]*>([^<]+)</g)].map(m => m[1]).join(' | '));
+    t('28 · the timeline is labelled at the start and at today', (() => {
+      const labels = [...svg.matchAll(/<text[^>]*class="wlab[^"]*"[^>]*>([^<]+)<\/text>/g)].map(m => m[1]);
+      return labels.includes('Today') && labels.some(l => /^\d{1,2} [A-Z][a-z]{2}$/.test(l)); })());
     G.setTarget('weight', 70, G.addDays(G.todayKey(), 300)); S.target.from = 92;
     const svg2 = G.weightChart();
     t('28 · a goal far below is named rather than squashing the chart',
-      /goal 70 kg, below this/.test(svg2) && !/stroke-dasharray="2 4"/.test(svg2), (svg2.match(/goal[^<]{0,30}/) || [''])[0]);
+      /Goal 70 kg, [\d.]+ kg below this/.test(svg2) && !/class="wgoal"/.test(svg2), (svg2.match(/Goal[^<]{0,40}/) || [''])[0]);
     t('28 · and the weigh ins still use the full height', (() => {
       const ys = [...svg2.matchAll(/<circle cy?="[\d.]+" cy="([\d.]+)"/g)].map(m => +m[1]);
       const all = [...svg2.matchAll(/<circle[^>]*cy="([\d.]+)"/g)].map(m => +m[1]);
@@ -1876,7 +1876,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     G.setTarget('weight', 92, G.addDays(G.todayKey(), 90)); S.target.from = 94;
     const svg3 = G.weightChart();
     t('28 · a goal within reach is drawn as a line on the chart',
-      /stroke-dasharray="2 4"/.test(svg3) && /goal 92/.test(svg3));
+      /class="wgoal"/.test(svg3) && /Goal 92 kg/.test(svg3));
   }
 
   /* ---------------------------------------------------------- 29 */
@@ -2018,7 +2018,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
       d.querySelector('.glances .glance').dataset.glance === 'food');
     t('31 · and they show what is left, not just what is eaten', /kcal left/.test(txt(d.querySelector('.glances'))));
     t('31 · each one can be logged in one tap', ['food','protein','steps'].every(k => !!d.querySelector('[data-glance="' + k + '"]')));
-    t('31 · with a row for the three things worth logging', d.querySelectorAll('.quicks .quick').length === 3);
+    t('31 · with a row for the two things worth logging', d.querySelectorAll('.quicks .quick').length === 2);
 
     /* the week, once, not twice */
     t('31 · the week appears once, as a strip', d.querySelectorAll('.weekstrip').length === 1 && !home().querySelector('.ribbon'));
@@ -2042,8 +2042,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     G.closeSheets();
     t('31 · tapping weigh in opens the weigh in', tap('weigh') && d.getElementById('weighSheet').classList.contains('on'));
     G.closeSheets();
-    t('31 · tapping rate the day opens just that, not the whole log',
-      tap('day') && d.getElementById('quickSheet').classList.contains('on') && !d.getElementById('dayCheck').classList.contains('on'));
+    t('31 · the rating widget has been removed from Home, by request', !tap('day'));
     G.closeSheets(); G.go('today'); G.renderAll();
     G.addFood('chicken', 1, 'l'); G.renderAll();
     t('31 · logging updates the numbers straight away', /1 in/.test(txt(d.querySelector('.quicks'))));
@@ -2118,15 +2117,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
 
     /* ---- tiles log one thing ---- */
     G.go('today'); G.renderAll();
-    d.querySelector('[data-glance="day"]').click();
-    t('32 · the day tile opens just the rating', d.getElementById('quickSheet').classList.contains('on')
-      && /How did today go/.test(txt(d.getElementById('quickTitle'))));
-    t('32 · with buttons and a box, not five controls', d.querySelectorAll('#quickBody [data-quickstep]').length >= 2
-      && !!d.getElementById('quickValue') && !d.querySelector('#quickBody [data-dayrange="sleep"]'));
-    d.getElementById('quickValue').value = '8';
-    d.getElementById('quickSave').click();
-    t('32 · saving it saves only that', S.days[G.todayKey()].wb === 8 && !S.days[G.todayKey()].sleep);
-    t('32 · and the sheet closes', !d.getElementById('quickSheet').classList.contains('on'));
+    t('32 · there is no rating widget on Home any more, by request', !d.querySelector('[data-glance="day"]'));
     G.go('today'); G.renderAll();
     d.querySelector('[data-glance="steps"]').click();
     t('32 · the steps tile does the same', /Steps today/.test(txt(d.getElementById('quickTitle'))));
@@ -2275,22 +2266,24 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const svg = G.weightChart();
     t('34 · every weigh in is on the chart, as a dot',
       (svg.match(/class="raw"/g) || []).length >= S.weights.length, String((svg.match(/class="raw"/g) || []).length));
-    t('34 · the bold line is the smoothed trend, not the jagged readings', (() => {
-      const smooth = G.trendSeries();
-      const last = smooth[smooth.length - 1].kg.toFixed(1);
-      return new RegExp('fill="var\\(--marine\\)">' + last + ' kg').test(svg); })(),
+    t('34 · the headline number is the smoothed trend, not the jagged reading', (() => {
+      G.go('progress'); G.renderAll();
+      const head = d.getElementById('wHead').textContent;
+      return head.indexOf(G.trendSeries().slice(-1)[0].kg.toFixed(1)) >= 0; })(),
       'trend ' + G.trendSeries().slice(-1)[0].kg.toFixed(1) + ' vs reading ' + S.weights.slice(-1)[0].kg);
     t('34 · so a noisy day does not change the headline number',
       G.trendSeries().slice(-1)[0].kg !== S.weights.slice(-1)[0].kg);
-    t('34 · and the chart says which line is which',
-      /what the scale said/.test(svg) && /the trend/.test(svg));
+    t('34 · and one legend says which line is which', (() => { const k = d.querySelector('.wkey');
+      return !!k && /Scale/.test(k.textContent) && /Trend/.test(k.textContent) && d.querySelectorAll('.wkey').length === 1; })());
     t('34 · there is one trend line, not two competing ones',
       (svg.match(/stroke="var\(--line\)" stroke-width="1.6"/g) || []).length === 0);
-    t('34 · the chart has kilos up the side', (svg.match(/class="clab"/g) || []).length >= 5);
-    t('34 · dates along the bottom, including today', /today<\/text>/.test(svg) && /<text class="clab" x="34"/.test(svg));
-    t('34 · the current weight is labelled', new RegExp(S.weights[S.weights.length - 1].kg.toFixed(1) + ' kg').test(svg));
-    t('34 · the forecast shows a range, not a single confident line', /opacity="0\.16"/.test(svg));
-    t('34 · and the projected weight is written on it', /kg<\/text>/.test(svg));
+    t('34 · the chart has round kilos up the side', (() => {
+      const ys = [...svg.matchAll(/<text class="wlab" x="32"[^>]*>([^<]+)<\/text>/g)].map(m => m[1]);
+      return ys.length >= 3 && ys.every(v => Math.abs(+v * 2 - Math.round(+v * 2)) < 1e-9); })());
+    t('34 · dates along the bottom, including today', /Today<\/text>/.test(svg));
+    t('34 · the current trend weight is the big number above it', /kg trend/.test(d.getElementById('wHead').textContent));
+    t('34 · the forecast shows a range, not a single confident line', /class="wband"/.test(svg));
+    t('34 · and the projected weight and date are written on it', /[\d.]+ kg by \d{1,2} [A-Z][a-z]{2}<\/text>/.test(svg));
     t('34 · nothing is drawn outside the frame', (() => {
       const vb = /viewBox="0 0 (\d+) (\d+)"/.exec(svg);
       return [...svg.matchAll(/(?:x|y|x1|y1|x2|y2|cx|cy)="(-?[\d.]+)"/g)]
@@ -2347,7 +2340,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     S.days = {}; S.weights = []; G.go('today'); G.renderAll();
     t('35 · nothing logged says nothing, rather than "not today" three times',
       !/not today/.test(txt(d.querySelector('.quicks'))) && !/one slider/.test(txt(d.querySelector('.quicks'))));
-    t('35 · the three buttons are still there', d.querySelectorAll('.quicks .quick').length === 3);
+    t('35 · both buttons are still there, food and weigh in', d.querySelectorAll('.quicks .quick').length === 2);
     S.weights.push({ d: G.todayKey(), kg: 91.4 }); G.renderAll();
     t('35 · once done, it shows what it was', /91\.4/.test(txt(d.querySelector('.quicks'))));
 
@@ -2390,8 +2383,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     S.plan.days[i] = Object.assign({}, lift, { dow: i });
     S.profile.trainTime = '18:00'; S.profile.wakeTime = '07:00';
     G.go('today'); G.renderAll();
-    t('35 · it sits on the home screen showing what is next', !!d.getElementById('eatBtn')
-      && /Eating around today/.test(txt(d.getElementById('eatBtn'))));
+    t('35 · it sits on the home screen as the day\'s meals, with the reasoning a tap away',
+      !!d.querySelector('.mealstrip .meal') && /Why these times/.test(txt(d.getElementById('eatBtn'))));
     d.getElementById('eatBtn').click();
     const body = txt(d.getElementById('altBody'));
     t('35 · the sheet lays the day out', /Last big meal|last big one/.test(body) && /Last coffee/.test(body));
@@ -2476,6 +2469,309 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
 
     eat(target);
     t('37 · exactly on target reads as nothing left, not over', /kcal left/.test(txt(tile())) && +txt(tile().querySelector('.gv')).replace(/,/g, '') === 0);
+  }
+
+  /* ---------------------------------------------------------- 38 */
+  journey(38, 'Any habit can be removed, and the check-in is only done when it is done');
+  {
+    const { d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const live = () => G.activeHabits().map(h => h.id);
+    G.startHabit('walk_after'); G.startHabit('no_sugary_drinks'); G.startHabit('stairs');
+    G.go('today'); G.renderAll();
+    t('38 · three habits on Home', live().length === 3, live().join(','));
+    t('38 · each one can be opened', d.querySelectorAll('#todayView [data-habitopen]').length === 3);
+    [...d.querySelectorAll('[data-habitopen]')][2].click();
+    t('38 · opening one shows that habit, not a list', /Stairs, not the lift/.test(txt(d.getElementById('altTitle'))));
+    t('38 · with remove named plainly', /Remove this habit/.test(txt(d.getElementById('altBody'))));
+    d.querySelector('#altBody [data-habitretire]').click();
+    t('38 · the third habit, which could never be removed, now can', live().join() === 'walk_after,no_sugary_drinks', live().join(','));
+    d.getElementById('toastAct').click();
+    t('38 · and Undo brings it back', live().length === 3);
+
+    G.go('today'); G.renderAll();
+    [...d.querySelectorAll('[data-habitopen]')][0].click();
+    d.querySelector('#altBody [data-habittoggle]').click();
+    t('38 · a habit can be ticked from its sheet', G.habitWeek('start').slice(-1)[0].done);
+    G.go('today'); G.renderAll();
+    [...d.querySelectorAll('[data-habitopen]')][0].click();
+    t('38 · and the sheet then offers to untick it', /Untick today/.test(txt(d.getElementById('altBody'))));
+    d.querySelector('#altBody [data-habittoggle]').click();
+    t('38 · which works', !G.habitWeek('start').slice(-1)[0].done);
+    G.openHabitSheet();
+    t('38 · the picker names which habit a remove button removes', !/Put this one down for now/.test(txt(d.getElementById('altBody')))
+      && /Remove Ten minutes after dinner/.test(txt(d.getElementById('altBody'))));
+    G.closeSheets();
+
+    /* the check-in */
+    G.go('today'); G.renderAll();
+    t('38 · the rating widget is gone from Home', !d.querySelector('.quicks [data-glance="day"]') && d.querySelectorAll('.quicks .quick').length === 2);
+    G.openDay();
+    t("38 · the daily sheet is called Today's Check-in", /Today's Check-in/.test(d.getElementById('dayCheck').textContent));
+    t('38 · and no rating is filled in for you', /not rated/.test(txt(d.getElementById('outwb'))));
+    G.closeSheets();
+    const tileDone = () => { G.openLog(); const b = d.querySelector('#logBody [data-log="day"]'); const r = b.classList.contains('done'); G.closeSheets(); return r; };
+    G.addFood('chicken', 1, 'l'); S.weights.push({ d: G.todayKey(), kg: 91 }); G.save();
+    t('38 · logging food and weighing in do not count as checking in', !tileDone());
+    G.openDay(); d.getElementById('saveDay').click();
+    t('38 · saving without rating stores no invented rating', S.days[G.todayKey()].wb === undefined);
+    t('38 · but saving it does count', tileDone());
+    G.openDay();
+    d.querySelector('[data-dayrange="wb"]').value = '8';
+    d.querySelector('[data-dayrange="wb"]').dispatchEvent(new (d.defaultView.Event)('input', { bubbles: true }));
+    d.getElementById('saveDay').click();
+    t('38 · a rating they do give is kept', S.days[G.todayKey()].wb === 8);
+  }
+
+  /* ---------------------------------------------------------- 39 */
+  journey(39, 'Rep ranges follow what you are training for, from onboarding to the last set');
+  {
+    const bench = G2 => G2.S.templates.find(x => x.id === 't_push').ex.find(r => r.exId === 'bench');
+    const lat = G2 => G2.S.templates.find(x => x.id === 't_push').ex.find(r => r.exId === 'lateral');
+
+    /* the table itself */
+    const b0 = await boot(); allErrs.push(...b0.errs);
+    const L = b0.G.LIFT_FOCUS;
+    t('39 · there is a focus for strength, muscle, keeping muscle while losing fat, and endurance',
+      ['strength','muscle','keep','endurance'].every(k => !!L[k]));
+    t('39 · strength keeps the big lifts heavy, within the 1 to 6 zone', L.strength.rx.heavy.reps <= 6 && L.strength.rx.heavy.repMin >= 1);
+    t('39 · strength rests longest', L.strength.rx.heavy.rest >= Math.max(L.muscle.rx.heavy.rest, L.keep.rx.heavy.rest, L.endurance.rx.heavy.rest));
+    t('39 · muscle sits in 6 to 12 on the big lifts', L.muscle.rx.heavy.repMin >= 6 && L.muscle.rx.heavy.reps <= 12);
+    t('39 · losing fat keeps the weight heavy, mostly 6 to 12 or below, never the toning myth',
+      L.keep.rx.heavy.reps <= 12 && L.keep.rx.compound.reps <= 12 && L.keep.rx.heavy.repMin <= L.muscle.rx.heavy.repMin);
+    t('39 · endurance goes to 15 and beyond', L.endurance.rx.accessory.reps >= 15 && L.endurance.rx.isolation.reps >= 20);
+    t('39 · endurance rests shortest', L.endurance.rx.compound.rest < L.muscle.rx.compound.rest);
+    t('39 · every range is a real range', Object.values(L).every(f => Object.values(f.rx).every(r => r.repMin < r.reps && r.sets >= 1 && r.rest >= 0)));
+
+    /* onboarding */
+    b0.G.startOnboarding(); b0.G.onbDraft.aim = 'strong'; b0.G.step = 1; b0.G.onbRender();
+    const onb = b0.d.getElementById('onbBody').textContent;
+    t('39 · Get stronger is an aim you can pick', !!b0.d.querySelector('[data-onbaim="strong"]'));
+    t('39 · picking an aim says what it means for your lifting', /Your lifting: strength/.test(onb) && /Big lifts 3 to 6 reps/.test(onb), onb.slice(0, 200));
+    b0.d.querySelector('[data-onbaim="lose"]').click(); b0.G.onbRender();
+    t('39 · and changes as you change the aim', /Your lifting: keep muscle while losing fat/.test(b0.d.getElementById('onbBody').textContent));
+
+    for (const [aim, focus] of [['strong','strength'],['build','muscle'],['lose','keep'],['endure','endurance']]) {
+      const b = await boot(); allErrs.push(...b.errs); onboard(b.G, { aim });
+      const want = b.G.recommendedFor('bench', focus), got = bench(b.G);
+      t('39 · onboarding for ' + aim + ' sets the templates to the ' + focus + ' ranges',
+        got.repMin === want.repMin && got.reps === want.reps && got.rest === want.rest && got.sets === want.sets,
+        JSON.stringify(got) + ' vs ' + JSON.stringify(want));
+    }
+
+    /* changing focus later, without losing your own changes */
+    const b = await boot(); allErrs.push(...b.errs); onboard(b.G, { aim: 'build' });
+    const G = b.G, d = b.d;
+    lat(G).reps = 25; lat(G).repMin = 20; G.save();
+    G.S.profile.liftFocus = 'strength'; G.save();
+    t('39 · changing focus does not silently rewrite your templates', bench(G).reps === 10 && lat(G).reps === 25);
+    G.openFocusSheet();
+    t('39 · the focus sheet says how many movements differ', /movements? in your templates/.test(d.getElementById('altBody').textContent));
+    d.getElementById('focusApply').click();
+    t('39 · asking moves them all to the new focus', bench(G).reps === 6 && bench(G).repMin === 3 && lat(G).reps === 15);
+    d.getElementById('toastAct').click();
+    t('39 · and Undo puts every one back, your own changes included', bench(G).reps === 10 && lat(G).reps === 25);
+    G.go('progress'); G.renderAll();
+    t('39 · the You screen shows the focus as a setting', /Lifting focus/.test(d.getElementById('s-progress').textContent));
+    G.openFocusSheet(); d.querySelector('[data-focus="aim"]').click();
+    t('39 · and it can go back to following your aim', G.liftFocus() === 'muscle' && !G.S.profile.liftFocus);
+    G.closeSheets();
+
+    /* the template editor */
+    G.openTplEdit('t_push');
+    const ed = () => d.getElementById('tplEditBody').textContent;
+    t('39 · the editor names the focus at the top', /Lifting focus: build muscle/.test(ed()));
+    t('39 · and flags the movement you changed', /Recommended for build muscle/.test(ed()) && /set differently/.test(ed()));
+    const useIt = d.querySelector('[data-tplrec]');
+    useIt.click();
+    t('39 · one tap sets that movement to the recommendation', G.tplDraft.ex.every(r => G.rowMatches(r)));
+    t('39 · movements that match say so', /Matches your focus/.test(ed()));
+    G.closeSheets();
+
+    /* in the workout */
+    G.startWorkout('t_push');
+    const gym = d.getElementById('gymBody').textContent;
+    t('39 · the workout opens with the focus and how hard to push', /Build muscle/.test(gym) && /one to three reps short of failure/.test(gym));
+    t('39 · the prescription follows the focus', G.GYM.ex.find(e => e.exId === 'bench').reps === G.recommendedFor('bench', 'muscle').reps);
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+
+    t('39 · the method sheet cites where the numbers come from', (() => { G.openHow();
+      const h = d.body.textContent; G.closeSheets();
+      return /How many reps/.test(h) && /Schoenfeld/.test(h) && /Helms/.test(h); })());
+  }
+
+  /* ---------------------------------------------------------- 39 */
+  journey(39, 'Meals sit where food is logged, and earn their place');
+  {
+    const { d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    G.go('today'); G.renderAll();
+    const order = [...d.querySelectorAll('#todayView > *')].map(e => e.classList.contains('mealstrip') ? 'meals'
+      : e.classList.contains('glances') ? 'numbers' : e.classList.contains('quicks') ? 'quick' : e.classList.contains('weekstrip') ? 'week' : '').filter(Boolean);
+    t('39 · meals sit right under the numbers they feed, above the week', order.join(',') === 'numbers,quick,meals,week', order.join(','));
+    t('39 · the per meal mark is 0.4 g per kg of the protein bodyweight basis',
+      G.perMealProtein() === Math.round(0.4 * G.proteinBasis(S.profile).kg));
+    const keepBody = { h: S.profile.height, w: S.profile.weight };
+    S.profile.height = 170; S.profile.weight = 130;
+    t('39 · and uses the same adjusted basis as the daily target for a higher BMI',
+      G.perMealProtein() === Math.round(0.4 * G.proteinBasis(S.profile).kg) && G.proteinBasis(S.profile).adjusted);
+    S.profile.height = keepBody.h; S.profile.weight = keepBody.w;
+
+    G.addFood('oats', 1, 'b'); G.addFood('chicken', 1, 'l'); G.addFood('proteinbar', 1, 's');
+    const { slots, per } = G.mealSlots();
+    const by = tag => slots.find(s => s.tag === tag);
+    t('39 · the meal chosen wins over the time it was logged', by('breakfast').p === G.foodOf('oats').p && by('lunch').p === G.foodOf('chicken').p);
+    t('39 · snacks go to the nearest snack', slots.filter(s => !['breakfast','lunch','last','presleep'].includes(s.tag)).some(s => s.p === G.foodOf('proteinbar').p));
+    G.renderAll();
+    const lunch = d.querySelector('.mealstrip [data-mealslot="l"]');
+    t('39 · a meal that reaches the mark is marked done', lunch.classList.contains('done'));
+    t('39 · the line under it puts the total first', /of \d+g protein today, which matters most/.test(txt(d.querySelector('.mealstrip').nextElementSibling)));
+    d.querySelector('.mealstrip [data-mealslot="d"]').click();
+    t('39 · tapping a meal opens the food list on that meal',
+      d.getElementById('foodSheet').classList.contains('on')
+      && txt([...d.querySelectorAll('#foodSheet [data-foodslot]')].find(b => b.classList.contains('on')).querySelector('span')) === 'Dinner');
+    G.closeSheets();
+
+    /* the week, with no extra input asked for */
+    for (let i = 1; i <= 3; i++) {
+      const k = G.addDays(G.todayKey(), -i), base = G.dateOf(k).getTime();
+      S.days[k] = { food: [
+        { id: 'oats', n: 'Oats', u: '50g', q: 1, meal: 'b', kcal: 190, p: 40, c: 33, f: 3.5, at: base + 8 * 3600e3 },
+        { id: 'chicken', n: 'Chicken', u: '150g', q: 1, meal: 'l', kcal: 250, p: 47, c: 0, f: 6, at: base + 13 * 3600e3 },
+        { id: 'pizza', n: 'Pizza', u: 'half', q: 1, meal: 'd', kcal: 640, p: 28, c: 72, f: 26, at: base + 21 * 3600e3 }] };
+    }
+    const ts = G.timingStats(7);
+    t('39 · it works the week out from log times alone', ts && ts.days >= 3 && ts.meals >= 9);
+    t('39 · counting meals that reached the mark', ts.hits >= 6, JSON.stringify(ts));
+    t('39 · and how long before bed the last food came', ts.lastBeforeBedH !== null && ts.lastBeforeBedH > 0 && ts.lastBeforeBedH < 6, String(ts.lastBeforeBedH));
+    t('39 · the coach brief carries it', /Meals: about [\d.]+ a day/.test(G.coachBrief()) && /before bed/.test(G.coachBrief()));
+    t('39 · timing never changes the calorie target', (() => { const a = S.targets.kcal; S.targets = G.ownTargets(); return S.targets.kcal === a; })());
+    t('39 · and the method sheet says so, with the source', (() => { G.openHow(); const h = d.body.textContent; G.closeSheets();
+      return /Schoenfeld and Aragon, 2018/.test(h) && /never touches your targets/.test(h); })());
+  }
+
+  /* ---------------------------------------------------------- 40 */
+  journey(40, 'One row per food per meal, with a counter, on a screen built for adding');
+  {
+    const { d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const today = () => G.dayFood(G.todayKey()).map(x => x.id + ':' + x.meal + ':' + x.q).join(',');
+
+    G.openFood(false);
+    const kids = [...d.getElementById('foodBody').children].map(e => (e.className || '').split(' ')[0]);
+    t('40 · search comes before the day, not after it', kids.indexOf('foodsearch') < kids.indexOf('plate') && kids.indexOf('foodsearch') <= 3, kids.join(' > '));
+    t('40 · meals are tabs showing their calories', d.querySelectorAll('.mealtabs [data-foodslot]').length === 4);
+    t('40 · every result shows calories and protein', [...d.querySelectorAll('#foodList .frow')].every(r => /kcal/.test(txt(r)) && /protein/.test(txt(r))));
+
+    d.querySelector('[data-foodslot="b"]').click();
+    d.querySelector('#foodList [data-foodadd="egg:1"]').click();
+    t('40 · one tap adds', today() === 'egg:b:1');
+    t('40 · and the row becomes a counter', !!d.querySelector('#foodList [data-foodstep="egg|b|1"]'));
+    d.querySelector('#foodList [data-foodstep="egg|b|1"]').click();
+    d.querySelector('#foodList [data-foodstep="egg|b|1"]').click();
+    t('40 · three eggs is one row that says 3', today() === 'egg:b:3', today());
+    G.addFood('egg', 1, 'b');
+    t('40 · adding it again from anywhere counts up, not a new row', today() === 'egg:b:4');
+    G.addFood('egg', 1, 'l');
+    t('40 · the same food at another meal keeps its own row', today() === 'egg:b:4,egg:l:1');
+    t('40 · calories follow the count', Math.round(G.foodTotals(G.todayKey()).kcal) === G.foodOf('egg').kcal * 5);
+    G.drawFood();
+    t('40 · the plate shows the meal with its counters', /Breakfast/.test(txt(d.querySelector('.platehead')))
+      && !!d.querySelector('.plate [data-foodstep="egg|b|-1"]') && /4/.test(txt(d.querySelector('.plate .fq'))));
+    for (let i = 0; i < 4; i++) d.querySelector('.plate [data-foodstep="egg|b|-1"]').click();
+    t('40 · counting down to nothing takes it off', today() === 'egg:l:1');
+    t('40 · with Undo', /taken off/.test(txt(d.getElementById('toast'))) && /Undo/.test(txt(d.getElementById('toast'))));
+    d.getElementById('toastAct').click();
+    t('40 · which puts it back', /egg:b:1/.test(today()));
+
+    d.querySelector('#foodList [data-foodadd="banana:0.5"]').click();
+    t('40 · half a portion still works', /banana:b:0.5/.test(today()));
+    G.drawFood();
+    t('40 · and shows as a half', /½/.test(txt(d.querySelector('.plate'))));
+    d.querySelector('.plate [data-foodstep="banana|b|1"]').click();
+    t('40 · one more from a half is one whole, not one and a half', /banana:b:1(,|$)/.test(today()), today());
+
+    /* quick add */
+    d.getElementById('foodQuickBtn').click();
+    d.getElementById('qaKcal').value = '650'; d.getElementById('qaP').value = '30';
+    d.getElementById('qaSave').click();
+    t('40 · quick add puts just the numbers in the meal', G.dayFood(G.todayKey()).some(x => x.quick && x.kcal === 650 && x.p === 30 && x.meal === 'b'));
+    G.quickAddFood(400, 20, 'b');
+    t('40 · each quick add is its own entry, never merged', G.dayFood(G.todayKey()).filter(x => x.quick).length === 2);
+    d.getElementById('foodQuickBtn').click();
+    d.getElementById('qaKcal').value = '';
+    d.getElementById('qaSave').click();
+    t('40 · quick add with no calories is refused', G.dayFood(G.todayKey()).filter(x => x.quick).length === 2 && /calories in first/.test(txt(d.getElementById('toast'))));
+    G.closeSheets();
+
+    /* days logged before this change */
+    const y = G.addDays(G.todayKey(), -1);
+    S.days[y] = { food: [
+      { id: 'egg', n: 'Egg', u: 'egg', q: 1, meal: 'b', kcal: 78, p: 6.3, c: 0.6, f: 5.3, at: 1 },
+      { id: 'egg', n: 'Egg', u: 'egg', q: 1, meal: 'b', kcal: 78, p: 6.3, c: 0.6, f: 5.3, at: 2 },
+      { id: 'egg', n: 'Egg', u: 'egg', q: 1, meal: 'l', kcal: 78, p: 6.3, c: 0.6, f: 5.3, at: 3 }] };
+    const before = G.foodTotals(y).kcal;
+    t('40 · old duplicate rows fold into one counter', G.mergeDayFood(y) === 1
+      && G.dayFood(y).map(x => x.meal + ':' + x.q).join(',') === 'b:2,l:1');
+    t('40 · without changing the day\'s totals', G.foodTotals(y).kcal === before);
+    t('40 · keeping the earliest time for the meal', G.dayFood(y)[0].at === 1);
+    t('40 · the search box is a proper tap target', /\.foodsearch input\{[^}]*min-height:48px/.test(require('fs').readFileSync(require('path').join(__dirname, 'index.html'), 'utf8')));
+  }
+
+  /* ---------------------------------------------------------- 41 */
+  journey(41, 'A weight panel you can read at a glance');
+  {
+    const { d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    S.weights = [];
+    for (let i = 84; i >= 0; i--) { if (i % 7 === 3) continue;
+      S.weights.push({ d: G.addDays(G.todayKey(), -i), kg: +(95 - (84 - i) * (0.55 / 7) + [0.9, -0.6, 0.3, -1.1, 0.5][i % 5]).toFixed(1) }); }
+    G.setTarget('weight', 85, G.addDays(G.todayKey(), 120)); S.target.from = 95;
+    G.go('progress'); G.renderAll();
+    const panel = () => d.getElementById('dash');
+    t('41 · the numbers come first, as text', !!d.getElementById('wHead') && /kg trend/.test(txt(d.getElementById('wHead')))
+      && /since/.test(txt(d.getElementById('wHead'))) && /kg a week/.test(txt(d.getElementById('wHead'))));
+    t('41 · there is one legend', d.querySelectorAll('.wkey').length === 1 && !/what you weighed/.test(txt(panel())));
+    t('41 · and one forecast, the same in the sentence as on the chart', (() => {
+      const svg = d.querySelector('svg.wchart').outerHTML;
+      const onChart = (svg.match(/([\d.]+) kg by /) || [])[1];
+      return onChart && txt(d.querySelector('.wsentence')).indexOf(onChart + ' kg') >= 0; })());
+    t('41 · gridlines are round numbers', G.niceTicks(83.9, 96.6).ticks.every(v => Number.isInteger(v)) && G.niceTicks(83.9, 96.6).ticks.length <= 6);
+    t('41 · four ranges to look at', d.querySelectorAll('[data-wrange]').length === 4
+      && d.querySelector('[data-wrange="3m"]').classList.contains('on'));
+    d.querySelector('[data-wrange="1m"]').click();
+    t('41 · choosing one month shows only the last month', G.wSeriesFor('1m').every(p => p.d >= G.addDays(G.todayKey(), -30))
+      && d.querySelector('[data-wrange="1m"]').classList.contains('on'));
+    t('41 · all time shows everything', G.wSeriesFor('all').length === S.weights.length);
+    d.querySelector('[data-wrange="3m"]').click();
+
+    /* never more certain than the data */
+    t('41 · three months of data projects the full four weeks', G.wHorizon(G.wSeriesFor('3m')) === 28);
+    const few = [{ d: G.addDays(G.todayKey(), -9), kg: 95 }, { d: G.addDays(G.todayKey(), -4), kg: 94.3 }, { d: G.todayKey(), kg: 94.6 }];
+    t('41 · nine days of data projects nine days, not four weeks', G.wHorizon(few) === 9);
+    t('41 · never less than a week', G.wHorizon([{ d: G.addDays(G.todayKey(), -2), kg: 95 }, { d: G.todayKey(), kg: 94.8 }]) === 7);
+
+    /* the goal */
+    t('41 · a goal within reach is a line', /class="wgoal"/.test(G.weightChart()));
+    G.setTarget('weight', 70, G.addDays(G.todayKey(), 300)); S.target.from = 95;
+    const far = G.weightChart();
+    t('41 · a goal far off is named at the edge, not drawn', !/class="wgoal"/.test(far) && /Goal 70 kg, [\d.]+ kg below this/.test(far));
+
+    /* reading a day */
+    G.renderAll();
+    const svg = d.querySelector('svg.wchart');
+    const pts = JSON.parse(svg.dataset.points);
+    t('41 · every weigh in can be read back', pts.length === G.wSeriesFor('3m').length && pts.every(p => p.length === 4));
+    t('41 · it describes itself for anyone who cannot see it', /Weighed \d+ times over \d+ days: trend/.test(svg.getAttribute('aria-label')));
+    t('41 · it can be scrolled past on a phone without grabbing the page', /\.chart\.wchart\{[^}]*touch-action:pan-y/.test(require('fs').readFileSync(require('path').join(__dirname, 'index.html'), 'utf8')));
   }
 
   const r = s.report(allErrs);

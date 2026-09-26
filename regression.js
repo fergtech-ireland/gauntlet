@@ -226,9 +226,12 @@ setTimeout(() => {
     return G.dayFood(G.todayKey()).some(x => x.id === 'cf_test'); })());
   t('a meal can be saved and re-added', (() => {
     const m = G.saveMealAs('Usual lunch', 'l');
-    const before = G.dayFood(G.todayKey()).length;
+    const lunch = () => G.dayFood(G.todayKey()).filter(x => x.meal === 'l');
+    const rows = lunch().length, counts = lunch().map(x => x.q);
     const n = G.addSavedMeal(m.id);
-    return n === 2 && G.dayFood(G.todayKey()).length === before + 2; })());
+    /* re-adding the same meal counts up rather than duplicating rows */
+    return n === 2 && lunch().length === rows && lunch().every((x, i) => x.q === counts[i] * 2); })(),
+    JSON.stringify(G.dayFood(G.todayKey()).filter(x => x.meal === 'l').map(x => x.id + ' x' + x.q)));
   t('repeat yesterday copies the day', (() => {
     const y = G.addDays(G.todayKey(), -1);
     S.days[y] = {food: [{id:'oats', n:'Porridge oats', u:'50g dry', q:1, meal:'b', kcal:190, p:6.5, c:33, f:3.5}]};

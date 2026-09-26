@@ -200,6 +200,37 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .meal.done{background:var(--t-forest);border-color:transparent}
 .meal.done .mbar b{background:var(--forest)}
 .meal.opt{opacity:.8;border-style:dashed}
+.flagrow{display:flex;gap:10px;align-items:center;min-height:44px;font-size:13.5px;font-weight:600}
+.flagrow input{width:20px;height:20px}
+.painresult{margin:12px 0 6px;padding:12px;border-radius:12px;display:flex;flex-direction:column;gap:4px}
+.painresult:empty{display:none}
+.painresult b{font-size:14.5px}.painresult span{font-size:12.5px;line-height:1.45}
+.painresult.pr-ok{background:var(--t-forest)}
+.painresult.pr-ease{background:var(--t-marigold,var(--grey-btn))}
+.painresult.pr-swap,.painresult.pr-check{background:var(--oxblood-bg,var(--grey-btn))}
+.painbtns{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.prio .pa{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.prios{display:flex;flex-direction:column;gap:8px;padding:0 14px 12px}
+.prio{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:start;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--paper)}
+.prio .pn{width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--on-ink);display:grid;place-items:center;font-size:12.5px;font-weight:800}
+.prio .pt{display:flex;flex-direction:column;gap:3px;min-width:0}
+.prio .pt b{font-size:14px}
+.prio .pt span{font-size:12.5px;color:var(--mute);line-height:1.4}
+.prio .pa{align-self:center}
+.conf{display:inline-block;margin-top:3px;font-size:10.5px;font-weight:700;letter-spacing:.02em;padding:2px 7px;border-radius:999px;background:var(--grey-btn);color:var(--mute);width:max-content;max-width:100%}
+.conf-good{background:var(--t-forest);color:var(--forest)}
+.conf-building,.conf-none{background:var(--t-marigold,var(--grey-btn));color:var(--burnt-ink,var(--mute))}
+.method strong.inl{display:inline;font-weight:800;color:var(--ink)}
+.sleepchart{width:100%;height:auto;display:block;margin:6px 0 10px}
+.sleepchart .sb.ok{fill:var(--marine)}
+.sleepchart .sb.low{fill:var(--burnt)}
+.sleepchart .sb.none{fill:var(--line)}
+.sleepchart .stg{stroke:var(--forest);stroke-width:1.5;stroke-dasharray:4 4}
+.sleepchart .slab2{font-family:Archivo,sans-serif;font-size:10px;font-weight:700;fill:var(--mute)}
+.sstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sstat{padding:10px;border-radius:10px;background:var(--grey-btn);display:flex;flex-direction:column;gap:2px}
+.sstat b{font-size:17px}
+.sstat span{font-size:11px;color:var(--mute);font-weight:600;line-height:1.3}
 .glances{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 10px}
 .glance{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:11px 10px;text-align:left;min-height:88px;display:flex;flex-direction:column;gap:3px}
 .glance .gv{font-family:"Archivo Black",Archivo,sans-serif;font-size:22px;letter-spacing:-.04em;line-height:1}
@@ -1156,7 +1187,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='43';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='45';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -1530,7 +1561,8 @@ const $=id=>document.getElementById(id);
 const initials=p=>p.full.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
 const av=(p,cls)=>`<div class="${cls||'av-sm'}" style="background:${p.c}">${initials(p)}</div>`;
 const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
-const num=n=>n.toLocaleString('en-IE');
+/* a missing number shows as 0 rather than crashing whatever screen it is on */
+const num=n=>(Number.isFinite(+n)? +n : 0).toLocaleString('en-IE');
 const pct=g=>Math.max(0,Math.min(100,Math.round(g.now/g.target*100)));
 const allPosts=()=>S.mine.slice();
 const postById=id=>allPosts().find(p=>p.id===id)||SEED_POSTS.find(p=>p.id===id);
@@ -2615,6 +2647,193 @@ function teenGlanceRow(){
     ${cell('steps', st===null?'–':num(st), 'steps', st===null?'no tracker':'of '+num(stepTarget()))}
   </div>`;
 }
+/* ---------- how much each piece of advice has to go on (Review P1-12) ----------
+   The forecast already says when it is estimating and when it knows. Every
+   other kind of advice now does the same, in the same words: nothing yet,
+   building a baseline, or based on so many days of the last week or two. */
+function daysWith(n,test){
+  let c=0; for(let i=0;i<n;i++){ const r=S.days[addDays(todayKey(),-i)]; if(r&&test(r)) c++; } return c;
+}
+function realSleep(r){
+  if(!r) return null;
+  if(r.auto&&!r.auto.sim&&typeof r.auto.sleep==='number') return r.auto.sleep;
+  return typeof r.sleep==='number'? r.sleep : null;
+}
+function confidence(domain){
+  const n= domain==='sleep'? daysWith(14,r=>realSleep(r)!==null)
+    : domain==='food'? daysWith(14,r=>Array.isArray(r.food)&&r.food.length>0)
+    : domain==='mood'? daysWith(14,r=>typeof r.stress==='number'||typeof r.wb==='number')
+    : 0;
+  const of=14, need=domain==='sleep'? 5 : 4;
+  const level= n===0? 'none' : (n<need? 'building' : (n<10? 'fair' : 'good'));
+  const text= n===0? 'nothing logged yet'
+    : n<need? `building your baseline, ${n} of the ${need} ${domain==='sleep'?'nights':'days'} it needs`
+    : `based on ${n} of the last ${of} ${domain==='sleep'?'nights':'days'}`;
+  return {domain,n,of,need,level,text};
+}
+const confChip=c=>`<span class="conf conf-${c.level}">${c.text}</span>`;
+
+/* ---------- sleep (Review P1-01) ----------
+   Adults: 7 hours or more, regularly (American Academy of Sleep Medicine and
+   Sleep Research Society, 2015), with individual need varying. Teenagers: 8 to
+   10. How regular sleep is may matter as much as how long (Windred and
+   colleagues, 2024), but that needs bed and wake times, which only a tracker
+   supplies here, so the view measures what it honestly can: duration, how
+   much it swings night to night, and the shortfall against the target. */
+function sleepTarget(){ return isTeen()? {lo:8,hi:10,t:'8 to 10 hours'} : {lo:7,hi:9,t:'7 hours or more'}; }
+function sleepNights(n){
+  const out=[];
+  for(let i=n-1;i>=0;i--){ const k=addDays(todayKey(),-i); out.push({d:k,h:realSleep(S.days[k])}); }
+  return out;
+}
+function sleepStats(){
+  const nights=sleepNights(14), known=nights.filter(x=>x.h!==null), tg=sleepTarget();
+  const last7=nights.slice(-7).filter(x=>x.h!==null);
+  const avg=last7.length? last7.reduce((a,x)=>a+x.h,0)/last7.length : null;
+  const sd=last7.length>=3? Math.sqrt(last7.reduce((a,x)=>a+(x.h-avg)*(x.h-avg),0)/last7.length) : null;
+  const short=last7.reduce((a,x)=>a+Math.max(0,tg.lo-x.h),0);
+  const lastNight=nights[nights.length-1].h;
+  return {nights,known:known.length,last7:last7.length,avg,sd,short,lastNight,target:tg};
+}
+function lightsOut(){
+  const p=S.profile||{}, wake=hhmmToMin(p.wakeTime||EAT_CLOCK.wake), need=sleepTarget().lo+0.5;
+  return minToHhmm(((wake-need*60-15)%1440+1440)%1440);
+}
+function openSleep(){
+  const st=sleepStats(), c=confidence('sleep'), tg=st.target;
+  const max=11, H=110, W=320, bw=W/14-4;
+  const bars=st.nights.map((x,i)=>{ const h=x.h===null? 0 : x.h;
+    const y=H-(h/max)*H, cls=x.h===null? 'none' : (h<tg.lo? 'low' : 'ok');
+    return `<rect class="sb ${cls}" x="${(i*(W/14)+2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(x.h===null?2:0,H-y).toFixed(1)}" rx="3"/>`; }).join('');
+  const ty=(H-(tg.lo/max)*H).toFixed(1);
+  const lines=[];
+  if(st.last7>=3){
+    lines.push(`<div class="sstat"><b>${st.avg.toFixed(1)}h</b><span>average, last 7 nights</span></div>`);
+    lines.push(`<div class="sstat"><b>${st.short.toFixed(1)}h</b><span>short of ${tg.lo} hours, over the week</span></div>`);
+    lines.push(`<div class="sstat"><b>${st.sd<0.5?'Steady':(st.sd<1?'Some swing':'Up and down')}</b><span>night to night, ± ${st.sd.toFixed(1)}h</span></div>`);
+  }
+  document.getElementById('altTitle').textContent='Sleep';
+  document.getElementById('altSub').innerHTML=`Aim: ${tg.t} a night. ${confChip(c)}`;
+  document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 10px">
+    <svg viewBox="0 0 ${W} ${H+18}" class="sleepchart" role="img" aria-label="Sleep, last 14 nights">
+      <line x1="0" x2="${W}" y1="${ty}" y2="${ty}" class="stg"/><text x="${W-2}" y="${(+ty-4).toFixed(1)}" text-anchor="end" class="slab2">${tg.lo}h</text>
+      ${bars}
+      <text x="2" y="${H+14}" class="slab2">2 weeks ago</text><text x="${W-2}" y="${H+14}" text-anchor="end" class="slab2">last night</text>
+    </svg>
+    ${lines.length? `<div class="sstats">${lines.join('')}</div>` : `<div class="note">A few more nights and this shows your average, how short you are against ${tg.lo} hours, and how steady it is.</div>`}
+    <div class="method" style="margin-top:10px"><b>Tonight</b><span>To get ${sleepTarget().lo+0.5} hours before your usual ${(S.profile&&S.profile.wakeTime)||EAT_CLOCK.wake} start, lights out around <strong class="inl">${lightsOut()}</strong>. Keep the last coffee well before that, and a similar time each night helps as much as the hours.</span></div>
+    <div class="note">How regular your sleep is, going to bed and getting up at similar times, may matter as much as how long it is. Measuring that needs bed and wake times, which a connected tracker provides; the hours here are what you logged.</div>
+    <button class="sheetcta" data-glance="checkin" style="width:100%">Log last night's sleep</button>
+  </div>`;
+  openSheet('altSheet');
+}
+
+/* ---------- readiness (Review P1-02) ----------
+   A systematic review of 56 studies (Saw and colleagues, 2016) found that
+   how people say they are, sleep, stress, mood, tracks their response to
+   training more sensitively and consistently than objective markers such as
+   heart rate or blood tests. Those studies were in athletes. So readiness here
+   is built from what is logged, and only against the person's own last four
+   weeks: never a universal score, and never a single number pretending to be
+   more precise than it is. Better, about usual, or lower, with what is driving
+   it. */
+function readiness(){
+  const k=todayKey(), y=addDays(k,-1);
+  const hist=(get,skip)=>{ const out=[]; for(let i=1;i<=28;i++){ const kk=addDays(k,-i); if(skip&&skip===kk) continue;
+    const v=get(S.days[kk]); if(typeof v==='number') out.push(v); } return out; };
+  const stat=a=>{ const m=a.reduce((x,v)=>x+v,0)/a.length; return {m,sd:Math.sqrt(a.reduce((x,v)=>x+(v-m)*(v-m),0)/a.length)}; };
+  const inputs=[];
+  const sl=realSleep(S.days[k]);
+  if(sl!==null){ const b=hist(realSleep); if(b.length>=5){ const s=stat(b); inputs.push({name:'sleep',v:sl,m:s.m,z:(sl-s.m)/Math.max(0.5,s.sd),good:1,unit:'h'}); } }
+  const src=(S.days[k]&&typeof S.days[k].stress==='number')? k : y;
+  const today=S.days[src]||{};
+  if(typeof today.stress==='number'){ const b=hist(r=>r&&r.stress,src); if(b.length>=5){ const s=stat(b); inputs.push({name:'stress',v:today.stress,m:s.m,z:(today.stress-s.m)/Math.max(1,s.sd),good:-1,unit:'/10'}); } }
+  if(typeof today.wb==='number'){ const b=hist(r=>r&&r.wb,src); if(b.length>=5){ const s=stat(b); inputs.push({name:'day rating',v:today.wb,m:s.m,z:(today.wb-s.m)/Math.max(1,s.sd),good:1,unit:'/10'}); } }
+  const baseDays=daysWith(28,r=>realSleep(r)!==null||typeof r.stress==='number'||typeof r.wb==='number');
+  if(inputs.length<2){
+    return {level:'building',drivers:[],baseDays,text: baseDays<7? 'Building your baseline: it needs about a week of sleep and how your days went.' : 'Log last night\'s sleep and how yesterday went to see today against your usual.'};
+  }
+  const score=inputs.reduce((a,x)=>a+x.z*x.good,0)/inputs.length;
+  const level= score<=-0.6? 'lower' : (score>=0.6? 'better' : 'usual');
+  const drivers=inputs.filter(x=>Math.abs(x.z)>=0.75).map(x=>{
+    const diff=x.v-x.m, word= x.name==='sleep'? (diff<0? 'less sleep' : 'more sleep') : (x.name==='stress'? (diff>0? 'more stress' : 'less stress') : (diff<0? 'a worse day' : 'a better day'));
+    return `${word} than usual (${x.name==='sleep'? x.v+'h against '+x.m.toFixed(1)+'h' : x.v+x.unit+' against '+x.m.toFixed(1)})`; });
+  return {level,drivers,baseDays,score,
+    text: level==='lower'? 'Lower than your usual' : (level==='better'? 'Better than your usual' : 'About your usual')};
+}
+function readinessPanel(){
+  const r=readiness();
+  return `<div class="panel"><div class="ph"><h3>Readiness</h3></div>
+    <div class="bigrow"><div class="n" style="font-size:22px">${r.level==='building'? 'Building your baseline' : r.text}</div></div>
+    <div class="note" style="margin:0">${r.level==='building'? r.text : (r.drivers.length? 'Driven by '+r.drivers.join('; ')+'.' : 'Nothing well away from your usual.')} ${confChip({level: r.baseDays>=14?'good':(r.baseDays>=7?'fair':'building'), text: r.baseDays? 'based on '+r.baseDays+' of the last 28 days' : 'nothing logged yet'})}</div></div>`;
+}
+
+/* ---------- what matters today (Review P1-04) ----------
+   Not a dashboard: at most three things worth doing, each saying what changed
+   and why, ranked. Today's session is already the card above, so it is not
+   repeated. Advice built on thin data says so, and some advice waits until
+   there is enough to go on. */
+function priorities(){
+  const out=[], k=todayKey(), day=S.days[k]||{}, hour=new Date().getHours(), teen=isTeen();
+  const add=(score,id,t,why,action,conf)=>out.push({score,id,t,why,action,conf});
+  /* the weekly check in, on its day */
+  const ciDay=(S.profile&&S.profile.checkinDay!==undefined)? +S.profile.checkinDay : 6;
+  if(dowIdx()===ciDay&&!checkinDone())
+    add(90,'checkin','Do the weekly check in','Next week is built from it. Two minutes.','<button class="mini go" data-log="week">Check in</button>');
+  /* sleep, when there is enough to say something */
+  const ss=sleepStats(), sc=confidence('sleep');
+  if(ss.last7>=3&&ss.avg<ss.target.lo-0.3)
+    add(80,'sleep','Protect sleep tonight',`You have averaged ${ss.avg.toFixed(1)} hours over the last ${ss.last7} nights you logged, under the ${ss.target.lo} hour aim. Lights out around ${lightsOut()}.`,'<button class="mini" data-opensleep="1">See sleep</button>',sc);
+  else if(ss.lastNight!==null&&ss.lastNight<ss.target.lo-1&&ss.last7<3)
+    add(55,'sleep','A short night',`${ss.lastNight} hours last night. One night is not a pattern, but an earlier night tonight is worth it.`,'<button class="mini" data-opensleep="1">See sleep</button>',sc);
+  /* readiness, on a training day, when it is lower than usual */
+  const rd=readiness(), tp=(typeof todayPlan==='function')? todayPlan() : null;
+  if(rd.level==='lower'&&tp&&tp.type&&tp.slot!=='walk'&&!dayDone(dowIdx()))
+    add(75,'readiness','Readiness is lower than your usual',`Driven by ${rd.drivers.join('; ')||'several things a little off'}. The session can still go ahead: keep the weights where they are, or stop a set early. How you feel once warmed up is the better guide.`,'',
+      {level:rd.baseDays>=14?'good':'fair',text:'based on '+rd.baseDays+' of the last 28 days'});
+  /* a pain check the morning after */
+  painMorningDue().slice(0,1).forEach(p=>{
+    const pat=painPattern(p.exId);
+    add(85,'pain','How is it this morning?',`${exOf(p.exId).n} was ${p.during} out of 10 yesterday. The guide is that it should have settled by now.${pat.unsettled>=1? ' It did not settle last time either.' : ''}`,
+      `<button class="mini" data-painmorning="${p.idx}:settled">Settled</button><button class="mini" data-painmorning="${p.idx}:still">Still there</button><button class="mini" data-painmorning="${p.idx}:worse">Worse</button>`);
+  });
+  /* stress yesterday */
+  const y=S.days[addDays(k,-1)]||{};
+  if(typeof y.stress==='number'&&y.stress>=7)
+    add(70,'stress','Something that lowers stress today',`You rated yesterday ${y.stress} out of 10 for stress. A walk outside, a call with someone, or ten quiet minutes all count.`+(teen?' If it is more than a bad day, Childline is there: 1800 66 66 66.':''),'',confidence('mood'));
+  /* food: protein on track, or not, for adults who log */
+  const t=S.targets||{};
+  if(!teen&&t.protein){
+    const fc=confidence('food'), pr=Math.round(foodTotals(k).protein||0);
+    const expected=Math.round(t.protein*Math.min(1,Math.max(0,(hour-7)/13)));
+    if(dayFood(k).length===0&&hour>=13&&fc.n>=3)
+      add(60,'food','Log what you have eaten so far','Nothing logged yet today, and the rest of the week relies on it. Same as yesterday is one tap.','<button class="mini go" data-glance="food">Log food</button>',fc);
+    else if(dayFood(k).length&&pr<expected-25)
+      add(50,'protein','Get protein into the next meal',`${pr}g so far, around ${expected}g would be on pace for ${t.protein}g.`,'<button class="mini" data-glance="food">Log food</button>',fc);
+    else if(dayFood(k).length&&pr>=expected)
+      add(10,'proteinok','Protein is on track','Nothing to fix here today, so put the effort elsewhere.','',fc);
+  }
+  /* weigh in, adults with a weight goal, only if it has been a while */
+  if(!teen&&S.target&&S.target.kind==='weight'){
+    const last=S.weights.length? S.weights[S.weights.length-1].d : null;
+    const gap=last? Math.round((dateOf(k)-dateOf(last))/864e5) : 99;
+    if(gap>=7) add(40,'weigh','Weigh in this morning',`${last? 'Last one was '+gap+' days ago' : 'No weigh ins yet'}. The trend and your forecast need one a week at least.`,'<button class="mini" data-glance="weigh">Weigh in</button>');
+  }
+  /* steps, late in the day and well behind */
+  const stp=(typeof stepsToday==='function')? stepsToday() : null;
+  if(stp!==null&&hour>=17&&stp<stepTarget()*0.6)
+    add(30,'steps','A walk this evening',`${num(stp)} steps so far against ${num(stepTarget())}. Twenty minutes gets you most of the way.`,'');
+  return out.sort((a,b)=>b.score-a.score).slice(0,3);
+}
+function prioritiesRow(){
+  const list=priorities();
+  if(!list.length) return '';
+  return `<div class="sechead"><h2>What matters today</h2></div>
+    <div class="prios">${list.map((x,i)=>`<div class="prio p-${x.id}">
+      <div class="pn">${i+1}</div>
+      <div class="pt"><b>${x.t}</b><span>${x.why}</span>${x.conf? confChip(x.conf) : ''}</div>
+      ${x.action? `<div class="pa">${x.action}</div>` : ''}</div>`).join('')}</div>`;
+}
 function glanceRow(){
   if(isTeen()) return teenGlanceRow();
   const k=todayKey(), t=S.targets||{}, day=S.days[k]||{};
@@ -2942,6 +3161,7 @@ function openEatTimes(){
 }
 document.addEventListener('click',e=>{
   if(e.target.closest('#eatBtn')) openEating();
+  if(e.target.closest('[data-opensleep]')){ openSleep(); return; }
   const ms=e.target.closest('[data-mealslot]');
   if(ms){ openFood(false); foodSlot=ms.dataset.mealslot; drawFood(); return; }
   if(e.target.closest('#eatTimes')) openEatTimes();
@@ -2979,6 +3199,7 @@ function renderToday(){
     ${d.type&&d.slot!=='walk'&&!done? `<button class="skipbtn" data-restday="${i}">Not today</button>`:''}
     ${d.exclude&&d.exclude.length?`<div class="note">Leaving out ${d.exclude.join(', ')} while it settles.</div>`:''}
   </div>
+  ${prioritiesRow()}
   ${glanceRow()}
   ${logRow()}
   ${eatingRow()}
@@ -4477,6 +4698,105 @@ document.addEventListener('click',e=>{
   if(pc){ S.profile.pace=pc.dataset.pace; S.targets=ownTargets(); save(); closeSheets(); renderAll();
     toast('Pace: '+PACE[pc.dataset.pace].label+'. Your calorie target has been updated.'); }
 });
+/* ---------- pain (Review P1-11) ----------
+   The pain-monitoring model (Silbernagel and colleagues, 2007, a randomised
+   trial in Achilles tendon pain) let people keep training with pain up to 5
+   out of 10 during and after, provided it settled by the next morning and did
+   not climb week to week; they did as well as those who rested. Physios use
+   it widely as a guide for training with an ache, though it was tested in
+   tendon pain, and the app says so. Red flags are not monitored: they stop
+   the movement and point to a GP or physio. Nothing here diagnoses. */
+const PAIN_FLAGS=[['sharp','Sharp or sudden pain, or a pop'],['swell','Swelling or bruising'],
+  ['nerve','Numbness, tingling or weakness'],['knock','It started with a fall, knock or twist'],
+  ['rest','It hurts at rest or wakes you at night']];
+let painDraft=null;
+function painAdvice(level,flags){
+  if(flags&&flags.length) return {code:'check',t:'Stop this movement today, and get it checked',
+    s:'With '+(flags.length>1?'those':'that')+', this is one for a GP or physio before you load it again, rather than something to train through.'};
+  if(level>=6) return {code:'swap',t:'Stop this one for today',
+    s:'Above 5 out of 10 is past what the pain-monitoring guidance allows. Swap to something that does not hurt, or leave it out.'};
+  if(level>=4) return {code:'ease',t:'You can carry on, lighter',
+    s:'Up to 5 out of 10 is generally fine to train with if it settles by tomorrow morning and does not build week to week. Drop the weight a step, and stop if it climbs.'};
+  return {code:'ok',t:'Carry on',s:'Mild and steady is usually fine. Keep an eye on it, and stop if it climbs.'};
+}
+function openPainCheck(i){
+  const e=GYM.ex[i]; if(!e) return;
+  painDraft={i,exId:e.exId,level:null,flags:[]};
+  const alt=painAlternative(exOf(e.exId).n);
+  document.getElementById('altTitle').textContent=exOf(e.exId).n+' hurts';
+  document.getElementById('altSub').textContent='How bad is it right now, and do any of these apply?';
+  document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 10px">
+    <div class="field"><div class="fl"><div class="k">Pain, 0 to 10</div><div class="v" id="painOut">not answered</div></div>
+      <input type="range" min="0" max="10" step="1" value="3" class="unset" id="painRange" aria-label="Pain from 0 to 10"></div>
+    <div class="slab" style="margin-top:10px">Any of these?</div>
+    ${PAIN_FLAGS.map(([k,l])=>`<label class="flagrow"><input type="checkbox" data-painflag="${k}"> <span>${l}</span></label>`).join('')}
+    <div id="painResult" class="painresult" role="status"></div>
+    <div class="note">The 0 to 10 guide comes from research on training with tendon pain. It is a guide, not a diagnosis.</div>
+  </div>`;
+  drawPainResult(alt);
+  openSheet('altSheet');
+}
+function drawPainResult(alt){
+  const box=document.getElementById('painResult'); if(!box||!painDraft) return;
+  if(painDraft.level===null&&!painDraft.flags.length){ box.innerHTML=''; return; }
+  const a=painAdvice(painDraft.level||0,painDraft.flags);
+  const x=exOf(painDraft.exId), al=alt||painAlternative(x.n);
+  box.className='painresult pr-'+a.code;
+  box.innerHTML=`<b>${a.t}</b><span>${a.s}</span>
+    <div class="painbtns">
+      ${a.code==='ease'? `<button class="mini go" data-painact="lighter">Carry on lighter</button>` : ''}
+      ${a.code==='ok'? `<button class="mini go" data-painact="carry">Carry on</button>` : ''}
+      ${(a.code==='swap'||a.code==='ease')&&al? `<button class="mini" data-painact="swap">Swap to ${escHabit(al.n)}</button>` : ''}
+      ${a.code!=='ok'? `<button class="mini" data-painact="drop">Take it out of today</button>` : ''}
+    </div>
+    ${(a.code==='swap'||a.code==='ease')&&al? `<div class="note" style="margin-top:6px">${escHabit(al.n)} works the same muscles a different way. That often avoids the ache, but it is not a guarantee for an injury.</div>` : ''}`;
+}
+function recordPain(outcome){
+  S.painLog=Array.isArray(S.painLog)? S.painLog : [];
+  S.painLog.unshift({exId:painDraft.exId,d:todayKey(),during:painDraft.level||0,flags:painDraft.flags.slice(),outcome,morning:null});
+  S.painLog=S.painLog.slice(0,60); save();
+}
+document.addEventListener('input',e=>{
+  if(e.target.id==='painRange'&&painDraft){ painDraft.level=+e.target.value; e.target.classList.remove('unset');
+    document.getElementById('painOut').textContent=painDraft.level+' / 10'; drawPainResult(); }
+});
+document.addEventListener('change',e=>{
+  const f=e.target.closest&&e.target.closest('[data-painflag]');
+  if(f&&painDraft){ const k=f.dataset.painflag; painDraft.flags=painDraft.flags.filter(x=>x!==k); if(f.checked) painDraft.flags.push(k); drawPainResult(); }
+  if(e.target.id==='painRange'&&painDraft&&painDraft.level===null){ painDraft.level=+e.target.value; e.target.classList.remove('unset');
+    document.getElementById('painOut').textContent=painDraft.level+' / 10'; drawPainResult(); }
+});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-painact]'); if(!b||!painDraft||!GYM) return;
+  const act=b.dataset.painact, i=painDraft.i, ex=GYM.ex[i];
+  recordPain(act);
+  if(act==='lighter'){ const inc=incrementFor(ex.exId)||2.5;
+    ex.sets.forEach(s=>{ if(!s.done&&!s.warm&&+s.kg) s.kg=Math.max(0,+(+s.kg-inc).toFixed(2)); }); }
+  if(act==='swap'){ const al=painAlternative(exOf(ex.exId).n);
+    if(al){ const fresh=newExEntry({exId:al.id,sets:ex.sets.filter(s=>!s.warm).length||3,reps:ex.reps,repMin:ex.repMin,rest:ex.rest,group:ex.group});
+      GYM.ex[i]=fresh; } }
+  if(act==='drop'){ GYM.ex.splice(i,1); normaliseGroups(GYM.ex); }
+  const name=exOf(painDraft.exId).n; painDraft=null;
+  closeSheets(); drawGym();
+  toast(act==='carry'? 'Noted. You will be asked how it feels tomorrow morning.' : (act==='lighter'? 'Lighter for the rest of this one. You will be asked tomorrow morning.' : (act==='swap'? name+' swapped for today' : name+' taken out of today')));
+});
+/* the morning after */
+function painMorningDue(){
+  const y=addDays(todayKey(),-1), t2=addDays(todayKey(),-2);
+  return (S.painLog||[]).map((p,idx)=>Object.assign({idx},p)).filter(p=>(p.d===y||p.d===t2)&&p.morning===null&&!(p.flags&&p.flags.length));
+}
+function painPattern(exId){
+  const recent=(S.painLog||[]).filter(p=>p.exId===exId&&gapDays(p.d)<=21);
+  const unsettled=recent.filter(p=>p.morning==='worse'||p.morning==='still');
+  return {count:recent.length,unsettled:unsettled.length};
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-painmorning]'); if(!b) return;
+  const [idx,state]=b.dataset.painmorning.split(':'); const p=(S.painLog||[])[+idx]; if(!p) return;
+  p.morning=state; save(); renderAll();
+  const pat=painPattern(p.exId), name=exOf(p.exId).n;
+  toast(state==='settled'? 'Good. Carry on as normal.' : (pat.unsettled>=2? name+' has not settled twice now. Worth seeing a physio.' : 'Not settled, so go lighter or swap it next time.'));
+});
 function openHabitOne(slot){
   const h=currentHabit(slot); if(!h) return;
   const meta=habitOf(h.id), week=habitWeek(slot), today=week[week.length-1], stop=meta.kind==='stop';
@@ -5336,7 +5656,7 @@ function copyBrief(){
 
 renderProgress();
 Object.assign(window.__G,{TRAIN_DAYS,DEFAULT_TARGETS,ownTargets,allMovements,drawWeekStep,
-  lastNDays,avg,steers,coachBrief,isTeen,tooYoung,canHaveAccount,SUPPORT_TEEN,TEEN_MIN,PACE,paceOf,openPaceSheet,isMinorAge,ADULT_AGE,eatingPlan,nextEating,openEating,openEatTimes,eatingRow,perMealProtein,mealSlots,timingStats,MEAL_NAMES,proteinBasis,hhmmToMin,minToHhmm,todayTrains,activeHabits,habitCount,habitRoom,HABIT_MAX,slotForNew,habitSlotOf,trainingList,trainingText,plannedTraining,loggedTraining,TRAIN_DAYS,plannedCardioKcalPerDay,openDay,openWeek,
+  lastNDays,avg,steers,coachBrief,readiness,readinessPanel,painAdvice,painMorningDue,painPattern,PAIN_FLAGS,priorities,prioritiesRow,confidence,sleepStats,sleepTarget,openSleep,lightsOut,realSleep,isTeen,tooYoung,canHaveAccount,SUPPORT_TEEN,TEEN_MIN,PACE,paceOf,openPaceSheet,isMinorAge,ADULT_AGE,eatingPlan,nextEating,openEating,openEatTimes,eatingRow,perMealProtein,mealSlots,timingStats,MEAL_NAMES,proteinBasis,hhmmToMin,minToHhmm,todayTrains,activeHabits,habitCount,habitRoom,HABIT_MAX,slotForNew,habitSlotOf,trainingList,trainingText,plannedTraining,loggedTraining,TRAIN_DAYS,plannedCardioKcalPerDay,openDay,openWeek,
   HABITS,habitOf,currentHabit,startHabit,retireHabit,toggleHabitDay,habitWeek,habitStreak,habitRate,suggestHabit,openHabitSheet,habitRow,habitRowFor,habitApplies,habitSlots,addOwnHabit,ownHabits,escHabit,OWN_MAX,colophonText,
   TARGET_KINDS,setTarget,clearTarget,targetNow,targetProgress,openTargetSheet,targetLine,
   nudgeState,nextNudgeAt,scheduleNudge,enableNudges,disableNudges,fireNudge,nudgeHelp,onIOS,installed,NUDGE_KEY,
@@ -6120,7 +6440,30 @@ const repRangeFor=row=>{
   return {bottom,top};
 };
 /* what to aim for on this exercise next time, and why */
+/* ---------- coming back after a break (Review P1-10) ----------
+   Strength largely holds for about three weeks off; the meta-analysis on
+   training cessation (Bosquet and colleagues, 2013) finds real losses appear
+   between the third and fourth week and grow with the length of the break,
+   and what is lost comes back faster than it was first built. The research
+   says when losses start, not an exact load to return at, so the step down is
+   this app's rule of thumb built on that timeline: nothing under two weeks,
+   5% at two, 10% at four, 20% at eight or more. Normal progression then
+   rebuilds from there, usually within a couple of sessions. */
+function gapDays(k){ return Math.round((dateOf(todayKey())-dateOf(k))/864e5); }
+function breakCut(gap){ return gap>=56? 0.20 : (gap>=28? 0.10 : (gap>=14? 0.05 : 0)); }
+function weeksText(gap){ const w=Math.round(gap/7); return w<=1? 'A week and a half' : w+' weeks'; }
 function nextPrescription(exId,row){
+  const rx=nextPrescriptionBase(exId,row);
+  const h=exHistory(exId);
+  if(!h.length||rx.kg===null||rx.kg===undefined||!(+rx.kg)) return rx;
+  const gap=gapDays(h[0].d), cut=breakCut(gap);
+  if(!cut) return rx;
+  const inc=rx.inc||incrementFor(exId)||2.5;
+  const kg=Math.max(inc,Math.round((+rx.kg)*(1-cut)/inc)*inc);
+  return Object.assign({},rx,{kg,kind:'return',gap,cut,
+    why:`${weeksText(gap)} since you last did this. Strength mostly holds for about three weeks and comes back quickly after that, so today starts ${Math.round(cut*100)}% lighter at ${kg}kg and builds back from there.`});
+}
+function nextPrescriptionBase(exId,row){
   const range=repRangeFor(row), inc=incrementFor(exId);
   const hist=exHistory(exId);
   const last=hist[0];
@@ -6389,14 +6732,16 @@ function drawGym(){
   $('gymName').textContent=GYM.name;
   $('gymSub').textContent=elapsed();
   const GI=groupInfo(GYM.ex);
-  $('gymBody').innerHTML=deloadBanner()+GYM.ex.map((e,i)=>{
+  const lastW=(S.workouts||[]).find(w=>w.d<todayKey()), away=lastW? gapDays(lastW.d) : 0;
+  const backBanner= away>=14? `<div class="deloadbanner"><b>Welcome back.</b> ${weeksText(away)} since your last session. Anything you have not done in a while starts a little lighter today; the weights climb back quickly.</div>` : '';
+  $('gymBody').innerHTML=backBanner+deloadBanner()+GYM.ex.map((e,i)=>{
     const x=exOf(e.exId), prev=lastSets(e.exId), pre=GYM.pre? GYM.pre[e.exId] : null, gi=GI[i];
     const range=repRangeFor({reps:e.reps,repMin:e.repMin});
     return `${i===0? `<div class="focusnote gymfocus"><b>${LIFT_FOCUS[liftFocus()].t}</b><span>${LIFT_FOCUS[liftFocus()].effort}</span></div>` : ''}${gi&&gi.first? groupHead(GYM.ex,gi) : ''}<div class="exc ${gi?'ingroup':''} ${gi&&gi.last?'grouplast':''}" data-ex="${i}">
       <div class="exh">${gi?`<span class="gbadge">${gi.letter}${gi.pos}</span>`:''}<div class="n">${x.n}</div>${exHasPR(e)?`<span class="pr" title="Personal record">PR</span>`:''}<button class="dots" data-exmenu="${i}" aria-label="Options">···</button></div>
       <div class="cue">${e.sets.length} × ${range.bottom===range.top? e.reps : range.bottom+' to '+range.top}${e.tempo&&showTempo()?' @ '+e.tempo:''} · rest ${e.rest}s${pre&&pre.heaviest?` · best ${pre.heaviest}kg`:''}</div>
       ${prev&&prev.length? `<div class="prevline">Last time <b>${prev.map(p2=>p2.kg+' × '+p2.reps).join(', ')}</b></div>`:''}
-      ${e.rx? `<div class="rxline"><b>${e.rx.kind==='load'?'Weight up today':(e.rx.kind==='first'?'First time':'Chase the reps')}</b> ${e.rx.why}
+      ${e.rx? `<div class="rxline"><b>${e.rx.kind==='load'?'Weight up today':(e.rx.kind==='first'?'First time':(e.rx.kind==='return'?'Welcome back':'Chase the reps'))}</b> ${e.rx.why}
         ${e.rx.lastTonnage? `<span class="tonn">Last time you moved ${num(Math.round(e.rx.lastTonnage))}kg on this. Today so far: ${num(Math.round(tonnageOf(e.sets)))}kg.</span>`:''}</div>`:''}
       ${e.tempo&&showTempo()&&tempoMatters(e.tempo)?`<div class="tempo">${tempoWords(e.tempo)}</div>`:''}
       ${e.note?`<div class="note">${e.note}</div>`:''}
@@ -7231,6 +7576,7 @@ function openExMenu(i){
       const nxt=exOf(GYM.ex[i+1].exId).n;
       return `<button class="logrow" data-exact="link:${i}"><div class="txt"><div class="t">${joined? 'Split from '+escHabit(nxt) : (gi? 'Add '+escHabit(nxt)+' to this '+gi.label.toLowerCase() : 'Superset with '+escHabit(nxt))}</div>
         <div class="s">${joined? 'They go back to separate movements with their own rest' : 'Back to back, one set of each, then rest. Three or more is a giant set.'}</div></div></button>`; })() : ''}
+    <button class="logrow" data-exact="hurt:${i}"><div class="txt"><div class="t">This one hurts</div><div class="s">Rate it and get a clear call: carry on, lighter, swap, or get it checked</div></div></button>
     <button class="logrow" data-exact="up:${i}"><div class="txt"><div class="t">Move up</div></div></button>
     <button class="logrow" data-exact="down:${i}"><div class="txt"><div class="t">Move down</div></div></button>
     <button class="logrow" data-exact="del:${i}"><div class="txt"><div class="t">Remove from today only</div>
@@ -7249,6 +7595,7 @@ document.addEventListener('click',e=>{
   if(act==='down'&&i<GYM.ex.length-1){ const t=GYM.ex[i]; GYM.ex[i]=GYM.ex[i+1]; GYM.ex[i+1]=t; }
   if(act==='del') GYM.ex.splice(i,1);
   if(act==='link') toggleLinkNext(GYM.ex,i);
+  if(act==='hurt'){ closeSheets(); openPainCheck(i); return; }
   normaliseGroups(GYM.ex);
   if(act==='forever'){ const id=GYM.ex[i].exId, n=exOf(id).n;
     GYM.ex.splice(i,1); removeEverywhere(id); toast(n+' taken out of every day'); }
@@ -7701,7 +8048,7 @@ coachBrief=function(){
   return t;
 };
 
-Object.assign(window.__G,{fitNumbers,normaliseGroups,toggleLinkNext,groupInfo,groupRest,prIndex,setShort,gymToTemplateRows,tplErrors,tplRowErrors,drawTplEdit,TPL_LIMITS,LIBRARY,EQUIP,DIFF,exBlurb,drawExList,exOf,exHistory,nextPrescription,rxClass,prescribe,repText,LIFT_FOCUS,AIM_FOCUS,liftFocus,rxOf,recommendedFor,rowMatches,applyFocusToTemplates,RX_CLASS,warmSetsFor,platesFor,plateLine,fitToKit,fitTemplatesToKit,kitOf,hasKit,KIT,KIT_PRESETS,ALL_KIT,openKitSheet,applyKitChange,loggedMealMacros,mealArt,simulatedHealth,keyOf,dateOf,incrementFor,repRangeFor,nextPrescription,tonnageOf,progressLines,fillForward,suggestFor,openCircEdit,drawCircEdit,drawTemplates,seedTemplates,
+Object.assign(window.__G,{openPainCheck,nextPrescriptionBase,breakCut,gapDays,fitNumbers,normaliseGroups,toggleLinkNext,groupInfo,groupRest,prIndex,setShort,gymToTemplateRows,tplErrors,tplRowErrors,drawTplEdit,TPL_LIMITS,LIBRARY,EQUIP,DIFF,exBlurb,drawExList,exOf,exHistory,nextPrescription,rxClass,prescribe,repText,LIFT_FOCUS,AIM_FOCUS,liftFocus,rxOf,recommendedFor,rowMatches,applyFocusToTemplates,RX_CLASS,warmSetsFor,platesFor,plateLine,fitToKit,fitTemplatesToKit,kitOf,hasKit,KIT,KIT_PRESETS,ALL_KIT,openKitSheet,applyKitChange,loggedMealMacros,mealArt,simulatedHealth,keyOf,dateOf,incrementFor,repRangeFor,nextPrescription,tonnageOf,progressLines,fillForward,suggestFor,openCircEdit,drawCircEdit,drawTemplates,seedTemplates,
   FOODS,FOOD_CATS,FOOD_COMMON,foodOf,addFood,foodSource,setFoodQty,mergeDayFood,quickAddFood,qtyText,removeFood,dayFood,foodTotals,openFood,closeFood,drawFood,drawFoodList,drawFoodNew,recentFoods,MEALS,slotNow,repeatYesterday,addCustomFood,saveMealAs,addSavedMeal,allFoods,customFoods,savedMeals,seedRunPlans,seedCircuits,circuitOf,startCircuit,finishCircuit,drawCircuit,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
   openExMenu,openTplEdit,drawTemplates,exerciseStats,e1RM,lastSets,gymVolume,gymSets,templateChanged,startRest,isBodyweight,isBwFull,bodyweightNow,setVolume,BW_FULL,openQuick,QUICK,saveQuick,fitToKeyboard,
   get GYM(){return GYM}, get tplDraft(){return tplDraft}});
@@ -8404,6 +8751,11 @@ function renderTrends(){
     </div>
     <div class="note">Against the week before. A dot means it barely moved, which is usually fine.</div>
   </div>
+  ${readinessPanel()}
+  ${(()=>{ const st=sleepStats(), c=confidence('sleep');
+    return `<div class="panel"><div class="ph"><h3>Sleep</h3><button data-opensleep="1">Open</button></div>
+      <div class="bigrow"><div class="n">${st.avg!==null? st.avg.toFixed(1)+'<small> h a night</small>' : '–'}</div></div>
+      <div class="note" style="margin:0">Aim ${st.target.t}. ${confChip(c)}</div></div>`; })()}
   ${cycleStrip()}
   ${isTeen()? supportCard() : ''}`;
 }
@@ -8427,6 +8779,11 @@ function openHow(){
     <div class="method"><b>Meals and timing</b><span>Total protein for the day matters most, so that is what the home screen leads with. Spreading it helps on top: about 0.4 g per kg of bodyweight a meal across at least four meals (Schoenfeld and Aragon, 2018), though the difference is modest once the total is matched. The meal times come from when you wake, train and sleep. Nothing extra is asked of you: each food you log already records the time, which is how the app knows which meal it belongs to and, over a week, how many meals reached the mark and how long before bed you last ate. Timing does not change how many calories you burn, so it never touches your targets.</span></div>
     <div class="method"><b>The food list</b><span>Typical values for the portion named, for ${FOODS.length} foods people here actually eat. Composition figures in Ireland come from McCance and Widdowson's Composition of Foods Integrated Dataset, which the Food Safety Authority of Ireland names as the accepted source. Brands vary, so anything with a label on it is better taken from the label: "Something not on the list" saves it for good. Alcohol carries about 7 kcal a gram, which is why a pint's calories are mostly not protein, carbs or fat.</span></div>
     <div class="method"><b>What your steps are worth</b><span>Steps are part of what you burn, so they are already inside your maintenance. The deficit splits into the part food makes, eating less than you burn without walking, and the part the steps make, and the two add up to the whole. That is why skipping the steps at the same food slows the loss by exactly what they were burning.</span></div>
+    <div class="method"><b>Sleep</b><span>The aim is 7 hours or more a night for adults, the joint recommendation of the American Academy of Sleep Medicine and the Sleep Research Society (2015), which also notes that individual need varies; 8 to 10 hours for teenagers. How regular sleep is may matter as much as how long it is (Windred and colleagues, 2024, from UK Biobank), but that needs bed and wake times, which only a connected tracker supplies here.</span></div>
+    <div class="method"><b>Readiness</b><span>Built only from what you log, sleep, stress and how your day went, compared with your own last four weeks, never a universal score. A systematic review of 56 studies (Saw and colleagues, 2016) found that self-reported measures like these track the response to training more sensitively than objective markers such as heart rate; those studies were in athletes. It says better, about usual or lower, and what is driving it, rather than a number more precise than it can be.</span></div>
+    <div class="method"><b>Coming back after a break</b><span>Strength largely holds for about three weeks off, with real losses appearing between the third and fourth week and growing with time (Bosquet and colleagues, 2013), and it comes back faster than it was first built. Anything you have not done for two weeks starts 5% lighter, four weeks 10%, eight weeks or more 20%. Those steps are this app's rule of thumb built on that timeline; the research says when losses start, not an exact load to return at.</span></div>
+    <div class="method"><b>When something hurts</b><span>In a session, "This one hurts" asks for a 0 to 10 rating and a few warning signs. It follows the pain-monitoring model from a randomised trial in Achilles tendon pain (Silbernagel and colleagues, 2007): up to 5 out of 10 is generally fine to train with if it settles by the next morning and does not build week to week, and people who trained that way did as well as those who rested. It was tested in tendon pain, so treat it as a guide. Sharp or sudden pain, swelling, numbness or weakness, pain after a knock, or pain at rest are not for monitoring: stop, and see a GP or physio. The app asks how it is the next morning, and says so plainly if something keeps not settling.</span></div>
+    <div class="method"><b>What matters today</b><span>At most three things, ranked, each saying what changed and why. It only raises sleep once there are three nights logged in a week, food once you have been logging it, and always says how much it has to go on: nothing yet, building your baseline, or based on so many of the last fourteen days.</span></div>
     <div class="method"><b>When the plan suggests easing off</b><span>Sleep under 6.5 hours, recovery of 5 or less, or stress of 7 or more are this app's rules of thumb for suggesting an easier day or week. They are prompts to check in with yourself, not validated predictions of injury or burnout, and how you actually feel matters more than the number.</span></div>
     <div class="method"><b>Easy weeks</b><span>Every ${+S.profile.deloadEvery||DELOAD_EVERY} weeks by default, from the 4 to 8 week range in Bell and colleagues' 2025 recommendations and the roughly five and a half week gap reported by 246 competitive lifters (Rogerson and colleagues, 2024). About 10% lighter and 25 to 90% less work depending on recovery. Easy-week sessions never set your next weights. It is a sensible rule of thumb, not a requirement: you can change how often, move them, or add one early, and how you feel should win over the calendar.</span></div>
     <div class="method"><b>Fat and carbohydrate</b><span>Fat at 28% of your calories, which sits inside the 20 to 35% the dietary guidelines give, and carbohydrate is simply what is left once protein and fat are paid for. Neither is a finding: protein and total calories are the two that have evidence behind them, and the split of the rest is largely preference. Move it if you train better on more of one.</span></div>

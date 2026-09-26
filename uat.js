@@ -3120,6 +3120,170 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     G.GYM = null; d.getElementById('gym').classList.remove('on');
   }
 
+  /* ---------------------------------------------------------- 46 */
+  journey(46, 'What matters today, how much it has to go on, and a sleep view');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const day = n => G.addDays(G.todayKey(), -n);
+    const setDay = (n, o) => { S.days[day(n)] = Object.assign({}, S.days[day(n)], o); };
+
+    /* P1-12 confidence */
+    t('P1-12 · with nothing logged, it says so', G.confidence('sleep').level === 'none' && /nothing logged yet/.test(G.confidence('sleep').text));
+    setDay(1, { sleep: 7 }); setDay(2, { sleep: 7.5 });
+    t('P1-12 · a couple of nights is building a baseline, and says how far along', G.confidence('sleep').level === 'building' && /2 of the 5 nights/.test(G.confidence('sleep').text), G.confidence('sleep').text);
+    for (let i = 3; i <= 6; i++) setDay(i, { sleep: 7 });
+    t('P1-12 · enough nights says what it is based on', G.confidence('sleep').level === 'fair' && /based on 6 of the last 14 nights/.test(G.confidence('sleep').text));
+    for (let i = 7; i <= 13; i++) setDay(i, { sleep: 7 });
+    t('P1-12 · lots of nights is good', G.confidence('sleep').level === 'good');
+    setDay(3, { auto: { sim: true, sleep: 3 }, sleep: undefined });
+    t('P1-12 · demo tracker data never counts', G.realSleep(S.days[day(3)]) === null);
+
+    /* P1-01 sleep */
+    S.days = {};
+    /* today's check in records last night, so the last seven nights are today and the six days before */
+    for (let i = 0; i <= 6; i++) setDay(i, { sleep: [5.5, 6, 6.2, 5.8, 6.5, 6, 5.9][i] });
+    const st = G.sleepStats();
+    t('P1-01 · it averages the last week', st.last7 === 7 && Math.abs(st.avg - 5.99) < 0.02, st.avg.toFixed(2));
+    t('P1-01 · works out the shortfall against 7 hours', Math.abs(st.short - (7 * 7 - 41.9)) < 0.05, st.short.toFixed(2));
+    t('P1-01 · and how much it swings', st.sd > 0 && st.sd < 1);
+    t('P1-01 · the adult aim is 7 hours or more', G.sleepTarget().lo === 7);
+    t('P1-01 · lights out is worked back from wake time', (() => { S.profile.wakeTime = '07:00'; return G.lightsOut() === '23:15'; })(), G.lightsOut());
+    G.openSleep();
+    const sheet = txt(d.getElementById('altBody')) + ' ' + txt(d.getElementById('altSub'));
+    t('P1-01 · the sleep view shows 14 nights, the average and the aim', d.querySelectorAll('#altBody .sleepchart .sb').length === 14 && /6\.0h/.test(sheet) && /7 hours or more/.test(sheet));
+    t('P1-01 · says when to turn in tonight', /lights out around 23:15/.test(sheet));
+    t('P1-01 · the bedtime sits inside its sentence, not on a line of its own',
+      !!d.querySelector('#altBody .method strong.inl') && !d.querySelector('#altBody .method span b'));
+    t('P1-01 · and is honest about regularity needing bed and wake times', /needs bed and wake times/.test(sheet));
+    t('P1-01 · with its confidence label', /based on 7 of the last 14 nights/.test(sheet));
+    G.closeSheets();
+    G.go('progress'); G.renderAll();
+    t('P1-01 · sleep sits on the You screen too', /Sleep/.test(txt(d.getElementById('s-progress'))) && !!d.querySelector('#s-progress [data-opensleep]'));
+
+    /* P1-04 priorities */
+    G.go('today'); G.renderAll();
+    const prios = () => [...d.querySelectorAll('#todayView .prio')];
+    t('P1-04 · a short week of sleep puts protecting it on the list', prios().some(p => p.classList.contains('p-sleep'))
+      && /averaged 6\.0 hours/.test(txt(d.getElementById('todayView'))));
+    t('P1-04 · every item says why', prios().every(p => txt(p.querySelector('.pt span')).length > 20));
+    setDay(1, { stress: 8 }); G.renderAll();
+    t('P1-04 · a stressful day yesterday is raised', prios().some(p => p.classList.contains('p-stress')));
+    S.profile.checkinDay = G.dowIdx(); S.checkins = []; G.renderAll();
+    t('P1-04 · the weekly check in comes first on its day', prios()[0].classList.contains('p-checkin'));
+    S.target = { kind: 'weight', value: 85, by: null, from: 95 }; S.weights = [{ d: day(10), kg: 92 }]; G.renderAll();
+    t('P1-04 · never more than three', prios().length === 3, String(prios().length));
+    t('P1-04 · and ranked, so the weigh in waits when more matters', !prios().some(p => p.classList.contains('p-weigh')));
+    t('P1-04 · numbered in order', prios().map(p => txt(p.querySelector('.pn'))).join() === '1,2,3');
+    t('P1-04 · advice built on data says how much', prios().filter(p => p.classList.contains('p-sleep')).every(p => !!p.querySelector('.conf')));
+
+    /* quiet when there is nothing to say */
+    S.days = {}; S.checkins = [{ weekOf: G.mondayKey() }]; S.target = null; G.renderAll();
+    t('P1-04 · with nothing worth raising, the section is not shown at all', prios().length === 0 && !/What matters today/.test(txt(d.getElementById('todayView'))));
+    setDay(0, { sleep: 5 }); G.renderAll();
+    t('P1-04 · one short night is mentioned gently, not treated as a pattern', /One night is not a pattern/.test(txt(d.getElementById('todayView'))));
+    t('P1-04 · sleep advice waits for three nights before calling it a pattern', !/averaged/.test(txt(d.getElementById('todayView'))));
+  }
+
+  /* ---------------------------------------------------------- 47 */
+  journey(47, 'Coming back after a break, pain that is handled properly, and readiness against your own usual');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const day = n => G.addDays(G.todayKey(), -n);
+
+    /* P1-10 */
+    t('P1-10 · under two weeks, nothing changes', G.breakCut(13) === 0);
+    t('P1-10 · two weeks, 5% lighter', G.breakCut(14) === 0.05 && G.breakCut(27) === 0.05);
+    t('P1-10 · four weeks, 10%', G.breakCut(28) === 0.10 && G.breakCut(55) === 0.10);
+    t('P1-10 · eight weeks or more, 20%', G.breakCut(56) === 0.20 && G.breakCut(200) === 0.20);
+    const row = { exId: 'bench', sets: 3, reps: 8, repMin: 5 };
+    S.lifts.bench = [{ d: day(3), sets: [{ kg: 80, reps: 8 }, { kg: 80, reps: 8 }, { kg: 80, reps: 8 }] }];
+    const recent = G.nextPrescription('bench', row);
+    t('P1-10 · three days ago: normal progression, no welcome back', recent.kind !== 'return', recent.kind);
+    S.lifts.bench[0].d = day(35);
+    const base = G.nextPrescriptionBase('bench', row), back = G.nextPrescription('bench', row);
+    t('P1-10 · five weeks off: 10% under what it would otherwise be, on a real plate step',
+      back.kind === 'return' && back.kg < base.kg && Math.abs(back.kg - base.kg * 0.9) <= 2.5 && back.kg % 2.5 === 0, base.kg + ' -> ' + back.kg);
+    t('P1-10 · and says why, plainly', /5 weeks since you last did this/.test(back.why) && /10% lighter/.test(back.why));
+    S.lifts.bench = [{ d: day(35), sets: [{ kg: 0, reps: 10 }] }];
+    t('P1-10 · a bodyweight movement is never given a weight', G.nextPrescription('pushup', { exId: 'pushup', sets: 3, reps: 12 }).kg === null || G.nextPrescription('pushup', { exId: 'pushup', sets: 3, reps: 12 }).kind !== 'return');
+    S.lifts.bench = [{ d: day(35), sets: [{ kg: 80, reps: 8 }] }];
+    S.workouts = [{ id: 'w1', d: day(35), name: 'Push', minutes: 50, volume: 4200, sets: 12, ex: [] }];
+    G.startWorkout(S.templates.find(x => x.ex.some(r => r.exId === 'bench')).id);
+    t('P1-10 · the session opens with a welcome back', /Welcome back\. 5 weeks since your last session/.test(txt(d.getElementById('gymBody'))));
+    t('P1-10 · and the movement says welcome back too', /Welcome back/.test(txt(d.querySelector('.rxline'))));
+
+    /* P1-11 */
+    t('P1-11 · 0 to 3 is carry on', G.painAdvice(2, []).code === 'ok');
+    t('P1-11 · 4 and 5 are carry on lighter, if it settles by morning', G.painAdvice(4, []).code === 'ease' && G.painAdvice(5, []).code === 'ease' && /settles by tomorrow morning/.test(G.painAdvice(5, []).s));
+    t('P1-11 · 6 and above is stop for today', G.painAdvice(6, []).code === 'swap' && G.painAdvice(10, []).code === 'swap');
+    t('P1-11 · any red flag means stop and get it checked, whatever the number', G.PAIN_FLAGS.every(([k]) => G.painAdvice(1, [k]).code === 'check'));
+    t('P1-11 · and it names a GP or physio', /GP or physio/.test(G.painAdvice(1, ['swell']).s));
+    const bi = G.GYM.ex.findIndex(e => e.exId === 'bench');
+    G.openExMenu(bi);
+    t('P1-11 · the exercise menu offers "This one hurts"', /This one hurts/.test(txt(d.getElementById('exMenuBody'))));
+    d.querySelector('[data-exact="hurt:' + bi + '"]').click();
+    t('P1-11 · it asks for a rating and warning signs, with nothing preselected', /not answered/.test(txt(d.getElementById('painOut'))) && d.querySelectorAll('[data-painflag]').length === 5 && txt(d.getElementById('painResult')) === '');
+    const r = d.getElementById('painRange'); r.value = '4'; r.dispatchEvent(new w.Event('input', { bubbles: true }));
+    t('P1-11 · at 4 it offers to carry on lighter, or swap', /carry on, lighter/.test(txt(d.getElementById('painResult'))) && !!d.querySelector('[data-painact="lighter"]') && !!d.querySelector('[data-painact="swap"]'));
+    t('P1-11 · and is honest that a swap is not a guarantee for an injury', /not a guarantee for an injury/.test(txt(d.getElementById('painResult'))));
+    const before = G.GYM.ex[bi].sets.filter(s => !s.warm && !s.done).map(s => +s.kg);
+    d.querySelector('[data-painact="lighter"]').click();
+    const after = G.GYM.ex[bi].sets.filter(s => !s.warm && !s.done).map(s => +s.kg);
+    t('P1-11 · carrying on lighter drops every remaining set a step', after.every((v, i2) => !before[i2] || v < before[i2]), before + ' -> ' + after);
+    t('P1-11 · and records it for tomorrow morning', S.painLog && S.painLog[0].exId === 'bench' && S.painLog[0].during === 4 && S.painLog[0].morning === null);
+    G.openExMenu(bi); d.querySelector('[data-exact="hurt:' + bi + '"]').click();
+    d.querySelector('[data-painflag="nerve"]').click();
+    t('P1-11 · ticking numbness or tingling changes the call to stop and get checked', /Stop this movement today, and get it checked/.test(txt(d.getElementById('painResult')))
+      && !d.querySelector('[data-painact="lighter"]') && !!d.querySelector('[data-painact="drop"]'));
+    const n0 = G.GYM.ex.length;
+    d.querySelector('[data-painact="drop"]').click();
+    t('P1-11 · taking it out of today removes it', G.GYM.ex.length === n0 - 1);
+    G.GYM = null; d.getElementById('gym').classList.remove('on'); G.closeSheets();
+    /* the morning after */
+    S.painLog = [{ exId: 'bench', d: day(1), during: 4, flags: [], outcome: 'lighter', morning: null }];
+    G.go('today'); G.renderAll();
+    t('P1-11 · the next morning it asks how it is', !!d.querySelector('.prio.p-pain') && /How is it this morning/.test(txt(d.querySelector('.prio.p-pain'))));
+    d.querySelector('[data-painmorning="0:still"]').click();
+    t('P1-11 · not settled once: go lighter or swap next time', /go lighter or swap it next time/.test(txt(d.getElementById('toast'))));
+    S.painLog.unshift({ exId: 'bench', d: day(1), during: 5, flags: [], outcome: 'lighter', morning: null });
+    G.renderAll(); d.querySelector('[data-painmorning="0:worse"]').click();
+    t('P1-11 · not settled twice: it says to see a physio', /Worth seeing a physio/.test(txt(d.getElementById('toast'))));
+    S.painLog.unshift({ exId: 'bench', d: day(1), during: 3, flags: ['sharp'], outcome: 'drop', morning: null });
+    t('P1-11 · a red flag is not turned into a morning check, it was already a see-someone', !G.painMorningDue().some(p => p.flags.length));
+
+    /* P1-02 */
+    S.days = {}; S.painLog = [];
+    const rb = G.readiness();
+    t('P1-02 · with no history it builds a baseline rather than guessing', rb.level === 'building' && /Building your baseline/.test(rb.text));
+    for (let i = 1; i <= 14; i++) S.days[day(i)] = { sleep: 7.5 + (i % 3) * 0.2, stress: 4 + (i % 2), wb: 7 };
+    S.days[day(0)] = { sleep: 7.6 }; S.days[day(1)] = Object.assign({}, S.days[day(1)], { stress: 4, wb: 7 });
+    t('P1-02 · a normal day reads as about your usual', G.readiness().level === 'usual', JSON.stringify(G.readiness()));
+    S.days[day(0)] = { sleep: 5.2 }; S.days[day(1)] = Object.assign({}, S.days[day(1)], { stress: 8, wb: 4 });
+    const low = G.readiness();
+    t('P1-02 · short sleep, high stress and a bad day read as lower than usual', low.level === 'lower');
+    t('P1-02 · and it names what is driving it, with the numbers', low.drivers.some(x => /less sleep than usual \(5\.2h/.test(x)) && low.drivers.some(x => /more stress/.test(x)), low.drivers.join(' | '));
+    S.days[day(0)] = { sleep: 8.8 }; S.days[day(1)] = Object.assign({}, S.days[day(1)], { stress: 2, wb: 9 });
+    t('P1-02 · and better than usual when it is', G.readiness().level === 'better');
+    S.days[day(0)] = { sleep: 5.2 }; S.days[day(1)] = Object.assign({}, S.days[day(1)], { stress: 8, wb: 4 });
+    const i = G.dowIdx(), lift = S.plan.days.find(x => x.templateId);
+    S.plan.days[i] = Object.assign({}, lift, { dow: i }); S.week[i] = { done: [] }; S.checkins = [{ weekOf: G.mondayKey() }];
+    G.go('today'); G.renderAll();
+    t('P1-02 · on a training day, lower readiness joins today\'s priorities', !!d.querySelector('.prio.p-readiness'));
+    t('P1-02 · suggesting a lighter session, not skipping it', /can still go ahead/.test(txt(d.querySelector('.prio.p-readiness'))));
+    G.go('progress'); G.renderAll();
+    t('P1-02 · readiness has its own panel on You, with what it is based on', /Readiness/.test(txt(d.getElementById('s-progress'))) && /based on \d+ of the last 28 days/.test(txt(d.getElementById('s-progress'))));
+    t('robustness · a workout saved without a volume no longer crashes the You screen', (() => {
+      S.workouts.unshift({ id: 'w_old', d: day(2), name: 'Old', ex: [] });
+      try { G.go('progress'); G.renderAll(); return true; } catch (e) { return false; } })());
+    t('P1-02 · and never shows a single made-up score', !/\d+ ?\/ ?100|readiness score/i.test(txt(d.getElementById('s-progress'))));
+  }
+
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);
 })();

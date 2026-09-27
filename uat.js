@@ -131,7 +131,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
       day.stress === 8 && /slept badly/.test(day.note || ''));
     t('4 · saving the day does not eat the food log', (day.food || []).length === 4);
     G.renderAll();
-    t('4 · Today shows the weigh in as done', /todoWeigh[^>]*"/.test(d.getElementById('todayView').innerHTML));
+    t('4 · Today shows the weigh in as done', d.querySelector('.quicks [data-glance="weigh"]').classList.contains('done'));
   }
 
   /* ---------------------------------------------------------- 5 */
@@ -492,7 +492,10 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const obMaint = +(ob.match(/([\d,]+) kcal a day to stay/) || [0, '0'])[1].replace(',', '');
     const obEat = +(ob.match(/([\d,]+) kcal a day to eat/) || [0, '0'])[1].replace(',', '');
     /* the step-driven build, worked independently of the app */
-    const liftPerDay = 3 * ((57 + 57 + 63) / 3) / 7;            // three lifting days of the seeded templates
+    /* the sessions of the split a three-day lifter is given, worked out from the split itself */
+    const autoIds = G.SPLITS[G.autoSplit(3)].order;
+    const avgMin = autoIds.map(id => G.sessionMinutes(G.S.templates.find(tp => tp.id === id))).reduce((a, m) => a + m, 0) / autoIds.length;
+    const liftPerDay = 3 * avgMin / 7;
     const expected = Math.round(bmr(5) * 1.2 + (8000 - 2500) / 100 * (2 * 3.5 * 95 / 200) + liftPerDay * (3 * 3.5 * 95 / 200));
     t('14 · onboarding shows maintenance built from the step target', Math.abs(obMaint - expected) <= 2, obMaint + ' vs ' + expected);
     t('14 · and shows what each 1,000 steps is worth', /Each 1,000 steps is about 33 kcal/.test(ob), (ob.match(/Each 1,000[^.]*\./) || [''])[0]);
@@ -1520,6 +1523,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     G.closeSheets();
 
     /* ================= this week ================= */
+    /* this person has chosen push, pull, legs, as a real user would */
+    S.profile.split = 'ppl'; S.plan = G.buildPlan(); G.save();
     G.go('plan');
     const pv = () => d.getElementById('planView');
     t('25 · the reasons and the days are one section, called This week',
@@ -1530,14 +1535,14 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('25 · today\'s card is open by itself, and only today\'s', cards()[ti].classList.contains('open') && cards().filter(c => c.classList.contains('open')).length === 1);
     t('25 · closed cards carry no buttons of their own', cards().filter(c => !c.classList.contains('open')).every(c => c.querySelectorAll('button').length === 1));
     t('25 · open and closed are announced', cards()[ti].querySelector('.dch').getAttribute('aria-expanded') === 'true');
-    const push = S.plan.days.findIndex(x => x.templateId === 't_push');
+    const push = S.plan.days.findIndex((x, i) => x.templateId === 't_push' && i !== ti);
     pv().querySelector('[data-planopen="' + push + '"]').click();
     const open = () => pv().querySelector('.daycard.open');
     t('25 · tapping another day opens it and closes today', cards()[push].classList.contains('open') && cards().filter(c => c.classList.contains('open')).length === 1);
-    const tpl = S.templates.find(x => x.id === 't_push');
+    const tpl = S.templates.find(x => x.id === S.plan.days[push].templateId);
     t('25 · the open day shows the whole workout', tpl.ex.every(r => txt(open()).indexOf(G.exOf(r.exId).n) > -1)
       && open().querySelectorAll('[data-showmove]').length === tpl.ex.length);
-    t('25 · with sets and reps for each movement', /4 × 5 to 8/.test(txt(open())));
+    t('25 · with sets and reps for each movement', (txt(open()).match(/\d+ × \d+( to \d+)?/g) || []).length >= tpl.ex.length);
     const acts = [...open().querySelectorAll('button')].map(b => txt(b));
     t('25 · and every action in one place', ['Edit workout', 'Change day', 'Cannot do it'].every(a => acts.includes(a)) && acts.some(a => /^Start/.test(a)), acts.join(' | '));
     pv().querySelector('[data-planopen="' + push + '"]').click();
@@ -2017,7 +2022,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('31 · calories come first, because that is what people stop logging',
       d.querySelector('.glances .glance').dataset.glance === 'food');
     t('31 · and they show what is left, not just what is eaten', /kcal left/.test(txt(d.querySelector('.glances'))));
-    t('31 · each one can be logged in one tap', ['food','protein','steps'].every(k => !!d.querySelector('[data-glance="' + k + '"]')));
+    t('31 · each one can be logged in one tap', ['food','protein'].every(k => !!d.querySelector('[data-glance="' + k + '"]')) && !!d.querySelector('.glances [data-glance="sleep"], .glances [data-glance="steps"]'));
     t('31 · with a row for the two things worth logging', d.querySelectorAll('.quicks .quick').length === 2);
 
     /* the week, once, not twice */
@@ -2119,8 +2124,10 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     G.go('today'); G.renderAll();
     t('32 · there is no rating widget on Home any more, by request', !d.querySelector('[data-glance="day"]'));
     G.go('today'); G.renderAll();
-    d.querySelector('[data-glance="steps"]').click();
-    t('32 · the steps tile does the same', /Steps today/.test(txt(d.getElementById('quickTitle'))));
+    /* with no tracker the third tile shows sleep (UAT P118); typed steps live in the + menu */
+    t('32 · with no tracker, the third tile is sleep, not a blank steps tile', !!d.querySelector('.glances [data-glance="sleep"]') && !d.querySelector('.glances [data-glance="steps"]'));
+    G.openLog(); d.querySelector('#logBody [data-log="steps"]').click();
+    t('32 · steps can still be typed in from the + menu', /Steps today/.test(txt(d.getElementById('quickTitle'))));
     d.querySelector('[data-quickstep="1000"]').click();
     t('32 · the buttons move it', +d.getElementById('quickValue').value === 1000);
     d.getElementById('quickSave').click();
@@ -2629,7 +2636,9 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     G.renderAll();
     const lunch = d.querySelector('.mealstrip [data-mealslot="l"]');
     t('39 · a meal that reaches the mark is marked done', lunch.classList.contains('done'));
-    t('39 · the line under it puts the total first', /of \d+g protein today, which matters most/.test(txt(d.querySelector('.mealstrip').nextElementSibling)));
+    t('39 · the line under it counts meals, and says the day\'s total matters most without repeating it',
+      /meals at \d+g protein so far/.test(txt(d.querySelector('.mealstrip').nextElementSibling)) && /the day's total, above, matters most/.test(txt(d.querySelector('.mealstrip').nextElementSibling))
+      && !/of \d+g protein today/.test(txt(d.querySelector('.mealstrip').nextElementSibling)));
     d.querySelector('.mealstrip [data-mealslot="d"]').click();
     t('39 · tapping a meal opens the food list on that meal',
       d.getElementById('foodSheet').classList.contains('on')
@@ -3282,6 +3291,154 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
       S.workouts.unshift({ id: 'w_old', d: day(2), name: 'Old', ex: [] });
       try { G.go('progress'); G.renderAll(); return true; } catch (e) { return false; } })());
     t('P1-02 · and never shows a single made-up score', !/\d+ ?\/ ?100|readiness score/i.test(txt(d.getElementById('s-progress'))));
+  }
+
+  /* ---------------------------------------------------------- 48 */
+  journey(48, 'UAT build 45 findings: a shorter, clearer Today');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const i = G.dowIdx(), lift = S.plan.days.find(x => x.templateId);
+    S.plan.days[i] = Object.assign({}, lift, { dow: i }); S.week[i] = { done: [] };
+    G.addFood('oats', 1, 'b'); G.go('today'); G.renderAll();
+    const home = () => d.getElementById('todayView');
+
+    t('P116 · weigh in appears once on Today', !d.getElementById('todoWeigh') && !!home().querySelector('.quicks [data-glance="weigh"]'));
+    t("P116 · and so does Today's Check-in", !d.getElementById('todoDay'));
+    t('P116 · the old rating-means-done tick has gone with it', !/you said \d+ out of 10/.test(txt(home())));
+    t('P117 · protein pace advice carries no baseline label', (() => {
+      const p = home().querySelector('.prio.p-protein, .prio.p-proteinok, .prio.p-food'); return !p || !p.querySelector('.conf'); })());
+    t('P117 · sleep advice still does', (() => { for (let n = 0; n < 7; n++) S.days[G.addDays(G.todayKey(), -n)] = Object.assign({}, S.days[G.addDays(G.todayKey(), -n)], { sleep: 5.8 });
+      G.renderAll(); const p = home().querySelector('.prio.p-sleep'); return !!p && !!p.querySelector('.conf'); })());
+    t('P118 · with no tracker the third tile is sleep, never a blank steps tile', !!home().querySelector('.glances [data-glance="sleep"]') && !/no tracker/.test(txt(home().querySelector('.glances'))));
+    t('P118 · it shows last night, with the aim', /5\.8h/.test(txt(home().querySelector('[data-glance="sleep"]'))) && /aim 7h or more/.test(txt(home().querySelector('[data-glance="sleep"]'))));
+    home().querySelector('.glances [data-glance="sleep"]').click();
+    t('P118 · and opens the sleep view', /Sleep/.test(txt(d.getElementById('altTitle'))));
+    G.closeSheets(); G.go('today'); G.renderAll();
+    t('P119 · the why paragraph is one tappable line, closed', !!home().querySelector('[data-whytoday]') && d.getElementById('whyToday').hidden);
+    home().querySelector('[data-whytoday]').click();
+    t('P119 · tapping it opens the reason in place', !d.getElementById('whyToday').hidden && home().querySelector('[data-whytoday]').getAttribute('aria-expanded') === 'true');
+    t('P119 · Start is still there', !!d.getElementById('startToday'));
+    t('P207 · protein total said once, not under the meals as well', !/of \d+g protein today, which matters most/.test(txt(home())));
+    S.profile.firstWeek = G.mondayKey(); G.renderAll();
+    t('P208 · in the first week the connect row shows', !!d.getElementById('connectBtn'));
+    S.profile.firstWeek = G.addDays(G.mondayKey(), -21); G.renderAll();
+    t('P208 · after that it does not', !d.getElementById('connectBtn'));
+    S.target = null; G.renderAll();
+    t('P1-04 · earlier in the day, protein advice talks about pace', (() => { const [h, s2] = G.proteinPaceText(40, 80, 171); return /next meal/.test(h) && /on pace for 171g today/.test(s2); })());
+    t('P1-04 · late in the day it says how far short, not "171g would be on pace for 171g"', (() => { const [h, s2] = G.proteinPaceText(54, 171, 171);
+      return /short today/.test(h) && /54g of 171g so far/.test(s2) && !/on pace/.test(s2); })());
+    t('meals · the weekly meal figures only count finished days', (() => {
+      const keep = S.days, k0 = G.todayKey(), k1 = G.addDays(k0, -1);
+      const egg = at => ({ id: 'egg', n: 'Egg', u: 'egg', q: 1, meal: 'b', kcal: 78, p: 6, c: 0, f: 5, at });
+      S.days = {}; S.days[k1] = { food: [egg(G.dateOf(k1).getTime() + 20 * 3600e3)] }; S.days[k0] = { food: [egg(G.dateOf(k0).getTime() + 15 * 3600e3)] };
+      const ts = G.timingStats(7); S.days = keep;
+      return !!ts && ts.days === 1 && ts.meals === 1; })());
+    t('P209 · the goal link says what it does', /Set a goal/.test(txt(home())) && !/Give this a target/.test(txt(home())));
+    G.openLog();
+    t('P118 · steps can still be typed in from the + menu without a tracker', !!d.querySelector('#logBody [data-log="steps"]'));
+    G.closeSheets();
+
+    /* found while doing this: a teenager still had a weigh in row */
+    const tb = await boot(); allErrs.push(...tb.errs);
+    tb.G.startOnboarding(); Object.assign(tb.G.onbDraft, { handle: 'teen', aim: 'hold', age: 15, liftDays: 3, cardioDays: 2, checkinDay: 6, kit: tb.G.ALL_KIT.slice() });
+    tb.G.finishOnboarding(); tb.G.go('today'); tb.G.renderAll();
+    t('teen · no weigh in anywhere on Today, including the lower rows', !tb.d.getElementById('todoWeigh') && !/Weigh in/.test(txt(tb.d.getElementById('todayView'))));
+  }
+
+  /* ---------------------------------------------------------- 49 */
+  journey(49, 'Meals: when you ate and meals you skipped; training splits people know');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const k = G.todayKey();
+
+    /* dinner is dinner, even when training takes its place in the day */
+    S.profile.wakeTime = '07:00'; S.profile.bedtime = '23:00'; S.profile.trainTime = '18:00';
+    const i = G.dowIdx(), lift = S.plan.days.find(x => x.templateId);
+    S.plan.days[i] = Object.assign({}, lift, { dow: i });
+    const plan = G.eatingPlan();
+    t('meals · on this training day the meal after training takes dinner\'s place', !plan.items.some(x => x.tag === 'last'), plan.items.map(x => x.tag).join(','));
+    G.addFood('chicken', 1, 'd');
+    const home = G.mealSlots().slots.find(sl => sl.p > 0);
+    t('meals · food added to dinner lands on the dinner meal, not lunch', !!home && G.slotLetter(home) === 'd' && home.tag !== 'lunch', home && (home.tag + '/' + G.slotLetter(home)));
+    G.addFood('oats', 1, 'b'); G.addFood('egg', 2, 'l');
+    const roles = G.mealSlots().slots.filter(sl => sl.p > 0).map(sl => G.slotLetter(sl)).sort().join('');
+    t('meals · breakfast, lunch and dinner each land on their own meal', roles === 'bdl', roles);
+
+    /* the time you ate it */
+    G.openFood(false); d.querySelector('[data-foodslot="d"]').click();
+    const at = d.getElementById('mealAt');
+    t('meals · each meal has an "eaten at" time you can set', !!at && at.type === 'time');
+    at.value = '19:45'; at.dispatchEvent(new w.Event('change', { bubbles: true }));
+    const dinnerTimes = G.dayFood(k).filter(f => f.meal === 'd').map(f => { const t2 = new Date(f.at); return t2.getHours() * 60 + t2.getMinutes(); });
+    t('meals · setting it moves that meal\'s food to the time you ate', dinnerTimes.length && dinnerTimes.every(m => m === 19 * 60 + 45), dinnerTimes.join());
+    t('meals · and only that meal', G.dayFood(k).filter(f => f.meal === 'b').every(f => { const t2 = new Date(f.at); return t2.getHours() * 60 + t2.getMinutes() !== 19 * 60 + 45; }));
+    t('meals · the time shown is the time you set', G.mealAtValue(k, 'd') === '19:45');
+    t('meals · an empty main meal defaults to its planned time, not the clock, when it is not near it', (() => {
+      const keep = S.days[k]; S.days[k] = { food: [] };
+      const sl = G.mealSlots(k).slots.find(x => G.slotLetter(x) === 'd'), now = new Date(), nm = now.getHours() * 60 + now.getMinutes();
+      const v = G.mealAtValue(k, 'd'); S.days[k] = keep;
+      const near = Math.min(Math.abs(nm - sl.min), 1440 - Math.abs(nm - sl.min)) <= 120;
+      const want = near ? String(now.getHours()).padStart(2, '0') + ':' + String(Math.floor(now.getMinutes() / 5) * 5).padStart(2, '0') : G.minToHhmm(Math.floor(sl.min / 5) * 5);
+      return v === want; })());
+    t('splits · push pull legs at 3 days says each muscle is trained once a week', /once a week/.test(G.splitFit('ppl', 3)) && !/good fit/.test(G.splitFit('ppl', 3)));
+    t('splits · and at 6 days it is a good fit', /good fit for 6/.test(G.splitFit('ppl', 6)));
+    G.closeSheets();
+
+    /* skipping */
+    G.openFood(false); d.querySelector('[data-foodslot="s"]').click(); d.querySelector('[data-foodslot="l"]').click();
+    const lunchFood = G.dayFood(k).filter(f => f.meal === 'l').length;
+    G.dayFood(k).filter(f => f.meal === 'l').forEach(f => G.setFoodQty(f.id, 'l', 0)); G.drawFood();
+    const skipBtn = d.querySelector('[data-skipmeal="l"]');
+    t('meals · an empty meal offers "I skipped it"', !!skipBtn);
+    skipBtn.click();
+    t('meals · marking it saves the skip', (S.days[k].skipped || []).indexOf('l') >= 0);
+    G.closeSheets(); G.go('today'); G.renderAll();
+    const lunchChip = [...d.querySelectorAll('.mealstrip .meal')].find(m => m.dataset.mealslot === 'l');
+    t('meals · the meals row shows lunch as skipped, not missed', !!lunchChip && lunchChip.classList.contains('skipped') && /skipped/i.test(lunchChip.getAttribute('aria-label')));
+    t('meals · a skipped meal is not counted against the protein mark', (() => { const { slots } = G.mealSlots(); const sk = slots.find(sl => G.slotLetter(sl) === 'l'); return sk && sk.skipped; })());
+    G.skipMeal(k, 'l', false);
+    t('meals · a skip can be undone', !(S.days[k].skipped || []).includes('l'));
+    t('meals · lunch food was there to remove, so the test was real', lunchFood >= 1);
+
+    /* splits */
+    const ids = ['full', 'ul', 'ppl', 'bro', 'pplul'];
+    t('splits · full body, upper and lower, push pull legs, body part, and a five day mix are offered', ids.every(id => G.SPLITS[id] && G.SPLITS[id].order.length));
+    t('splits · every session in every split is a real template', ids.every(id => G.SPLITS[id].order.every(tid => S.templates.some(tp => tp.id === tid))),
+      ids.map(id => G.SPLITS[id].order.filter(tid => !S.templates.some(tp => tp.id === tid)).join('')).join(''));
+    t('splits · every movement in them exists in the library', ids.every(id => G.SPLITS[id].order.every(tid => S.templates.find(tp => tp.id === tid).ex.every(r => G.exOf(r.exId) && G.exOf(r.exId).n))));
+    t('splits · letting Gauntlet choose trains every muscle at least twice a week', G.autoSplit(2) === 'full' && G.autoSplit(3) === 'full' && G.autoSplit(4) === 'ul' && G.autoSplit(5) === 'pplul' && G.autoSplit(6) === 'ppl');
+    t('splits · body part says plainly it trains each muscle once a week', /Each muscle once a week/.test(G.SPLITS.bro.s), G.SPLITS.bro.s);
+    G.go('progress'); G.renderAll();
+    const row = d.querySelector('[data-setting="split"]');
+    t('splits · there is a training split setting', !!row);
+    row.click();
+    t('splits · it lists the splits to choose from', d.querySelectorAll('#altBody [data-split]').length >= 5);
+    S.profile.liftDays = 5; S.plan = G.buildPlan();
+    d.querySelector('#altBody [data-split="bro"]') ? d.querySelector('#altBody [data-split="bro"]').click() : (() => { G.openSplitSheet(); d.querySelector('#altBody [data-split="bro"]').click(); })();
+    const week = S.plan.days.filter(x => x.templateId).map(x => x.templateId);
+    t('splits · choosing body part rebuilds the week as chest, back, legs, shoulders, arms', ['t_chest', 't_back', 't_legs', 't_shoulders', 't_arms'].every(id => week.includes(id)), week.join(','));
+    G.openSplitSheet(); d.querySelector('#altBody [data-split="full"]').click();
+    const week2 = S.plan.days.filter(x => x.templateId).map(x => x.templateId);
+    t('splits · and choosing full body changes it again', week2.every(id => /^t_full/.test(id)), week2.join(','));
+    G.openHow(); const how = d.body.textContent; G.closeSheets();
+    t('splits · the method sheet gives the evidence: frequency matters little once weekly volume is matched', /Schoenfeld/.test(how) && /volume/i.test(how) && /preference|prefer/i.test(how));
+
+    /* onboarding and existing users */
+    const b2 = await boot(); allErrs.push(...b2.errs);
+    b2.G.startOnboarding(); let found = false;
+    for (let s2 = 0; s2 < 8 && !found; s2++) { b2.G.step = s2; b2.G.onbRender(); found = !!b2.d.querySelector('[data-onbsplit]'); }
+    t('splits · onboarding offers the choice', found);
+    t('splits · with "let Gauntlet choose" as an option', !!b2.d.querySelector('[data-onbsplit="auto"]'));
+    const b3 = await boot({ before: w3 => { w3.localStorage.setItem('gauntlet.v4', JSON.stringify(Object.assign({}, JSON.parse(JSON.stringify(S)), { profile: Object.assign({}, S.profile, { split: undefined }) }))); } });
+    allErrs.push(...b3.errs);
+    t('splits · someone who already has a plan keeps it until they choose to change', !b3.G.S.profile.split && JSON.stringify(b3.G.S.plan.days.map(x => x.templateId)) === JSON.stringify(S.plan.days.map(x => x.templateId)));
+    t('splits · and they get the new templates to choose from', ['t_chest', 't_fullB', 't_upperA'].every(id => b3.G.S.templates.some(tp => tp.id === id)));
   }
 
   const r = s.report(allErrs);

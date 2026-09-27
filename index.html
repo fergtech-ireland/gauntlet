@@ -210,6 +210,19 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .painresult.pr-swap,.painresult.pr-check{background:var(--oxblood-bg,var(--grey-btn))}
 .painbtns{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .prio .pa{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.whyline{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:13px;font-weight:700;color:var(--mute);background:none;border:0;padding:0}
+.whyline[aria-expanded="true"] span{transform:rotate(90deg)}
+.ateat{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--mute)}
+.ateat input{min-height:36px;border:1px solid var(--line);border-radius:8px;padding:0 6px;font:inherit;font-size:13px;color:var(--ink);background:var(--paper)}
+.platehead{flex-wrap:wrap;gap:6px}
+.platesub{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:2px 0 4px;font-size:12px;color:var(--mute);font-weight:600}
+.skipnote{color:var(--mute)}
+.meal.skipped{opacity:.7;border-style:dashed;background:var(--grey-btn)}
+.splitopts{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+.splitopt{text-align:left;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--paper);display:flex;flex-direction:column;gap:2px;min-height:48px}
+.splitopt b{font-size:14px}.splitopt span{font-size:12.5px;color:var(--mute);font-weight:600}
+.splitopt small{font-size:11.5px;color:var(--mute)}
+.splitopt.on{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink) inset}
 .prios{display:flex;flex-direction:column;gap:8px;padding:0 14px 12px}
 .prio{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:start;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--paper)}
 .prio .pn{width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--on-ink);display:grid;place-items:center;font-size:12.5px;font-weight:800}
@@ -1187,7 +1200,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='45';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='47';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -1743,7 +1756,13 @@ function plannedLiftMinPerDay(p){
     return S.plan.days.filter(d=>d.templateId).reduce((a,d)=>a+sessionMinutes(byId(d.templateId)),0)/7;
   }
   const days=+((p||S.profile||{}).liftDays)||0;
-  const core=['t_push','t_pull','t_lower'].map(byId).filter(Boolean);
+  /* the sessions of the split they chose, so onboarding promises the same
+     maintenance the app then uses; a new person who has not touched it gets
+     "let Gauntlet choose", exactly as finishing onboarding will save */
+  const chosen= p&&p.__preview? (p.split||'auto') : ((S.profile&&S.profile.split)||null);
+  const sp= chosen==='auto'? autoSplit(days) : chosen;
+  const ids= sp&&SPLITS[sp]&&SPLITS[sp].order? SPLITS[sp].order : ['t_push','t_pull','t_lower'];
+  const core=ids.map(byId).filter(Boolean);
   const avg=core.length? core.reduce((a,t)=>a+sessionMinutes(t),0)/core.length : 50;
   return days*avg/7;
 }
@@ -2162,6 +2181,48 @@ function slotFor(code){
 const AIM_DEFAULTS={lose:{lift:3,cardio:2},build:{lift:4,cardio:1},strong:{lift:4,cardio:1},endure:{lift:1,cardio:4},
   hold:{lift:3,cardio:1},eat:{lift:2,cardio:1}};
 const LIFT_ORDER=['t_push','t_lower','t_pull'];
+/* ---------- training splits ----------
+   A 2024 meta-analysis of 14 trials (Ramos-Campo and colleagues) found no
+   difference in strength or muscle growth between full-body and split
+   routines when weekly volume is matched, and concluded people can pick by
+   preference. Weekly volume is what drives growth (Pelland and colleagues,
+   2025), so the thing to protect is enough weekly sets per muscle: that is why
+   full body suits two or three days, and a body-part split needs about five.
+   The week rolls on from where the last one stopped, so with fewer days than a
+   split has sessions, nothing is left out, it just comes round a little later.
+   People who joined before this keep exactly the week they had until they
+   choose a split. */
+const SPLITS={
+  auto:{t:'Let Gauntlet choose',s:'Picked from how many days you lift'},
+  full:{t:'Full body',s:'Everything, every session',best:[1,2,3],order:['t_full','t_fullB','t_fullC']},
+  ul:{t:'Upper and lower',s:'Upper body one day, legs the next',best:[4],order:['t_upperA','t_lower','t_upperB','t_lowerB']},
+  ppl:{t:'Push, pull, legs',s:'Chest and shoulders, then back, then legs',best:[3,6],order:['t_push','t_pull','t_legs']},
+  bro:{t:'Body part',s:'Chest day, back day, legs, shoulders, arms. Each muscle once a week, with more sets that day',best:[5],order:['t_chest','t_back','t_legs','t_shoulders','t_arms']},
+  pplul:{t:'Push, pull, legs, upper, lower',s:'Five days, each muscle twice',best:[5],order:['t_push','t_pull','t_legs','t_upperA','t_lower']}
+};
+function autoSplit(days){ return days<=3? 'full' : (days===4? 'ul' : (days===5? 'pplul' : 'ppl')); }
+function splitOf(){
+  const p=S.profile||{};
+  if(!p.split) return null;
+  return p.split==='auto'? autoSplit(dayCounts().lift) : (SPLITS[p.split]&&SPLITS[p.split].order? p.split : 'full');
+}
+function liftOrder(){
+  const sp=splitOf();
+  if(!sp) return {order:LIFT_ORDER,offset:0};
+  const order=SPLITS[sp].order.filter(id=>(S.templates||[]).some(t=>t.id===id));
+  const week=Math.floor(dateOf(mondayKey()).getTime()/(7*864e5));
+  return {order:order.length? order : LIFT_ORDER, offset:(week*dayCounts().lift)%Math.max(1,order.length)};
+}
+/* an honest line about the fit between a split and the number of days */
+function splitFit(id,days){
+  const s=SPLITS[id]; if(!s||!s.best) return '';
+  /* said plainly, as for body part: fewer than six days means once a week */
+  if(id==='ppl'&&days<6) return 'At '+days+' day'+(days===1?'':'s')+' each muscle is trained once a week, which works when each session has enough sets. At 6 days it goes round twice.';
+  if(s.best.indexOf(days)>=0) return 'A good fit for '+days+' day'+(days===1?'':'s')+'.';
+  if(id==='bro'&&days<5) return 'Best with 5 days. With '+days+', each muscle comes round less than once a week, so weekly work per muscle drops.';
+  if(id==='full'&&days>=5) return 'Works, but '+days+' full sessions a week is a lot of recovery to ask for.';
+  return 'Works with '+days+' days; it simply rolls on through the week.';
+}
 const CARDIO_BY_AIM={endure:['r_easy','r_intervals','r_easy','r_long'],
   lose:['r_easy','walk','r_easy','walk'], build:['walk','r_easy','walk','r_easy'], strong:['walk','r_easy','walk','r_easy'],
   hold:['r_easy','walk','r_easy','walk'], eat:['walk','r_easy','walk','r_easy']};
@@ -2176,7 +2237,8 @@ function dayCounts(){
 function weekPattern(){
   const {lift,cardio}=dayCounts();
   const slots=[0,1,2,3,4,5,6];
-  const lifts=Array.from({length:Math.min(lift,slots.length)},(_,n)=>LIFT_ORDER[n%LIFT_ORDER.length]);
+  const LO=liftOrder();
+  const lifts=Array.from({length:Math.min(lift,slots.length)},(_,n)=>LO.order[(n+LO.offset)%LO.order.length]);
   const cardios=Array.from({length:Math.min(cardio,Math.max(0,slots.length-lifts.length))},
     (_,n)=>(CARDIO_BY_AIM[S.profile.aim]||CARDIO_BY_AIM.lose)[n%4]);
   const mixed=[];
@@ -2570,7 +2632,7 @@ function checkinRow(){
 /* The destination, if there is one, and how far off it is. */
 function targetLine(){
   const t=S.target;
-  if(!t) return `<button class="skipbtn" id="setTarget">Give this a target</button>`;
+  if(!t) return `<button class="skipbtn" id="setTarget">Set a goal</button>`;
   const pr=targetProgress();
   const k=TARGET_KINDS[t.kind];
   if(t.hit) return `<div class="why"><b>Target met.</b> ${t.value}${k.unit==='a week'?' sessions a week':' '+k.unit}, on ${prettyDate(t.hit)}. <button class="inlinebtn" id="setTarget">Set the next one</button></div>`;
@@ -2806,12 +2868,12 @@ function priorities(){
   if(!teen&&t.protein){
     const fc=confidence('food'), pr=Math.round(foodTotals(k).protein||0);
     const expected=Math.round(t.protein*Math.min(1,Math.max(0,(hour-7)/13)));
-    if(dayFood(k).length===0&&hour>=13&&fc.n>=3)
-      add(60,'food','Log what you have eaten so far','Nothing logged yet today, and the rest of the week relies on it. Same as yesterday is one tap.','<button class="mini go" data-glance="food">Log food</button>',fc);
+    if(dayFood(k).length===0&&hour>=13&&fc.n>=3&&!((S.days[k]||{}).skipped||[]).length)
+      add(60,'food','Log what you have eaten so far','Nothing logged yet today, and the rest of the week relies on it. Same as yesterday is one tap.','<button class="mini go" data-glance="food">Log food</button>');
     else if(dayFood(k).length&&pr<expected-25)
-      add(50,'protein','Get protein into the next meal',`${pr}g so far, around ${expected}g would be on pace for ${t.protein}g.`,'<button class="mini" data-glance="food">Log food</button>',fc);
+      add(50,'protein',...proteinPaceText(pr,expected,t.protein),'<button class="mini" data-glance="food">Log food</button>');
     else if(dayFood(k).length&&pr>=expected)
-      add(10,'proteinok','Protein is on track','Nothing to fix here today, so put the effort elsewhere.','',fc);
+      add(10,'proteinok','Protein is on track','Nothing to fix here today, so put the effort elsewhere.','');
   }
   /* weigh in, adults with a weight goal, only if it has been a while */
   if(!teen&&S.target&&S.target.kind==='weight'){
@@ -2824,6 +2886,13 @@ function priorities(){
   if(stp!==null&&hour>=17&&stp<stepTarget()*0.6)
     add(30,'steps','A walk this evening',`${num(stp)} steps so far against ${num(stepTarget())}. Twenty minutes gets you most of the way.`,'');
   return out.sort((a,b)=>b.score-a.score).slice(0,3);
+}
+/* Late in the day "on pace" becomes the whole target, which read as
+   "around 171g would be on pace for 171g". Then it simply says how far short,
+   and that one day matters less than the week. */
+function proteinPaceText(pr,expected,target){
+  if(expected>=target*0.95) return ['Protein is short today',`${pr}g of ${target}g so far. A protein-rich last meal or snack closes some of the gap, and the week matters more than one day.`];
+  return ['Get protein into the next meal',`${pr}g so far; around ${expected}g would be on pace for ${target}g today.`];
 }
 function prioritiesRow(){
   const list=priorities();
@@ -2865,8 +2934,10 @@ function glanceRow(){
     ${cell('food', top, label, sub, target? Math.round(eaten/target*100) : null, tone, cls)}
     ${cell('protein', protein+'g', 'protein', t.protein? 'of '+t.protein+'g':'today',
       t.protein? Math.round(protein/t.protein*100) : null, 'var(--marine-bg)')}
-    ${cell('steps', st===null? '–' : num(st), 'steps', st===null? 'no tracker':'of '+num(stepTarget()),
-      st===null? null : Math.round(st/stepTarget()*100), 'var(--burnt)')}
+    ${st===null? (()=>{ const sl=realSleep(S.days[todayKey()]), tg=sleepTarget();
+        return cell('sleep', sl===null? '–' : sl+'h', 'sleep', sl===null? 'tap to log last night' : 'aim '+tg.lo+'h or more',
+          sl===null? null : Math.round(sl/tg.lo*100), 'var(--marine-bg)'); })()
+      : cell('steps', num(st), 'steps', 'of '+num(stepTarget()), Math.round(st/stepTarget()*100), 'var(--burnt)')}
   </div>`;
 }
 /* One tap each, and each one says where it stands rather than nagging. */
@@ -3057,19 +3128,35 @@ function perMealProtein(){
 const MEAL_NAMES={breakfast:'Breakfast',lunch:'Lunch',last:'Dinner',pre:'Before training',post:'After training',presleep:'Before bed'};
 const mealName=tag=>MEAL_NAMES[tag]||'Snack';
 const mealLetter=tag=>tag==='breakfast'?'b':(tag==='lunch'?'l':(tag==='last'?'d':'s'));
+/* the strip opens the food list on the meal that slot is today, so tapping the
+   meal after training on a day it is dinner opens Dinner */
+const slotLetter=s=>s.role||mealLetter(s.tag);
 /* The day's planned meals, with what was actually eaten placed against the
    nearest one by the time it was logged. */
 function mealSlots(k){
   k=k||todayKey();
   const plan=eatingPlan();
   const slots=plan.items.filter(i=>!['train','coffee'].includes(i.tag))
-    .map(i=>({tag:i.tag,time:i.time,min:hhmmToMin(i.time),p:0,kcal:0,n:0,optional:i.tag==='presleep'}));
+    .map(i=>({tag:i.tag,time:i.time,min:hhmmToMin(i.time),p:0,kcal:0,n:0,optional:i.tag==='presleep',
+      /* which of your breakfast, lunch and dinner this planned meal is today.
+         On a training day dinner can become the meal after training, and then
+         food logged as dinner belongs there, not wherever the clock puts it. */
+      role: (i.tag==='breakfast'||/^Breakfast/.test(i.what||''))? 'b'
+        : (i.tag==='lunch'? 'l' : ((i.tag==='last'||i.tookLast||/last big one/.test(i.what||''))? 'd' : null))}));
+  const mainSlots=slots.filter(x=>!x.optional);
+  const wakeM=hhmmToMin((S.profile&&S.profile.wakeTime)||EAT_CLOCK.wake);
+  const sinceWake=x=>((x.min-wakeM)%1440+1440)%1440;
+  if(mainSlots.length&&!slots.some(x=>x.role==='b')){ const f=mainSlots.slice().sort((a,b)=>sinceWake(a)-sinceWake(b))[0]; if(!f.role) f.role='b'; }
+  if(mainSlots.length&&!slots.some(x=>x.role==='d')){ const f=mainSlots.slice().sort((a,b)=>sinceWake(b)-sinceWake(a)).find(x=>!x.role); if(f) f.role='d'; }
+  if(mainSlots.length&&!slots.some(x=>x.role==='l')){ const f=mainSlots.filter(x=>!x.role).sort((a,b)=>Math.abs(sinceWake(a)-330)-Math.abs(sinceWake(b)-330))[0]; if(f) f.role='l'; }
+  const skipped=((S.days[k]||{}).skipped)||[];
+  slots.forEach(x=>{ x.skipped=!!(x.role&&skipped.indexOf(x.role)>=0); });
   if(!slots.length) return {slots,per:perMealProtein()};
   dayFood(k).forEach(f=>{
     /* The meal they chose wins: lunch logged at four o'clock is still lunch.
        Only snacks are placed by the time they were logged. */
-    const want=f.meal==='b'?'breakfast':(f.meal==='l'?'lunch':(f.meal==='d'?'last':null));
-    let best=want&&slots.find(x=>x.tag===want);
+    const want=(f.meal==='b'||f.meal==='l'||f.meal==='d')? f.meal : null;
+    let best=want&&slots.find(x=>x.role===want);
     if(!best){
       /* no slot of that name today (a training meal took its place): fall back to the clock */
       let t;
@@ -3090,29 +3177,35 @@ function eatingRow(){
   const now=new Date().getHours()*60+new Date().getMinutes();
   const nextI=slots.findIndex(s=>s.min>=now&&!s.n);
   const eaten=Math.round(foodTotals(todayKey()).protein||0), target=+S.targets.protein||0;
-  const counted=slots.filter(s=>!s.optional);
+  const counted=slots.filter(s=>!s.optional&&!s.skipped);
   const hit=counted.filter(s=>per&&s.p>=per).length;
   const chip=(s,i)=>{
     const pct=per? Math.min(100,Math.round(s.p/per*100)) : 0;
     const done=per&&s.p>=per, some=s.n>0;
+    if(s.skipped) return `<button class="meal skipped" data-mealslot="${slotLetter(s)}" aria-label="${mealName(s.tag)}: skipped. Tap to change.">
+      <span class="mt">${s.time}</span><span class="mn">${mealName(s.tag)}</span><span class="mp" style="font-size:13px">Skipped</span></button>`;
     return `<button class="meal ${done?'done':''} ${some&&!done?'some':''} ${i===nextI?'next':''} ${s.optional?'opt':''}"
-      data-mealslot="${mealLetter(s.tag)}" aria-label="${mealName(s.tag)} at ${s.time}: ${Math.round(s.p)} of ${per} grams protein. Tap to log.">
+      data-mealslot="${slotLetter(s)}" aria-label="${mealName(s.tag)} at ${s.time}: ${Math.round(s.p)} of ${per} grams protein. Tap to log.">
       <span class="mt">${s.time}</span><span class="mn">${mealName(s.tag)}</span>
       <span class="mp">${some? Math.round(s.p)+'g' : (s.optional?'if hungry':'–')}<small>/${per}g</small></span>
       <i class="mbar"><b style="width:${pct}%"></b></i></button>`;
   };
   return `<div class="sechead"><h2>Today's meals</h2><button id="eatBtn">Why these times</button></div>
     <div class="mealstrip">${slots.map(chip).join('')}</div>
-    <div class="note" style="margin:0 14px 12px">${eaten} of ${target}g protein today, which matters most. ${hit} of ${counted.length} meals at ${per}g, which helps on top.</div>`;
+    <div class="note" style="margin:0 14px 12px">${hit} of ${counted.length} meals at ${per}g protein so far. Spreading it helps; the day's total, above, matters most.</div>`;
 }
 /* The week, for the check in and the coach: how many meals reached the mark,
    and how long before bed the last food came. */
 function timingStats(days){
   days=days||7;
   const per=perMealProtein(), bed=hhmmToMin((S.profile&&S.profile.bedtime)||EAT_CLOCK.bed);
-  let meals=0, hits=0, gaps=[], logged=0;
-  for(let i=0;i<days;i++){
+  let meals=0, hits=0, gaps=[], logged=0, skipDays=0;
+  /* finished days only: today is not over, so its last food so far is not
+     the last food of the day, and counting it said "7.5 hours before bed" at
+     three in the afternoon */
+  for(let i=1;i<=days;i++){
     const k=addDays(todayKey(),-i), food=dayFood(k).filter(f=>f.at);
+    if(((S.days[k]||{}).skipped||[]).length) skipDays++;
     if(!food.length) continue;
     logged++;
     /* group entries logged within 45 minutes of each other into one meal */
@@ -3125,7 +3218,7 @@ function timingStats(days){
     gaps.push(((bed-lm)+1440)%1440);
   }
   if(!logged) return null;
-  return {days:logged, meals, hits, per,
+  return {days:logged, meals, hits, per, skipDays,
     mealsPerDay:+(meals/logged).toFixed(1),
     lastBeforeBedH: gaps.length? +(gaps.reduce((a,b)=>a+b,0)/gaps.length/60).toFixed(1) : null};
 }
@@ -3161,6 +3254,8 @@ function openEatTimes(){
 }
 document.addEventListener('click',e=>{
   if(e.target.closest('#eatBtn')) openEating();
+  const wy=e.target.closest('[data-whytoday]');
+  if(wy){ const box=document.getElementById('whyToday'); if(box){ const open=box.hidden; box.hidden=!open; wy.setAttribute('aria-expanded',String(open)); } return; }
   if(e.target.closest('[data-opensleep]')){ openSleep(); return; }
   const ms=e.target.closest('[data-mealslot]');
   if(ms){ openFood(false); foodSlot=ms.dataset.mealslot; drawFood(); return; }
@@ -3171,6 +3266,13 @@ document.addEventListener('change',e=>{
   const ts=e.target.closest('[data-timeset]');
   if(ts&&hhmmToMin(e.target.value)!==null){ S.profile[ts.dataset.timeset]=e.target.value; save(); }
 });
+/* the first seven days after sign up */
+/* firstWeek is the Monday of the week they joined, so fourteen days from it
+   gives everyone at least a full week however late in the week they joined */
+function inFirstWeek(){
+  const f=S.profile&&S.profile.firstWeek; if(!f) return true;
+  return gapDays(f)<14;
+}
 function renderToday(){
   const plan=ensurePlan(), d=todayPlan(), i=dowIdx(), logged=S.days[todayKey()];
   const weighedToday=S.weights.length && S.weights[S.weights.length-1].d===todayKey();
@@ -3188,7 +3290,8 @@ function renderToday(){
           <div class="tsrc">Counted by ${sourceName()}. Nothing to log.</div></div>`
       : ''}
     ${targetLine()}
-    ${plan.why[0]?`<div class="why"><b>Why today looks like this.</b> ${plan.why[0]}</div>`:''}
+    ${plan.why[0]?`<button class="whyline" data-whytoday="1" aria-expanded="false">Why today looks like this <span aria-hidden="true">›</span></button>
+      <div class="why" id="whyToday" hidden>${plan.why[0]}</div>`:''}
     ${d.slot==='rest'
       ? `<button class="cta ghost" data-go="plan">See the week</button>`
       : isWalk
@@ -3209,21 +3312,17 @@ function renderToday(){
       <span class="dot ${x.kind==='rest'?'rest':''} ${dayDone(n)?'done':''}" style="${x.kind==='rest'||!dayDone(n)?'':'background:'+(HUE[x.kind]||HUE.any).deep}"></span>
     </button>`).join('')}</div>
   <div class="note" style="margin:2px 14px 10px">${weekLine()}</div>
-  <button class="todo ${weighedToday?'done':''}" id="todoWeigh">
-    <span class="ic" style="background:var(--t-forest);color:var(--forest)">kg</span>
-    <span class="t"><b>Weigh in</b><span>${S.weights.length? 'last '+showW(S.weights[S.weights.length-1].kg,S.profile.units==='imperial'):'takes five seconds'}</span></span>
-    <span class="tick">${weighedToday?'✓':''}</span></button>
-  <button class="todo ${logged&&logged.wb?'done':''}" id="todoDay">
-    <span class="ic" style="background:var(--t-burnt);color:var(--burnt)">✎</span>
-    <span class="t"><b>Today's Check-in</b><span>${logged&&logged.wb? 'you said '+logged.wb+' out of 10' : 'one slider, and food if you track it'}</span></span>
-    <span class="tick">${logged&&logged.wb?'✓':''}</span></button>
+  ${/* Weigh in and the check in are the quick buttons at the top; the rows
+       that repeated them here are gone (UAT P116). The row that suggests a
+       tracker shows for the first week only, then lives on the You tab
+       (UAT P208). */ ''}
   ${healthOn()
     ? `<div class="todo auto"><span class="ic" style="background:var(--t-marine);color:var(--marine)">⌚</span>
         <span class="t"><b>Steps and sleep</b><span>${st!==null?num(st)+' steps':'no data yet'}${logged&&logged.auto?' · '+logged.auto.sleep+'h sleep':''} · demo data, not ${sourceName()} yet</span></span>
         <span class="autotag">automatic</span></div>`
-    : `<button class="todo" id="connectBtn"><span class="ic" style="background:var(--t-marine);color:var(--marine)">⌚</span>
+    : (inFirstWeek()? `<button class="todo" id="connectBtn"><span class="ic" style="background:var(--t-marine);color:var(--marine)">⌚</span>
         <span class="t"><b>Connect your watch or phone</b><span>Steps and sleep fill themselves in. You never log them.</span></span>
-        <span class="chev">›</span></button>`}
+        <span class="chev">›</span></button>` : '')}
   ${activeHabits().map(h=>habitRowFor(h.slot)).join('')||habitRow()}
   ${habitCount()&&habitRoom()? `<button class="addhabit" data-habitadd="1">Add another habit<span>${habitCount()} of ${HABIT_MAX}</span></button>`:''}
   ${checkinRow()}
@@ -3860,6 +3959,7 @@ document.addEventListener('click',e=>{
     if(what==='food') openFood(false);
     else if(what==='weigh') openWeigh();
     else if(what==='checkin') openDay();
+    else if(what==='sleep') openSleep();
     else openQuick(what);
     return; }
   const qs=e.target.closest('[data-quickstep]');
@@ -3964,6 +4064,7 @@ function openLog(){
       ${d&&d.type&&d.slot!=='walk'? tile('today',(dayDone(dowIdx())?'Do it again':'Start '+dayLabel(d)),daySub(d),(HUE[d.kind]||HUE.any).deep,dayDone(dowIdx())):''}
       ${isTeen()? '' : tile('weigh',weighed?'Weigh in again':'Weigh in',weighed? S.weights[S.weights.length-1].kg+' kg today':'Five seconds','var(--forest)',weighed)}
       ${tile('day',"Today's Check-in",logged&&logged.checkedIn? 'Done for today' : 'Twenty seconds','var(--marine)',!!(logged&&logged.checkedIn))}
+      ${!isTeen()&&typeof stepsToday==='function'&&!healthOn()? tile('steps','Steps',(()=>{ const v=(S.days[todayKey()]||{}).steps; return typeof v==='number'? num(v)+' today' : 'What your phone says'; })(),'var(--burnt)',typeof (S.days[todayKey()]||{}).steps==='number') : ''}
       ${tile('week','Weekly check in',checkinDone()?'Done for this week':'Next week is built from it','var(--marigold)',checkinDone())}
       ${tile('templates','Something else','Any template, circuit or run','var(--ink)')}
       ${tile('coach','Ask about your record','Everything the app knows','var(--marine-bg)')}
@@ -3979,6 +4080,7 @@ document.addEventListener('click',e=>{
   if(what==='food'&&typeof openFood==='function') openFood(false);
   if(what==='day') openDay();
   if(what==='week') openWeek();
+  if(what==='steps') openQuick('steps');
   if(what==='templates'&&typeof drawTemplates==='function'){ drawTemplates(); openSheet('tplSheet'); }
   if(what==='coach'&&typeof openCoach==='function') openCoach();
 });
@@ -4297,6 +4399,11 @@ function onbRender(){
          <div class="chips">${[0,1,2,3,4,5,6].map(n=>`<button class="${onbDraft.liftDays===n?'on':''}" data-onblift="${n}">${n}</button>`).join('')}</div></div>
        <div class="field"><div class="fl"><div class="k">Cardio</div><div class="v">${onbDraft.cardioDays}</div></div>
          <div class="chips">${[0,1,2,3,4,5,6].map(n=>`<button class="${onbDraft.cardioDays===n?'on':''}" data-onbcardio="${n}">${n}</button>`).join('')}</div></div>
+       ${onbDraft.liftDays>0? `<div class="slab">How you like to split it</div>
+       <div class="splitopts">${Object.keys(SPLITS).filter(id=>id!=='pplul'||onbDraft.liftDays>=5).map(id=>`<button class="splitopt ${(onbDraft.split||'auto')===id?'on':''}" data-onbsplit="${id}">
+         <b>${SPLITS[id].t}</b><span>${id==='auto'? 'For '+onbDraft.liftDays+' day'+(onbDraft.liftDays===1?'':'s')+': '+SPLITS[autoSplit(onbDraft.liftDays)].t.toLowerCase() : SPLITS[id].s}</span>
+         ${id!=='auto'? `<small>${splitFit(id,onbDraft.liftDays)}</small>` : ''}</button>`).join('')}</div>
+       <div class="note" style="margin-bottom:14px">Research finds full body and splits build strength and muscle equally when the weekly work is the same, so pick the one you will enjoy and stick to.</div>` : ''}
        <div class="slab">What have you got to train with?</div>
        <div class="chips" style="margin-bottom:10px">${KIT_PRESETS.map(pre=>`<button class="${sameKit(onbDraft.kit,pre.kit)?'on':''}" data-onbkitpre="${pre.id}">${pre.t}</button>`).join('')}</div>
        <div class="chips">${KIT.map(k=>`<button class="${(onbDraft.kit||ALL_KIT).indexOf(k.id)>=0?'on':''}" data-onbkit="${k.id}">${k.t}</button>`).join('')}</div>
@@ -4677,6 +4784,21 @@ document.addEventListener('click',e=>{
     toast(r.changed+' movement'+(r.changed===1?'':'s')+' updated','Undo',()=>{ S.templates=r.snap; buildPlan(); save(); renderAll(); });
     return; }
 });
+function openSplitSheet(){
+  const days=dayCounts().lift, cur=(S.profile&&S.profile.split)||null;
+  document.getElementById('altTitle').textContent='Training split';
+  document.getElementById('altSub').textContent='Full body and splits build strength and muscle equally when the weekly work matches (Ramos-Campo and colleagues, 2024). Pick the one you will stick to.';
+  document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 10px">${Object.keys(SPLITS).map(id=>`
+    <button class="opt ${cur===id?'on':''}" data-split="${id}"><div class="txt"><div class="t">${SPLITS[id].t}</div>
+      <div class="s">${id==='auto'? 'For your '+days+' day'+(days===1?'':'s')+': '+SPLITS[autoSplit(days)].t.toLowerCase() : SPLITS[id].s+'. '+splitFit(id,days)}</div></div><div class="rad"></div></button>`).join('')}
+    <div class="note">Changing it rebuilds this week from today. Your history and weights carry across, because progress is tracked per movement.</div></div>`;
+  openSheet('altSheet');
+}
+document.addEventListener('click',e=>{
+  const sb=e.target.closest('[data-split]'); if(!sb) return;
+  S.profile.split=sb.dataset.split; S.plan=buildPlan(); save(); closeSheets(); renderAll();
+  toast('Split: '+SPLITS[sb.dataset.split].t+'. This week has been rebuilt.');
+});
 /* The pace is theirs to choose, inside the range the research supports. Each
    option says what it means and who the evidence came from. */
 function openPaceSheet(){
@@ -4892,6 +5014,8 @@ document.addEventListener('click',e=>{
   if(kk){ const id=kk.dataset.onbkit, cur=(onbDraft.kit||ALL_KIT).slice();
     onbDraft.kit = cur.indexOf(id)>=0? cur.filter(x=>x!==id) : cur.concat([id]);
     onbRender(); }
+  const osp=e.target.closest('[data-onbsplit]');
+  if(osp){ onbDraft.split=osp.dataset.onbsplit; onbRender(); return; }
   const ld=e.target.closest('[data-onblift]');
   if(ld){ onbDraft.liftDays=+ld.dataset.onblift; onbRender(); }
   const cd=e.target.closest('[data-onbcardio]');
@@ -4923,7 +5047,7 @@ $('onbNext').addEventListener('click',async()=>{
 $('onbBack').addEventListener('click',()=>{ if(step>0){ step--; onbRender(); } });
 function finishOnboarding(keepOpen){
   if(isTeen({age:onbDraft.age})){ if(onbDraft.aim==='lose') onbDraft.aim='hold'; onbDraft.goal=null; onbDraft.bf=null; }
-  S.profile=Object.assign({},S.profile,{handle:onbDraft.handle,aim:onbDraft.aim,checkinDay:onbDraft.checkinDay,
+  S.profile=Object.assign({},S.profile,{split:onbDraft.split||'auto',handle:onbDraft.handle,aim:onbDraft.aim,checkinDay:onbDraft.checkinDay,
     sex:onbDraft.sex||S.profile.sex,
     liftDays:onbDraft.liftDays, cardioDays:onbDraft.cardioDays,
     kit: (onbDraft.kit&&onbDraft.kit.length)? onbDraft.kit.slice() : ALL_KIT.slice(),
@@ -5359,7 +5483,7 @@ function coachBrief(){
     L.push(`Averages: ${v('kcal',0,' kcal')} (target ${tg(t.kcal,' kcal')}), protein ${v('protein',0,'g')} (target ${tg(t.protein,'g')}), carbs ${v('carbs',0,'g')}, fat ${v('fat',0,'g')}, fibre ${v('fibre',0,'g')}`);
     const ts=timingStats(7);
     if(ts&&ts.per) L.push(`Meals: about ${ts.mealsPerDay} a day across ${ts.days} logged days; ${ts.hits} of ${ts.meals} reached ${ts.per}g protein`
-      +(ts.lastBeforeBedH!==null? `; last food on average ${ts.lastBeforeBedH}h before bed.` : '.'));
+      +(ts.lastBeforeBedH!==null? `; last food on average ${ts.lastBeforeBedH}h before bed` : '')+(ts.skipDays? `; a meal skipped on ${ts.skipDays} of the last 7 days.` : '.'));
     L.push(`Steps ${v('steps',0,'')} (target ${tg(t.steps,'')}), sleep ${v('sleep',1,'h')}, wellbeing ${v('wb',1,'/10')}, stress ${v('stress',1,'/10')}`);
   }
   if(typeof calorieTarget==='function'){
@@ -5656,7 +5780,7 @@ function copyBrief(){
 
 renderProgress();
 Object.assign(window.__G,{TRAIN_DAYS,DEFAULT_TARGETS,ownTargets,allMovements,drawWeekStep,
-  lastNDays,avg,steers,coachBrief,readiness,readinessPanel,painAdvice,painMorningDue,painPattern,PAIN_FLAGS,priorities,prioritiesRow,confidence,sleepStats,sleepTarget,openSleep,lightsOut,realSleep,isTeen,tooYoung,canHaveAccount,SUPPORT_TEEN,TEEN_MIN,PACE,paceOf,openPaceSheet,isMinorAge,ADULT_AGE,eatingPlan,nextEating,openEating,openEatTimes,eatingRow,perMealProtein,mealSlots,timingStats,MEAL_NAMES,proteinBasis,hhmmToMin,minToHhmm,todayTrains,activeHabits,habitCount,habitRoom,HABIT_MAX,slotForNew,habitSlotOf,trainingList,trainingText,plannedTraining,loggedTraining,TRAIN_DAYS,plannedCardioKcalPerDay,openDay,openWeek,
+  lastNDays,avg,steers,coachBrief,slotLetter,splitFit,proteinPaceText,readiness,readinessPanel,painAdvice,painMorningDue,painPattern,PAIN_FLAGS,priorities,prioritiesRow,confidence,sleepStats,sleepTarget,openSleep,lightsOut,realSleep,isTeen,tooYoung,canHaveAccount,SUPPORT_TEEN,TEEN_MIN,PACE,paceOf,openPaceSheet,isMinorAge,ADULT_AGE,eatingPlan,nextEating,openEating,openEatTimes,eatingRow,perMealProtein,mealSlots,timingStats,MEAL_NAMES,proteinBasis,hhmmToMin,minToHhmm,todayTrains,activeHabits,habitCount,habitRoom,HABIT_MAX,slotForNew,habitSlotOf,trainingList,trainingText,plannedTraining,loggedTraining,TRAIN_DAYS,plannedCardioKcalPerDay,openDay,openWeek,
   HABITS,habitOf,currentHabit,startHabit,retireHabit,toggleHabitDay,habitWeek,habitStreak,habitRate,suggestHabit,openHabitSheet,habitRow,habitRowFor,habitApplies,habitSlots,addOwnHabit,ownHabits,escHabit,OWN_MAX,colophonText,
   TARGET_KINDS,setTarget,clearTarget,targetNow,targetProgress,openTargetSheet,targetLine,
   nudgeState,nextNudgeAt,scheduleNudge,enableNudges,disableNudges,fireNudge,nudgeHelp,onIOS,installed,NUDGE_KEY,
@@ -6332,11 +6456,35 @@ function seedTemplates(){
       ['dbpress',''],['csrow','Pinch at the top.'],
       ['rdl','Stop before the back rounds.'],['lateral',''],
       ['plank','Ribs down, squeeze the glutes.']]),
+    mk('t_fullB','Full body B',[['squat','Depth you can hold position at.'],['dbincline',''],['pulldown',''],
+      ['hipthrust','Pause at the top.'],['rear',''],['deadbug','']]),
+    mk('t_fullC','Full body C',[['legpress',''],['ohp','No leg drive.'],['cablerow','Pinch at the back.'],
+      ['dbrdl','Stop before the back rounds.'],['dbcurl',''],['pushdown','']]),
+    mk('t_upperA','Upper A',[['bench','Control it. No bouncing off the chest.'],['bbrow','Torso at forty five degrees.'],
+      ['dbohp',''],['pulldown',''],['dbcurl',''],['pushdown','']]),
+    mk('t_upperB','Upper B',[['dbincline',''],['chin','Control over swing.'],['cablerow','Pinch at the back.'],
+      ['arnold',''],['lateral',''],['ropepush','']]),
+    mk('t_lowerB','Lower B',[['deadlift','Brace, then push the floor away.'],['legpress',''],['lunge','Tall torso.'],
+      ['legext',''],['calf','Pause in the stretch.'],['plank','Ribs down, squeeze the glutes.']]),
+    mk('t_legs','Legs',[['squat','Depth you can hold position at.'],['rdl','Stop before the back rounds.'],
+      ['legpress',''],['legext',''],['hamcurl','Hips stay down.'],['calf','Pause in the stretch.']]),
+    mk('t_chest','Chest',[['bench','Control it. No bouncing off the chest.'],['dbincline',''],['dip',''],
+      ['fly','Squeeze, do not clap.'],['pecdeck','']]),
+    mk('t_back','Back',[['deadlift','Brace, then push the floor away.'],['chin','Control over swing.'],
+      ['bbrow','Torso at forty five degrees.'],['cablerow','Pinch at the back.'],['pulldown','']]),
+    mk('t_shoulders','Shoulders',[['ohp','No leg drive.'],['arnold',''],['lateral',''],
+      ['cablelateral',''],['rear',''],['facepull','Rope to the forehead, elbows high.']]),
+    mk('t_arms','Arms',[['ezcurl',''],['skull','Elbows still.'],['hammer','Five degrees of swing, no more.'],
+      ['pushdown',''],['inclinecurl',''],['ohtri','']]),
     mk('t_mobility','Mobility and core',[['catcow','Slow, no forcing it.'],
       ['deadbug',''],['paloff',''],['90_90',''],['sidplank','Thirty seconds a side.']]),
   ];
 }
 S.templates=Array.isArray(S.templates)&&S.templates.length? S.templates : seedTemplates();
+/* People who joined before the splits arrived get the new templates too,
+   added alongside theirs; nothing of their own is touched. */
+(()=>{ const have=new Set(S.templates.map(t=>t.id)); const add=seedTemplates().filter(t=>!have.has(t.id));
+  if(add.length){ S.templates=S.templates.concat(add); S.templatesAdded=(S.templatesAdded||0)+add.length; } })();
 S.workouts=Array.isArray(S.workouts)? S.workouts : [];
 S.restPrefs=S.restPrefs&&typeof S.restPrefs==='object'? S.restPrefs : {};
 S.habits=(S.habits&&typeof S.habits==='object')? S.habits : {};
@@ -6727,6 +6875,10 @@ function fitNumbers(root){
   });
 }
 document.addEventListener('input',e=>{ if(e.target.closest&&e.target.closest('.stepper')) fitNumbers(e.target.closest('.stepper')); });
+document.addEventListener('change',e=>{
+  if(e.target.id!=='mealAt') return;
+  if(setMealAt(todayKey(),foodSlot,e.target.value)){ renderAll(); toast(MEALS.find(m=>m[0]===foodSlot)[1]+' set to '+e.target.value); }
+});
 function drawGym(){
   if(!GYM) return;
   $('gymName').textContent=GYM.name;
@@ -7138,10 +7290,57 @@ function addFood(id,q,meal){
   const list=(S.days[k].food||[]).slice();
   const same=list.find(x=>x.id===f.id&&(x.meal||'s')===m);
   if(same) same.q=+(same.q+n).toFixed(2);
-  else list.push({id:f.id,n:f.n,u:f.u,q:n,meal:m,kcal:f.kcal,p:f.p,c:f.c,f:f.f,at:Date.now()});
+  else list.push({id:f.id,n:f.n,u:f.u,q:n,meal:m,kcal:f.kcal,p:f.p,c:f.c,f:f.f,at:mealAtMs(k,m)});
+  /* eating something in a meal marked skipped means it was not skipped */
+  if(S.days[k].skipped&&S.days[k].skipped.indexOf(m)>=0) S.days[k].skipped=S.days[k].skipped.filter(x=>x!==m);
   S.days[k].food=list;
   applyFoodTotals(k); save();
   return S.days[k].food;
+}
+/* ---------- when you ate, and meals you skipped ----------
+   Logging time is not eating time: lunch logged at four is still lunch at one.
+   Food-diary research has always asked for the time eaten for that reason, and
+   anything the app says about timing depends on it. The American Heart
+   Association's statement on meal timing (St-Onge and colleagues, 2017) notes
+   irregular eating patterns appear less favourable for cardiometabolic health,
+   and a randomised trial found regular meal times lowered glucose responses and
+   hunger (Alhussain and colleagues, 2016). Most of that evidence is
+   observational, so the app records and reflects rather than rules. */
+function mealAtMs(k,m){
+  const t=((S.days[k]||{}).mealAt||{})[m];
+  if(t){ const mm=hhmmToMin(t); if(mm!==null) return dateOf(k).getTime()+mm*60000; }
+  return Date.now();
+}
+function mealAtValue(k,m){
+  const r=S.days[k]||{}, t=(r.mealAt||{})[m];
+  if(t) return t;
+  const first=(r.food||[]).filter(x=>(x.meal||'s')===m&&x.at).sort((a,b)=>a.at-b.at)[0];
+  const fmt=mins=>String(Math.floor(mins/60)%24).padStart(2,'0')+':'+String(Math.floor((mins%60)/5)*5).padStart(2,'0');
+  if(first){ const d=new Date(first.at); return fmt(d.getHours()*60+d.getMinutes()); }
+  /* Nothing logged yet: an empty dinner at 10:40 in the morning used to say
+     "eaten at 10:40". A main meal now defaults to its planned time, unless it
+     is within two hours of that time now; snacks default to now. */
+  const now=new Date(), nowMin=now.getHours()*60+now.getMinutes();
+  if(m!=='s'){
+    let planned=null;
+    try{ const sl=mealSlots(k).slots.find(x=>slotLetter(x)===m); if(sl) planned=sl.min; }catch(e){}
+    if(planned!==null&&(k!==todayKey()||Math.min(Math.abs(nowMin-planned),1440-Math.abs(nowMin-planned))>120)) return fmt(planned);
+  }
+  return fmt(nowMin);
+}
+function setMealAt(k,m,hhmm){
+  if(hhmmToMin(hhmm)===null) return false;
+  S.days[k]=S.days[k]||{}; S.days[k].mealAt=Object.assign({},S.days[k].mealAt,{[m]:hhmm});
+  /* a main meal is eaten at one time, so the whole meal moves; snacks keep
+     their own times and the new time applies to the next one added */
+  if(m!=='s') (S.days[k].food||[]).forEach(x=>{ if((x.meal||'s')===m) x.at=mealAtMs(k,m); });
+  save(); return true;
+}
+function skipMeal(k,m,on){
+  S.days[k]=S.days[k]||{};
+  const cur=(S.days[k].skipped||[]).filter(x=>x!==m);
+  S.days[k].skipped= on? cur.concat([m]) : cur;
+  save();
 }
 /* Set how many of one food are in one meal. Zero takes it off. */
 function setFoodQty(id,meal,q){
@@ -7305,7 +7504,12 @@ function drawFood(){
 
     ${foodQuery.trim()? '' : `
     <div class="plate">
-      <div class="platehead"><b>${mealLabel}</b><span>${plate.length? (isTeen()? plate.length+' logged' : mealKcal(foodSlot)+' kcal · '+Math.round(plate.reduce((a,x)=>a+x.p*x.q,0))+'g protein') : 'nothing yet'}</span></div>
+      <div class="platehead"><b>${mealLabel}</b>
+        <label class="ateat">${foodSlot==='s'? 'Next one eaten at' : 'Eaten at'} <input type="time" id="mealAt" value="${mealAtValue(k,foodSlot)}" aria-label="${mealLabel} eaten at"></label></div>
+      <div class="platesub"><span>${plate.length? (isTeen()? plate.length+' logged' : mealKcal(foodSlot)+' kcal · '+Math.round(plate.reduce((a,x)=>a+x.p*x.q,0))+'g protein') : 'nothing yet'}</span>
+        ${!plate.length&&foodSlot!=='s'? (((S.days[k]||{}).skipped||[]).indexOf(foodSlot)>=0
+          ? `<span class="skipnote">Skipped <button class="inlinebtn" data-unskip="${foodSlot}">Undo</button></span>`
+          : `<button class="inlinebtn" data-skipmeal="${foodSlot}">I skipped ${mealLabel.toLowerCase()}</button>`) : ''}</div>
       ${plate.map(x=>`<div class="frow onplate">
         <div class="txt"><div class="t">${escHabit(x.n)}</div>
           <div class="s">${x.quick? 'your numbers' : escHabit(x.u)}${isTeen()? '' : ' · '+Math.round(x.kcal*x.q)+' kcal · '+Math.round(x.p*x.q)+'g protein'} · <span class="src">${foodSource(x)}</span></div></div>
@@ -7391,6 +7595,11 @@ document.addEventListener('click',e=>{
       const k=todayKey(); S.days[k]=S.days[k]||{}; S.days[k].food=(S.days[k].food||[]).concat([before]);
       applyFoodTotals(k); save(); drawFood(); renderAll(); });
     return; }
+  const sk=e.target.closest('[data-skipmeal]');
+  if(sk){ skipMeal(todayKey(),sk.dataset.skipmeal,true); drawFood(); renderAll();
+    toast(isTeen()? 'Noted. While you are growing, regular meals really help, so try not to make it a habit.' : 'Noted as skipped'); return; }
+  const us=e.target.closest('[data-unskip]');
+  if(us){ skipMeal(todayKey(),us.dataset.unskip,false); drawFood(); renderAll(); return; }
   if(e.target.closest('#foodQuickBtn')){ foodQuick=!foodQuick; drawFood();
     if(foodQuick){ const el=document.getElementById('qaKcal'); if(el) el.focus(); } return; }
   if(e.target.closest('#qaSave')){
@@ -8048,8 +8257,8 @@ coachBrief=function(){
   return t;
 };
 
-Object.assign(window.__G,{openPainCheck,nextPrescriptionBase,breakCut,gapDays,fitNumbers,normaliseGroups,toggleLinkNext,groupInfo,groupRest,prIndex,setShort,gymToTemplateRows,tplErrors,tplRowErrors,drawTplEdit,TPL_LIMITS,LIBRARY,EQUIP,DIFF,exBlurb,drawExList,exOf,exHistory,nextPrescription,rxClass,prescribe,repText,LIFT_FOCUS,AIM_FOCUS,liftFocus,rxOf,recommendedFor,rowMatches,applyFocusToTemplates,RX_CLASS,warmSetsFor,platesFor,plateLine,fitToKit,fitTemplatesToKit,kitOf,hasKit,KIT,KIT_PRESETS,ALL_KIT,openKitSheet,applyKitChange,loggedMealMacros,mealArt,simulatedHealth,keyOf,dateOf,incrementFor,repRangeFor,nextPrescription,tonnageOf,progressLines,fillForward,suggestFor,openCircEdit,drawCircEdit,drawTemplates,seedTemplates,
-  FOODS,FOOD_CATS,FOOD_COMMON,foodOf,addFood,foodSource,setFoodQty,mergeDayFood,quickAddFood,qtyText,removeFood,dayFood,foodTotals,openFood,closeFood,drawFood,drawFoodList,drawFoodNew,recentFoods,MEALS,slotNow,repeatYesterday,addCustomFood,saveMealAs,addSavedMeal,allFoods,customFoods,savedMeals,seedRunPlans,seedCircuits,circuitOf,startCircuit,finishCircuit,drawCircuit,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
+Object.assign(window.__G,{SPLITS,autoSplit,splitOf,liftOrder,splitFit,openSplitSheet,weekPattern,openPainCheck,nextPrescriptionBase,breakCut,gapDays,fitNumbers,normaliseGroups,toggleLinkNext,groupInfo,groupRest,prIndex,setShort,gymToTemplateRows,tplErrors,tplRowErrors,drawTplEdit,TPL_LIMITS,LIBRARY,EQUIP,DIFF,exBlurb,drawExList,exOf,exHistory,nextPrescription,rxClass,prescribe,repText,LIFT_FOCUS,AIM_FOCUS,liftFocus,rxOf,recommendedFor,rowMatches,applyFocusToTemplates,RX_CLASS,warmSetsFor,platesFor,plateLine,fitToKit,fitTemplatesToKit,kitOf,hasKit,KIT,KIT_PRESETS,ALL_KIT,openKitSheet,applyKitChange,loggedMealMacros,mealArt,simulatedHealth,keyOf,dateOf,incrementFor,repRangeFor,nextPrescription,tonnageOf,progressLines,fillForward,suggestFor,openCircEdit,drawCircEdit,drawTemplates,seedTemplates,
+  FOODS,FOOD_CATS,FOOD_COMMON,foodOf,addFood,foodSource,mealAtMs,mealAtValue,setMealAt,skipMeal,setFoodQty,mergeDayFood,quickAddFood,qtyText,removeFood,dayFood,foodTotals,openFood,closeFood,drawFood,drawFoodList,drawFoodNew,recentFoods,MEALS,slotNow,repeatYesterday,addCustomFood,saveMealAs,addSavedMeal,allFoods,customFoods,savedMeals,seedRunPlans,seedCircuits,circuitOf,startCircuit,finishCircuit,drawCircuit,runPlan,runSession,tempoOf,tempoWords,showTempo,tempoMatters,similarTo,openAlternatives,swapEverywhere,removeEverywhere,startWorkout,finishWorkout,drawGym,openExPicker,coachBrief,
   openExMenu,openTplEdit,drawTemplates,exerciseStats,e1RM,lastSets,gymVolume,gymSets,templateChanged,startRest,isBodyweight,isBwFull,bodyweightNow,setVolume,BW_FULL,openQuick,QUICK,saveQuick,fitToKeyboard,
   get GYM(){return GYM}, get tplDraft(){return tplDraft}});
 Object.defineProperties(window.__G,{
@@ -8780,6 +8989,8 @@ function openHow(){
     <div class="method"><b>The food list</b><span>Typical values for the portion named, for ${FOODS.length} foods people here actually eat. Composition figures in Ireland come from McCance and Widdowson's Composition of Foods Integrated Dataset, which the Food Safety Authority of Ireland names as the accepted source. Brands vary, so anything with a label on it is better taken from the label: "Something not on the list" saves it for good. Alcohol carries about 7 kcal a gram, which is why a pint's calories are mostly not protein, carbs or fat.</span></div>
     <div class="method"><b>What your steps are worth</b><span>Steps are part of what you burn, so they are already inside your maintenance. The deficit splits into the part food makes, eating less than you burn without walking, and the part the steps make, and the two add up to the whole. That is why skipping the steps at the same food slows the loss by exactly what they were burning.</span></div>
     <div class="method"><b>Sleep</b><span>The aim is 7 hours or more a night for adults, the joint recommendation of the American Academy of Sleep Medicine and the Sleep Research Society (2015), which also notes that individual need varies; 8 to 10 hours for teenagers. How regular sleep is may matter as much as how long it is (Windred and colleagues, 2024, from UK Biobank), but that needs bed and wake times, which only a connected tracker supplies here.</span></div>
+    <div class="method"><b>Training splits</b><span>Full body, upper and lower, push pull legs, or a body part split: a 2024 meta-analysis of 14 trials (Ramos-Campo and colleagues) found no difference in strength or muscle growth between them when the weekly work is matched, so the right one is the one you will stick to. Weekly sets per muscle are what drive growth (Pelland and colleagues, 2025), which is why full body suits two or three days and a body part split needs about five. With fewer days than a split has sessions, the week rolls on from where it stopped, so nothing is left out.</span></div>
+    <div class="method"><b>Meal times and skipped meals</b><span>Each meal records when you ate it, not when you logged it, and you can mark a meal as skipped. The American Heart Association's statement on meal timing (St-Onge and colleagues, 2017) notes that irregular eating patterns appear less favourable for heart and metabolic health, and a randomised trial found regular meal times lowered glucose responses and hunger (Alhussain and colleagues, 2016). Much of that evidence is observational, so the app shows the pattern back to you rather than setting rules.</span></div>
     <div class="method"><b>Readiness</b><span>Built only from what you log, sleep, stress and how your day went, compared with your own last four weeks, never a universal score. A systematic review of 56 studies (Saw and colleagues, 2016) found that self-reported measures like these track the response to training more sensitively than objective markers such as heart rate; those studies were in athletes. It says better, about usual or lower, and what is driving it, rather than a number more precise than it can be.</span></div>
     <div class="method"><b>Coming back after a break</b><span>Strength largely holds for about three weeks off, with real losses appearing between the third and fourth week and growing with time (Bosquet and colleagues, 2013), and it comes back faster than it was first built. Anything you have not done for two weeks starts 5% lighter, four weeks 10%, eight weeks or more 20%. Those steps are this app's rule of thumb built on that timeline; the research says when losses start, not an exact load to return at.</span></div>
     <div class="method"><b>When something hurts</b><span>In a session, "This one hurts" asks for a 0 to 10 rating and a few warning signs. It follows the pain-monitoring model from a randomised trial in Achilles tendon pain (Silbernagel and colleagues, 2007): up to 5 out of 10 is generally fine to train with if it settles by the next morning and does not build week to week, and people who trained that way did as well as those who rested. It was tested in tendon pain, so treat it as a guide. Sharp or sudden pain, swelling, numbness or weakness, pain after a knock, or pain at rest are not for monitoring: stop, and see a GP or physio. The app asks how it is the next morning, and says so plainly if something keeps not settling.</span></div>
@@ -9910,6 +10121,7 @@ function renderSettings(){
     ${setRow('body','burnt','Calories and body', p.detailsSet&&ct? 'Eat '+num(ct.kcal)+' kcal · maintenance '+num(ct.maintenance) : 'Add your details to work these out')}
     ${setRow('steps','marine','Daily steps', num(stepTarget())+' a day')}
     ${setRow('habits','forest','Habits', habits.length? habits.join('<br>') : 'None yet. One to start, one to stop')}
+    ${setRow('split','marine','Training split', (()=>{ const sp=splitOf(); return sp? SPLITS[(S.profile.split||'auto')].t+(S.profile.split==='auto'? ' ('+SPLITS[sp].t.toLowerCase()+')' : '') : 'Push, lower, pull (the original week)'; })())}
     ${setRow('focus','burnt','Lifting focus', LIFT_FOCUS[liftFocus()].t+' · '+(()=>{ const r=LIFT_FOCUS[liftFocus()].rx.heavy; return 'big lifts '+r.repMin+' to '+r.reps+' reps'; })()+(S.profile.liftFocus?'':' (from your aim)'))}
     ${(()=>{ const dir=goalDirection(); return dir==='hold'? '' :
       setRow('pace','forest','Pace', paceOf().label+' · '+(dir==='lose'? (paceOf().lose*100)+'% of your weight a week' : (paceOf().gain*100)+'% a week')); })()}
@@ -9977,6 +10189,7 @@ document.addEventListener('click',e=>{
   else if(k==='habits') openHabitSheet();
   else if(k==='deload') openDeloadSheet();
   else if(k==='focus') openFocusSheet();
+  else if(k==='split') openSplitSheet();
   else if(k==='pace') openPaceSheet();
   else if(k==='kit') openKitSheet();
   else if(k==='cycle') openCycle();

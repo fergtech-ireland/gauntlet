@@ -33,7 +33,7 @@
   - `?cloud=test` points a device at gauntlet-test (sticky until `?cloud=live`); switching signs out of the other project.
 - [ ] **Feargal, before testing build 52 on gauntlet-test** (Supabase dashboard, gauntlet-test project, Authentication):
   1. Email Templates: in "Magic Link", "Confirm signup" and "Change Email Address", show the code: add `<p>Your Gauntlet code: <b>{{ .Token }}</b></p>`. Without it the email has only a link, which on an iPhone opens Safari, not the app.
-  2. Sign In / Providers: switch on "Allow anonymous sign-ins" (needed from build 53; harmless now).
+  2. Sign In / Providers: switch on "Allow anonymous sign-ins" (needed from build 53; harmless now). **Done by Feargal on gauntlet-test, 6 Oct.** (Live project: not yet.)
   3. Then open https://fergtech-ireland.github.io/gauntlet/?cloud=test, Progress, Account, "Back up or sign in".
   Built-in email is rate limited (a few emails an hour), fine for testing; a real email provider is needed before testers.
   **Update 6 Oct, 17:10:** Supabase no longer lets templates be edited on the built-in email; "Set up SMTP" comes first. Feargal chose to go with anonymous accounts for now (step 2) and leave email codes until SMTP is set up. Suggested route when ready: Resend (free; without a verified domain it only sends to the account owner's own email, enough for testing), host smtp.resend.com, port 465, user `resend`, password = Resend API key, sender onboarding@resend.dev; later an own domain for sending to testers. Until then, sign-in by email works on a computer by clicking the default email's link (readAuthHash), not on an iPhone home-screen app. So build 53 should start with the silent anonymous account at first open, which needs no email.

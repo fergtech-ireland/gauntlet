@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gauntlet You</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none;color:inherit}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:{{c.bg}};color:{{c.ink}};font-family:Figtree,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+
+  <header style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px 8px">
+    <span style="font-weight:800;font-size:24px">You</span>
+    <a href="{{L.you}}" style="font-weight:700;font-size:14px;color:{{c.greenText}}">Goals and numbers</a>
+  </header>
+
+  <main style="flex:1;overflow:auto;padding:0 12px">
+    <section style="background:{{c.surface}};border:1px solid {{c.line}};border-radius:12px;padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:16px">Weight</b><span style="font-size:13px;color:{{c.mute}}">2.2 kg to go</span></div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:36px;line-height:1.05">84.2 <span style="font-family:Figtree,sans-serif;font-size:15px;color:{{c.mute}};font-weight:600">kg, down 1.8 in 6 weeks</span></div>
+      <div style="height:10px;border-radius:5px;background:{{c.track}};margin-top:8px"><div style="width:45%;height:10px;border-radius:5px;background:{{c.green}}"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:{{c.mute}};margin-top:5px"><span>Start 86.0</span><span>Goal 82.0</span></div>
+    </section>
+
+    <section style="margin-top:10px;background:{{c.surface}};border:1px solid {{c.line}};border-radius:12px;padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:16px">This week</b><span style="font-size:12px;color:{{c.mute}}">readiness, food, training</span></div>
+      <div style="display:grid;grid-template-columns:48px repeat(7,minmax(0,1fr));gap:6px;align-items:center;margin-top:12px;font-size:12px">
+        <span></span><span style="text-align:center;color:{{c.mute}};font-weight:700">W</span><span style="text-align:center;color:{{c.mute}};font-weight:700">T</span><span style="text-align:center;color:{{c.mute}};font-weight:700">F</span><span style="text-align:center;color:{{c.mute}};font-weight:700">S</span><span style="text-align:center;color:{{c.mute}};font-weight:700">S</span><span style="text-align:center;color:{{c.mute}};font-weight:700">M</span><span style="text-align:center;font-weight:800">T</span>
+        <sc-for list="{{grid}}" as="g" hint-placeholder-count="24"><span style="{{g.style}}">{{g.t}}</span></sc-for>
+      </div>
+      <div style="font-size:12px;color:{{c.mute}};margin-top:10px">Food on target 5 of 6 days. Friday went over.</div>
+    </section>
+
+    <section style="margin-top:10px;background:{{c.surface}};border:1px solid {{c.line}};border-radius:12px;padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:16px">Readiness against your usual</b></div>
+      <div style="display:flex;gap:3px;align-items:flex-end;height:56px;margin-top:10px">
+        <sc-for list="{{bars}}" as="b" hint-placeholder-count="30"><i style="{{b.style}}"></i></sc-for>
+      </div>
+      <div style="font-size:12px;color:{{c.mute}};margin-top:6px">Last 30 days: 18 better, 10 usual, 2 lower.</div>
+    </section>
+
+    <section style="margin-top:10px;background:{{c.surface}};border:1px solid {{c.line}};border-radius:12px;padding:14px;display:grid;grid-template-columns:78px 1fr;gap:14px;align-items:center">
+      <svg width="78" height="108" viewBox="0 0 92 128" role="img" aria-label="Recovery: chest and triceps worked, core and shoulders nearly recovered, legs fresh">
+        <g fill="{{c.recoveryBase}}"><circle cx="46" cy="11" r="8"/><rect x="42" y="18" width="8" height="6" rx="2"/><rect x="17" y="57" width="8" height="22" rx="4"/><rect x="67" y="57" width="8" height="22" rx="4"/><path d="M34 64 H58 L56 72 H36Z"/></g>
+        <g fill="{{c.nearly}}"><path d="M24 30 Q26 23 34 24 L33 33 Q28 34 24 30Z"/><path d="M68 30 Q66 23 58 24 L59 33 Q64 34 68 30Z"/><rect x="36" y="40" width="20" height="22" rx="4"/></g>
+        <g fill="{{c.worked}}"><path d="M35 25 Q41 23 45 25 L45 38 Q38 40 34 36Z"/><path d="M57 25 Q51 23 47 25 L47 38 Q54 40 58 36Z"/><rect x="20" y="33" width="9" height="22" rx="4.5"/><rect x="63" y="33" width="9" height="22" rx="4.5"/></g>
+        <g fill="{{c.fresh}}"><rect x="33" y="73" width="12" height="28" rx="5"/><rect x="47" y="73" width="12" height="28" rx="5"/><rect x="34" y="104" width="10" height="22" rx="4"/><rect x="48" y="104" width="10" height="22" rx="4"/></g>
+      </svg>
+      <div>
+        <b style="font-size:16px">Strength</b>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:6px;margin-top:8px;font-size:14px">
+          <span>Bench, est 1RM</span><b>102 kg</b>
+          <span>Incline DB press</span><b>32.5 x 10</b>
+          <span>400 m in HIFB</span><b>1:38</b>
+        </div>
+        <div style="font-size:12px;color:{{c.mute}};margin-top:6px">Legs fresh, chest and triceps worked.</div>
+      </div>
+    </section>
+
+    <section style="margin:10px 0 14px;background:{{c.surface}};border:1px solid {{c.line}};border-radius:12px;padding:14px">
+      <b style="font-size:16px">Appearance</b>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px">
+        <button onClick="{{setDay}}" aria-pressed="{{dayPressed}}" style="{{dayBtn}}">
+          <span style="display:block;height:40px;border-radius:6px;background:#F6F5F1;border:1px solid #E6E4DE;position:relative"><i style="position:absolute;left:8px;top:7px;width:14px;height:14px;border-radius:50%;border:3px solid #17844F;box-sizing:border-box"></i></span>
+          <b style="display:block;font-size:13px;margin-top:6px">Day</b>
+        </button>
+        <button onClick="{{setNight}}" aria-pressed="{{nightPressed}}" style="{{nightBtn}}">
+          <span style="display:block;height:40px;border-radius:6px;background:#0F1211;border:1px solid #262B29;position:relative"><i style="position:absolute;left:8px;top:7px;width:14px;height:14px;border-radius:50%;border:3px solid #3DD68C;box-sizing:border-box"></i></span>
+          <b style="display:block;font-size:13px;margin-top:6px">Night</b>
+        </button>
+        <button onClick="{{setAuto}}" aria-pressed="{{autoPressed}}" style="{{autoBtn}}">
+          <span style="display:block;height:40px;border-radius:6px;overflow:hidden;position:relative;background:#F6F5F1;border:1px solid #E6E4DE"><i style="position:absolute;right:0;top:0;bottom:0;width:50%;background:#0F1211"></i></span>
+          <b style="display:block;font-size:13px;margin-top:6px">Match phone</b>
+        </button>
+      </div>
+      <div style="font-size:12px;color:{{c.mute}};margin-top:8px">Match phone is the default: light by day, dark at night.</div>
+    </section>
+  </main>
+
+  <nav aria-label="Sections" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));height:62px;border-top:1px solid {{c.line}};background:{{c.navBg}};font-size:10px;font-weight:700;text-align:center">
+    <a href="{{L.today}}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:{{c.mute}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3z"/></svg>Today</a>
+    <a href="{{L.plan}}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:{{c.mute}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Plan</a>
+    <a href="{{L.log}}" aria-label="Log something" style="display:flex;align-items:center;justify-content:center"><span style="width:46px;height:46px;border-radius:50%;background:{{c.logBg}};color:{{c.logInk}};display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg></span></a>
+    <a href="{{L.eat}}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:{{c.mute}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10M17 3c-2 2-3 5-3 8h3v10"/></svg>Eat</a>
+    <a href="{{L.you}}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:{{c.greenText}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>You</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["day","night"],"default":"day"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var st = this.state || {};
+    var th = st.theme || this.props.theme || 'day';
+    var n = th === 'night';
+    var mode = st.mode || (this.props.theme === 'night' ? 'night' : 'auto');
+    var P = {
+      day: { bg:'#F6F5F1', surface:'#FFFFFF', line:'#E6E4DE', ink:'#1B1F1D', mute:'#6A706C', track:'#EDEBE5',
+        green:'#17844F', greenText:'#17844F', coral:'#E0613B', amber:'#D88A1C', none:'#EDEBE5', usual:'#C9CCC6',
+        recoveryBase:'#E2E0DA', worked:'#E0613B', nearly:'#D88A1C', fresh:'#17844F', navBg:'#FFFFFF', logBg:'#1B1F1D', logInk:'#FFFFFF', train:'#1B1F1D' },
+      night: { bg:'#0F1211', surface:'#181C1A', line:'#262B29', ink:'#F2F3F1', mute:'#8F9692', track:'#232826',
+        green:'#3DD68C', greenText:'#3DD68C', coral:'#FF7A59', amber:'#FFB23E', none:'#232826', usual:'#4A514E',
+        recoveryBase:'#2C322F', worked:'#FF7A59', nearly:'#FFB23E', fresh:'#3DD68C', navBg:'#0F1211', logBg:'#F2F3F1', logInk:'#0F1211', train:'#F2F3F1' }
+    };
+    var c = n ? P.night : P.day;
+    var pre = n ? 'Night-' : 'Final-';
+    var L = { today: n ? 'Night-Today.dc.html' : 'Main.dc.html', log: pre + 'Log.dc.html', plan: pre + 'Plan.dc.html',
+      eat: pre + 'Eat.dc.html', train: pre + 'Train.dc.html', you: pre + 'You.dc.html' };
+    var cell = function (col, extra) { return 'display:block;height:22px;border-radius:4px;background:' + col + (extra || ''); };
+    var lab = 'font-weight:700;color:' + c.mute;
+    var grid = [];
+    var rows = [
+      ['Ready', ['g','G','a','g','G','g','G!']],
+      ['Food', ['G','G','o','G','G','G','x']],
+      ['Train', ['T','x','T','T','x','T','d']]
+    ];
+    var map = { g: n ? '#1F5E3E' : '#BFE2CE', G: c.green, a: c.amber, o: c.coral, x: c.none, T: c.train, d: c.none };
+    rows.forEach(function (r) {
+      grid.push({ t: r[0], style: lab });
+      r[1].forEach(function (k) {
+        var key = k.charAt(0), today = k.length > 1;
+        var extra = (key === 'd' ? ';border:1.5px dashed ' + c.mute + ';box-sizing:border-box' : '') + (today ? ';outline:2px solid ' + c.ink + ';outline-offset:1px' : '');
+        grid.push({ t: '', style: cell(map[key], extra) });
+      });
+    });
+    var v = 'uubbuuLbbbbuubbbLuubbbbbuubbbb'.split('');
+    var bm = { b: ['90%', c.green], u: ['58%', c.usual], L: ['28%', c.amber] };
+    var bars = v.map(function (s) { return { style: 'flex:1;border-radius:2px;height:' + bm[s][0] + ';background:' + bm[s][1] }; });
+    var btn = function (on) { return 'padding:8px;border-radius:10px;background:transparent;color:' + c.ink + ';font-family:inherit;cursor:pointer;text-align:center;border:' + (on ? '2px solid ' + c.green : '1px solid ' + c.line); };
+    return { c: c, L: L, grid: grid, bars: bars,
+      dayBtn: btn(mode === 'day'), nightBtn: btn(mode === 'night'), autoBtn: btn(mode === 'auto'),
+      dayPressed: String(mode === 'day'), nightPressed: String(mode === 'night'), autoPressed: String(mode === 'auto'),
+      setDay: function () { self.setState({ theme: 'day', mode: 'day' }); },
+      setNight: function () { self.setState({ theme: 'night', mode: 'night' }); },
+      setAuto: function () { self.setState({ theme: 'day', mode: 'auto' }); } };
+  }
+}
+</script>
+</body>
+</html>

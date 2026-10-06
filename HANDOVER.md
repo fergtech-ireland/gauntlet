@@ -4,7 +4,9 @@
 
 **Opening prompt for a new chat:** "Continue Gauntlet from HANDOVER.md in the repo." Claude attaches github.com/fergtech-ireland/gauntlet with push access, clones it, reads this file, and carries on. No uploads needed.
 
-**Current focus:** turning Gauntlet from a local-only app into a real application with accounts, proper data tables, friends and challenges. The full plan, agreed by Feargal on 6 Oct 2026, is the doc "Gauntlet: from local app to real application": https://claude.ai/code/artifact/c2a1c0da-9821-4a96-8763-bd99dd1b1a58 (read it before starting any phase).
+**Current focus (from 6 Oct 2026, evening): the UI redesign, builds 55 onward.** Read `DESIGN-REDESIGN.md` first: it has the agreed final design (Rings plus Daybook, Day and Night themes), the canvas link, the tokens, every screen, the must-keep list and the build order. Start with build 55 (tokens, themes, fonts, nav). The design screens are in `design/redesign/` (reference only, not built). Accounts work below is paused, not dropped: its open Feargal items still stand.
+
+**Previous focus:** turning Gauntlet from a local-only app into a real application with accounts, proper data tables, friends and challenges. The full plan, agreed by Feargal on 6 Oct 2026, is the doc "Gauntlet: from local app to real application": https://claude.ai/code/artifact/c2a1c0da-9821-4a96-8763-bd99dd1b1a58 (read it before starting any phase).
 
 **Decisions agreed (all recommendations accepted):**
 1. Split `index.html` into separate source files with a small build step (replaces the old "one file, no build" rule).

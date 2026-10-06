@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gauntlet Log</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none;color:inherit}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:{{c.scrim}};color:{{c.ink}};font-family:Figtree,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+  <a href="{{L.today}}" aria-label="Close" style="flex:0 0 110px;display:block"></a>
+
+  <section role="dialog" aria-label="Log something" style="flex:1;background:{{c.bg}};border-radius:18px 18px 0 0;padding:8px 14px 16px;display:flex;flex-direction:column;overflow:auto">
+    <i style="display:block;width:40px;height:4px;border-radius:2px;background:{{c.line}};margin:0 auto 10px"></i>
+    <div style="display:flex;justify-content:space-between;align-items:baseline">
+      <h1 style="margin:0;font-weight:800;font-size:24px">Log</h1>
+      <a href="{{L.today}}" style="font-size:14px;font-weight:700;color:{{c.mute}}">Close</a>
+    </div>
+
+    <a href="{{L.eat}}" style="margin-top:12px;display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:center;padding:14px;border-radius:12px;background:{{c.surface}};border:1px solid {{c.line}}">
+      <span style="width:44px;height:44px;border-radius:10px;background:{{c.coralTint}};display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{c.coralText}}" stroke-width="2" stroke-linecap="round"><path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10M17 3c-2 2-3 5-3 8h3v10"/></svg></span>
+      <span>
+        <b style="display:block;font-size:17px">Log food</b>
+        <span style="font-size:13px;color:{{c.sub}}">1,640 kcal so far, 810 left today · 96g protein</span>
+        <span style="display:block;height:5px;border-radius:3px;background:{{c.track}};margin-top:8px"><i style="display:block;width:67%;height:5px;border-radius:3px;background:{{c.coral}}"></i></span>
+      </span>
+    </a>
+
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px">
+      <a href="{{L.train}}" style="padding:12px;border-radius:12px;background:{{c.surface}};border:1px solid {{c.line}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{c.amberText}}" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 10v4M6 7v10M18 7v10M21 10v4M6 12h12"/></svg><b style="display:block;font-size:15px;margin-top:6px">Start Chest and Triceps</b><span style="font-size:12px;color:{{c.mute}}">HIFB, about 62 minutes</span></a>
+      <a href="{{L.log}}" style="padding:12px;border-radius:12px;background:{{c.surface}};border:1px solid {{c.line}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{c.greenText}}" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M12 9l2 4"/></svg><b style="display:block;font-size:15px;margin-top:6px">Weigh in</b><span style="font-size:12px;color:{{c.mute}}">Five seconds</span></a>
+      <a href="{{L.log}}" style="padding:12px;border-radius:12px;background:{{c.surface}};border:1px solid {{c.line}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{c.sub}}" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 20c-2 0-3-2-3-4s1-4 3-4 2 2 2 4-1 4-2 4zM16 12c-2 0-3-2-3-4s1-4 3-4 2 2 2 4-1 4-2 4z"/></svg><b style="display:block;font-size:15px;margin-top:6px">Steps</b><span style="font-size:12px;color:{{c.mute}}">6,812 today</span></a>
+      <a href="{{L.log}}" style="padding:12px;border-radius:12px;background:{{c.surface}};border:1px solid {{c.line}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{c.amberText}}" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-3-6.2M20 4v5h-5"/></svg><b style="display:block;font-size:15px;margin-top:6px">Weekly check in</b><span style="font-size:12px;color:{{c.mute}}">Next week is built from it</span></a>
+      <a href="{{L.plan}}" style="padding:12px;border-radius:12px;background:{{c.surface}};border:1px solid {{c.line}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{c.sub}}" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg><b style="display:block;font-size:15px;margin-top:6px">Something else</b><span style="font-size:12px;color:{{c.mute}}">Any template, circuit or run</span></a>
+      <a href="{{L.log}}" style="padding:12px;border-radius:12px;background:{{c.surface}};border:1px solid {{c.line}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{c.sub}}" stroke-width="2" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg><b style="display:block;font-size:15px;margin-top:6px">Ask about your record</b><span style="font-size:12px;color:{{c.mute}}">Everything the app knows</span></a>
+    </div>
+
+    <div style="margin-top:10px;padding:12px 14px;border-radius:12px;background:{{c.surface}};border:1px solid {{c.line}}">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:15px">Today's check-in</b><span style="font-size:12px;color:{{c.mute}}">twenty seconds</span></div>
+      <div style="display:grid;grid-template-columns:98px 1fr 44px;gap:8px 10px;align-items:center;margin-top:10px;font-size:13px">
+        <label for="ciSleep" style="font-weight:600">Sleep</label><input id="ciSleep" type="range" min="3" max="11" step="0.25" value="7.25" style="width:100%;accent-color:{{c.green}}"><b style="text-align:right">7.2h</b>
+        <label for="ciDay" style="font-weight:600">How today went</label><input id="ciDay" type="range" min="1" max="10" value="7" style="width:100%;accent-color:{{c.green}}"><b style="text-align:right">7/10</b>
+        <label for="ciStress" style="font-weight:600">Stress</label><input id="ciStress" type="range" min="1" max="10" value="4" style="width:100%;accent-color:{{c.green}}"><b style="text-align:right">4/10</b>
+      </div>
+      <a href="{{L.today}}" style="margin-top:12px;height:44px;border-radius:8px;background:{{c.cta}};color:{{c.ctaInk}};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px">Save check-in</a>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["day","night"],"default":"day"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var th = (this.state && this.state.theme) || this.props.theme || 'day';
+    var n = th === 'night';
+    var P = {
+      day: { bg:'#F6F5F1', surface:'#FFFFFF', line:'#E6E4DE', ink:'#1B1F1D', mute:'#6A706C', sub:'#3D4440', track:'#EDEBE5', chip:'#EDEBE5',
+        green:'#17844F', greenText:'#17844F', greenTint:'#E3F2EA', cta:'#17844F', ctaInk:'#FFFFFF',
+        coral:'#E0613B', coralText:'#B8452A', coralTint:'#FBE9E3', amber:'#D88A1C', amberText:'#9A5C0A', amberTint:'#F8EEDC',
+        cyan:'#1E8FA6', cyanText:'#16798C', cyanTint:'#E2F1F4', carbs:'#E9A93C', fat:'#3E86B8', fibre:'#6E9A2E',
+        hero:'#1B1F1D', heroLine:'#1B1F1D', heroInk:'#FFFFFF', heroSub:'#B8BDB9', heroChip:'#2D3330', mint:'#7CD3A4', mintInk:'#0F2A1D', bodyBase:'#3A403D',
+        navBg:'#FFFFFF', logBg:'#1B1F1D', logInk:'#FFFFFF', scrim:'#8A8C86', recoveryBase:'#E2E0DA', worked:'#E0613B', nearly:'#D88A1C', fresh:'#17844F', usual:'#C9CCC6' },
+      night: { bg:'#0F1211', surface:'#181C1A', line:'#262B29', ink:'#F2F3F1', mute:'#8F9692', sub:'#C6CBC8', track:'#232826', chip:'#232826',
+        green:'#3DD68C', greenText:'#3DD68C', greenTint:'#18291F', cta:'#3DD68C', ctaInk:'#06120B',
+        coral:'#FF7A59', coralText:'#FF8F72', coralTint:'#33221D', amber:'#FFB23E', amberText:'#FFB23E', amberTint:'#322819',
+        cyan:'#4CC3D9', cyanText:'#4CC3D9', cyanTint:'#182B30', carbs:'#FFB23E', fat:'#4CC3D9', fibre:'#A8D26B',
+        hero:'#1F2422', heroLine:'#2C322F', heroInk:'#F2F3F1', heroSub:'#A9B0AC', heroChip:'#2C322F', mint:'#7CD3A4', mintInk:'#0F2A1D', bodyBase:'#343A37',
+        navBg:'#0F1211', logBg:'#F2F3F1', logInk:'#0F1211', scrim:'#050606', recoveryBase:'#2C322F', worked:'#FF7A59', nearly:'#FFB23E', fresh:'#3DD68C', usual:'#4A514E' }
+    };
+    var pre = n ? 'Night-' : 'Final-';
+    var L = { today: n ? 'Night-Today.dc.html' : 'Main.dc.html', low: pre + 'Low.dc.html', log: pre + 'Log.dc.html', plan: pre + 'Plan.dc.html',
+      eat: pre + 'Eat.dc.html', train: pre + 'Train.dc.html', you: pre + 'You.dc.html' };
+    return { c: n ? P.night : P.day, L: L, night: n, day: !n,
+      toggleLabel: n ? 'Switch to day' : 'Switch to night',
+      toggle: function () { self.setState({ theme: n ? 'day' : 'night' }); } };
+  }
+}
+</script>
+</body>
+</html>

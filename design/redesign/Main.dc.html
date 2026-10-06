@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Gauntlet Today</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{text-decoration:none;color:inherit}
+</style>
+</helmet>
+<div style="width:390px;height:844px;box-sizing:border-box;background:{{c.bg}};color:{{c.ink}};font-family:Figtree,sans-serif;display:flex;flex-direction:column;overflow:hidden">
+
+  <header style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px 4px">
+    <div>
+      <div style="font-size:13px;font-weight:600;color:{{c.mute}}">Tuesday 6 October</div>
+      <div style="font-weight:800;font-size:24px;letter-spacing:-0.01em">Today</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onClick="{{toggle}}" aria-label="{{toggleLabel}}" style="width:38px;height:38px;border-radius:50%;background:{{c.surface}};border:1px solid {{c.line}};display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+        <sc-if value="{{day}}" hint-placeholder-val="{{true}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{c.ink}}" stroke-width="2" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></sc-if>
+        <sc-if value="{{night}}" hint-placeholder-val="{{false}}"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="{{c.ink}}" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></sc-if>
+      </button>
+      <a href="{{L.today}}" aria-label="Friends" style="width:38px;height:38px;border-radius:50%;background:{{c.surface}};border:1px solid {{c.line}};box-sizing:border-box;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{c.ink}}" stroke-width="2"><circle cx="9" cy="9" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 6.5a3 3 0 1 1 0 5.5M17 14a5 5 0 0 1 4 6"/></svg></a>
+      <a href="{{L.you}}" aria-label="Your profile" style="width:38px;height:38px;border-radius:50%;background:{{c.logBg}};color:{{c.logInk}};display:flex;align-items:center;justify-content:center;font-weight:800">F</a>
+    </div>
+  </header>
+
+  <main style="flex:1;overflow:auto;padding:0 12px">
+    <section style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:6px 0 2px;text-align:center">
+      <a href="{{L.you}}" style="display:block">
+        <svg width="98" height="98" viewBox="0 0 104 104" role="img" aria-label="Readiness better than your usual"><circle cx="52" cy="52" r="44" stroke="{{c.track}}" stroke-width="9" fill="none"/><circle cx="52" cy="52" r="44" stroke="{{c.green}}" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="243 276.5" transform="rotate(-90 52 52)"/><text x="52" y="59" text-anchor="middle" font-family="Barlow Condensed" font-weight="700" font-size="22" fill="{{c.ink}}">Better</text></svg>
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.08em;color:{{c.greenText}}">READY</div>
+        <div style="font-size:11px;color:{{c.mute}}">than your usual</div>
+      </a>
+      <a href="{{L.eat}}" style="display:block">
+        <svg width="98" height="98" viewBox="0 0 104 104" role="img" aria-label="810 kcal left of 2,450"><circle cx="52" cy="52" r="44" stroke="{{c.track}}" stroke-width="9" fill="none"/><circle cx="52" cy="52" r="44" stroke="{{c.coral}}" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="185.3 276.5" transform="rotate(-90 52 52)"/><text x="52" y="60" text-anchor="middle" font-family="Barlow Condensed" font-weight="700" font-size="28" fill="{{c.ink}}">810</text></svg>
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.08em;color:{{c.coralText}}">FOOD</div>
+        <div style="font-size:11px;color:{{c.mute}}">kcal left</div>
+      </a>
+      <a href="{{L.train}}" style="display:block">
+        <svg width="98" height="98" viewBox="0 0 104 104" role="img" aria-label="Session at 18:30, not started"><circle cx="52" cy="52" r="44" stroke="{{c.track}}" stroke-width="9" fill="none"/><circle cx="52" cy="52" r="44" stroke="{{c.amber}}" stroke-width="9" fill="none" stroke-linecap="round" stroke-dasharray="2 9" opacity="0.7" transform="rotate(-90 52 52)"/><text x="52" y="60" text-anchor="middle" font-family="Barlow Condensed" font-weight="700" font-size="27" fill="{{c.ink}}">18:30</text></svg>
+        <div style="font-size:11px;font-weight:800;letter-spacing:0.08em;color:{{c.amberText}}">TRAIN</div>
+        <div style="font-size:11px;color:{{c.mute}}">1 of 4 this week</div>
+      </a>
+    </section>
+    <p style="margin:6px 4px 0;font-size:13px;line-height:1.4;color:{{c.sub}};text-align:center">Driven by more sleep than usual (7.2h against 6.8h). <span style="display:inline-block;margin-top:4px;padding:1px 8px;border-radius:9px;background:{{c.chip}};color:{{c.mute}};font-size:11px;font-weight:600">based on 24 of the last 28 days</span></p>
+
+    <section style="margin-top:12px;background:{{c.hero}};color:{{c.heroInk}};border:1px solid {{c.heroLine}};border-radius:12px;padding:14px;display:grid;grid-template-columns:1fr 78px;gap:8px">
+      <div>
+        <div style="font-size:12px;font-weight:800;letter-spacing:0.04em;color:{{c.mint}}">TONIGHT, 18:30 · HIFB</div>
+        <div style="font-weight:800;font-size:23px;line-height:1.1;margin-top:4px">Chest and Triceps</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+          <span style="height:26px;padding:0 9px;border-radius:13px;background:{{c.heroChip}};display:flex;align-items:center;font-size:12px;font-weight:600">62 min</span>
+          <span style="height:26px;padding:0 9px;border-radius:13px;background:{{c.heroChip}};display:flex;align-items:center;font-size:12px;font-weight:600">16 sets</span>
+          <span style="height:26px;padding:0 9px;border-radius:13px;background:{{c.heroChip}};display:flex;align-items:center;font-size:12px;font-weight:600">4 x 400 m</span>
+        </div>
+        <button style="margin-top:8px;padding:0;border:0;background:none;color:{{c.heroSub}};font:inherit;font-size:13px;font-weight:600;cursor:pointer">Why today looks like this ›</button>
+      </div>
+      <svg width="78" height="108" viewBox="0 0 92 128" role="img" aria-label="Muscles worked: chest and triceps">
+        <g fill="{{c.bodyBase}}"><circle cx="46" cy="11" r="8"/><rect x="42" y="18" width="8" height="6" rx="2"/><path d="M24 30 Q26 23 34 24 L33 33 Q28 34 24 30Z"/><path d="M68 30 Q66 23 58 24 L59 33 Q64 34 68 30Z"/><rect x="17" y="57" width="8" height="22" rx="4"/><rect x="67" y="57" width="8" height="22" rx="4"/><rect x="36" y="40" width="20" height="22" rx="4"/><path d="M34 64 H58 L56 72 H36Z"/><rect x="33" y="73" width="12" height="28" rx="5"/><rect x="47" y="73" width="12" height="28" rx="5"/><rect x="34" y="104" width="10" height="22" rx="4"/><rect x="48" y="104" width="10" height="22" rx="4"/></g>
+        <g fill="{{c.mint}}"><path d="M35 25 Q41 23 45 25 L45 38 Q38 40 34 36Z"/><path d="M57 25 Q51 23 47 25 L47 38 Q54 40 58 36Z"/><rect x="20" y="33" width="9" height="22" rx="4.5"/><rect x="63" y="33" width="9" height="22" rx="4.5"/></g>
+      </svg>
+      <div style="grid-column:1 / -1;font-size:13px;line-height:1.4;color:{{c.heroSub}}">Incline press goes up to 32.5 kg: you hit every rep last week.</div>
+      <div style="grid-column:1 / -1;display:grid;grid-template-columns:1fr auto;gap:8px">
+        <a href="{{L.train}}" style="height:46px;border-radius:8px;background:{{c.mint}};color:{{c.mintInk}};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px">Start session</a>
+        <a href="{{L.plan}}" style="height:46px;padding:0 14px;border-radius:8px;border:1px solid {{c.heroChip}};display:flex;align-items:center;font-weight:700;font-size:14px">See or edit</a>
+      </div>
+      <button style="grid-column:1 / -1;height:30px;border:0;background:none;color:{{c.heroSub}};font:inherit;font-size:13px;font-weight:600;cursor:pointer">Not today</button>
+    </section>
+
+    <h2 style="margin:16px 4px 8px;font-weight:800;font-size:17px">What matters today</h2>
+    <section style="background:{{c.surface}};border:1px solid {{c.line}};border-radius:12px;padding:12px 14px;display:grid;grid-template-columns:26px 1fr;gap:10px">
+      <span style="width:26px;height:26px;border-radius:50%;background:{{c.coralTint}};color:{{c.coralText}};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px">1</span>
+      <div>
+        <div style="font-weight:800;font-size:15px">Get protein into the next meal</div>
+        <div style="font-size:13px;color:{{c.sub}};margin-top:2px;line-height:1.4">96g so far; around 127g would be on pace for 165g today.</div>
+      </div>
+    </section>
+
+    <section style="margin-top:10px;background:{{c.surface}};border:1px solid {{c.line}};border-radius:12px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 14px 6px">
+        <b style="font-size:16px">Meals</b>
+        <a href="{{L.eat}}" style="font-size:12px;font-weight:700;color:{{c.mute}}">Protein 96/165 g · fibre 14/30 g</a>
+      </div>
+      <div style="display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:center;padding:9px 14px;border-top:1px solid {{c.line}};font-size:14px"><span style="width:20px;height:20px;border-radius:50%;background:{{c.green}};display:flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="{{c.ctaInk}}" stroke-width="2.4"><path d="M2 6.5 5 9l5-6"/></svg></span><span>Breakfast <span style="color:{{c.mute}}">porridge, flat white</span></span><b>520</b></div>
+      <div style="display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:center;padding:9px 14px;border-top:1px solid {{c.line}};font-size:14px"><span style="width:20px;height:20px;border-radius:50%;background:{{c.green}};display:flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="{{c.ctaInk}}" stroke-width="2.4"><path d="M2 6.5 5 9l5-6"/></svg></span><span>Lunch <span style="color:{{c.mute}}">chicken wrap, yoghurt</span></span><b>780</b></div>
+      <div style="display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:center;padding:9px 14px;border-top:1px solid {{c.line}};font-size:14px"><span style="width:20px;height:20px;border-radius:50%;background:{{c.green}};display:flex;align-items:center;justify-content:center"><svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="{{c.ctaInk}}" stroke-width="2.4"><path d="M2 6.5 5 9l5-6"/></svg></span><span>Snacks <span style="color:{{c.mute}}">protein bar, banana</span></span><b>340</b></div>
+      <div style="display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:center;padding:10px 14px 12px;border-top:1px solid {{c.line}};font-size:14px">
+        <span style="width:20px;height:20px;border-radius:50%;border:2px dashed {{c.mute}};box-sizing:border-box"></span>
+        <span><b>Dinner, after training</b><br><span style="font-size:12px;color:{{c.mute}}">Lentil and chorizo stew: 28g protein, 11g fibre</span></span>
+        <a href="{{L.eat}}" style="height:36px;padding:0 14px;border-radius:18px;background:{{c.cta}};color:{{c.ctaInk}};display:flex;align-items:center;font-weight:800;font-size:13px">Add</a>
+      </div>
+    </section>
+
+    <section style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px">
+      <a href="{{L.log}}" style="height:48px;border-radius:10px;background:{{c.surface}};border:1px solid {{c.line}};display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-weight:700;font-size:14px">Weigh in <span style="color:{{c.greenText}};font-size:12px">84.2 kg</span></a>
+      <a href="{{L.log}}" style="height:48px;border-radius:10px;background:{{c.surface}};border:1px solid {{c.line}};display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-weight:700;font-size:14px">Check-in <span style="color:{{c.greenText}};font-size:12px">done</span></a>
+    </section>
+
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin:16px 4px 8px"><h2 style="margin:0;font-weight:800;font-size:17px">Your week so far</h2><a href="{{L.plan}}" style="font-size:13px;font-weight:700;color:{{c.mute}}">The whole week</a></div>
+    <section style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center;font-size:11px;color:{{c.mute}};font-weight:700">
+      <div>M<i style="display:block;margin:6px auto 0;width:12px;height:12px;border-radius:50%;background:{{c.amber}}"></i></div>
+      <div style="color:{{c.ink}}">T<i style="display:block;margin:6px auto 0;width:12px;height:12px;border-radius:50%;border:2px solid {{c.amber}};box-sizing:border-box"></i></div>
+      <div>W<i style="display:block;margin:6px auto 0;width:12px;height:12px;border-radius:50%;background:{{c.track}}"></i></div>
+      <div>T<i style="display:block;margin:6px auto 0;width:12px;height:12px;border-radius:50%;border:2px solid {{c.mute}};box-sizing:border-box"></i></div>
+      <div>F<i style="display:block;margin:6px auto 0;width:12px;height:12px;border-radius:50%;background:{{c.track}}"></i></div>
+      <div>S<i style="display:block;margin:6px auto 0;width:12px;height:12px;border-radius:50%;border:2px solid {{c.mute}};box-sizing:border-box"></i></div>
+      <div>S<i style="display:block;margin:6px auto 0;width:12px;height:12px;border-radius:50%;background:{{c.track}}"></i></div>
+    </section>
+    <p style="margin:8px 4px 0;font-size:12px;color:{{c.mute}}">1 of 4 sessions done · 6 of the last 7 days logged · down 0.30 kg a week</p>
+
+    <section style="margin-top:12px;background:{{c.surface}};border:1px solid {{c.line}};border-radius:12px">
+      <div style="display:grid;grid-template-columns:32px 1fr 40px;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid {{c.line}}">
+        <span style="width:32px;height:32px;border-radius:50%;background:{{c.greenTint}};color:{{c.greenText}};display:flex;align-items:center;justify-content:center;font-weight:800">3</span>
+        <div><div style="font-weight:700;font-size:14px">10 minutes of mobility</div><div style="font-size:12px;color:{{c.mute}}">3 days running</div></div>
+        <button aria-label="Mark today done" style="width:34px;height:34px;border-radius:50%;border:2px solid {{c.line}};background:none;cursor:pointer"></button>
+      </div>
+      <div style="display:grid;grid-template-columns:32px 1fr 16px;gap:10px;align-items:center;padding:12px 14px">
+        <span style="width:32px;height:32px;border-radius:50%;background:{{c.amberTint}};color:{{c.amberText}};display:flex;align-items:center;justify-content:center;font-weight:800">↻</span>
+        <div><div style="font-weight:700;font-size:14px">Weekly check in is Sunday</div><div style="font-size:12px;color:{{c.mute}}">next week is built from it</div></div>
+        <span style="color:{{c.mute}}">›</span>
+      </div>
+    </section>
+
+    <h2 style="margin:16px 4px 8px;font-weight:800;font-size:17px">Next up</h2>
+    <section style="margin-bottom:14px;background:{{c.surface}};border:1px solid {{c.line}};border-radius:12px">
+      <div style="display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center;padding:11px 14px;border-bottom:1px solid {{c.line}}"><span style="font-size:12px;font-weight:700;color:{{c.mute}}">Wed</span><div><b style="font-size:14px">Rest</b> <span style="font-size:12px;color:{{c.mute}}">nothing owed</span></div></div>
+      <div style="display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center;padding:11px 14px"><span style="font-size:12px;font-weight:700;color:{{c.mute}}">Thu</span><div><b style="font-size:14px">HIFB Legs</b> <span style="font-size:12px;color:{{c.mute}}">about 65 minutes</span></div></div>
+    </section>
+  </main>
+
+  <nav aria-label="Sections" style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));height:62px;border-top:1px solid {{c.line}};background:{{c.navBg}};font-size:10px;font-weight:700;text-align:center">
+    <a href="{{L.today}}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:{{c.greenText}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3z"/></svg>Today</a>
+    <a href="{{L.plan}}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:{{c.mute}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Plan</a>
+    <a href="{{L.log}}" aria-label="Log something" style="display:flex;align-items:center;justify-content:center"><span style="width:46px;height:46px;border-radius:50%;background:{{c.logBg}};color:{{c.logInk}};display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg></span></a>
+    <a href="{{L.eat}}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:{{c.mute}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10M17 3c-2 2-3 5-3 8h3v10"/></svg>Eat</a>
+    <a href="{{L.you}}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:{{c.mute}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>You</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["day","night"],"default":"day"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var th = (this.state && this.state.theme) || this.props.theme || 'day';
+    var n = th === 'night';
+    var P = {
+      day: { bg:'#F6F5F1', surface:'#FFFFFF', line:'#E6E4DE', ink:'#1B1F1D', mute:'#6A706C', sub:'#3D4440', track:'#EDEBE5', chip:'#EDEBE5',
+        green:'#17844F', greenText:'#17844F', greenTint:'#E3F2EA', cta:'#17844F', ctaInk:'#FFFFFF',
+        coral:'#E0613B', coralText:'#B8452A', coralTint:'#FBE9E3', amber:'#D88A1C', amberText:'#9A5C0A', amberTint:'#F8EEDC',
+        cyan:'#1E8FA6', cyanText:'#16798C', cyanTint:'#E2F1F4', carbs:'#E9A93C', fat:'#3E86B8', fibre:'#6E9A2E',
+        hero:'#1B1F1D', heroLine:'#1B1F1D', heroInk:'#FFFFFF', heroSub:'#B8BDB9', heroChip:'#2D3330', mint:'#7CD3A4', mintInk:'#0F2A1D', bodyBase:'#3A403D',
+        navBg:'#FFFFFF', logBg:'#1B1F1D', logInk:'#FFFFFF', scrim:'#8A8C86', recoveryBase:'#E2E0DA', worked:'#E0613B', nearly:'#D88A1C', fresh:'#17844F', usual:'#C9CCC6' },
+      night: { bg:'#0F1211', surface:'#181C1A', line:'#262B29', ink:'#F2F3F1', mute:'#8F9692', sub:'#C6CBC8', track:'#232826', chip:'#232826',
+        green:'#3DD68C', greenText:'#3DD68C', greenTint:'#18291F', cta:'#3DD68C', ctaInk:'#06120B',
+        coral:'#FF7A59', coralText:'#FF8F72', coralTint:'#33221D', amber:'#FFB23E', amberText:'#FFB23E', amberTint:'#322819',
+        cyan:'#4CC3D9', cyanText:'#4CC3D9', cyanTint:'#182B30', carbs:'#FFB23E', fat:'#4CC3D9', fibre:'#A8D26B',
+        hero:'#1F2422', heroLine:'#2C322F', heroInk:'#F2F3F1', heroSub:'#A9B0AC', heroChip:'#2C322F', mint:'#7CD3A4', mintInk:'#0F2A1D', bodyBase:'#343A37',
+        navBg:'#0F1211', logBg:'#F2F3F1', logInk:'#0F1211', scrim:'#050606', recoveryBase:'#2C322F', worked:'#FF7A59', nearly:'#FFB23E', fresh:'#3DD68C', usual:'#4A514E' }
+    };
+    var pre = n ? 'Night-' : 'Final-';
+    var L = { today: n ? 'Night-Today.dc.html' : 'Main.dc.html', low: pre + 'Low.dc.html', log: pre + 'Log.dc.html', plan: pre + 'Plan.dc.html',
+      eat: pre + 'Eat.dc.html', train: pre + 'Train.dc.html', you: pre + 'You.dc.html' };
+    return { c: n ? P.night : P.day, L: L, night: n, day: !n,
+      toggleLabel: n ? 'Switch to day' : 'Switch to night',
+      toggle: function () { self.setState({ theme: n ? 'day' : 'night' }); } };
+  }
+}
+</script>
+</body>
+</html>

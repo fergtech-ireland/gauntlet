@@ -3,110 +3,45 @@
 Live site: https://fergtech-ireland.github.io/gauntlet/
 Repository: github.com/fergtech-ireland/gauntlet (branch `main`)
 
-**This release is build 51.** The footer at the bottom of every screen shows the build
-number, which is how you confirm a phone has it. Build 51 includes everything from
-builds 20 and 21, so if you skipped either, this one release brings you fully up to date.
+The footer at the bottom of every screen shows the build number, which is how you confirm a phone has a release.
 
-## Files in this release
+## How a release goes out
 
-| File | What it is | What to do |
-|---|---|---|
-| `index.html` | The app | Upload, replacing the old one |
-| `sw.js` | The service worker | Upload, replacing the old one |
-| `supabase-delete-policies.sql` | Database permission for "Delete everything" | Run once in Supabase (step 5). Uploading it to the repo as well is fine |
-| `test.js`, `regression.js`, `cta.js`, `uat.js`, `sw.test.js`, `harness.js` | Automated tests | Upload. The app never loads them |
-| `package.json`, `.gitignore` | Test setup | Upload |
-| `README.md`, `DEPLOY.md` | Notes | Upload |
-| `manifest.webmanifest`, `icon-192.png`, `icon.svg` | Unchanged | Leave as they are |
+Claude commits and pushes to `main` directly; nothing is uploaded by hand any more.
 
-All files go in the top level of the repository, the same folder as `index.html`.
-The tests look for `index.html` and `sw.js` next to themselves.
+1. The source is edited in `src/`, and `node build.js` writes `index.html` from it.
+2. `npm test` runs every suite locally.
+3. A push to `main` starts **Test and deploy** on GitHub (the **Actions** tab): it checks `index.html` is a fresh build of `src/`, runs every suite, and only if all of them pass publishes the site to GitHub Pages.
+4. A push that fails a test is not published. The live site stays on the last good release.
 
-## 1. Back up the current version
+## One-time setting (Feargal, in the GitHub website)
 
-1. Go to the repository on github.com.
-2. Click `index.html`, then the download button (the arrow, top right of the file). Do the same for `sw.js`.
-3. Keep both somewhere safe. To roll back, you upload these two again.
+The tests only block a bad release once Pages publishes from the workflow rather than straight from the branch:
 
-## 2. Upload the new files
+1. Repository, **Settings**, **Pages**.
+2. Under **Build and deployment**, **Source**: choose **GitHub Actions** (instead of "Deploy from a branch").
+3. That is all; it saves itself. Until this is done, every push to `main` is published whether the tests pass or not, and the workflow's deploy step reports a failure because Pages is not expecting it.
 
-1. On the repository's main page: **Add file**, then **Upload files**.
-2. Drag in every file from the table above except the unchanged ones.
-   If your download named the app anything other than `index.html` (for example `index-3.html`), rename it to `index.html` first.
-3. `.gitignore` starts with a dot, so some computers hide it. If it does not appear in the upload list, skip it here and do step 3.
-4. Commit message: `Build 51: changing a day`.
-5. Leave **Commit directly to the main branch** selected. Click **Commit changes**.
+To confirm it worked: the **Actions** tab shows **Test and deploy** with two green ticks (test, deploy), and **pages build and deployment** no longer appears for new pushes.
 
-## 3. Only if .gitignore did not upload
+## Checking a release on a computer
 
-1. **Add file**, then **Create new file**.
-2. Name it `.gitignore` exactly.
-3. Contents, one line: `node_modules/`
-4. **Commit changes**.
+1. Open the live site in a private or incognito window.
+2. Scroll to the bottom: the footer shows the new build number.
+3. In Chrome: right-click, **Inspect**, **Application** tab, **Service workers**. `sw.js` should say **activated and is running**.
 
-## 4. Wait for the site to publish, then check it on a computer
+## Phones
 
-1. Open the **Actions** tab. Wait for **pages build and deployment** to show a green tick, usually one to two minutes.
-2. Open the live site in a private or incognito window.
-3. Check: the footer at the bottom of the screen says **Gauntlet, build 51**.
-   It opens in the light theme. The **+ Log** button is in the middle of the bar, and there is a tab called **You** where Progress used to be.
-   Onboarding has the **Daily step target** and **Body fat %** fields.
-   On Plan, **This week** shows each day as a card, with today's open.
-   Weigh in (from the **+ Log** button) shows a big number with **−** and **+** buttons, and no slider.
-4. In Chrome: right-click, **Inspect**, **Application** tab, **Service workers**. `sw.js` should say **activated and is running**. Under **Cache storage** you should see `gauntlet-shell-v2`.
+Phones get the new version the next time the app is opened with a connection. An app left open in the background shows **A new version of Gauntlet is ready** with an **Update** button. It waits if someone is mid-workout or filling in a form.
 
-## 5. Supabase (only if accounts and syncing are switched on)
+`sw.js` does not need touching for a release. Only change it if its own behaviour changes, and then also change `VERSION` at the top of it.
 
-**If you skipped build 40, run the SQL again**, even if you ran it before: it adds a function that lets "Delete everything" remove the person's sign-in account too. Running it twice is safe.
+## Database changes
 
-1. Go to supabase.com and open the Gauntlet project.
-2. **Table Editor**, open the `state` table, and look at the type of the `user_id` column.
-   It is almost certainly `uuid`. If it says `text`, open `supabase-delete-policies.sql` and change every `auth.uid()` to `auth.uid()::text`.
-3. **SQL Editor**, **New query**. Paste the whole of `supabase-delete-policies.sql`. Click **Run**.
-4. You should see **Success. No rows returned**. It is safe to run again.
-5. Test it with a throwaway account, never a real person's: sign up, log a weigh-in, then You, Your data, **Delete everything**, tap twice.
-   It should say **Everything is gone** and restart.
-   If it says **Still in the database**, the SQL did not apply; check step 2.
+Every change is a numbered file in `supabase/migrations/`. It is applied to the **gauntlet-test** project first, checked there (including `supabase/tests/rls.sql`, which can be pasted into the SQL editor), and applied to the live **gauntlet** project only after its phase gate. `rls.test.js` also runs every migration and the security checks on a throwaway Postgres in every test run.
 
-## 6. Phones: a one-time handover
-
-Phones that already have the app are still run by the old service worker, so they need one nudge this first time only.
-
-1. Open Gauntlet. Leave it open for about ten seconds while the new service worker installs and takes over.
-2. Close it fully. On iPhone, swipe up from the bottom and swipe the app away. On Android, open recent apps and swipe it away.
-3. Open it again. Scroll to the bottom of any screen: the footer should say **build 51**,
-   and there should be a tab called **You** where Progress used to be.
-4. Still the old one? Repeat once.
-
-Anyone who uses the app will go through this without noticing: their second open after the release gets it.
-
-## Every release after this one
-
-1. Upload the new `index.html`, same as step 2. That is all.
-2. `sw.js` does not need touching. Only change it if its own behaviour changes, and then also change `VERSION` at the top of it.
-3. Phones get the new version the next time the app is opened with a connection. An app left open in the background shows **A new version of Gauntlet is ready** with an **Update** button. It waits if someone is mid-workout or filling in a form.
-
-## Optional: run the tests before you publish
-
-1. Install Node.js (the LTS version) from nodejs.org.
-2. Open a terminal in the folder with these files.
-3. Run `npm install` once, then `npm test`.
-4. You should see `0 failures, 0 page errors` at the bottom. If anything fails, do not publish.
-
-## If you use the command line instead of the website
-
-```
-cd path/to/gauntlet
-# copy the new files in, then:
-npm install
-npm test
-git add index.html sw.js sw.test.js test.js regression.js cta.js uat.js harness.js package.json .gitignore README.md DEPLOY.md supabase-delete-policies.sql
-git commit -m "Build 51: changing a day"
-git push
-```
-Then carry on from step 4.
+The older one-off scripts `supabase-delete-policies.sql` and `supabase-increment-try.sql` are already applied to the live project and are folded into `0001_baseline.sql`.
 
 ## Rolling back
 
-Upload the `index.html` and `sw.js` you downloaded in step 1, replacing the new ones, and commit.
-Phones follow on their next open, the same as any other release.
+Ask Claude to revert the bad commit on `main` (`git revert`, then push). The workflow tests and republishes the previous version. Phones follow on their next open, the same as any other release.

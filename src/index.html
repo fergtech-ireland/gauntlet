@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gauntlet</title>
+<meta name="description" content="Know what to do today. The plan moves with you.">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#ffffff" id="themeColor">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Gauntlet">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Black&display=swap" rel="stylesheet">
+<style>
+<!-- include: styles.css -->
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <svg class="mark" width="26" height="26" viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M72.6 27.4 A32 32 0 1 0 82 50 L62 50" fill="none" stroke="var(--ink)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="79.6" cy="37.7" r="4.6" fill="var(--marigold)"/></svg>
+      <div class="wordmark">GAUNTLET</div>
+    </div>
+    <div class="spacer"></div>
+    <button class="iconbtn" id="findBtn" aria-label="Find people">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="8" r="4"/><path d="M3 20a7 7 0 0 1 12-4.9"/><path d="M17 15v6M14 18h6"/></svg></button>
+  </header>
+
+  <section class="screen on" id="s-today" tabindex="-1"><div id="todayView"></div></section>
+  <section class="screen" id="s-plan" tabindex="-1"><div id="planView"></div><div id="dashLifts"></div></section>
+  <section class="screen" id="s-progress" tabindex="-1">
+    <div class="h1" id="profHandle">your progress</div>
+    <div class="phead">
+      <button class="av-lg" id="profAv" style="background:var(--marine-bg)" aria-label="Your details">YOU</button>
+      <div class="stats">
+        <div><b id="stSessions">0</b><span>sessions</span></div>
+        <div><b id="stWeek">0</b><span>this week</span></div>
+        <div><b id="stLogged">0</b><span>days logged</span></div></div>
+      <button class="gear" id="settingsBtn" aria-label="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.9 19.3a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.7 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v0a1.7 1.7 0 0 0 1.56 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.56 1Z"/></svg>
+      </button>
+    </div>
+    <div class="ytabs" role="tablist" aria-label="Your things">
+      <button role="tab" id="ytab-progress" aria-controls="ypanel-progress" aria-selected="true" class="on" data-ytab="progress">Progress</button>
+      <button role="tab" id="ytab-sessions" aria-controls="ypanel-sessions" aria-selected="false" data-ytab="sessions">Sessions</button>
+      <button role="tab" id="ytab-plan" aria-controls="ypanel-plan" aria-selected="false" data-ytab="plan">Your plan</button>
+    </div>
+    <div id="ypanel-progress" role="tabpanel" aria-labelledby="ytab-progress" tabindex="0">
+      <div class="dash" id="dash"></div>
+    </div>
+    <div id="ypanel-sessions" role="tabpanel" aria-labelledby="ytab-sessions" tabindex="0" hidden>
+      <div class="sechead" id="sessHead"><h2>Sessions</h2><button id="allSess">See all</button></div>
+      <div class="grid" id="grid"></div>
+      <div id="settingsMore"></div>
+    </div>
+    <div id="ypanel-plan" role="tabpanel" aria-labelledby="ytab-plan" tabindex="0" hidden>
+      <div id="settingsList"></div>
+    </div>
+  </section>
+  <section class="screen" id="s-feed" tabindex="-1"><div id="feed"></div></section>
+</div>
+
+<nav class="tabs" role="tablist" aria-label="Sections">
+  <button class="tab on" role="tab" aria-selected="true" data-go="today"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg><span>Today</span></button>
+  <button class="tab" role="tab" aria-selected="false" data-go="plan"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg><span>Plan</span></button>
+  <button class="tab mid" id="logBtn" aria-label="Log something">
+    <span class="plus"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span><span>Log</span></button>
+  <button class="tab" role="tab" aria-selected="false" data-go="progress"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>You</span><i class="badge" id="youBadge">0</i></button>
+  <button class="tab" role="tab" aria-selected="false" data-go="feed"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M17 11.5a3 3 0 1 0-2-5.3"/><path d="M18 20a6 6 0 0 0-3-5.2"/></svg><span>Feed</span></button>
+</nav>
+<div class="scrim" id="scrim"></div>
+
+<div class="sheet" id="sessSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3 id="sessTitle">Session</h3>
+  <p class="sub" id="sessSub"></p>
+  <div id="sessBody"></div>
+</div>
+
+<div class="sheet" id="coachSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>Your coach</h3>
+  <p class="sub">Everything the app knows about you, in plain English, and somewhere to ask about it.</p>
+  <div id="coachBody"></div>
+</div>
+
+<div class="sheet" id="settingsSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>Settings</h3>
+  <p class="sub">How the app behaves, your account, and where every number comes from.</p>
+  <div id="appSettings"></div>
+</div>
+
+<div class="sheet" id="youSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>Weight, tracker and account</h3>
+  <p class="sub">Your weigh ins, what your tracker sends, your numbers, and signing in.</p>
+  <div class="dash" id="dashBody"></div>
+</div>
+
+<div class="sheet" id="logSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>Log something</h3>
+  <p class="sub">Everything you can put in, from wherever you are.</p>
+  <div id="logBody"></div>
+</div>
+
+<div class="sheet" id="quickSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3 id="quickTitle">Log</h3>
+  <p class="sub" id="quickSub"></p>
+  <div id="quickBody"></div>
+</div>
+
+<div class="sheet" id="findSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>Find people</h3>
+  <p class="sub">Follow someone and their sessions land in your feed.</p>
+  <div id="people"></div>
+</div>
+
+<div class="sheet" id="dayCheck" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>Today's Check-in</h3>
+  <p class="sub">Twenty seconds. Skip anything you do not know.</p>
+  <div id="dayBody" style="padding:0 14px"></div>
+  <button class="sheetcta" id="saveDay">Save today</button>
+</div>
+
+<div class="sheet" id="weekCheck" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>Weekly check in</h3>
+  <p class="sub">Two minutes. Next week's plan is built from this.</p>
+  <div id="weekBody" style="padding:0 14px"></div>
+  <button class="sheetcta" id="saveWeek">Send it</button>
+</div>
+
+<div class="sheet" id="foodSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>Food today</h3>
+  <p class="sub">Tap to add. Half and double portions are one tap too.</p>
+  <div id="foodBody" style="padding:0 14px 12px"></div>
+</div>
+
+<div class="sheet" id="weighSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>Weigh in</h3>
+  <p class="sub">Once a week is plenty. Morning, before food.</p>
+  <div id="weighBody" style="padding:0 14px"></div>
+  <button class="sheetcta" id="saveWeight">Log it</button>
+</div>
+
+<div class="sheet" id="detailsSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>Your details</h3>
+  <p class="sub">Only used for a reference number. Nothing is counted daily.</p>
+  <div id="detailsBody" style="padding:0 14px"></div>
+  <button class="sheetcta" id="saveDetails">Work it out</button>
+</div>
+
+<div class="sheet" id="aimSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>What are you after?</h3>
+  <p class="sub">Change this and next week rebuilds around it.</p>
+  <div id="aimBody" style="padding:0 14px"></div>
+</div>
+
+<div class="sheet" id="connectSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>Connect a tracker</h3>
+  <p class="sub">Steps, sleep and resting heart rate. You stop logging them.</p>
+  <div id="connectBody"></div>
+</div>
+
+<div class="sheet" id="daySheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3 id="dayTitle">Day</h3>
+  <p class="sub" id="daySub">What is on for this day.</p>
+  <div id="dayDetail"></div>
+</div>
+
+<div class="sheet" id="swapSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3 id="swapTitle">Change this day</h3>
+  <p class="sub">Your week, not the app's.</p>
+  <div id="swapBody"></div>
+</div>
+
+<div class="sheet" id="exSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3 id="exSheetTitle">Add an exercise</h3>
+  <p class="sub">Search, or pick from the list.</p>
+  <div class="search" style="margin:0 14px 10px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="exQ" type="search" placeholder="Bench, squat, row" aria-label="Search exercises"></div>
+  <div id="exList"></div>
+</div>
+
+<div class="sheet" id="exMenu" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3 id="exMenuTitle">Exercise</h3>
+  <p class="sub" id="exMenuStats">No history yet.</p>
+  <div id="exMenuBody"></div>
+</div>
+
+<div class="sheet" id="tplSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>Templates</h3>
+  <p class="sub">Guided to start. Change anything, or build your own.</p>
+  <div id="tplList"></div>
+</div>
+
+<div class="sheet" id="circEdit" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3 id="circEditTitle">Edit circuit</h3>
+  <p class="sub">Runs, stations, in whatever order suits. Tap run or stn to switch a line between the two.</p>
+  <div id="circEditBody" style="padding:0 14px"></div>
+  <button class="sheetcta" id="circSave">Save circuit</button>
+</div>
+
+<div class="sheet" id="tplEdit" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3 id="tplEditTitle">Edit template</h3>
+  <p class="sub">Sets, reps and rest per movement. Yours to change.</p>
+  <div id="tplEditBody" style="padding:0 14px"></div>
+  <button class="sheetcta" id="tplSave">Save template</button>
+</div>
+
+<div class="gym" id="gym">
+  <div class="gymbar">
+    <button class="iconbtn" id="gymClose" aria-label="Pause and close">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+    <div class="t"><div class="n" id="gymName">Workout</div><div class="s" id="gymSub">0:00</div></div>
+    <button class="fin" id="gymFinish">Finish</button>
+  </div>
+  <div class="rest" id="restBar"><div class="n" id="restNum">0:00</div><div class="l" id="restLbl">Rest</div>
+    <button id="restPlus">+15s</button><button id="restSkip">Skip</button></div>
+  <div class="gymbody" id="gymBody"></div>
+  <div class="gymfoot" id="gymFoot"></div>
+</div>
+
+<div class="player" id="player">
+  <div class="pbar">
+    <button class="iconbtn" id="closePlayer" aria-label="Close" style="color:#fff">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <div class="t" id="playerTitle">Session</div><div style="width:36px"></div>
+  </div>
+  <div class="stage" id="stage"></div>
+  <div class="plist" id="plist"></div>
+  <div class="pctl" id="pctl"></div>
+</div>
+
+<div class="onb" id="onb">
+  <div class="onb-top">
+    <button class="iconbtn" id="onbBack" aria-label="Back">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg></button>
+    <div class="dots" id="onbDots"></div><div style="width:36px"></div>
+  </div>
+  <div class="onb-body" id="onbBody"></div>
+  <div class="onb-foot"><button class="onbcta" id="onbNext">Continue</button></div>
+</div>
+
+<div class="sheet" id="altSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3 id="altTitle">Change this movement</h3>
+  <p class="sub" id="altSub">Pick something that trains the same thing, or take it out.</p>
+  <div id="altBody"></div>
+</div>
+
+<div class="sheet" id="cloudSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>Account and sharing</h3>
+  <p class="sub">Optional. Without it everything stays on this phone.</p>
+  <div id="cloudBody" style="padding:0 14px"></div>
+</div>
+
+<div class="sheet" id="howSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>How the forecast is worked out</h3>
+  <p class="sub">Every number here comes from a published method, named.</p>
+  <div id="howBody" style="padding:0 14px"></div>
+</div>
+
+<div class="sheet" id="cycleSheet" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="grab"></div><h3>Cycle</h3>
+  <p class="sub">Optional. It changes what the forecast expects, not what you are told to do.</p>
+  <div id="cycleBody" style="padding:0 14px"></div>
+  <button class="sheetcta" id="saveCycle">Save</button>
+</div>
+
+<div class="updatebar" id="updateBar" role="status" aria-live="polite">
+  <div class="msg"><b>A new version of Gauntlet is ready.</b><span>Your data stays exactly as it is.</span></div>
+  <button id="updateNow">Update</button>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"><div class="msg"></div><div style="flex:1"></div><button id="toastAct">Undo</button></div>
+<script>
+<!-- include: js/app/01-habits.js -->
+<!-- include: js/app/02-state.js -->
+<!-- include: js/app/03-helpers-energy.js -->
+<!-- include: js/app/04-generated-media.js -->
+<!-- include: js/app/05-tracker.js -->
+<!-- include: js/app/06-plan-model.js -->
+<!-- include: js/app/07-today.js -->
+<!-- include: js/app/08-plan-screen.js -->
+<!-- include: js/app/09-progress.js -->
+<!-- include: js/app/10-feed.js -->
+<!-- include: js/app/11-chrome-actions.js -->
+<!-- include: js/app/12-weigh-in.js -->
+<!-- include: js/app/13-player.js -->
+<!-- include: js/app/14-onboarding.js -->
+<!-- include: js/app/15-install-worker.js -->
+</script>
+<script>
+<!-- include: js/daily.js -->
+</script>
+<script>
+<!-- include: js/workouts/01-sessions-progression.js -->
+<!-- include: js/workouts/02-active-workout.js -->
+<!-- include: js/workouts/03-food.js -->
+<!-- include: js/workouts/04-player-finish.js -->
+<!-- include: js/workouts/05-templates-editors.js -->
+</script>
+<script>
+<!-- include: js/boot.js -->
+</script>
+
+<script>
+<!-- include: js/trends/01-history-forecast.js -->
+<!-- include: js/trends/02-weight-trends.js -->
+</script>
+
+
+
+<script>
+<!-- include: js/cloud.js -->
+</script>
+
+<script>
+<!-- include: js/poses.js -->
+</script>
+
+<script>
+<!-- include: js/coach.js -->
+</script>
+
+<script>
+<!-- include: js/settings.js -->
+</script>
+</body>
+</html>

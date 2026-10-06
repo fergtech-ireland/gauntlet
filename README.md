@@ -2,24 +2,35 @@
 
 ## What goes where
 
-| File | Where it lives |
+| Path | What it is |
 |---|---|
-| `index.html` | **The app.** Replace the live copy with this one. |
-| `supabase-delete-policies.sql` | Run once in the Supabase SQL Editor. Only needed if cloud sync is on. |
-| `sw.js` | **The service worker.** Loads the page network-first so every release reaches phones. Replace the live copy. |
-| `manifest.webmanifest`, `icon-192.png`, `icon.svg` | Unchanged. Keep your existing copies. |
-| `test.js`, `regression.js`, `cta.js`, `uat.js`, `sw.test.js`, `harness.js`, `package.json`, `.gitignore`, `README.md`, `DEPLOY.md` | Development only. Keep them in the repository; the app does not load them. |
+| `src/` | **The app's source.** `src/index.html` is the page; its `<!-- include: ... -->` lines pull in `src/styles.css` and the scripts in `src/js/`, in order. Edit here. |
+| `build.js` | Writes `index.html` from `src/`. No dependencies, no transformation: each include is replaced by the file's exact bytes. |
+| `index.html` | **The built app**, which is what GitHub Pages serves and what every test loads. Never edit it by hand; run `node build.js`. A test fails if it is not a fresh build. |
+| `sw.js` | **The service worker.** Loads the page network-first so every release reaches phones. |
+| `manifest.webmanifest`, icons | The install details and icons. |
+| `supabase/migrations/` | Every database change, numbered. Applied to gauntlet-test first, the live project only after its gate. |
+| `supabase/tests/` | `rls.sql`, the database security checks, and `supabase-stub.sql`, the parts of Supabase they need on a plain Postgres. |
+| `.github/workflows/test-and-deploy.yml` | Runs every suite on each push; a push to main that passes is published to Pages. |
+| test files, `harness.js`, `package.json` | Development only; the app does not load them. |
 
-Step-by-step publishing instructions are in `DEPLOY.md`.
+The scripts in `src/js/` are classic scripts sharing one global scope, exactly as when they were one file: order matters, and the page includes them in the order shown in `src/index.html`.
 
-`index.html` is the whole app. One file, no build step, no dependencies at runtime.
+## Making a change
+
+```
+# edit files in src/
+node build.js          # writes index.html
+npm test               # every suite, about 4 minutes
+git add -A && git commit && git push   # main publishes once the tests pass on GitHub
+```
 
 ## Running the tests
 
 ```
 npm install            # installs jsdom, the only dev dependency
-npm test               # all three suites
-npm run test:cta       # one suite: test:regression | test:cta | test:uat | test:sw
+npm test               # every suite
+npm run test:cta       # one suite: test:build | test:regression | test:cta | test:uat | test:sw | test:rls
 ```
 
 Set `TZ` to check date handling elsewhere. Auckland and Sydney are worth including: both change their clocks in late September and early October, which is how a summer-time bug in the goal pace was found.
@@ -28,15 +39,16 @@ Set `TZ` to check date handling elsewhere. Auckland and Sydney are worth includi
 TZ=America/Los_Angeles node test.js
 ```
 
-## The three suites
+## The suites
 
 | File | What it protects |
 |---|---|
+| `build.test.js` | The committed `index.html` is exactly what `src/` builds, and the build refuses mistakes that would break the page (a `</script` inside a script, a file never included, one included twice, Windows line endings). |
 | `regression.js` | Every fix made during the review, asserted individually. If a change here goes red, something that was broken and got fixed is broken again. |
 | `cta.js` | Two halves. A **static audit** that pulls every id and `data-` attribute written onto an interactive element and checks something in the source listens for it, plus that every `go()` names a real screen and every `openSheet()` names a real sheet. Then a **runtime sweep** that opens every screen and sheet and clicks every control in them. |
-| `uat.js` | Fifty end-to-end journeys, each on a clean install. These assert the outcome the person came for, not the mechanism underneath. |
-
+| `uat.js` | Fifty-four end-to-end journeys, each on a clean install. These assert the outcome the person came for, not the mechanism underneath. |
 | `sw.test.js` | Runs the real `sw.js` in a simulated service worker against a fake GitHub Pages: publish a new version, open the app, get it. Also offline, slow and failing networks, and that Supabase is never touched. |
+| `rls.test.js` | Starts a throwaway Postgres, applies every migration in order, then runs `supabase/tests/rls.sql` as two signed-in people and a signed-out visitor: each sees and changes only what they should, every table has RLS on, and delete my account removes everything. Needs the Postgres server programs (GitHub's Ubuntu runners have them; `PG_BIN` points elsewhere). The same `rls.sql` can be pasted into gauntlet-test's SQL editor. |
 
 `harness.js` boots the app in jsdom and is shared by the suites.
 
@@ -101,5 +113,5 @@ TZ=America/Los_Angeles node test.js
 
 - **Layout and visual rendering.** jsdom has no layout engine, so contrast, tap-target size and the movement figures are asserted structurally, not visually. Those need a real browser or a person.
 - **Notifications.** Permission prompts and delivery cannot be exercised headlessly. The scheduling maths is tested; the delivery is not.
-- **The Supabase round trip.** Sync and remote deletion are stubbed. Test those against a real project before shipping.
+- **The Supabase round trip.** Sync and remote deletion are stubbed in the app tests. The database rules themselves are tested on a real Postgres (`rls.test.js`), but Supabase's own sign-in and API layer are not; test those against gauntlet-test before shipping.
 - **iOS home-screen behaviour.** Web notifications only work there once the app is added to the home screen, which nothing here can check.

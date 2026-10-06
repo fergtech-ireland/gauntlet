@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 /* Runs every suite and reports one verdict.
-   node test.js            all three
+   node test.js            all of them
    node test.js cta        just one
 */
 const { spawn } = require('child_process');
 
 const SUITES = [
+  ['build',      'build.test.js', 'The published page is exactly what src/ builds'],
   ['regression', 'regression.js', 'Every fix made, asserted individually'],
   ['cta',        'cta.js',        'Every control audited statically and clicked'],
   ['uat',        'uat.js',        'Fifty end to end journeys on clean installs'],
-  ['sw',         'sw.test.js',    'The service worker, against a simulated GitHub Pages']
+  ['sw',         'sw.test.js',    'The service worker, against a simulated GitHub Pages'],
+  ['rls',        'rls.test.js',   'Database security rules, on a real Postgres, as two people and a visitor']
 ];
 
 const want = process.argv.slice(2);

@@ -17,10 +17,10 @@
 **Phase 0 (foundations) progress:**
 - [x] Test Supabase project created: `gauntlet-test`, ref `cfrraitjazkcnxjjkgoj`, eu-west-1. Live project: `gauntlet`, ref `zerclmrlwniaogtxyngw`.
 - [x] Live database structure recorded as `supabase/migrations/0001_baseline.sql`. Rule from now: every database change is a numbered file there, applied to gauntlet-test first, live only after its gate.
-- [ ] Apply 0001 to gauntlet-test. Two attempts through the Supabase connector came back "cancelled" (writes need an approval that did not reach Feargal on mobile; reads work). Try once at the start of the next chat; if cancelled again, Feargal pastes the file into the SQL editor of gauntlet-test and runs it.
-- [ ] Split `index.html` into `src/` files with a build script that writes the root `index.html` (so GitHub Pages needs no change). First build must be byte-identical to the current file; tests run against the built file; a test checks the committed `index.html` equals a fresh build.
-- [ ] GitHub Action: run `npm test` on every push; then move Pages to deploy from that workflow so a failing test blocks the deploy (may need Feargal to switch Pages source to "GitHub Actions" in repo settings, and the app may need `workflows` permission).
-- [ ] RLS test harness: SQL tests run against gauntlet-test that act as two users (`set local role authenticated` plus `request.jwt.claims`) and prove each sees only their own private rows.
+- [ ] Apply 0001 to gauntlet-test. A third attempt (6 Oct, second chat) also came back "cancelled", so Feargal was asked to paste `supabase/migrations/0001_baseline.sql` into gauntlet-test's SQL editor and run it. Check with `list_tables` on `cfrraitjazkcnxjjkgoj` (expect profiles, state, posts, follows, tries). Then paste `supabase/tests/rls.sql` there too: every row should say ok = true. Do not retry connector writes; they need an approval that does not reach Feargal.
+- [x] Split into `src/` (6 Oct): `src/index.html` is the page with `<!-- include: path -->` lines; `src/styles.css`; `src/js/app/01..15`, `daily.js`, `workouts/01..05`, `boot.js`, `trends/01..02`, `cloud.js`, `poses.js`, `coach.js`, `settings.js`. `node build.js` writes the root `index.html` (first build byte-identical, same SHA-256). Scripts share one global scope as before, so include order matters. `build.test.js` fails if the committed `index.html` is not a fresh build, and checks the build refuses `</script` in a script, unused or doubly included files, CRLF.
+- [~] `.github/workflows/test-and-deploy.yml`: build check plus `npm test` on every push; main publishes to Pages only if they pass. Waiting on Feargal: Settings, Pages, Source = GitHub Actions (the proxy blocks Claude from that settings call). Until then the branch deploy still publishes every push and the workflow's deploy step fails. Confirm the first run's test job is green on GitHub.
+- [x] RLS harness (6 Oct): `supabase/tests/rls.sql` acts as A, B and a signed-out visitor (25 checks: own rows only, cannot write as others, every public table has RLS on, signed out reads nothing, delete my account removes everything). `rls.test.js` runs it on a throwaway local Postgres 16 after `supabase/tests/supabase-stub.sql` (roles, `auth.users`, Supabase's `auth.uid()`, default grants) and every migration in order; it is in `npm test`. Proved by breaking rules on purpose (open read, RLS off, anon grant, new table without RLS): each fails a named check. Every new table must get checks in `rls.sql` in the same change.
 - Gate: the split app passes every existing check, deployed from GitHub, with the test project live.
 
 **Then:** Phase 1 (accounts), one build per chat, per the plan doc.
@@ -30,10 +30,10 @@
 **Current build:** 51. Live: https://fergtech-ireland.github.io/gauntlet/ · Repo: github.com/fergtech-ireland/gauntlet (main)
 **Deploys:** Claude now has push access to the repo and the Supabase connector, so builds are committed and pushed directly (pushing to main publishes the live site). Build 49 pushed 6 Oct 2026; the repo was on build 47 before that.
 **Supabase:** delete policies in place. 6 Oct 2026: `increment_try` restricted to signed-in users (see `supabase-increment-try.sql`). Still open: switch on leaked password protection in the dashboard (Authentication, password settings).
-**Tests:** `npm install && npm test` = 1,482 checks, 0 failures (regression, cta, uat with 54 journeys, sw). `node upgrade.test.js` for older-build upgrades.
+**Tests:** `npm install && npm test` = 1,494 app checks plus the RLS suite, 0 failures (build, regression, cta, uat with 54 journeys, sw, rls). Making a change: edit `src/`, `node build.js`, `npm test`, commit, push.
 
 ## How we work
-- PWA served from `index.html` (being split into `src/` files with a build step, see Start here). Tests run in jsdom; layout is checked in real Chrome (Playwright, phone widths 320 to 430px).
+- PWA served from `index.html`, which is built from `src/` by `node build.js` (never edit `index.html` by hand). Tests run in jsdom; layout is checked in real Chrome (Playwright, phone widths 320 to 430px).
 - Research first, cite evidence in the app's method sheet, label rules of thumb as such. Never use em dashes.
 - Every build: account for every changed line, never weaken a test, check in a real browser, re-test from a clean install, then commit and push to main (that publishes the live site).
 - Keep verified backups somewhere that survives resets, and check for half-finished interrupted attempts before continuing.

@@ -284,7 +284,7 @@ function renderTrends(){
       <div class="note" style="margin:0">Weight is not tracked while you are under 18. Bodies change a lot while you are growing, and research on teenagers finds that focusing on weight does more harm than good. What you do each day is what counts, and that is all here: moving, getting stronger, sleep, food and how you feel.</div>`
     : `<div class="ph"><h3>Weight</h3><button data-weigh="1">Weigh in</button></div>
     ${weightPanel()}`}
-    ${waterWindow(todayKey())? `<div class="note" style="color:var(--burnt)">Fluid retention is typically highest around now, averaging about half a kilo in the study that measured it. Read the line, not today's number.</div>`:''}
+    ${waterWindow(todayKey())? `<div class="note" style="color:var(--amber-text)">Fluid retention is typically highest around now, averaging about half a kilo in the study that measured it. Read the line, not today's number.</div>`:''}
   </div>
   <div class="panel">
     <div class="ph"><h3>Consistency</h3><button data-go="plan">The plan</button></div>

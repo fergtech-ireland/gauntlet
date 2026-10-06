@@ -751,31 +751,31 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     /* ---- theme ---- */
     const { w, d, G, errs } = await boot(); allErrs.push(...errs);
     onboard(G);
-    t('16 · by default the app is light', !d.documentElement.hasAttribute('data-theme') && !G.S.profile.theme);
+    t('16 · by default the app matches the phone (Day on a light phone)', d.documentElement.getAttribute('data-theme') === 'day' && !G.S.profile.theme);
     G.go('progress'); G.renderAll();
     d.querySelector('[data-setting="theme"]').click();
     const pick = v => d.querySelector('[data-themepick="' + v + '"]');
-    t('16 · the picker offers all three, light first and marked as chosen',
-      !!pick('auto') && !!pick('light') && !!pick('dark') && pick('light').classList.contains('on')
-      && d.querySelector('[data-themepick]').dataset.themepick === 'light');
-    pick('dark').click();
-    t('16 · choosing dark sets dark', d.documentElement.getAttribute('data-theme') === 'dark' && G.S.profile.theme === 'dark');
+    t('16 · the picker offers Day, Night and Match phone, with Match phone chosen',
+      !!pick('auto') && !!pick('day') && !!pick('night') && pick('auto').classList.contains('on')
+      && d.getElementById('altTitle').textContent === 'Appearance' && /Match phone/.test(pick('auto').textContent));
+    pick('night').click();
+    t('16 · choosing Night sets night', d.documentElement.getAttribute('data-theme') === 'night' && G.S.profile.theme === 'night');
     G.closeSheets();
     let undone = false;
     G.toast('Tuesday dropped', 'Undo', () => { undone = true; });
     const toastBefore = d.getElementById('toast').textContent;
     d.querySelector('.tab[data-go="plan"]').click();
     const toastAfter = d.getElementById('toast').textContent;
-    t('16 · tapping elsewhere does not re-run the theme', !/Theme:/.test(toastAfter), toastAfter);
+    t('16 · tapping elsewhere does not re-run the theme', !/Appearance:/.test(toastAfter), toastAfter);
     t('16 · and does not wipe an Undo that is showing', /Tuesday dropped/.test(toastAfter) && /Undo/.test(toastAfter), toastBefore + ' -> ' + toastAfter);
     d.querySelector('[data-setting="theme"]').click();
-    pick('light').click();
-    t('16 · choosing light sets light', !d.documentElement.hasAttribute('data-theme') && G.S.profile.theme === 'light');
+    pick('day').click();
+    t('16 · choosing Day sets day', d.documentElement.getAttribute('data-theme') === 'day' && G.S.profile.theme === 'day');
     const t0 = d.getElementById('toast').textContent;
-    pick('light').click();
+    pick('day').click();
     t('16 · tapping the theme already chosen does nothing', d.getElementById('toast').textContent === t0);
     pick('auto').click();
-    t('16 · following the phone is there as a choice', d.documentElement.getAttribute('data-theme') === 'auto' && G.S.profile.theme === 'auto');
+    t('16 · Match phone is there as a choice', G.S.profile.theme === 'auto' && d.documentElement.getAttribute('data-theme') === 'day');
     G.closeSheets();
 
     /* ---- the onboarding progress bar and the habit dots are separate ---- */
@@ -1008,7 +1008,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('19 · habits row shows both habits', /Ten minutes after dinner/.test(val('habits')) && /Stop: No sugary drinks/.test(val('habits')), val('habits'));
     t('19 · easy weeks row shows the cadence', /Every 6 weeks/.test(val('deload')) || /easy week/.test(val('deload')), val('deload'));
     t('19 · kit row names the kit', val('kit') === 'Bodyweight, Dumbbells', val('kit'));
-    t('19 · theme row says Light', val('theme') === 'Light', val('theme'));
+    t('19 · appearance row says Match phone', val('theme') === 'Match phone', val('theme'));
     t('19 · reminders row says Off and explains the limit', val('nudge') === 'Off' && !!d.getElementById('nudgeNote'));
     t('19 · account row says where data lives', val('account') === 'On this device only', val('account'));
     t('19 · no cycle row unless it applies', !row('cycle'));
@@ -1025,7 +1025,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
       records: () => d.getElementById('youSheet').classList.contains('on'),
       coach: () => d.getElementById('coachSheet').classList.contains('on'),
       data: () => d.getElementById('cloudSheet').classList.contains('on') && /Download everything/.test(d.getElementById('cloudBody').textContent),
-      theme: () => d.getElementById('altTitle').textContent === 'Theme',
+      theme: () => d.getElementById('altTitle').textContent === 'Appearance',
       account: () => d.getElementById('youSheet').classList.contains('on') && !!d.getElementById('cloudPanel'),
       how: () => d.getElementById('howSheet').classList.contains('on')
     };
@@ -1084,12 +1084,12 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const themeRow = () => d.querySelector('[data-setting="theme"]');
     G.go('progress'); G.renderAll();
     await act(() => themeRow().click());
-    await act(() => d.querySelector('[data-themepick="dark"]').click());
+    await act(() => d.querySelector('[data-themepick="night"]').click());
     await act(() => G.closeSheets());
     await act(() => themeRow().click());
-    await act(() => d.querySelector('[data-themepick="light"]').click());
+    await act(() => d.querySelector('[data-themepick="day"]').click());
     await act(() => G.closeSheets());
-    const themeMsgs = () => seen.filter(m => /Theme/.test(m)).length;
+    const themeMsgs = () => seen.filter(m => /Appearance/.test(m)).length;
     const after = themeMsgs();
     t('20 · each change says so once', after === 2, seen.join(' | '));
     await new Promise(r => setTimeout(r, 4500));
@@ -1097,7 +1097,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     /* exactly what you did: move from and to areas of the app */
     for (let lap = 0; lap < 3; lap++) {
       for (const tab of ['today', 'plan', 'progress', 'feed', 'progress', 'today'])
-        await act(() => d.querySelector('.tab[data-go="' + tab + '"]').click());
+        await act(() => d.querySelector(tab === 'feed' ? '#friendsBtn' : '.tab[data-go="' + tab + '"]').click());
       await act(() => d.getElementById('logBtn').click()); await act(() => G.closeSheets());
       await act(() => G.openFood(false)); await act(() => G.closeSheets());
       await act(() => G.openDay()); await act(() => G.closeSheets());
@@ -1105,10 +1105,10 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
       for (const k of ['habits', 'goal', 'deload', 'records']) {
         await act(() => d.querySelector('[data-setting="' + k + '"]').click()); await act(() => G.closeSheets()); }
     }
-    t('20 · moving around never brings the theme message back', themeMsgs() === after, seen.filter(m => /Theme/.test(m)).join(' | '));
-    t('20 · and the theme is still light', !d.documentElement.hasAttribute('data-theme') && G.S.profile.theme === 'light');
+    t('20 · moving around never brings the theme message back', themeMsgs() === after, seen.filter(m => /Appearance/.test(m)).join(' | '));
+    t('20 · and the theme is still Day', d.documentElement.getAttribute('data-theme') === 'day' && G.S.profile.theme === 'day');
     await act(() => themeRow().click());
-    await act(() => d.querySelector('[data-themepick="light"]').click());
+    await act(() => d.querySelector('[data-themepick="day"]').click());
     t('20 · picking the theme you already have says nothing', themeMsgs() === after);
     G.closeSheets();
   }
@@ -1352,14 +1352,14 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     /* ---- theme ---- */
     G.go('progress'); G.renderAll();
     d.querySelector('[data-setting="theme"]').click();
-    t('24 · the theme sheet opens with Light ticked', d.querySelector('#themeOpts .opt.on').dataset.themepick === 'light');
-    d.querySelector('[data-themepick="dark"]').click();
+    t('24 · the theme sheet opens with Match phone ticked', d.querySelector('#themeOpts .opt.on').dataset.themepick === 'auto');
+    d.querySelector('[data-themepick="night"]').click();
     t('24 · choosing a theme closes the sheet', !d.getElementById('altSheet').classList.contains('on'));
-    t('24 · the app is dark', d.documentElement.getAttribute('data-theme') === 'dark');
+    t('24 · the app is night', d.documentElement.getAttribute('data-theme') === 'night');
     d.querySelector('[data-setting="theme"]').click();
-    t('24 · reopening shows the new choice ticked', d.querySelector('#themeOpts .opt.on').dataset.themepick === 'dark');
-    t('24 · and the row says Dark', /Dark/.test(txt(d.querySelector('[data-setting="theme"]'))));
-    d.querySelector('[data-themepick="light"]').click();
+    t('24 · reopening shows the new choice ticked', d.querySelector('#themeOpts .opt.on').dataset.themepick === 'night');
+    t('24 · and the row says Night', /Night/.test(txt(d.querySelector('[data-setting="theme"]'))));
+    d.querySelector('[data-themepick="day"]').click();
 
     /* ---- footer ---- */
     const foot = () => txt(d.querySelector('#s-progress .colophon .sub'));
@@ -2123,7 +2123,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
 
     /* ---- the gym footer ---- */
     t('32 · the footer has its own background, so nothing shows through it',
-      /\.gymfoot\{[^}]*background:var\(--paper\)/.test(source));
+      /\.gymfoot\{[^}]*background:var\(--surface\)/.test(source));
     t('32 · and it wraps instead of letting text land on text',
       /\.gymfoot\{[^}]*flex-wrap:wrap/.test(source));
     t('32 · the hint steps aside on a narrow phone', /@media \(max-width:380px\)\{ \.gymfoot \.hint\{display:none\} \}/.test(source));
@@ -3027,7 +3027,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('P2-05 · taps go through it, except for Undo', /\.toast\.on\{[^}]*pointer-events:none/.test(source) && /\.toast\.on button\{pointer-events:auto\}/.test(source));
 
     /* P2-06 · the colour defined as itself */
-    t('P2-06 · the completed set border has a real colour in light mode', /--good-line:#[0-9a-f]{6};/.test(source) && !/--good-line:var\(--good-line\)/.test(source));
+    t('P2-06 · the completed set border has a real colour in both themes', /\.setline\.done input\{[^}]*border-color:var\(--line\)/.test(source)
+      && /:root\{[^}]*--line:#[0-9A-F]{6};/.test(source) && /:root\[data-theme="night"\]\{[^}]*--line:#[0-9A-F]{6};/.test(source));
 
     /* P1-14 and the evidence audit */
     t('P1-14 · cycle context says it may not apply', /It may not apply to you/.test(source) && /irregular cycles, hormonal contraception/.test(source));
@@ -4359,6 +4360,75 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     }
   }
 
+
+  /* ---------------------------------------------------------- 57 */
+  journey(57, 'Build 55: Day, Night or Match phone, set before the first paint; the new nav; Friends on Today; Eat logs to the same day');
+  {
+    const txt = el => el.textContent.replace(/\s+/g, ' ').trim();
+    /* a phone whose dark mode can be switched while the app is open */
+    const phone = { dark: true, fns: [] };
+    const fakePhone = w => { w.matchMedia = q => ({ media: q, get matches() { return /dark/.test(q) && phone.dark; },
+      addEventListener: (e, fn) => phone.fns.push(fn), removeEventListener() {} }); };
+    const P1 = await boot({ before: fakePhone }); allErrs.push(...P1.errs);
+    const { d, G } = P1; const root = d.documentElement;
+    t('57 · a dark phone gets Night before any setting is touched', root.getAttribute('data-theme') === 'night' && G.themeOf() === 'auto');
+    t('57 · the head script set it, not only the app', (() => {
+      const html = require('fs').readFileSync(require('path').join(__dirname, 'index.html'), 'utf8');
+      const head = html.slice(html.indexOf('<head>'), html.indexOf('<style>'));
+      return /data-theme/.test(head) && /prefers-color-scheme: dark/.test(head); })());
+    onboard(G);
+    phone.dark = false; phone.fns.forEach(f => f());
+    t('57 · Match phone follows the phone when it switches to light', root.getAttribute('data-theme') === 'day'
+      && d.getElementById('themeColor').getAttribute('content') === '#F6F5F1');
+    phone.dark = true; phone.fns.forEach(f => f());
+    t('57 · and back to dark', root.getAttribute('data-theme') === 'night' && d.getElementById('themeColor').getAttribute('content') === '#0F1211');
+    G.go('today');
+    const sun = d.getElementById('themeBtn');
+    t('57 · Today has the sun and moon button, named for what it does', !!sun && sun.getAttribute('aria-label') === 'Switch to day');
+    sun.click();
+    t('57 · it makes an explicit choice of Day', root.getAttribute('data-theme') === 'day' && G.S.profile.theme === 'day'
+      && sun.getAttribute('aria-label') === 'Switch to night');
+    phone.dark = true; phone.fns.forEach(f => f());
+    t('57 · an explicit Day ignores the phone', root.getAttribute('data-theme') === 'day');
+    sun.click();
+    t('57 · and flips to Night', root.getAttribute('data-theme') === 'night' && G.S.profile.theme === 'night');
+    t('57 · the choice is kept where the head script reads it', P1.w.localStorage.getItem('gauntlet.theme') === 'night');
+    /* a reload with that choice, on a light phone, still opens in Night */
+    const P2 = await boot({ before: w => { fakePhone(w); w.localStorage.setItem('gauntlet.theme', 'night'); } }); allErrs.push(...P2.errs);
+    phone.dark = false;
+    t('57 · a saved Night opens as Night', P2.d.documentElement.getAttribute('data-theme') === 'night');
+    /* someone who chose Dark before build 55 */
+    /* a real saved week, with the old value in it and no theme key yet */
+    G.S.profile.theme = 'dark'; const old = JSON.stringify(G.S);
+    const P3 = await boot({ before: w => { fakePhone(w); w.localStorage.setItem('gauntlet.v4', old); } }); allErrs.push(...P3.errs);
+    t('57 · a Dark choice from before build 55 opens as Night', P3.d.documentElement.getAttribute('data-theme') === 'night');
+
+    /* ---- the nav ---- */
+    const labels = [...d.querySelectorAll('nav.tabs button')].map(b => txt(b) || b.getAttribute('aria-label'));
+    t('57 · the nav is Today, Plan, + Log, Eat, You', labels.join('|') === 'Today|Plan|Log something|Eat|You0' || labels.join('|') === 'Today|Plan|Log something|Eat|You', labels.join('|'));
+    t('57 · Feed is no longer in the nav', !d.querySelector('nav.tabs [data-go="feed"]'));
+    d.getElementById('friendsBtn').click();
+    t('57 · Friends in the Today header opens Friends', d.getElementById('s-feed').classList.contains('on') && d.body.dataset.screen === 'feed');
+    t('57 · Friends and the sun and moon show on Today only, Find people on Friends', (() => {
+      const css = [...d.querySelectorAll('style')].map(x => x.textContent).join('');
+      return /header\.top \.on-today,header\.top \.on-feed\{display:none\}/.test(css)
+        && d.getElementById('themeBtn').classList.contains('on-today') && d.getElementById('friendsBtn').classList.contains('on-today')
+        && d.getElementById('findBtn').classList.contains('on-feed'); })());
+    d.querySelector('.tab[data-go="today"]').click();
+    t('57 · Today again', d.body.dataset.screen === 'today' && d.querySelector('.tab[data-go="today"]').classList.contains('on'));
+
+    /* ---- Eat: the same food sheet, the same day record ---- */
+    const before = G.dayFood().length, kcal0 = G.foodTotals().kcal;
+    d.querySelector('.tab[data-go="eat"]').click();
+    t('57 · Eat opens the food sheet and leaves you on your screen', d.getElementById('foodSheet').classList.contains('on') && d.getElementById('s-today').classList.contains('on'));
+    const add = d.querySelector('#foodSheet .fadd[data-foodadd]:not(.half)');
+    add.click();
+    t('57 · adding from Eat lands in today\'s record, as from + Log', G.dayFood().length === before + 1 && G.foodTotals().kcal > kcal0);
+    G.closeSheets();
+    d.getElementById('logBtn').click();
+    t('57 · + Log still opens the log sheet', d.getElementById('logSheet') ? d.getElementById('logSheet').classList.contains('on') : !!d.querySelector('.sheet.on'));
+    G.closeSheets();
+  }
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);
 })();

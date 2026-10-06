@@ -94,10 +94,10 @@ function drawCoachSetup(){
     <div class="nf" style="margin-bottom:10px"><label>Your endpoint</label>
       <input id="coachUrl" value="${(c.endpoint||'').replace(/"/g,'&quot;')}"
         placeholder="https://something-you-run.example/coach"
-        style="font-family:Archivo;font-size:14px;font-weight:600"></div>
+        style="font-family:var(--font-ui);font-size:14px;font-weight:600"></div>
     <div class="nf" style="margin-bottom:10px"><label>Model, if your endpoint wants one</label>
       <input id="coachModel" value="${(c.model||'').replace(/"/g,'&quot;')}" placeholder="optional"
-        style="font-family:Archivo;font-size:14px;font-weight:600"></div>
+        style="font-family:var(--font-ui);font-size:14px;font-weight:600"></div>
     <div class="method"><b>What it has to do</b><span>Accept a JSON POST of <code>{system, messages, model}</code>, add your API key, call the model, and return the response. Twenty lines of anything. It must send CORS headers back to this origin or the browser will refuse the reply.</span></div>
     <div class="method"><b>What goes over the wire</b><span>Your brief: weights, sessions, check ins, habits, target, and any lines you wrote about your days. Send it somewhere you trust, and nowhere else.</span></div>
     <button class="sheetcta" id="coachSave">Save it</button>

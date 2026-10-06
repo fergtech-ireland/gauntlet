@@ -6,13 +6,13 @@ const checkinDayName=()=>DAYS[S.profile.checkinDay===undefined?6:S.profile.check
 function checkinRow(){
   const due=dowIdx()===(S.profile.checkinDay===undefined?6:S.profile.checkinDay);
   const done=checkinDone();
-  if(done) return `<div class="todo done"><span class="ic" style="background:var(--t-marigold);color:var(--burnt)">↻</span>
+  if(done) return `<div class="todo done"><span class="ic" style="background:var(--amber-tint);color:var(--amber-text)">↻</span>
     <span class="t"><b>Checked in</b><span>next one ${checkinDayName()}. Nothing to do until then.</span></span>
     <span class="tick">✓</span></div>`;
-  if(!due) return `<div class="todo"><span class="ic" style="background:var(--t-marigold);color:var(--burnt)">↻</span>
+  if(!due) return `<div class="todo"><span class="ic" style="background:var(--amber-tint);color:var(--amber-text)">↻</span>
     <span class="t"><b>Check in is ${checkinDayName()}</b><span>once a week, and the week is built from it</span></span>
     <span class="chev">›</span></div>`;
-  return `<button class="todo" id="todoCheck"><span class="ic" style="background:var(--t-marigold);color:var(--burnt)">↻</span>
+  return `<button class="todo" id="todoCheck"><span class="ic" style="background:var(--amber-tint);color:var(--amber-text)">↻</span>
     <span class="t"><b>Check in, it is ${checkinDayName()}</b><span>mostly filled in already. Two minutes.</span></span>
     <span class="chev">›</span></button>`;
 }
@@ -28,7 +28,7 @@ function targetLine(){
   return `<div class="targetline ${late?'late':''}">
     <div class="tl-h"><b>${t.value}${k.unit==='a week'?' sessions a week':' '+k.unit}</b>
       <span>${pr.daysLeft===null? '' : (late? Math.abs(pr.daysLeft)+' days past' : pr.daysLeft+' days left')}</span></div>
-    <div class="bar"><i style="width:${pr.pct}%;background:${late?'var(--burnt)':'var(--forest-bg)'}"></i></div>
+    <div class="bar"><i style="width:${pr.pct}%;background:${late?'var(--amber-text)':'var(--cta)'}"></i></div>
     <div class="tl-s">${pr.now}${k.unit==='a week'?'':' '+k.unit} now · ${Math.abs(pr.remaining)}${k.unit==='a week'?'':' '+k.unit} to go
       <button class="inlinebtn" id="setTarget">change</button></div></div>`;
 }
@@ -47,7 +47,7 @@ function habitRowFor(slot){
   if(rate!==null&&rate<0.5&&Object.keys(h.days||{}).length>=4) line+=' · about '+Math.round(rate*100)+'% of days so far';
   const label= today.off? 'Not one of its days' : (today.done? 'Undo today' : (stop? 'Mark today: went without' : 'Mark today done'));
   return `<div class="todo habit ${stop?'stop':''} ${today.done?'done':''}">
-    <span class="ic" style="background:${stop?'var(--t-oxblood)':'var(--t-forest)'};color:${stop?'var(--oxblood)':'var(--forest)'}">${stop?'×':(streak||'1')}</span>
+    <span class="ic" style="background:${stop?'var(--coral-tint)':'var(--green-tint)'};color:${stop?'var(--coral-text)':'var(--green-text)'}">${stop?'×':(streak||'1')}</span>
     <button class="t habitopen" data-habitopen="${slot}" aria-label="${escHabit(meta.t)}: see it, untick it or remove it"><b>${stop?'Stop: ':''}${escHabit(meta.t)}</b><span>${line}</span>
       <span class="habitdots">${week.map(d=>`<i class="${d.done?'on':''} ${d.before?'pre':''} ${d.today?'now':''} ${d.off?'off':''}"></i>`).join('')}</span></button>
     <button class="tick habittick" data-habittoggle="${slot}" aria-label="${label}"${today.off?' disabled':''}>${today.done?'✓':''}</button>
@@ -58,7 +58,7 @@ function habitRow(){
   if(!currentHabit('start')){
     const s=suggestHabit();
     if(s) out+=`<button class="todo" data-habitpick="${s.id}">
-      <span class="ic" style="background:var(--t-forest);color:var(--forest)">1</span>
+      <span class="ic" style="background:var(--green-tint);color:var(--green-text)">1</span>
       <span class="t"><b>Pick a habit</b><span>${s.t.toLowerCase()}, or choose another. Up to three at once, though one or two is easier to keep</span></span>
       <span class="chev">›</span></button>`;
   } else out+=habitRowFor('start');
@@ -309,22 +309,22 @@ function glanceRow(){
   const maint=+t.maintenance||0;
   const over=target&&eaten>target? eaten-target : 0;
   let top, label, sub, tone, cls='';
-  if(!target){ top=num(eaten); label='kcal in'; sub='no target yet'; tone='var(--forest-bg)'; }
-  else if(!over){ top=num(left); label='kcal left'; sub=num(eaten)+' of '+num(target); tone='var(--forest-bg)'; }
+  if(!target){ top=num(eaten); label='kcal in'; sub='no target yet'; tone='var(--cta)'; }
+  else if(!over){ top=num(left); label='kcal left'; sub=num(eaten)+' of '+num(target); tone='var(--cta)'; }
   else {
     top=num(over); label='kcal over target';
-    if(maint&&eaten<=maint){ sub='maintenance '+num(maint)+', still '+num(maint-eaten)+' under'; tone='var(--burnt)'; cls='over'; }
-    else if(maint){ sub='maintenance '+num(maint)+', '+num(eaten-maint)+' over'; tone='var(--oxblood)'; cls='over past'; }
-    else { sub=num(eaten)+' of '+num(target); tone='var(--oxblood)'; cls='over past'; }
+    if(maint&&eaten<=maint){ sub='maintenance '+num(maint)+', still '+num(maint-eaten)+' under'; tone='var(--amber-text)'; cls='over'; }
+    else if(maint){ sub='maintenance '+num(maint)+', '+num(eaten-maint)+' over'; tone='var(--coral-text)'; cls='over past'; }
+    else { sub=num(eaten)+' of '+num(target); tone='var(--coral-text)'; cls='over past'; }
   }
   return `<div class="glances">
     ${cell('food', top, label, sub, target? Math.round(eaten/target*100) : null, tone, cls)}
     ${cell('protein', protein+'g', 'protein', t.protein? 'of '+t.protein+'g':'today',
-      t.protein? Math.round(protein/t.protein*100) : null, 'var(--marine-bg)')}
+      t.protein? Math.round(protein/t.protein*100) : null, 'var(--cta)')}
     ${st===null? (()=>{ const sl=realSleep(S.days[todayKey()]), tg=sleepTarget();
         return cell('sleep', sl===null? '–' : sl+'h', 'sleep', sl===null? 'tap to log last night' : 'aim '+tg.lo+'h or more',
-          sl===null? null : Math.round(sl/tg.lo*100), 'var(--marine-bg)'); })()
-      : cell('steps', num(st), 'steps', 'of '+num(stepTarget()), Math.round(st/stepTarget()*100), 'var(--burnt)')}
+          sl===null? null : Math.round(sl/tg.lo*100), 'var(--cta)'); })()
+      : cell('steps', num(st), 'steps', 'of '+num(stepTarget()), Math.round(st/stepTarget()*100), 'var(--amber-text)')}
   </div>`;
 }
 /* One tap each, and each one says where it stands rather than nagging. */
@@ -708,17 +708,17 @@ function renderToday(){
        tracker shows for the first week only, then lives on the You tab
        (UAT P208). */ ''}
   ${healthOn()
-    ? `<div class="todo auto"><span class="ic" style="background:var(--t-marine);color:var(--marine)">⌚</span>
+    ? `<div class="todo auto"><span class="ic" style="background:var(--green-tint);color:var(--green-text)">⌚</span>
         <span class="t"><b>Steps and sleep</b><span>${st!==null?num(st)+' steps':'no data yet'}${logged&&logged.auto?' · '+logged.auto.sleep+'h sleep':''} · demo data, not ${sourceName()} yet</span></span>
         <span class="autotag">automatic</span></div>`
-    : (inFirstWeek()? `<button class="todo" id="connectBtn"><span class="ic" style="background:var(--t-marine);color:var(--marine)">⌚</span>
+    : (inFirstWeek()? `<button class="todo" id="connectBtn"><span class="ic" style="background:var(--green-tint);color:var(--green-text)">⌚</span>
         <span class="t"><b>Connect your watch or phone</b><span>Steps and sleep fill themselves in. You never log them.</span></span>
         <span class="chev">›</span></button>` : '')}
   ${activeHabits().map(h=>habitRowFor(h.slot)).join('')||habitRow()}
   ${habitCount()&&habitRoom()? `<button class="addhabit" data-habitadd="1">Add another habit<span>${habitCount()} of ${HABIT_MAX}</span></button>`:''}
   ${checkinRow()}
   ${(typeof painToReview==='function'? painToReview() : []).map(n=>`<div class="todo">
-      <span class="ic" style="background:var(--t-burnt);color:var(--burnt)">?</span>
+      <span class="ic" style="background:var(--amber-tint);color:var(--amber-text)">?</span>
       <span class="t"><b>Is ${n} alright now?</b><span>out for two weeks. Nothing puts it back until you say so</span></span>
       <span style="display:flex;gap:6px">
         <button class="mini go" data-painok="${n}">Fine now</button>
@@ -787,7 +787,7 @@ document.addEventListener('input',e=>{ if(e.target.id==='quickValue') quickPrevi
 function openConnect(){
   $('connectBody').innerHTML=SOURCES.map(x=>`<button class="logrow" data-connect="${x.id}">
       <div class="txt"><div class="t">${x.n}</div><div class="s">Steps, sleep and resting heart rate</div></div>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2.2" stroke-linecap="round"><path d="m9 5 7 7-7 7"/></svg></button>`).join('')
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--mute)" stroke-width="2.2" stroke-linecap="round"><path d="m9 5 7 7-7 7"/></svg></button>`).join('')
     +`<div class="note" style="padding:12px 14px 4px">The connection is simulated in this build so you can see how it behaves. On a phone the same fields come from Apple Health or Health Connect, and you never type a step count again.</div>`;
   openSheet('connectSheet');
 }
@@ -800,25 +800,25 @@ function openDayDetail(n,opts){
   $('daySub').textContent=d.sub||'';
   $('dayDetail').innerHTML=`
     ${d.runId&&typeof runPlan==='function'&&runPlan(d.runId)? `<div style="padding:2px 14px 10px">
-      ${runPlan(d.runId).steps.map(st=>`<div class="move" style="display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line-soft);font-size:13.5px">
+      ${runPlan(d.runId).steps.map(st=>`<div class="move" style="display:flex;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px">
         <span style="flex:1;font-weight:600">${st.n}</span><span style="color:var(--mute);font-size:12.5px">${st.r}</span></div>`).join('')}
       <div class="note">${runPlan(d.runId).why}</div>
       <button class="mini" data-runswap="${n}">Change this run</button></div>`:''}
-    ${tpl? `<div style="padding:2px 14px 10px">${tpl.ex.map(r=>`<button class="move" ${ro?'':`data-dayswap="${r.exId}"`} style="display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line-soft);font-size:13.5px;width:100%;text-align:left">
+    ${tpl? `<div style="padding:2px 14px 10px">${tpl.ex.map(r=>`<button class="move" ${ro?'':`data-dayswap="${r.exId}"`} style="display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:13.5px;width:100%;text-align:left">
         <span style="flex:1;font-weight:600">${exOf(r.exId).n}</span>
         <span style="color:var(--mute);font-size:12.5px">${d.deload&&typeof deloadPrescription==='function'
           ? (p=>p.sets+' × '+p.reps+(p.kg!==null?' at '+p.kg+'kg':''))(deloadPrescription(r.exId,r,DELOAD_TIERS[d.deload]))
           : (typeof repText==='function'? repText(r) : r.sets+' × '+r.reps)}</span>
         <button class="movebtn" data-showmove="${r.exId}">show me</button>
-        ${ro?'':'<span style="color:var(--marine);font-weight:700;font-size:12.5px">Change</span>'}</button>`).join('')}
+        ${ro?'':'<span style="color:var(--green-text);font-weight:700;font-size:12.5px">Change</span>'}</button>`).join('')}
       ${d.exclude&&d.exclude.length?`<div class="note">Leaving out ${d.exclude.join(', ')}.</div>`:''}
       ${d.deload?`<div class="note">Easy week: ${DELOAD_TIERS[d.deload].band} less work and about 10% lighter. Next week goes back to your working weights.</div>`
         : (d.setDelta?`<div class="note">One set lighter than the template this week.</div>`:'')}</div>`
       : `<div class="note" style="padding:0 14px 12px">${d.slot==='rest'?'Nothing owed. Rest is part of it.':(d.slot==='walk'?'Counted by your tracker. Nothing to press.':'')}</div>`}
     ${d.type&&d.slot!=='walk'? `<button class="sheetcta" data-startday="${n}">Start this ${n===dowIdx()?'now':'day'}</button>`:''}
-    ${!ro&&d.templateId? `<button class="sheetcta" style="background:var(--grey-btn);color:var(--ink)" data-tpledit="${d.templateId}">Edit this workout</button>`:''}
-    ${ro? '' : `<button class="sheetcta" style="background:var(--grey-btn);color:var(--ink)" data-swap="${n}">Change this day</button>
-    ${d.type&&d.slot!=='walk'? `<button class="sheetcta" style="background:var(--grey-btn);color:var(--ink)" data-restday="${n}">Cannot do it, move or drop it</button>`:''}`}`;
+    ${!ro&&d.templateId? `<button class="sheetcta" style="background:var(--track);color:var(--ink)" data-tpledit="${d.templateId}">Edit this workout</button>`:''}
+    ${ro? '' : `<button class="sheetcta" style="background:var(--track);color:var(--ink)" data-swap="${n}">Change this day</button>
+    ${d.type&&d.slot!=='walk'? `<button class="sheetcta" style="background:var(--track);color:var(--ink)" data-restday="${n}">Cannot do it, move or drop it</button>`:''}`}`;
   openSheet('daySheet');
 }
 

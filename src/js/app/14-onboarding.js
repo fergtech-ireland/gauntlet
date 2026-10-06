@@ -161,14 +161,14 @@ function onbRender(){
           t.ex.map(row=>`<button class="revrow" data-onbswap="${row.exId}">
               <div class="txt"><div class="t">${exOf(row.exId).n}</div>
                 <div class="s">${repText(row)}${showTempo()?' · tempo '+(row.tempo||tempoOf(row.exId)):''} · rest ${row.rest}s</div>
-                ${showTempo()&&tempoMatters(row.tempo||tempoOf(row.exId))?`<div class="s" style="color:var(--burnt)">${tempoWords(row.tempo||tempoOf(row.exId))}</div>`:''}</div>
+                ${showTempo()&&tempoMatters(row.tempo||tempoOf(row.exId))?`<div class="s" style="color:var(--amber-text)">${tempoWords(row.tempo||tempoOf(row.exId))}</div>`:''}</div>
               <span class="chg">Change</span></button>`).join('')
-            : r? `<div class="revrow" style="pointer-events:none;background:var(--canvas)"><div class="txt"><div class="t">${r.sub}</div></div></div>
+            : r? `<div class="revrow" style="pointer-events:none;background:var(--bg)"><div class="txt"><div class="t">${r.sub}</div></div></div>
                 ${r.steps.map(st=>`<div class="revrow" style="pointer-events:none">
                   <div class="txt"><div class="t">${st.n}</div><div class="s">${st.r}</div></div></div>`).join('')}
-                <div class="revrow" style="background:var(--canvas)"><div class="txt"><div class="s">${r.why}</div></div></div>
+                <div class="revrow" style="background:var(--bg)"><div class="txt"><div class="s">${r.why}</div></div></div>
                 `
-            : d.circuitId? `<div class="revrow" style="pointer-events:none;background:var(--canvas)"><div class="txt"><div class="t">${circuitOf(d.circuitId).sub}</div>
+            : d.circuitId? `<div class="revrow" style="pointer-events:none;background:var(--bg)"><div class="txt"><div class="t">${circuitOf(d.circuitId).sub}</div>
                   <div class="s">${circuitOf(d.circuitId).why}</div></div></div>
                 ${(circuitOf(d.circuitId).items||[]).map(it=>`<div class="revrow" style="pointer-events:none">
                   <div class="txt"><div class="t">${it.label}</div><div class="s">${it.sub||it.t}</div></div></div>`).join('')}`
@@ -180,7 +180,7 @@ function onbRender(){
           ${code==='checkin'? '' : `<button class="revrow" data-onbrun="${i}:${code}"><div class="txt"><div class="t">Change this day</div>
               <div class="s">A different session, a walk, or nothing</div></div><span class="chg">Change</span></button>`}
         </div>`}).join('')}
-      <button class="logrow" id="tempoHelp" style="border-top:1px solid var(--line-soft)">
+      <button class="logrow" id="tempoHelp" style="border-top:1px solid var(--line)">
         <div class="txt"><div class="t">What do the four numbers mean?</div>
           <div class="s">Tempo, and why it is there</div></div></button>
       ${((S.profile.excluded)||[]).length?`<div class="note">Taken out: ${S.profile.excluded.map(id=>exOf(id).n).join(', ')}. They will not appear in any day.</div>`:''}`;
@@ -248,7 +248,7 @@ function openRunSwap(dayIndex,current){
     return `<button class="logrow" data-runpick="${dayIndex}:${id}">
       <div class="txt"><div class="t">${title}${id===current?' · current':''}</div><div class="s">${sub}</div>
       ${why?`<div class="why-row">${why}</div>`:''}</div>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2.2" stroke-linecap="round"><path d="m9 5 7 7-7 7"/></svg></button>`;};
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--mute)" stroke-width="2.2" stroke-linecap="round"><path d="m9 5 7 7-7 7"/></svg></button>`;};
   document.getElementById('altTitle').textContent='What is on '+(DAYS[dayIndex]||'this day')+'?';
   document.getElementById('altSub').textContent='Anything can go on any day. Most of a running week should be easy, with one harder session and one longer one.';
   document.getElementById('altBody').innerHTML=
@@ -618,7 +618,7 @@ function openHabitOne(slot){
   document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 6px">
     ${today.off? `<div class="note">Today is not one of its days.</div>`
       : `<button class="sheetcta" data-habittoggle="${slot}" style="margin:0 0 10px;width:100%">${today.done? 'Untick today' : (stop? 'Mark today: went without' : 'Mark today done')}</button>`}
-    <button class="sheetcta" data-habitretire="${slot}" style="margin:0 0 10px;width:100%;background:var(--oxblood-bg)">Remove this habit</button>
+    <button class="sheetcta" data-habitretire="${slot}" style="margin:0 0 10px;width:100%;background:var(--coral-text)">Remove this habit</button>
     <div class="note">Removing it keeps nothing hidden: the days you kept stay in your history, and Undo brings it straight back.</div>
   </div>`;
   openSheet('altSheet');

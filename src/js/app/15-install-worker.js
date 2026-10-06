@@ -1,21 +1,38 @@
 /* ===================== colophon, install, worker ===================== */
-/* Auto follows the phone. The override is stored, because plenty of people run
-   their phone light and want this dark at six in the morning. */
-/* Light unless they choose otherwise. The stylesheet defaults to light too,
-   so a phone in dark mode never flashes dark before this script runs. */
-const THEMES=[['light','Light'],['dark','Dark'],['auto','Follow my phone']];
-const DEFAULT_THEME='light';
-const themeOf=()=>{ const t=S.profile&&S.profile.theme; return THEMES.some(x=>x[0]===t)? t : DEFAULT_THEME; };
+/* Appearance, build 55. Day, Night, or Match phone (the default): Match phone
+   follows prefers-color-scheme and keeps following it while the app is open.
+   The page always carries the resolved theme, data-theme="day" or "night", so
+   the stylesheet holds one copy of each palette. The choice is also kept under
+   its own small key, so the script in the head can set the theme before the
+   first paint without reading the whole saved state.
+   Choices saved before build 55 carry over: light is Day, dark is Night. */
+const THEMES=[['day','Day'],['night','Night'],['auto','Match phone']];
+const DEFAULT_THEME='auto', THEME_KEY='gauntlet.theme';
+const LEGACY_THEME={light:'day',dark:'night'};
+const themeOf=()=>{ let t=S.profile&&S.profile.theme; t=LEGACY_THEME[t]||t;
+  return THEMES.some(x=>x[0]===t)? t : DEFAULT_THEME; };
+const phoneIsDark=()=>{ try{ return !!(window.matchMedia
+  && window.matchMedia('(prefers-color-scheme: dark)').matches); }catch(e){ return false; } };
+/* The theme actually on screen: day or night. */
+const shownTheme=()=>{ const t=themeOf(); return t==='auto'? (phoneIsDark()? 'night':'day') : t; };
+const THEME_COLOR={day:'#F6F5F1',night:'#0F1211'};
 function applyTheme(){
-  const t=themeOf();
-  const root=document.documentElement;
-  if(t==='light') root.removeAttribute('data-theme'); else root.setAttribute('data-theme',t);
-  const dark = t==='dark' || (t==='auto' && window.matchMedia
-    && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  if(S.profile&&LEGACY_THEME[S.profile.theme]){ S.profile.theme=LEGACY_THEME[S.profile.theme]; save(); }
+  const t=shownTheme();
+  document.documentElement.setAttribute('data-theme',t);
   const m=document.getElementById('themeColor');
-  if(m) m.setAttribute('content', dark? '#151517' : '#ffffff');
+  if(m) m.setAttribute('content', THEME_COLOR[t]);
+  try{ localStorage.setItem(THEME_KEY, themeOf()); }catch(e){}
+  const b=document.getElementById('themeBtn');
+  if(b){ const night=t==='night';
+    b.setAttribute('aria-label', night? 'Switch to day' : 'Switch to night');
+    b.classList.toggle('night', night); }
 }
 function setTheme(t){ S.profile.theme=t; save(); applyTheme(); renderAll(); }
+/* The sun and moon button makes an explicit choice, the opposite of what is
+   showing now. Match phone is chosen in You, Appearance. */
+function flipTheme(){ const to=shownTheme()==='night'? 'day':'night'; setTheme(to);
+  toast(to==='night'? 'Night' : 'Day'); }
 if(window.matchMedia){
   try{ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme); }catch(e){}
 }
@@ -211,7 +228,7 @@ window.__G={
   SOURCES,STEP_TARGET,
   toggleFollow,startSessionFromPost,startSession,nextStep,prevStep,finishSession,closePlayer,
   logSession,openWeigh,openDetails,renderAll,renderToday,renderPlan,renderProgress,renderFeed,renderPeople,
-  go,openSheet,closeSheets,topLayer,notYet,openLog,toast,weightControl,setW,nudgeW,wValid,toShown,fromShown,W_MIN,W_MAX,LB_PER_KG,checkForUpdate,showUpdateBar,pageHash,appBusy,upd,reloadApp,bmrOf,tdeeOf,sexTerm,plausibleBody,maintenance,calorieTarget,calorieLine,goalDirection,currentKg,RATE,kcalFloor,stepTarget,stepKcal,liftNetKcal,bodyFatPct,validBodyFat,DEFICIT_CAP,FAT_KCAL_PER_KG,stepSplit,splitText,recentRealSteps,withProfile,sessionMinutes,plannedLiftMinPerDay,plannedTdee,BASAL_STEPS,DEFAULT_STEPS,STEP_BANDS,validSteps,applyTheme,setTheme,THEMES,openYou,who,snapshotPlan,restorePlan,updateBadge,mountColophons,startOnboarding,onbRender,finishOnboarding,openTempoHelp,showTempoSafe,
+  go,openSheet,closeSheets,topLayer,notYet,openLog,toast,weightControl,setW,nudgeW,wValid,toShown,fromShown,W_MIN,W_MAX,LB_PER_KG,checkForUpdate,showUpdateBar,pageHash,appBusy,upd,reloadApp,bmrOf,tdeeOf,sexTerm,plausibleBody,maintenance,calorieTarget,calorieLine,goalDirection,currentKg,RATE,kcalFloor,stepTarget,stepKcal,liftNetKcal,bodyFatPct,validBodyFat,DEFICIT_CAP,FAT_KCAL_PER_KG,stepSplit,splitText,recentRealSteps,withProfile,sessionMinutes,plannedLiftMinPerDay,plannedTdee,BASAL_STEPS,DEFAULT_STEPS,STEP_BANDS,validSteps,applyTheme,setTheme,THEMES,themeOf,shownTheme,flipTheme,openYou,who,snapshotPlan,restorePlan,updateBadge,mountColophons,startOnboarding,onbRender,finishOnboarding,openTempoHelp,showTempoSafe,
   get __cloudReady(){ try{ return typeof cloudReady==='function'&&cloudReady(); }catch(e){ return false; } },
   SEED_POSTS,people,AIMS,ACTIVITY,PATTERNS,SLOTS,HUE,DAYS,STORE_KEY,APP_VERSION
 };

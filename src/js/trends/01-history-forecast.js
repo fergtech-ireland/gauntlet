@@ -48,15 +48,15 @@ function weeklyWeightDeltas(hist){
    them. Whether training should change by phase is not established, so nothing
    here tells anyone to train less. */
 const PHASES={
-  menstrual:{n:'Period',c:'#a8552a',
+  menstrual:{n:'Period',c:'var(--coral)',
     note:'This is where the measured rise shows up: about half a kilo on average, and it is fluid rather than fat. Some people see more, some see none at all.'},
-  follicular:{n:'Follicular',c:'#1b4a3c',
+  follicular:{n:'Follicular',c:'var(--green)',
     note:'Many people report feeling better through this stretch. The performance research disagrees with itself, so treat that as your own experience rather than a rule.'},
-  ovulation:{n:'Ovulation',c:'#dfa33c',
+  ovulation:{n:'Ovulation',c:'var(--amber)',
     note:'Some feel strongest here. The trials are mixed and the samples small, so go by how you feel rather than the calendar.'},
-  luteal:{n:'Luteal',c:'#1e3a6e',
+  luteal:{n:'Luteal',c:'var(--cyan)',
     note:'Progesterone peaks around now and promotes fluid retention. If the scale drifts up, that is the likely reason.'},
-  lateLuteal:{n:'Late luteal',c:'#6e1f2e',
+  lateLuteal:{n:'Late luteal',c:'var(--coral-text)',
     note:'Fluid retention is usually highest from here into the first days of bleeding. Read the trend line rather than the morning.'}
 };
 function cycleDay(dateKey){

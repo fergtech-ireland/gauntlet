@@ -2,7 +2,8 @@
 const player=$('player');
 let SESSION=null, tick=null;
 function stageArt(type){
-  const c=HUE[type].deep;
+  /* The player is dark in both themes; the hue only tints the art. */
+  const c='var(--hero)';
   if(type==='run') return `<svg class="bgart" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice"><rect width="400" height="400" fill="${c}"/>
     <path d="M-20 300 C 80 250,120 340,220 280 S 360 220,420 270" fill="none" stroke="${MARIGOLD}" stroke-width="3" opacity=".5"/>
     <path d="M-20 334 C 90 292,140 372,240 312 S 380 250,420 302" fill="none" stroke="${MARIGOLD}" stroke-width="2" opacity=".28"/></svg>`;
@@ -11,13 +12,13 @@ function stageArt(type){
   if(type==='fast') return `<svg class="bgart" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice"><rect width="400" height="400" fill="${c}"/>
     <circle cx="200" cy="200" r="160" fill="none" stroke="${CLAY}" stroke-width="1.5" opacity=".25"/></svg>`;
   return `<svg class="bgart" viewBox="0 0 400 400" preserveAspectRatio="xMidYMid slice"><rect width="400" height="400" fill="${c}"/>
-    <g fill="none" stroke="#f3e7e9" stroke-width="2" opacity=".22">${Array.from({length:9},(_,i)=>`<circle cx="200" cy="200" r="${40+i*26}"/>`).join('')}</g></svg>`;
+    <g fill="none" stroke="var(--hero-ink)" stroke-width="2" opacity=".22">${Array.from({length:9},(_,i)=>`<circle cx="200" cy="200" r="${40+i*26}"/>`).join('')}</g></svg>`;
 }
 function startSession(sess){
   if(!sess) return null;
   closeSheets();
   SESSION={sess,i:0,left:sess.steps[0].sec,running:true,done:false,total:0};
-  player.style.background=HUE[sess.type].deep;
+  player.style.background='var(--hero)';
   $('playerTitle').textContent=sess.title;
   $('stage').innerHTML=stageArt(sess.type)+
     `<div class="clock"><div class="num" id="clockNum">00:00</div><div class="lbl" id="clockLbl"></div>

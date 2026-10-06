@@ -279,15 +279,15 @@ function drawDay(){
       const same=planned.length&&planned.every(x=>l.indexOf(x)>=0)&&l.length===planned.length;
       return (same? 'What the plan asked for. ' : '')+'Tap another if you did more than one.'; })()}</div>
     ${auto
-      ? `<div class="todo auto" style="border-radius:10px;border:1px solid var(--line-soft);margin-bottom:16px">
-          <span class="ic" style="background:var(--t-marine);color:var(--marine)">⌚</span>
+      ? `<div class="todo auto" style="border-radius:10px;border:1px solid var(--line);margin-bottom:16px">
+          <span class="ic" style="background:var(--green-tint);color:var(--green-text)">⌚</span>
           <span class="t"><b>${num(auto.steps)} steps · ${auto.sleep}h sleep</b><span>from ${sourceName()}</span></span>
           <span class="autotag">automatic</span></div>`
       : `<div class="field"><div class="fl"><div class="k">Sleep${isTeen()?' <small>8 to 10 hours at your age</small>':''}</div><div class="v" id="outsleep">${d.sleep? d.sleep+' h' : 'not answered'}</div></div>
           <input type="range" min="3" max="11" step="0.5" value="${d.sleep||7}" data-dayrange="sleep" class="${d.sleep?'':'unset'}" aria-label="Sleep"></div>
          <div class="note" style="margin:-8px 0 16px">Connect a tracker and sleep and steps stop being your job.</div>`}
     <div class="slab">Food</div>
-    <button class="logrow" id="foodBtn"><span class="ic" style="background:var(--t-burnt);color:var(--burnt)">+</span>
+    <button class="logrow" id="foodBtn"><span class="ic" style="background:var(--amber-tint);color:var(--amber-text)">+</span>
       <div class="txt"><div class="t">${dayFood(todayKey()).length? 'Add more food' : 'Log what you ate'}</div>
         <div class="s">${dayFood(todayKey()).length? dayFood(todayKey()).length+(dayFood(todayKey()).length===1?' thing':' things')+' logged · '+Math.round(foodTotals(todayKey()).kcal)+' kcal' : 'Tap from a list rather than typing numbers'}</div></div>
       <span class="chev">›</span></button>
@@ -456,7 +456,7 @@ renderProgress=function(){
   $('dash').insertAdjacentHTML('beforeend',`
     <div class="coach">
       <div class="ph"><h3>Your steer</h3><button id="copyBrief">Copy brief</button></div>
-      ${list.map(s=>`<div class="steer"><div class="dot" style="background:${s.tone==='warn'?'var(--burnt)':(s.tone==='good'?'var(--forest)':'var(--mute)')}"></div>
+      ${list.map(s=>`<div class="steer"><div class="dot" style="background:${s.tone==='warn'?'var(--amber-text)':(s.tone==='good'?'var(--green-text)':'var(--mute)')}"></div>
         <div class="t">${s.t}</div></div>`).join('')}
     </div>
     `);

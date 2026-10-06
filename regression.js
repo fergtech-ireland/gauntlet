@@ -257,27 +257,45 @@ setTimeout(() => {
 
 
   // ---- pass D ----
-  t('theme defaults to light', (() => { S.profile.theme = null; G.applyTheme();
-    return !w.document.documentElement.hasAttribute('data-theme')
-      && w.document.getElementById('themeColor').getAttribute('content') === '#ffffff'; })());
-  t('dark can be chosen', (() => { G.setTheme('dark');
-    return w.document.documentElement.getAttribute('data-theme') === 'dark'
-      && w.document.getElementById('themeColor').getAttribute('content') === '#151517'; })());
-  t('following the phone is an explicit choice', (() => { G.setTheme('auto');
-    return w.document.documentElement.getAttribute('data-theme') === 'auto'; })());
-  t('the stylesheet only follows the phone when asked to', (() => {
+  /* Build 55: Day, Night or Match phone (the default). The page always
+     carries the resolved theme; jsdom has no matchMedia, so Match phone shows
+     Day here (journey 57 fakes a dark phone). */
+  t('appearance defaults to Match phone, shown as Day on a light phone', (() => { S.profile.theme = null; G.applyTheme();
+    return w.document.documentElement.getAttribute('data-theme') === 'day'
+      && w.document.getElementById('themeColor').getAttribute('content') === '#F6F5F1'; })());
+  t('night can be chosen', (() => { G.setTheme('night');
+    return w.document.documentElement.getAttribute('data-theme') === 'night'
+      && w.document.getElementById('themeColor').getAttribute('content') === '#0F1211'
+      && w.localStorage.getItem('gauntlet.theme') === 'night'; })());
+  t('Match phone is an explicit choice', (() => { G.setTheme('auto');
+    return S.profile.theme === 'auto' && w.document.documentElement.getAttribute('data-theme') === 'day'
+      && w.localStorage.getItem('gauntlet.theme') === 'auto'; })());
+  t('a theme saved before build 55 carries over (dark is Night, light is Day)', (() => {
+    S.profile.theme = 'dark'; G.applyTheme(); const a = w.document.documentElement.getAttribute('data-theme') === 'night' && S.profile.theme === 'night';
+    S.profile.theme = 'light'; G.applyTheme(); return a && w.document.documentElement.getAttribute('data-theme') === 'day' && S.profile.theme === 'day'; })());
+  t('the stylesheet holds one palette per theme, resolved by script', (() => {
     const css = [...w.document.querySelectorAll('style')].map(x => x.textContent).join('');
-    return /prefers-color-scheme:dark\)\{\s*:root\[data-theme="auto"\]/.test(css) && !/:root:not\(\[data-theme="light"\]\)/.test(css); })());
-  G.setTheme('light');
-  t('tint tokens are actually defined', (() => {
+    return /:root\[data-theme="night"\]\{/.test(css) && !/prefers-color-scheme/.test(css) && !/data-theme="(auto|dark|light)"/.test(css); })());
+  t('the theme is set in the head, before the page is drawn', (() => {
+    const html = require('fs').readFileSync(require('path').join(__dirname, 'index.html'), 'utf8');
+    const i = html.indexOf("localStorage.getItem('gauntlet.theme')");
+    return i > 0 && i < html.indexOf('<style>') && i < html.indexOf('<body'); })());
+  G.setTheme('day');
+  t('every colour token the app uses is defined, in both themes', (() => {
     const css = [...w.document.querySelectorAll('style')].map(x => x.textContent).join('');
-    return /--t-marine:/.test(css) && /--t-forest:/.test(css) && /--t-burnt:/.test(css); })());
+    const html = require('fs').readFileSync(require('path').join(__dirname, 'index.html'), 'utf8');
+    const day = css.slice(css.indexOf(':root{'), css.indexOf('}', css.indexOf(':root{')));
+    const night = css.slice(css.indexOf(':root[data-theme="night"]{'), css.indexOf('}', css.indexOf(':root[data-theme="night"]{')));
+    const used = [...new Set([...html.matchAll(/var\(--([a-z0-9-]+)/g)].map(m => m[1]))].filter(v => !['tone', 'keyboard', 'font-ui', 'font-num', 'shadow'].includes(v));
+    const missing = used.filter(v => !new RegExp('--' + v + ':').test(day) || (!new RegExp('--' + v + ':').test(night) && !/^font-/.test(v)));
+    if (missing.length) console.log('    missing tokens: ' + missing.join(', '));
+    return used.length > 20 && !missing.length; })());
+  t('the old palette is gone', (() => {
+    const html = require('fs').readFileSync(require('path').join(__dirname, 'index.html'), 'utf8');
+    return !/var\(--(paper|canvas|marine|oxblood|forest|burnt|clay|marigold|grey-btn|line-soft|t-[a-z]+)\b/.test(html) && !/Archivo/.test(html); })());
   t('no white text left on a themed ink surface', (() => {
     const css = [...w.document.querySelectorAll('style')].map(x => x.textContent).join('');
     return !/background:var\(--ink\);color:#fff/.test(css); })());
-  t('dark overrides exist for both routes', (() => {
-    const css = [...w.document.querySelectorAll('style')].map(x => x.textContent).join('');
-    return /prefers-color-scheme:dark/.test(css) && /:root\[data-theme="dark"\]/.test(css); })());
 
   t('progress is one screen now', !w.document.getElementById('progSeg'));
   t('lifting moved to the plan screen', w.document.getElementById('s-plan').contains(w.document.getElementById('dashLifts')));

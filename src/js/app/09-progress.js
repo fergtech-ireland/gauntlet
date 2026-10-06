@@ -6,8 +6,8 @@ function sparkline(points){
   const line=points.map((p,i)=>`${i?'L':'M'}${xs(i).toFixed(1)} ${yy(p.kg).toFixed(1)}`).join(' ');
   return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
     <path d="${line} L${xs(points.length-1).toFixed(1)} ${h} L${pad} ${h} Z" fill="rgba(30,58,110,.10)"/>
-    <path d="${line}" fill="none" stroke="var(--marine)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="${xs(points.length-1).toFixed(1)}" cy="${yy(points[points.length-1].kg).toFixed(1)}" r="4" fill="var(--marine)"/></svg>`;
+    <path d="${line}" fill="none" stroke="var(--green-text)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="${xs(points.length-1).toFixed(1)}" cy="${yy(points[points.length-1].kg).toFixed(1)}" r="4" fill="var(--green-text)"/></svg>`;
 }
 function renderProgress(){
   const p=S.profile, g=S.goal, imp=p.units==='imperial', st=weekStats();
@@ -36,7 +36,7 @@ function renderProgress(){
   <div class="panel">
     <div class="ph"><h3>Weight</h3><button data-weigh="1">Weigh in</button></div>
     ${S.weights.length? `<div class="bigrow"><div class="n">${showW(last.kg,imp).split(' ')[0]}<small> ${imp?'lb':'kg'}</small></div>
-      ${S.weights.length>1?`<div class="side" style="color:${diff<0?'var(--forest)':(diff>0?'var(--burnt)':'var(--mute)')}">${diff>0?'+':''}${imp?Math.round(diff*2.20462)+' lb':diff+' kg'} since you started</div>`:''}</div>
+      ${S.weights.length>1?`<div class="side" style="color:${diff<0?'var(--green-text)':(diff>0?'var(--amber-text)':'var(--mute)')}">${diff>0?'+':''}${imp?Math.round(diff*2.20462)+' lb':diff+' kg'} since you started</div>`:''}</div>
       ${S.weights.length>1? sparkline(S.weights):'<div class="note">Weigh in again next week and the line starts here.</div>'}`
       : `<div class="note" style="margin:0">Nothing logged yet. Once a week is plenty.</div>`}
   </div>
@@ -76,7 +76,7 @@ function renderProgress(){
   $('grid').innerHTML= cells.length
     ? cells.map(m=>{ const k=m.kind, hue=HUE[k]||HUE.any;
         return `<button class="gcell" data-sess="${m.id}" aria-label="${(m.title||'Session').replace(/"/g,'&quot;')}, ${prettyDateSafe(m.d)}"
-          style="background:${k==='meal'?CLAY:hue.deep};color:${k==='meal'?'#161618':'#fff'}">${m.title}<small>${(m.unit||'').split(',')[0]}</small></button>`; }).join('')
+          style="background:${hue.deep}">${m.title}<small>${(m.unit||'').split(',')[0]}</small></button>`; }).join('')
     : `<div class="empty">Your sessions show up here once you have done a few.</div>`;
   const all=document.getElementById('allSess');
   if(all) all.style.display= S.mine.length? '' : 'none';

@@ -129,10 +129,14 @@ function notYet(what){
   toast((what? what+'. ':'')+line);
 }
 function go(name){
+  /* Build 55: Eat has its own tab, but until the Eat screen arrives (build 57)
+     it opens the food sheet over whatever screen you are on. */
+  if(name==='eat'){ openFood(false); return; }
   const target=$('s-'+name);
   if(!target){ console.warn('no screen called '+name); return; }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
   target.classList.add('on');
+  document.body.dataset.screen=name;
   document.querySelectorAll('.tab').forEach(t=>{
     const on=t.dataset.go===name;
     t.classList.toggle('on',on);
@@ -341,10 +345,11 @@ document.addEventListener('click',e=>{
   /* A single choice: make it, close the sheet, say so once. The sheet used to
      stay open with the old option still ticked while the app had changed. */
   if(th){ const v=th.dataset.themepick;
-    if(v!==themeOf()){ setTheme(v); closeSheets(); toast('Theme: '+(THEMES.find(x=>x[0]===v)||[])[1]); } }
+    if(v!==themeOf()){ setTheme(v); closeSheets(); toast('Appearance: '+(THEMES.find(x=>x[0]===v)||[])[1]); } }
   if(e.target.closest('#tempoWhat')&&typeof openTempoHelp==='function') openTempoHelp();
 });
 $('findBtn').addEventListener('click',()=>{renderPeople();openSheet('findSheet')});
+$('themeBtn').addEventListener('click',flipTheme);
 /* One button that reaches everything you can put in, from any screen. Logging
    used to live only on Today, so anywhere else meant navigating home first. */
 /* The + used to be a list of seven rows of equal weight, which made the two
@@ -371,7 +376,7 @@ function openLog(){
     <span class="t">${title}</span><span class="s">${sub}</span></button>`;
   const left=t.kcal? Math.max(0,Math.round(t.kcal-eaten.kcal)) : null;
   $('logBody').innerHTML=`
-    <button class="logtile wide" data-log="food" style="--tone:var(--burnt)">
+    <button class="logtile wide" data-log="food" style="--tone:var(--amber-text)">
       <span class="ic">${logIcon('food')}</span>
       <span class="t">Log food</span>
       <span class="s">${dayFood(k).length
@@ -381,12 +386,12 @@ function openLog(){
     </button>
     <div class="logtiles">
       ${d&&d.type&&d.slot!=='walk'? tile('today',(dayDone(dowIdx())?'Do it again':'Start '+dayLabel(d)),daySub(d),(HUE[d.kind]||HUE.any).deep,dayDone(dowIdx())):''}
-      ${isTeen()? '' : tile('weigh',weighed?'Weigh in again':'Weigh in',weighed? S.weights[S.weights.length-1].kg+' kg today':'Five seconds','var(--forest)',weighed)}
-      ${tile('day',"Today's Check-in",logged&&logged.checkedIn? 'Done for today' : 'Twenty seconds','var(--marine)',!!(logged&&logged.checkedIn))}
-      ${!isTeen()&&typeof stepsToday==='function'&&!healthOn()? tile('steps','Steps',(()=>{ const v=(S.days[todayKey()]||{}).steps; return typeof v==='number'? num(v)+' today' : 'What your phone says'; })(),'var(--burnt)',typeof (S.days[todayKey()]||{}).steps==='number') : ''}
-      ${tile('week','Weekly check in',checkinDone()?'Done for this week':'Next week is built from it','var(--marigold)',checkinDone())}
+      ${isTeen()? '' : tile('weigh',weighed?'Weigh in again':'Weigh in',weighed? S.weights[S.weights.length-1].kg+' kg today':'Five seconds','var(--green-text)',weighed)}
+      ${tile('day',"Today's Check-in",logged&&logged.checkedIn? 'Done for today' : 'Twenty seconds','var(--green-text)',!!(logged&&logged.checkedIn))}
+      ${!isTeen()&&typeof stepsToday==='function'&&!healthOn()? tile('steps','Steps',(()=>{ const v=(S.days[todayKey()]||{}).steps; return typeof v==='number'? num(v)+' today' : 'What your phone says'; })(),'var(--amber-text)',typeof (S.days[todayKey()]||{}).steps==='number') : ''}
+      ${tile('week','Weekly check in',checkinDone()?'Done for this week':'Next week is built from it','var(--amber)',checkinDone())}
       ${tile('templates','Something else','Any template, circuit or run','var(--ink)')}
-      ${tile('coach','Ask about your record','Everything the app knows','var(--marine-bg)')}
+      ${tile('coach','Ask about your record','Everything the app knows','var(--cta)')}
     </div>`;
   openSheet('logSheet');
 }

@@ -3,10 +3,13 @@
    The plan is built from your aim and rebuilt from your check ins, so
    the answer changes when you do.
    ===================================================================== */
-const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
-  fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
-  walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='54';
+/* Build 55: every hue is a design token, so it follows Day and Night. deep is
+   the token's text strength: it reads as text on the page and, as a fill, under
+   var(--on-ink). Training is cyan, food coral, fasting amber, check ins green. */
+const HUE={run:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},workout:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},
+  fast:{deep:'var(--amber-text)',tint:'var(--amber-tint)'},meal:{deep:'var(--coral-text)',tint:'var(--coral-tint)'},any:{deep:'var(--ink)',tint:'var(--track)'},
+  walk:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},rest:{deep:'var(--mute)',tint:'var(--track)'},checkin:{deep:'var(--green-text)',tint:'var(--green-tint)'}};
+const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='55';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -270,7 +273,7 @@ const ACTIVITY=[
   {id:'mod',t:'Active',s:'Three or four sessions a week',mult:1.55},
   {id:'high',t:'Very active',s:'Five plus, or a physical job',mult:1.725}];
 const actOf=id=>ACTIVITY.find(a=>a.id===id)||ACTIVITY[2];
-const ME={id:'me',n:'you',full:'You',c:'#1e3a6e',s:'You'};
+const ME={id:'me',n:'you',full:'You',c:'var(--green-text)',s:'You'};
 /* No invented people. The feed is whoever is signed in to your project and
    nobody else, and it is empty until you follow one of them. */
 const people=[];

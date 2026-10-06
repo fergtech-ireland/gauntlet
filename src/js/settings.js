@@ -23,9 +23,9 @@ const SET_ICON={
   how:'<circle cx="12" cy="12" r="9"/><path d="M12 17v-5M12 8v.5"/>'
 };
 const TONE={
-  marine:{bg:'var(--t-marine)',fg:'var(--marine)'}, forest:{bg:'var(--t-forest)',fg:'var(--forest)'},
-  burnt:{bg:'var(--t-burnt)',fg:'var(--burnt)'}, oxblood:{bg:'var(--t-oxblood)',fg:'var(--oxblood)'},
-  marigold:{bg:'var(--t-marigold)',fg:'var(--burnt)'}, grey:{bg:'var(--grey-btn)',fg:'var(--mute)'}
+  marine:{bg:'var(--cyan-tint)',fg:'var(--cyan-text)'}, forest:{bg:'var(--green-tint)',fg:'var(--green-text)'},
+  burnt:{bg:'var(--amber-tint)',fg:'var(--amber-text)'}, oxblood:{bg:'var(--coral-tint)',fg:'var(--coral-text)'},
+  marigold:{bg:'var(--amber-tint)',fg:'var(--amber-text)'}, grey:{bg:'var(--track)',fg:'var(--sub)'}
 };
 function setRow(key,tone,label,value,sub,id,subId){
   return `<button class="ysrow" data-setting="${key}"${id?` id="${id}"`:''}>
@@ -78,7 +78,7 @@ function renderSettings(){
   /* Settings are things people go looking for on purpose, so they live behind
      the gear rather than taking up room under what they check every day. */
   if(app) app.innerHTML=`<div class="ysgroup" style="padding-top:0">
-    ${setRow('theme','grey','Theme', (THEMES.find(t=>t[0]===themeOf())||THEMES[0])[1])}
+    ${setRow('theme','grey','Appearance', (THEMES.find(t=>t[0]===themeOf())||THEMES[0])[1])}
     ${setRow('tempo','grey','Tempo guidance', showTempoSafe()? 'On' : 'Off', 'The four digits beside your sets. Off leaves your programme exactly as it is.')}
     ${setRow('nudge','grey','Check in reminder', nudgeVal, nudgeHelp(), 'nudgeBtn', 'nudgeNote')}
     ${showCycle? setRow('cycle','oxblood','Cycle', S.cycle&&S.cycle.tracking? 'Tracking' : 'Off') : ''}
@@ -113,9 +113,9 @@ document.addEventListener('keydown',e=>{
   showYTab(n); const btn=document.getElementById('ytab-'+n); if(btn) btn.focus();
 });
 function openThemeSheet(){
-  const desc={light:'The default', dark:'Easier in a dark gym or late at night', auto:'Light or dark, whatever your phone is set to'};
-  document.getElementById('altTitle').textContent='Theme';
-  document.getElementById('altSub').textContent='Light unless you choose otherwise.';
+  const desc={day:'Light and calm', night:'Easier in a dark gym or late at night', auto:'Day or Night, whatever your phone is set to'};
+  document.getElementById('altTitle').textContent='Appearance';
+  document.getElementById('altSub').textContent='Matches your phone unless you choose otherwise.';
   document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 6px" id="themeOpts">
     ${THEMES.map(([id,label])=>`<button class="opt ${themeOf()===id?'on':''}" data-themepick="${id}">
       <div class="txt"><div class="t">${label}</div><div class="s">${desc[id]||''}</div></div><div class="rad"></div></button>`).join('')}

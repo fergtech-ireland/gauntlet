@@ -77,6 +77,8 @@ Implement as CSS custom properties on `:root` (day) and `:root[data-theme="night
 | recoveryBase | #E2E0DA | (use track) | You tab body map, untrained |
 | worked / nearly / fresh / usual | #E0613B / #D88A1C / #17844F / #C9CCC6 | night equivalents: coral / amber / green / #3A403D | recovery map states |
 
+**Built in 55 with five Day text shades darker** (mute #656A67, greenText #157848, cyanText #157385, coralText #B44429, amberText #975A0A) so body text passes AA on the page and on its own tint; see HANDOVER.
+
 **Fonts:**
 - **Figtree** (400, 500, 600, 700, 800) for all UI text.
 - **Barlow Condensed** (600, 700) for big numbers only: ring values, kcal, timer, reps and kg in the player.

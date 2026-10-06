@@ -4,7 +4,7 @@
 
 **Opening prompt for a new chat:** "Continue Gauntlet from HANDOVER.md in the repo." Claude attaches github.com/fergtech-ireland/gauntlet with push access, clones it, reads this file, and carries on. No uploads needed.
 
-**Current focus (from 6 Oct 2026, evening): the UI redesign, builds 55 onward.** Read `DESIGN-REDESIGN.md` first: it has the agreed final design (Rings plus Daybook, Day and Night themes), the canvas link, the tokens, every screen, the must-keep list and the build order. Start with build 55 (tokens, themes, fonts, nav). The design screens are in `design/redesign/` (reference only, not built). Accounts work below is paused, not dropped: its open Feargal items still stand.
+**Current focus (from 6 Oct 2026, evening): the UI redesign, builds 55 onward.** Read `DESIGN-REDESIGN.md` first: it has the agreed final design (Rings plus Daybook, Day and Night themes), the canvas link, the tokens, every screen, the must-keep list and the build order. **Build 55 (foundations) is done; next is build 56 (Today).** The design screens are in `design/redesign/` (reference only, not built). Accounts work below is paused, not dropped: its open Feargal items still stand.
 
 **Previous focus:** turning Gauntlet from a local-only app into a real application with accounts, proper data tables, friends and challenges. The full plan, agreed by Feargal on 6 Oct 2026, is the doc "Gauntlet: from local app to real application": https://claude.ai/code/artifact/c2a1c0da-9821-4a96-8763-bd99dd1b1a58 (read it before starting any phase).
 
@@ -55,7 +55,7 @@
 
 **Working notes:** Supabase connector writes to gauntlet-test worked on 6 Oct (apply_migration); if they get cancelled again, Feargal pastes the migration into the SQL editor. Run `get_advisors` after every migration. A single UAT journey can be run from a scratch copy of uat.js (header plus that journey) to iterate quickly. Run the full suite in the background (`nohup node test.js > out.txt &`, then check) because it takes about 4 minutes and single commands time out at 5. Commits are authored as Claude (`git config user.email noreply@anthropic.com`). `package-lock.json` is gitignored.
 
-**Current build:** 54. Live: https://fergtech-ireland.github.io/gauntlet/ · Repo: github.com/fergtech-ireland/gauntlet (main)
+**Current build:** 55. Live: https://fergtech-ireland.github.io/gauntlet/ · Repo: github.com/fergtech-ireland/gauntlet (main)
 **Deploys:** Claude now has push access to the repo and the Supabase connector, so builds are committed and pushed directly (pushing to main publishes the live site). Build 49 pushed 6 Oct 2026; the repo was on build 47 before that.
 **Supabase:** delete policies in place. 6 Oct 2026: `increment_try` restricted to signed-in users (see `supabase-increment-try.sql`). Still open: switch on leaked password protection in the dashboard (Authentication, password settings).
 **Tests:** `npm install && npm test` = 1,663 checks, 0 failures (build 12, regression 152, cta 59, uat 1,363 with 56 journeys, sw 24, rls 53). Journeys 55 and 56 run the account flows against a fake Supabase that keeps the 0002 rules (including `handle_available`). Making a change: edit `src/`, `node build.js`, `npm test`, commit, push.
@@ -65,6 +65,20 @@
 - Research first, cite evidence in the app's method sheet, label rules of thumb as such. Never use em dashes.
 - Every build: account for every changed line, never weaken a test, check in a real browser, re-test from a clean install, then commit and push to main (that publishes the live site).
 - Keep verified backups somewhere that survives resets, and check for half-finished interrupted attempts before continuing.
+
+## Redesign progress
+
+- [x] **Build 55 (6 Oct): foundations.**
+  - Tokens: every colour is a CSS variable from the design (`:root` is Day, `:root[data-theme="night"]` is Night). The old palette (`--paper`, `--marine`, `--oxblood` and the rest, plus `--t-*`, `--warm*`, `--good-*`) is gone from `src/`; habit hues (`HUE`), avatar colours, cycle phases, card art and the player now use tokens too. Two derived tokens: `--on-ink` (text on any strong fill: white by day, near black at night) and `--shadow` (sheets only).
+  - Five Day text tokens are a shade darker than the canvas because the canvas values missed AA by a hair: mute #656A67, green-text #157848, cyan-text #157385, coral-text #B44429, amber-text #975A0A. Fills keep the canvas values.
+  - Themes: `S.profile.theme` is `'day' | 'night' | 'auto'` (Match phone, the default). The page always carries the resolved `data-theme="day"|"night"`; a small script in the head sets it before first paint from `localStorage['gauntlet.theme']` (written by `applyTheme`, wiped by Delete everything), falling back to the saved week. Pre-55 `light`/`dark` carry over as day/night. `theme-color` follows. Appearance sheet (You, settings) offers Day, Night, Match phone; the sun and moon on Today flips between Day and Night.
+  - Fonts: Figtree (UI) and Barlow Condensed (big numbers) via `--font-ui` / `--font-num`. `legal.js` names the service, not the font, so no policy change and no new `TERMS_VERSION`. (It says "its typeface"; fold "typefaces" into the next real policy change rather than ask everyone to agree again for a plural.)
+  - Primary actions (`.cta`, Start, Done, food +, Finish, onboarding next) are green (`--cta`); selected chips and toggles stay ink.
+  - Nav: Today, Plan, round + Log, Eat, You. Eat opens the existing food sheet (`go('eat')`) until build 57. Friends (`#friendsBtn`, `data-go="feed"`) and the sun and moon (`#themeBtn`) sit in the header on Today only; Find people shows on Friends only (`body[data-screen]`).
+  - Contrast: a Playwright sweep of every visible text element on every screen and main sheet, Day and Night, 320/390/430px: all AA. Found and fixed: faded optional/skipped meal cards (now dashed, not faded) and the footer accent.
+  - Tests: theme checks rewritten for Day/Night/Match phone (same things proven); journey 57 (Match phone follows the phone, head script, sun and moon, saved Night, pre-55 Dark, nav, Friends, Eat adds to the same day). The suite caught one real bug: Delete everything left the new theme key behind.
+- [ ] Build 56: Today (rings, driver line, priorities rule, dark hero, meals list, quick tiles, + Log inline check-in).
+- Note: this workspace cannot reach Google Fonts, so local screenshots use a fallback face; check the fonts on the live site.
 
 ## Builds 44 to 52 in brief
 - 44: What matters today (max 3 ranked priorities), confidence labels, sleep view.

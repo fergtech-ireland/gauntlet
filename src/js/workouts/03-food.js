@@ -503,7 +503,7 @@ function drawFood(){
       <div><b>${Math.round(t.protein)}</b>${tg.protein? '/'+tg.protein:''}g protein</div>
       <div><button class="fibtn" id="fibreWhy" aria-label="Fibre today, and why it matters"><b>${Math.round(t.fibre)}</b>${tg.fibre? '/'+tg.fibre:''}g fibre</button></div>
     </div>`}
-    ${tg.kcal? `<div class="bar" style="margin-bottom:12px"><i style="width:${Math.min(100,Math.round(t.kcal/tg.kcal*100))}%;background:${left<0?'var(--oxblood)':'var(--forest-bg)'}"></i></div>`:''}
+    ${tg.kcal? `<div class="bar" style="margin-bottom:12px"><i style="width:${Math.min(100,Math.round(t.kcal/tg.kcal*100))}%;background:${left<0?'var(--coral-text)':'var(--cta)'}"></i></div>`:''}
     <div class="mealtabs" role="tablist" aria-label="Which meal">${MEALS.map(([id,label])=>`<button role="tab" aria-selected="${foodSlot===id}"
       class="${foodSlot===id?'on':''}" data-foodslot="${id}"><span>${label}</span><small>${isTeen()? (inMeal(id).length? inMeal(id).length+' logged':'–') : (mealKcal(id)? mealKcal(id)+' kcal' : '–')}</small></button>`).join('')}</div>
 
@@ -549,7 +549,7 @@ function fibreSheetHtml(k){
   const gram=Math.round(fi.g), gap=Math.max(0,tg-gram);
   return `<div style="padding:0 14px 10px">
     <div class="fhead"><div><b>${gram}</b>g fibre today</div><div>target ${tg}g</div></div>
-    <div class="bar" style="margin:4px 0 12px"><i style="width:${Math.min(100,Math.round(fi.g/tg*100))}%;background:var(--forest-bg)"></i></div>
+    <div class="bar" style="margin:4px 0 12px"><i style="width:${Math.min(100,Math.round(fi.g/tg*100))}%;background:var(--cta)"></i></div>
     ${top.length? `<div class="slab">Where it came from</div>${top.map(x=>`<div class="note" style="margin:2px 0"><b>${escHabit(x.n)}</b> ${Math.round(x.g*10)/10}g</div>`).join('')}` : ''}
     ${fi.unknown? `<div class="note">${fi.unknown} thing${fi.unknown===1?' has':'s have'} no fibre figure (your own numbers, or a food added before fibre was counted), so the real total is higher.</div>` : ''}
     ${fi.rough? `<div class="note">Mixed dishes, takeaways and protein bars vary with the recipe, so their fibre is a typical value.</div>` : ''}
@@ -571,9 +571,9 @@ function drawFoodNew(){
   $('foodBody').innerHTML=`
     <div class="slab">Something of your own</div>
     <div class="nf" style="margin-bottom:10px"><label>What is it</label>
-      <input id="nfName" value="${(foodQuery||'').replace(/"/g,'&quot;')}" placeholder="Mam's brown bread" style="font-family:Archivo;font-size:15px;font-weight:600"></div>
+      <input id="nfName" value="${(foodQuery||'').replace(/"/g,'&quot;')}" placeholder="Mam's brown bread" style="font-family:var(--font-ui);font-size:15px;font-weight:600"></div>
     <div class="nf" style="margin-bottom:10px"><label>One portion is</label>
-      <input id="nfUnit" placeholder="slice, bowl, 100g" style="font-family:Archivo;font-size:15px;font-weight:600"></div>
+      <input id="nfUnit" placeholder="slice, bowl, 100g" style="font-family:var(--font-ui);font-size:15px;font-weight:600"></div>
     <div class="twoup" style="gap:10px;margin-bottom:10px">
       <div class="nf"><label>Calories</label><input id="nfKcal" type="number" inputmode="numeric" placeholder="180"></div>
       <div class="nf"><label>Protein g</label><input id="nfP" type="number" inputmode="decimal" placeholder="6"></div></div>

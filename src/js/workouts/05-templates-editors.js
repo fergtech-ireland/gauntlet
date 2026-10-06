@@ -102,9 +102,9 @@ function drawCircEdit(){
   $('circEditTitle').textContent=circDraft.name;
   $('circEditBody').innerHTML=`
     <div class="nf" style="margin-bottom:10px"><label for="circName">Name</label>
-      <input id="circName" value="${escHabit(circDraft.name)}" style="font-family:Archivo;font-size:15px;font-weight:700"></div>
+      <input id="circName" value="${escHabit(circDraft.name)}" style="font-family:var(--font-ui);font-size:15px;font-weight:700"></div>
     <div class="nf" style="margin-bottom:12px"><label for="circSub">One line about it</label>
-      <input id="circSub" value="${escHabit(circDraft.sub||'')}" style="font-family:Archivo;font-size:13.5px;font-weight:600"></div>
+      <input id="circSub" value="${escHabit(circDraft.sub||'')}" style="font-family:var(--font-ui);font-size:13.5px;font-weight:600"></div>
     <div class="note" style="margin:0 0 12px">Changes apply every time you do this circuit from now on. Ones you have already done stay as they were.</div>
     ${circDraft.items.some(x=>x.move)? `<div class="nf" style="margin-bottom:10px"><label for="circFormat">Format</label>
       <select id="circFormat">${Object.keys(FORMAT_TEXT).map(f=>`<option value="${f}" ${(circDraft.format||'fortime')===f?'selected':''}>${FORMAT_TEXT[f]}</option>`).join('')}</select></div>
@@ -260,7 +260,7 @@ function drawTplEdit(){
       ${offRows? `<button class="inlinebtn" id="tplRecAll">Set them all to the recommendation</button>` : ''}</div>`}
     <div class="note" style="margin:0 0 12px">Changes apply to every ${escHabit(t.name||'')} day from now on${uses? ', including '+uses+' this week' : ''}. Sessions you have already done stay exactly as they were.</div>
     <div class="nf ${errAt(-1,'name')?'bad':''}" style="margin-bottom:12px"><label for="tplName">Name</label>
-      <input id="tplName" value="${escHabit(t.name)}" style="font-family:Archivo;font-size:15px;font-weight:700"></div>
+      <input id="tplName" value="${escHabit(t.name)}" style="font-family:var(--font-ui);font-size:15px;font-weight:700"></div>
     ${errs.length? `<div class="warn" role="alert" style="margin-bottom:12px"><b>Not saved yet.</b> ${errs.map(e=>escHabit(e.msg)).join(' ')}</div>`:''}
     ${t.hifb? `<div class="focusnote" style="margin:0 0 12px"><b>Runs</b><span>A run before the first block, after each block, and after the last. Metres, and 0 for no run.</span>
       <div class="tfields" style="margin-top:8px">

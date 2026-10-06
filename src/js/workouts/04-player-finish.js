@@ -212,7 +212,7 @@ function drawExList(q){
       <div class="txt"><div class="n">${x.n}${out?' · you took this out':''}</div>
         <div class="s">${out? 'tap to put it back' : exBlurb(x)+(st? ' · '+st.sessions+' session'+(st.sessions===1?'':'s')+', best '+st.heaviest+'kg' : '')}</div>
         <div class="cue2">${x.c}</div></div>
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>`;
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--mute)" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>`;
   };
   if(term){
     /* a name match beats a primary muscle match beats a mention in passing */
@@ -279,7 +279,7 @@ function openExMenu(i){
     <button class="logrow" data-exact="down:${i}"><div class="txt"><div class="t">Move down</div></div></button>
     <button class="logrow" data-exact="del:${i}"><div class="txt"><div class="t">Remove from today only</div>
       <div class="s">It stays in the template for next time</div></div></button>
-    <button class="logrow" data-exact="forever:${i}"><div class="txt"><div class="t" style="color:var(--oxblood)">Take it out for good</div>
+    <button class="logrow" data-exact="forever:${i}"><div class="txt"><div class="t" style="color:var(--coral-text)">Take it out for good</div>
       <div class="s">Gone from every day, and never suggested again</div></div></button>`;
   openSheet('exMenu');
 }
@@ -499,11 +499,11 @@ function openAlternatives(exId,ctx){
     `<div class="slab" style="padding:0 14px">Trains the same thing</div>`+
     (alts.length? alts.map(a=>`<button class="logrow" data-alt="${a.id}">
         <div class="txt"><div class="t">${a.n}</div><div class="s">${a.p} · ${a.g} · tempo ${a.t}</div></div>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#737373" stroke-width="2.2" stroke-linecap="round"><path d="m9 5 7 7-7 7"/></svg></button>`).join('')
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--mute)" stroke-width="2.2" stroke-linecap="round"><path d="m9 5 7 7-7 7"/></svg></button>`).join('')
       : `<div class="note" style="padding:0 14px">Nothing close enough to suggest. You can take it out instead.</div>`)+
     `<button class="logrow" id="altPick"><div class="txt"><div class="t">Something else entirely</div>
       <div class="s">Choose from the full list</div></div></button>
-    <button class="logrow" id="altRemove"><div class="txt"><div class="t" style="color:var(--oxblood)">Take it out</div>
+    <button class="logrow" id="altRemove"><div class="txt"><div class="t" style="color:var(--coral-text)">Take it out</div>
       <div class="s">Removed from every day, and never suggested again</div></div></button>
     <button class="logrow" id="altKeep"><div class="txt"><div class="t">Keep it as it is</div></div></button>`;
   openSheet('altSheet');

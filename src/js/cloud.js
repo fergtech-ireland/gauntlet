@@ -302,7 +302,7 @@ window.addEventListener('online',()=>{
 
 /* ---------- the shared side ---------- */
 let REMOTE={profiles:{},posts:[],follows:[],loaded:false};
-const colorFor=h=>['#1e3a6e','#6e1f2e','#a8552a','#1b4a3c','#2f5d6e','#5c6b2f','#8a6a2f','#161618'][(h||'x').charCodeAt(0)%8];
+const colorFor=h=>['var(--cyan-text)','var(--coral-text)','var(--amber-text)','var(--green-text)','var(--ink)','var(--sub)'][(h||'x').charCodeAt(0)%6];
 /* Handles follow the database's rules (migration 0002): 3 to 20 lowercase
    letters, numbers or underscores, unique, not on the blocklist, changed at
    most once a month. A handle from before the rules is kept on this device,
@@ -574,7 +574,7 @@ async function withdrawConsent(){
 }
 function eraseLocal(){
   try{ localStorage.removeItem(STORE_KEY); localStorage.removeItem(CLOUD_KEY);
-    ['gauntlet.v3','gauntlet.v2','gauntlet.v1',NUDGE_KEY].forEach(k=>localStorage.removeItem(k)); }catch(e){}
+    ['gauntlet.v3','gauntlet.v2','gauntlet.v1',NUDGE_KEY,THEME_KEY].forEach(k=>localStorage.removeItem(k)); }catch(e){}
 }
 async function eraseEverything(){
   const r=await eraseRemote();
@@ -597,16 +597,16 @@ function openData(){
     <div class="method"><b>What is never held</b><span>No advertising identifiers, no third party analytics, no location. The only thing that leaves this device on its own is the request that fetches the typeface.</span></div>
     <div class="method"><b>Take it with you</b><span>One file, plain JSON, everything in it. Readable in any text editor and not locked to this app.</span></div>
     <button class="sheetcta" id="dlData">Download everything</button>
-    <button class="sheetcta" id="restoreBtn" style="background:var(--grey-btn);color:var(--ink);margin-top:8px">Restore from a download</button>
+    <button class="sheetcta" id="restoreBtn" style="background:var(--track);color:var(--ink);margin-top:8px">Restore from a download</button>
     <input type="file" id="restoreFile" accept="application/json,.json" style="display:none" aria-label="Choose a Gauntlet download">
     <div class="note" id="restoreNote">${(()=>{ try{ return localStorage.getItem(RESTORE_BACKUP)? 'This phone was restored from a download. <button class="inlinebtn" id="restoreUndo">Undo the restore</button>' : 'For a new phone, or to go back to an earlier copy. It shows what is in the file before replacing anything.'; }catch(e){ return ''; } })()}</div>
     ${(signed||backupWaiting())&&(hasConsent()||consentStale())?`<div class="method" style="margin-top:14px"><b>Stop backing up</b><span>Withdraws your consent to Gauntlet holding your health information. Your saved data and settings are deleted from the server and checked, then this device signs out. Everything on this device stays.</span></div>
-    <button class="sheetcta" id="withdrawBtn" style="background:var(--grey-btn);color:var(--ink)">Withdraw consent</button>
+    <button class="sheetcta" id="withdrawBtn" style="background:var(--track);color:var(--ink)">Withdraw consent</button>
     <div class="note" id="withdrawNote"></div>`:''}
     <div class="method" style="margin-top:14px"><b>Delete it all</b><span>${signed
       ? 'Deletes your saved data, profile, feed posts and follows from the database, checks each one is really gone, then wipes this device and starts you again from the first screen. Last, it removes your sign-in account itself. If the database refuses any of it, nothing is wiped here, so you can try again.'
       : 'Wipes this device and starts you again from the first screen.'} It cannot be undone, so take the download first if you want a copy.</span></div>
-    <button class="sheetcta" id="wipeData" style="background:var(--oxblood)">Delete everything</button>
+    <button class="sheetcta" id="wipeData" style="background:var(--coral-text)">Delete everything</button>
     <div class="note" id="wipeNote"></div>`;
   openSheet('cloudSheet');
 }
@@ -687,9 +687,9 @@ function renderCloudPanel(){
 function openCloudSetup(){
   document.getElementById('cloudBody').innerHTML=`
     <div class="nf" style="margin-bottom:10px"><label>Project URL</label>
-      <input id="cUrl" value="${C.url}" placeholder="https://xxxx.supabase.co" style="font-family:Archivo;font-size:14px;font-weight:600"></div>
+      <input id="cUrl" value="${C.url}" placeholder="https://xxxx.supabase.co" style="font-family:var(--font-ui);font-size:14px;font-weight:600"></div>
     <div class="nf" style="margin-bottom:10px"><label>Publishable key</label>
-      <input id="cKey" value="${C.key}" placeholder="sb_publishable_..." style="font-family:Archivo;font-size:13px;font-weight:600"></div>
+      <input id="cKey" value="${C.key}" placeholder="sb_publishable_..." style="font-family:var(--font-ui);font-size:13px;font-weight:600"></div>
     <div class="note">Both of these are safe to share with your testers. They are public by design: the protection is row level security in the database, not secrecy of the key. Never paste the service role key here.</div>
     <button class="sheetcta" id="cSave">Save</button>`;
   openSheet('cloudSheet');
@@ -708,7 +708,7 @@ function consentHTML(pre,on){
     <div class="legallinks">Read the <button class="inlinebtn" data-legal="privacy">privacy policy</button> and the <button class="inlinebtn" data-legal="terms">terms</button>.</div>`;
 }
 const consentTicked=pre=>{ const a=document.getElementById(pre+'Health'), b=document.getElementById(pre+'Terms'); return !!(a&&a.checked&&b&&b.checked); };
-const codeInputHTML=id=>`<input id="${id}" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456" aria-label="The code from the email" style="font-family:Archivo;font-size:22px;font-weight:700;letter-spacing:.3em;text-align:center">`;
+const codeInputHTML=id=>`<input id="${id}" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456" aria-label="The code from the email" style="font-family:var(--font-ui);font-size:22px;font-weight:700;letter-spacing:.3em;text-align:center">`;
 
 /* The sign-in sheet: a small state machine, so every screen it can show is
    one of these and the tests can walk them all. */
@@ -756,7 +756,7 @@ function drawSignIn(){
       ? 'Add your email and this account becomes yours to keep: same account, nothing copied, and you can sign in on a new phone. We email you a code to type in here.'
       : 'Type your email and we send you a 6-digit code to type in here. It makes the account if you are new, and signs you in if you are not. No password to set or forget.'}</div>
     <div class="nf" style="margin-bottom:10px"><label>Email</label>
-      <input id="sgEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" value="${escHabit(SIGN.email)}" style="font-family:Archivo;font-size:15px;font-weight:600"></div>
+      <input id="sgEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" value="${escHabit(SIGN.email)}" style="font-family:var(--font-ui);font-size:15px;font-weight:600"></div>
     ${needConsent? consentHTML('sg',SIGN.agree) : ''}
     <button class="sheetcta" id="sgSend" ${(validEmail(SIGN.email)&&(!needConsent||(SIGN.agree.health&&SIGN.agree.terms)))?'':'disabled'}>Send me a code</button>
     <div class="note" id="sgResult" role="status"></div>`;

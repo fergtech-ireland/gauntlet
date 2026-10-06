@@ -6,7 +6,18 @@
 <title>Gauntlet</title>
 <meta name="description" content="Know what to do today. The plan moves with you.">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#ffffff" id="themeColor">
+<meta name="theme-color" content="#F6F5F1" id="themeColor">
+<script>
+/* Build 55: set Day or Night before the first paint, so a phone in dark mode
+   never flashes the day palette. Mirrors themeOf() and shownTheme() in
+   15-install-worker.js, which take over once the app has loaded. */
+(function(){var t=null;try{t=localStorage.getItem('gauntlet.theme');
+if(!t){var st=JSON.parse(localStorage.getItem('gauntlet.v4')||'null');t=st&&st.profile&&st.profile.theme;}}catch(e){}
+t={light:'day',dark:'night'}[t]||t;
+if(t!=='day'&&t!=='night'){var dk=false;try{dk=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;}catch(e){}t=dk?'night':'day';}
+document.documentElement.setAttribute('data-theme',t);
+var m=document.getElementById('themeColor');if(m)m.setAttribute('content',t==='night'?'#0F1211':'#F6F5F1');})();
+</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Gauntlet">
@@ -15,22 +26,29 @@
 <link rel="alternate icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Black&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 <!-- include: styles.css -->
 </style>
 </head>
-<body>
+<body data-screen="today">
 <div class="app">
   <header class="top">
     <div class="brand">
       <svg class="mark" width="26" height="26" viewBox="0 0 100 100" aria-hidden="true">
         <path d="M72.6 27.4 A32 32 0 1 0 82 50 L62 50" fill="none" stroke="var(--ink)" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="79.6" cy="37.7" r="4.6" fill="var(--marigold)"/></svg>
+        <circle cx="79.6" cy="37.7" r="4.6" fill="var(--amber)"/></svg>
       <div class="wordmark">GAUNTLET</div>
     </div>
     <div class="spacer"></div>
-    <button class="iconbtn" id="findBtn" aria-label="Find people">
+    <!-- Build 55: on Today the header carries the sun and moon (Day or Night) and
+         Friends, which moved out of the bottom nav. Find people stays on Friends. -->
+    <button class="iconbtn on-today" id="themeBtn" aria-label="Switch to night">
+      <svg class="moon" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+      <svg class="sun" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button>
+    <button class="iconbtn on-today ring" id="friendsBtn" data-go="feed" aria-label="Friends">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="9" cy="9" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 6.5a3 3 0 1 1 0 5.5M17 14a5 5 0 0 1 4 6"/></svg></button>
+    <button class="iconbtn on-feed" id="findBtn" aria-label="Find people">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="8" r="4"/><path d="M3 20a7 7 0 0 1 12-4.9"/><path d="M17 15v6M14 18h6"/></svg></button>
   </header>
 
@@ -39,7 +57,7 @@
   <section class="screen" id="s-progress" tabindex="-1">
     <div class="h1" id="profHandle">your progress</div>
     <div class="phead">
-      <button class="av-lg" id="profAv" style="background:var(--marine-bg)" aria-label="Your details">YOU</button>
+      <button class="av-lg" id="profAv" style="background:var(--cta)" aria-label="Your details">YOU</button>
       <div class="stats">
         <div><b id="stSessions">0</b><span>sessions</span></div>
         <div><b id="stWeek">0</b><span>this week</span></div>
@@ -70,12 +88,12 @@
 </div>
 
 <nav class="tabs" role="tablist" aria-label="Sections">
-  <button class="tab on" role="tab" aria-selected="true" data-go="today"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg><span>Today</span></button>
-  <button class="tab" role="tab" aria-selected="false" data-go="plan"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg><span>Plan</span></button>
+  <button class="tab on" role="tab" aria-selected="true" data-go="today"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3z"/></svg><span>Today</span></button>
+  <button class="tab" role="tab" aria-selected="false" data-go="plan"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg><span>Plan</span></button>
   <button class="tab mid" id="logBtn" aria-label="Log something">
-    <span class="plus"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span><span>Log</span></button>
-  <button class="tab" role="tab" aria-selected="false" data-go="progress"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>You</span><i class="badge" id="youBadge">0</i></button>
-  <button class="tab" role="tab" aria-selected="false" data-go="feed"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M17 11.5a3 3 0 1 0-2-5.3"/><path d="M18 20a6 6 0 0 0-3-5.2"/></svg><span>Feed</span></button>
+    <span class="plus"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M10 4v12M4 10h12"/></svg></span></button>
+  <button class="tab" role="tab" aria-selected="false" data-go="eat"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10M17 3c-2 2-3 5-3 8h3v10"/></svg><span>Eat</span></button>
+  <button class="tab" role="tab" aria-selected="false" data-go="progress"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>You</span><i class="badge" id="youBadge">0</i></button>
 </nav>
 <div class="scrim" id="scrim"></div>
 

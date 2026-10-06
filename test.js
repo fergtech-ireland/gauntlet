@@ -30,7 +30,10 @@ const run = SUITES.filter(s => !want.length || want.includes(s[0]));
     const pass = +(/PASS (\d+)/.exec(out.buf) || [0, 0])[1];
     const fail = +(/FAIL (\d+)/.exec(out.buf) || [0, 0])[1];
     const errs = +(/PAGE ERRORS (\d+)/.exec(out.buf) || [0, 0])[1];
-    results.push({ name, blurb, pass, fail, errs, code: out.code });
+    /* a suite that crashes part way prints no FAIL line, so its exit code
+       counts too: a crash is a failure, never a quiet "0 passed" (build 53) */
+    const crashed = out.code !== 0 && !fail ? 1 : 0;
+    results.push({ name, blurb, pass, fail: fail + crashed, errs, code: out.code, crashed });
   }
 
   const tp = results.reduce((a, r) => a + r.pass, 0);
@@ -40,7 +43,7 @@ const run = SUITES.filter(s => !want.length || want.includes(s[0]));
   results.forEach(r => console.log(
     '  ' + (r.fail || r.errs ? 'FAIL' : ' OK ') + '  ' + r.name.padEnd(12) +
     String(r.pass).padStart(4) + ' passed' +
-    (r.fail ? '   ' + r.fail + ' failed' : '') +
+    (r.crashed ? '   CRASHED (exit ' + r.code + ')' : (r.fail ? '   ' + r.fail + ' failed' : '')) +
     (r.errs ? '   ' + r.errs + ' page errors' : '')));
   console.log('='.repeat(56));
   console.log('  ' + tp + ' assertions, ' + tf + ' failures, ' + te + ' page errors');

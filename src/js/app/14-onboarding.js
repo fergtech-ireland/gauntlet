@@ -3,7 +3,7 @@ let step=0, onbDraft=null;
 const cloudAvailable=()=>{ try{ return typeof cloudReady==='function'? !!cloudReady() : !!(window.__CLOUD&&window.__CLOUD.cloudReady()); }catch(e){ return false; } };
 const stepCount=()=>cloudAvailable()?6:5;
 const sameKit=(a,b)=>!!a&&a.length===b.length&&b.every(x=>a.indexOf(x)>=0);
-function startOnboarding(){ onbDraft={handle:S.profile.handle,aim:S.profile.aim,checkinDay:6,sex:'',cycle:false,lastPeriod:'',age:null,height:null,weight:null,activity:'mod',kit:ALL_KIT.slice()}; step=0; $('onb').classList.add('on'); onbRender(); }
+function startOnboarding(){ onbDraft={handle:S.profile.handle,aim:S.profile.aim,checkinDay:6,sex:'',cycle:false,lastPeriod:'',born:S.profile.birthYear||null,bday:S.profile.bday||null,age:ageFromBirth(S.profile.birthYear,S.profile.bday),height:null,weight:null,activity:'mod',kit:ALL_KIT.slice()}; step=0; $('onb').classList.add('on'); onbRender(); }
 function onbRender(){
   const b=$('onbBody');
   $('onbDots').innerHTML=Array.from({length:stepCount()},(_,i)=>`<i class="${i<=step?'on':''}"></i>`).join('');
@@ -94,14 +94,17 @@ function onbRender(){
       <div class="note" style="margin-top:6px">The resting burn equation differs by about 166 kcal between the two. Rather not say uses the average, which is less precise.</div>
       <div class="slab">You</div>
       <div class="twoup" style="gap:10px">
-        <div class="nf"><label>Age</label><input id="onbAge" type="number" inputmode="numeric" value="${onbDraft.age||''}" placeholder="36"></div>
+        <div class="nf"><label>Year you were born</label><input id="onbBorn" type="number" inputmode="numeric" min="${new Date().getFullYear()-110}" max="${new Date().getFullYear()}" value="${onbDraft.born||''}" placeholder="1990"></div>
         <div class="nf"><label>Height, cm</label><input id="onbHeight" type="number" inputmode="numeric" value="${onbDraft.height||''}" placeholder="178"></div></div>
+      ${birthdayMatters(onbDraft.born)? `<div class="field" style="margin-top:10px"><div class="fl"><div class="k">Had your birthday yet this year?</div></div>
+        <div class="chips"><button class="${onbDraft.bday&&onbDraft.bday.passed===true?'on':''}" data-onbbday="1">Yes</button><button class="${onbDraft.bday&&onbDraft.bday.passed===false?'on':''}" data-onbbday="0">Not yet</button></div></div>` : ''}
       <div class="twoup" style="gap:10px;margin-top:10px">
         <div class="nf"><label>${isTeen({age:onbDraft.age})?'Weight, kg (optional)':'Weight now, kg'}</label><input id="onbWeight" type="number" inputmode="decimal" step="0.1" value="${onbDraft.weight||''}" placeholder="82"></div>
         <div class="nf" style="${isTeen({age:onbDraft.age})?'display:none':''}"><label>Goal weight, kg</label><input id="onbGoal" type="number" inputmode="decimal" step="0.1" value="${onbDraft.goal||''}" placeholder="optional"></div></div>
       <div class="nf" style="margin-top:10px;${isTeen({age:onbDraft.age})?'display:none':''}"><label>Body fat %, if you know it</label>
         <input id="onbBf" type="number" inputmode="decimal" step="0.1" value="${onbDraft.bf||''}" placeholder="optional, from a scan or scale"></div>
       ${onbDraft.bf&&!validBodyFat(onbDraft.bf)? `<div class="warn" style="margin-top:8px">Body fat should be between 3 and 70%. Leave it blank and it will be estimated.</div>`:''}
+      ${onbDraft.born&&String(onbDraft.born).length>=4&&!validBirthYear(onbDraft.born)? `<div class="warn" style="margin-top:10px">That year does not look right. Four digits, like 1990.</div>` : ''}
       ${tooYoung(onbDraft.age)? `<div class="warn" style="margin-top:10px">Gauntlet is for people aged 13 and over. A parent, PE teacher or coach is the best person to help with being active at your age.</div>`
         : isTeen({age:onbDraft.age})? `<div class="teencard">
             <b>You are under 18, so Gauntlet works a bit differently for you.</b>
@@ -192,27 +195,19 @@ function onbRender(){
     onbDraft.email=''; $('onbNext').textContent='Build my week';
     return;
   }
+  /* The last step (build 53): back up without an email. Two separate,
+     unticked consents, and an account is made silently once both are given.
+     Skipping keeps everything on this phone, and the app works the same. An
+     email comes later, prompted after the first logged session. */
   if(step===5){
     const CL=window.__CLOUD;
     if(!onbDraft.agree) onbDraft.agree={health:false,terms:false};
     if(CL&&CL.signedIn()&&CL.hasConsent()){
       b.innerHTML=`<h2>Already backed up.</h2><p class="lead">You signed in earlier, so everything you set up here is backed up already.</p>`;
-      onbDraft.email=''; onbDraft.codeSent=false;
-    } else if(onbDraft.codeSent){
-      b.innerHTML=`<h2>Type the code.</h2><p class="lead">We emailed a 6-digit code to <b>${escHabit(onbDraft.email)}</b>. Type it here and you are signed in on this phone.</p>
-        <div class="nf" style="margin-bottom:10px"><label>Code</label><input id="onbCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456" value="${escHabit(onbDraft.code||'')}" aria-label="The code from the email" style="font-family:Archivo;font-size:22px;font-weight:700;letter-spacing:.3em;text-align:center"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="inlinebtn" id="onbResend">Send a new code</button><button class="inlinebtn" id="onbOtherEmail">Use a different email</button></div>
-        <div class="note" id="onbEmailNote" role="status">It runs out after a while. You can also skip this and do it later from Progress.</div>`;
-      const ci=$('onbCode');
-      if(ci) ci.addEventListener('input',()=>{ onbDraft.code=ci.value.replace(/\D/g,''); ci.value=onbDraft.code; onbCta(); });
     } else {
-      b.innerHTML=`<h2>Keep it safe?</h2><p class="lead">Back your week up and it is safe if you lose this phone, it works on any phone you sign in on, and you can see what the others are doing. No password: we email you a code to type in.</p>
-        <div class="nf" style="margin-bottom:10px"><label>Email</label>
-          <input id="onbEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" value="${escHabit(onbDraft.email||'')}" style="font-family:Archivo;font-size:15px;font-weight:600"></div>
+      b.innerHTML=`<h2>Keep it safe?</h2><p class="lead">Your week is on this phone. Back it up as well and it survives a lost phone or a cleared browser. No email, no password. You can add an email later to use it on another phone.</p>
         ${CL&&CL.consentHTML? CL.consentHTML('onb',onbDraft.agree) : ''}
-        <div class="note" id="onbEmailNote" role="status">You can skip this and do it later from Progress. Nothing is lost either way.</div>`;
-      const inp=$('onbEmail');
-      if(inp) inp.addEventListener('input',()=>{ onbDraft.email=inp.value.trim(); onbCta(); });
+        <button class="skipbtn" id="onbSkipBackup" style="margin-top:12px">Not now. Keep it on this phone only</button>`;
       b.querySelectorAll('#onbHealth,#onbTerms').forEach(x=>x.addEventListener('change',()=>{
         onbDraft.agree={health:!!($('onbHealth')||{}).checked,terms:!!($('onbTerms')||{}).checked}; onbCta(); }));
     }
@@ -222,16 +217,17 @@ function onbRender(){
     : (step===0? 'Claim it' : (step===3? 'Looks good' : 'Next'));
   onbCta();
 }
-const onbAccountLabel=()=>onbDraft.codeSent? 'Check code' : (onbDraft.email? 'Send me a code' : 'Skip for now');
+const onbBackedUp=()=>{ const CL=window.__CLOUD; return !!(CL&&CL.signedIn()&&CL.hasConsent()); };
+const onbAccountLabel=()=>onbBackedUp()? 'Start' : 'Back up and start';
 function onbCta(){
   $('onbNext').disabled = (step===0 && onbDraft.handle.length<3) || tooYoung(onbDraft.age);
   if(step===5&&canHaveAccount({age:onbDraft.age})){
     $('onbNext').textContent = onbAccountLabel();
-    const CL=window.__CLOUD, ag=onbDraft.agree||{};
-    if(onbDraft.codeSent) $('onbNext').disabled = !/^\d{6,10}$/.test(onbDraft.code||'');
-    else if(onbDraft.email) $('onbNext').disabled = !(CL&&CL.validEmail(onbDraft.email)&&ag.health&&ag.terms);
+    const ag=onbDraft.agree||{};
+    $('onbNext').disabled = !onbBackedUp()&&!(ag.health&&ag.terms);
   }
-  if(step===2) $('onbNext').disabled = (!onbDraft.sex&&!isTeen({age:onbDraft.age})) || tooYoung(onbDraft.age) || (!isTeen({age:onbDraft.age})&&!onbDraft.age);
+  if(step===2) $('onbNext').disabled = (!onbDraft.sex&&!isTeen({age:onbDraft.age})) || tooYoung(onbDraft.age) || (!isTeen({age:onbDraft.age})&&!onbDraft.age)
+    || (birthdayMatters(onbDraft.born)&&!(onbDraft.bday&&onbDraft.bday.y===new Date().getFullYear()));
   if(step===1) $('onbNext').disabled = (onbDraft.liftDays+onbDraft.cardioDays)>6
     || !(onbDraft.kit&&onbDraft.kit.length);
 }
@@ -718,6 +714,8 @@ document.addEventListener('click',e=>{
   if(ld){ onbDraft.liftDays=+ld.dataset.onblift; onbRender(); }
   const cd=e.target.closest('[data-onbcardio]');
   if(cd){ onbDraft.cardioDays=+cd.dataset.onbcardio; onbRender(); }
+  const ob=e.target.closest('[data-onbbday]');
+  if(ob){ onbDraft.bday={y:new Date().getFullYear(),passed:ob.dataset.onbbday==='1'}; onbDraft.age=ageFromBirth(onbDraft.born,onbDraft.bday); onbRender(); return; }
   const dd=e.target.closest('[data-onbday]');
   if(dd){ onbDraft.checkinDay=+dd.dataset.onbday; onbRender(); }
   const os=e.target.closest('[data-onbswap]');
@@ -725,40 +723,27 @@ document.addEventListener('click',e=>{
   const oe=e.target.closest('[data-onbedit]');
   if(oe){ openTplEdit(oe.dataset.onbedit); }
   if(e.target.closest('#tempoHelp')) openTempoHelp();
-  if(e.target.closest('#onbOtherEmail')){ onbDraft.codeSent=false; onbDraft.code=''; onbRender(); }
-  if(e.target.closest('#onbResend')&&window.__CLOUD){
-    const note=$('onbEmailNote'); if(note) note.textContent='Sending...';
-    window.__CLOUD.sendCode(onbDraft.email).then(r=>{ const n=$('onbEmailNote'); if(n) n.textContent=r.ok? 'A new code is on its way.' : r.reason; });
-  }
+  if(e.target.closest('#onbSkipBackup')){ $('onb').classList.remove('on'); go('today'); renderAll();
+    toast('Your week is ready, @'+S.profile.handle+'. It stays on this phone. Back up any time from Progress.'); }
 });
 $('onbNext').addEventListener('click',async()=>{
   if($('onbNext').disabled) return;
   if(step===4&&cloudAvailable()){ finishOnboarding(true); step=5; $('onb').classList.add('on'); onbRender(); return; }
   if(step<stepCount()-1){ step++; onbRender(); return; }
   if(step===5){
-    const CL=window.__CLOUD, note=$('onbEmailNote');
-    if(onbDraft.email&&CL&&canHaveAccount({age:onbDraft.age})){
-      $('onbNext').disabled=true;
-      if(!onbDraft.codeSent){
-        if(note) note.textContent='Sending...';
-        const r=await CL.sendCode(onbDraft.email);
-        if(r.ok){ onbDraft.codeSent=true; onbDraft.mode=r.mode; onbDraft.code=''; onbRender(); return; }
-        if(note) note.textContent=r.reason; onbCta(); return;
-      }
-      if(note) note.textContent='Checking...';
-      const r=await CL.verifyCode(onbDraft.email,onbDraft.code,onbDraft.mode);
-      if(!r.ok){ if(note) note.textContent=r.reason; onbCta(); return; }
-      await CL.afterSignIn(onbDraft.agree);
-      $('onb').classList.remove('on'); go('today'); renderAll();
-      toast(CL.hasConsent()? 'Signed in and backed up' : 'Signed in');
-      return;
+    const CL=window.__CLOUD, ag=onbDraft.agree||{};
+    $('onb').classList.remove('on'); go('today'); renderAll();
+    if(CL&&canHaveAccount({age:onbDraft.age})&&!onbBackedUp()&&ag.health&&ag.terms){
+      CL.recordConsent();
+      toast('Your week is ready. Backing it up now.');
+      const r=await CL.startBackup(); CL.renderCloudPanel();
+      toast(r.ok? 'Backed up. Add your email any time from Progress.' : 'Saved on this phone. It backs up on its own as soon as it can.');
     }
-    $('onb').classList.remove('on'); go('today'); return;
+    return;
   }
   finishOnboarding();
 });
 $('onbBack').addEventListener('click',()=>{
-  if(step===5&&onbDraft.codeSent){ onbDraft.codeSent=false; onbDraft.code=''; onbRender(); return; }
   if(step>0){ step--; onbRender(); } });
 function finishOnboarding(keepOpen){
   if(isTeen({age:onbDraft.age})){ if(onbDraft.aim==='lose') onbDraft.aim='hold'; onbDraft.goal=null; onbDraft.bf=null; }
@@ -768,6 +753,8 @@ function finishOnboarding(keepOpen){
     kit: (onbDraft.kit&&onbDraft.kit.length)? onbDraft.kit.slice() : ALL_KIT.slice(),
     sexAnswered:!!onbDraft.sex,
     age:onbDraft.age||S.profile.age, height:onbDraft.height||S.profile.height,
+    birthYear: validBirthYear(onbDraft.born)? +onbDraft.born : (S.profile.birthYear||null),
+    bday: validBirthYear(onbDraft.born)? (onbDraft.bday||null) : (S.profile.bday||null),
     weight:onbDraft.weight||S.profile.weight, activity:onbDraft.activity||S.profile.activity,
     stepTarget: validSteps(onbDraft.steps)? Math.round(+onbDraft.steps) : (S.profile.stepTarget||DEFAULT_STEPS),
     bodyFat: validBodyFat(onbDraft.bf)? +onbDraft.bf : (validBodyFat(S.profile.bodyFat)? S.profile.bodyFat : null),

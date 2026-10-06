@@ -130,16 +130,25 @@ $('saveWeight').addEventListener('click',()=>{
   if(last&&last.d===k) last.kg=draft.weight; else S.weights.push({d:k,kg:draft.weight});
   save(); closeSheets(); renderAll(); toast('Logged at '+showW(draft.weight,S.profile.units==='imperial'));
 });
-function openDetails(){ draft=Object.assign({},S.profile); drawDetails(); openSheet('detailsSheet'); }
+function openDetails(){
+  draft=Object.assign({},S.profile);
+  /* From build 53 the year is kept, not the age. Someone who only ever gave an
+     age gets the year it implies, with this year's birthday taken as passed,
+     so their age reads exactly as before until they move the slider. */
+  if(!validBirthYear(draft.birthYear)&&+draft.age>0){
+    draft.birthYear=new Date().getFullYear()-(+draft.age); draft.bday={y:new Date().getFullYear(),passed:true}; }
+  drawDetails(); openSheet('detailsSheet'); }
+const bornText=d=>validBirthYear(d.birthYear)? d.birthYear+' · '+ageFromBirth(d.birthYear,d.bday)+' years' : 'not set';
 function drawDetails(){
   const imp=draft.units==='imperial';
   $('detailsBody').innerHTML=`<div class="pair">
       <button class="big-pick ${draft.sex==='f'?'on':''}" data-set="sex" data-val="f">Female</button>
       <button class="big-pick ${draft.sex==='m'?'on':''}" data-set="sex" data-val="m">Male</button></div>
     <button class="big-pick ${draft.sex==='x'?'on':''}" data-set="sex" data-val="x" style="width:100%;margin-top:8px">Rather not say</button>
-    <div class="field"><div class="fl"><div class="k">Age</div><div class="v" id="outage">${draft.age}</div>
+    <div class="field"><div class="fl"><div class="k">Born</div><div class="v" id="outbirthYear">${bornText(draft)}</div>
       <div class="unitsw"><button class="${!imp?'on':''}" data-units="metric">cm, kg</button><button class="${imp?'on':''}" data-units="imperial">ft, lb</button></div></div>
-      <input type="range" min="14" max="90" value="${draft.age}" data-range="age" aria-label="Age"></div>
+      <input type="range" min="${new Date().getFullYear()-90}" max="${new Date().getFullYear()-14}" value="${draft.birthYear}" data-range="birthYear" aria-label="Year you were born"></div>
+    <div id="detBday">${detBdayHTML()}</div>
     <div class="field"><div class="fl"><div class="k">Height</div><div class="v" id="outheight">${showH(draft.height,imp)}</div></div>
       <input type="range" min="135" max="215" value="${draft.height}" data-range="height" aria-label="Height"></div>
     <div class="field"><div class="fl"><div class="k">Weight</div></div>
@@ -150,6 +159,19 @@ function drawDetails(){
       <input id="detBf" type="number" inputmode="decimal" step="0.1" value="${draft.bodyFat||''}" placeholder="blank, and it is estimated"></div>
     <div class="note" id="stepsWorth">${detailsSplitText()}</div>`;
 }
+function detBdayHTML(){
+  if(!draft||!birthdayMatters(draft.birthYear)) return '';
+  const b=draft.bday&&draft.bday.y===new Date().getFullYear()? draft.bday.passed : null;
+  return `<div class="field"><div class="fl"><div class="k">Had your birthday yet this year?</div></div>
+    <div class="chips"><button class="${b===true?'on':''}" data-detbday="1">Yes</button><button class="${b===false?'on':''}" data-detbday="0">Not yet</button></div></div>`;
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-detbday]'); if(!b||!draft) return;
+  draft.bday={y:new Date().getFullYear(),passed:b.dataset.detbday==='1'}; draft.age=ageFromBirth(draft.birthYear,draft.bday);
+  const o=$('outbirthYear'); if(o) o.textContent=bornText(draft);
+  const x=$('detBday'); if(x) x.innerHTML=detBdayHTML();
+  const sw=document.getElementById('stepsWorth'); if(sw) sw.innerHTML=detailsSplitText();
+});
 /* The same figures the app will use once saved, worked out from the unsaved
    draft, so the person sees the consequence before they commit to it. */
 function detailsSplitText(){
@@ -177,9 +199,11 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{
   if(e.target.id==='onbPeriod'&&onbDraft){ onbDraft.lastPeriod=e.target.value; }
-  if(onbDraft&&['onbAge','onbHeight','onbWeight','onbGoal','onbSteps','onbBf'].includes(e.target.id)){
+  if(onbDraft&&['onbBorn','onbHeight','onbWeight','onbGoal','onbSteps','onbBf'].includes(e.target.id)){
     const k=e.target.id.replace('onb','').toLowerCase();
     onbDraft[k]= e.target.value===''? null : +e.target.value;
+    /* the year is what is asked; the age is worked out from it (build 53) */
+    if(k==='born'){ if(!birthdayMatters(onbDraft.born)) onbDraft.bday=null; onbDraft.age=ageFromBirth(onbDraft.born,onbDraft.bday); }
     clearTimeout(onbDraft._t);
     onbDraft._t=setTimeout(()=>{ const a=document.activeElement&&document.activeElement.id;
       onbRender(); const el=a&&document.getElementById(a);
@@ -187,9 +211,10 @@ document.addEventListener('input',e=>{
   }
   const r=e.target.closest('[data-range]'); if(!r||!draft) return;
   const k=r.dataset.range; draft[k]=+r.value;
+  if(k==='birthYear'){ draft.age=ageFromBirth(draft.birthYear,draft.bday); const x=$('detBday'); if(x) x.innerHTML=detBdayHTML(); }
   const out=$('out'+k);
   if(out) out.textContent = k==='stepTarget'? num(draft.stepTarget)
-    : (k==='age'? draft.age : (k==='height'? showH(draft.height,draft.units==='imperial') : showW(draft.weight,draft.units==='imperial')));
+    : (k==='birthYear'? bornText(draft) : (k==='height'? showH(draft.height,draft.units==='imperial') : showW(draft.weight,draft.units==='imperial')));
   /* every slider can move the answer, so the split follows all of them */
   const sw=document.getElementById('stepsWorth'); if(sw&&typeof detailsSplitText==='function') sw.innerHTML=detailsSplitText();
 });

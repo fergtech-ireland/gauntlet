@@ -97,6 +97,27 @@ const ageOf=p=>+((p||S.profile||{}).age)||0;
 const isTeen=p=>{ const a=ageOf(p); return a>=TEEN_MIN&&a<ADULT_AGE; };
 const tooYoung=a=>a!==undefined&&a!==null&&a!==''&&+a>0&&+a<TEEN_MIN;
 const canHaveAccount=p=>{ const a=ageOf(p); return !a||a>=ACCOUNT_MIN; };
+/* Year of birth, not age (build 53). An age typed once goes out of date; a
+   year does not, and it is what the settings row keeps. A year alone leaves
+   the age one out either way, which only matters in the years someone
+   crosses a line the app draws (13, 16, 18). Then the app asks whether the
+   birthday has been yet this year, and until it knows it takes the younger
+   age, the safe side of each line. Everywhere else a year is close enough:
+   a year of age moves the resting burn by 5 kcal. */
+const AGE_LINES=[TEEN_MIN,ACCOUNT_MIN,ADULT_AGE];
+const validBirthYear=y=>{ const n=+y, now=new Date().getFullYear(); return y!==''&&y!==null&&y!==undefined&&Number.isInteger(n)&&n>=now-110&&n<=now; };
+const birthdayMatters=y=>validBirthYear(y)&&AGE_LINES.indexOf(new Date().getFullYear()-(+y))>=0;
+function ageFromBirth(y,bday){
+  if(!validBirthYear(y)) return null;
+  const now=new Date().getFullYear(), base=now-(+y);
+  const known= bday&&bday.y===now? !!bday.passed : null;
+  if(known===true) return base;
+  if(known===false) return base-1;
+  return AGE_LINES.indexOf(base)>=0? base-1 : base;
+}
+/* the stored age follows the year, so it moves on by itself every birthday */
+function syncAge(p){ if(p&&validBirthYear(p.birthYear)){ const a=ageFromBirth(p.birthYear,p.bday); if(a!==null) p.age=a; } return p; }
+if(typeof S!=='undefined'&&S&&S.profile) syncAge(S.profile);
 const SUPPORT_TEEN=[
   ['Childline','Free, 24 hours, for anyone up to 18. Call 1800 66 66 66 or text 50101.','https://www.childline.ie'],
   ['Text About It','Free, 24 hours. Text HELLO to 50808.','https://www.textaboutit.ie'],

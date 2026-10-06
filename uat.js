@@ -483,7 +483,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
       G.bmrOf(Object.assign({ sex: 'x' }, P)) === bmr(-78));
     G.startOnboarding(); G.onbDraft.aim = 'lose'; G.step = 2; G.onbRender();
     d.querySelector('[data-onbsex="m"]').click();
-    type('onbAge', 38); type('onbHeight', 18); type('onbWeight', 95); G.onbRender();
+    type('onbBorn', new w.Date().getFullYear() - 38); type('onbHeight', 18); type('onbWeight', 95); G.onbRender();
     t('14 · half-typed numbers never produce a figure',
       !/kcal a day/.test(d.getElementById('onbBody').textContent)
       && /does not look like a real number/.test(d.getElementById('onbBody').textContent));
@@ -713,7 +713,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const type = (id, v) => { const el = D.getElementById(id); el.value = String(v); el.dispatchEvent(new W.Event('input', { bubbles: true })); };
     G2.startOnboarding(); G2.onbDraft.aim = 'lose'; G2.onbDraft.liftDays = 3; G2.step = 2; G2.onbRender();
     D.querySelector('[data-onbsex="m"]').click();
-    type('onbAge', 38); type('onbHeight', 180); type('onbWeight', 95); type('onbSteps', 12000); G2.onbRender();
+    type('onbBorn', new W.Date().getFullYear() - 38); type('onbHeight', 180); type('onbWeight', 95); type('onbSteps', 12000); G2.onbRender();
     const ob = D.getElementById('onbBody').textContent;
     t('15 · onboarding shows where the deficit comes from', !!D.getElementById('onbSplit') && /Where the deficit comes from/.test(ob));
     const obWalk = Math.round(walkK(12000, 95));
@@ -2822,13 +2822,16 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const type = (id, v) => { const el = b2.d.getElementById(id); el.value = String(v); el.dispatchEvent(new b2.w.Event('input', { bubbles: true })); };
     b2.G.startOnboarding(); b2.G.onbDraft.aim = 'lose'; b2.G.step = 2; b2.G.onbRender();
     b2.d.querySelector('[data-onbsex="m"]').click();
-    type('onbAge', 16); type('onbHeight', 175); type('onbWeight', 70); b2.G.onbRender();
+    /* from build 53 the year is asked; in the year someone turns 16 it asks whether the birthday has been */
+    const yr = new b2.w.Date().getFullYear();
+    type('onbBorn', yr - 16); type('onbHeight', 175); type('onbWeight', 70); b2.G.onbRender();
+    b2.d.querySelector('[data-onbbday="1"]').click();
     t('P0 02 · a 16 year old is welcomed, with the teen version explained', /works a bit differently for you/.test(txt(b2.d.getElementById('onbBody'))));
     t('P0 02 · and can carry on', !b2.d.getElementById('onbNext').disabled);
     t('P0 02 · no calorie figures are shown to them', !/kcal a day to/.test(txt(b2.d.getElementById('onbBody'))));
-    type('onbAge', 12); b2.G.onbRender();
+    type('onbBorn', yr - 12); b2.G.onbRender();
     t('P0 02 · under 13 is not supported, and says so', /for people aged 13 and over/.test(txt(b2.d.getElementById('onbBody'))) && b2.d.getElementById('onbNext').disabled);
-    type('onbAge', 18); b2.G.onbRender();
+    type('onbBorn', yr - 18); b2.G.onbRender(); b2.d.querySelector('[data-onbbday="1"]').click();
     t('P0 02 · at 18 it goes ahead', !b2.d.getElementById('onbNext').disabled && /kcal a day to stay/.test(txt(b2.d.getElementById('onbBody'))));
     S.profile.age = 15; S.targets = G.ownTargets();
     t('P0 02 · an existing profile under 18 gets no calorie or protein target', S.targets.kcal === null && S.targets.protein === null && S.targets.minor);
@@ -2897,7 +2900,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
     const type = (id, v) => { const el = d.getElementById(id); el.value = String(v); el.dispatchEvent(new w.Event('input', { bubbles: true })); };
     G.startOnboarding(); G.onbDraft.aim = 'lose'; G.onbDraft.liftDays = 3; G.step = 2; G.onbRender();
-    type('onbAge', 15); G.onbRender();
+    type('onbBorn', new w.Date().getFullYear() - 15); G.onbRender();
     const ob = txt(d.getElementById('onbBody'));
     t('43 · a 15 year old is told how it works for them', /No calorie targets, no diets, no weight goals/.test(ob));
     t('43 · and that picking fat loss becomes a fitness plan', /focus on getting fitter and feeling better instead/.test(ob));
@@ -2907,7 +2910,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('43 · they can carry on without sex, height or weight', !d.getElementById('onbNext').disabled);
     Object.assign(G.onbDraft, { handle: 'teen', cardioDays: 2, checkinDay: 6, kit: G.ALL_KIT.slice() });
     G.step = 5; G.onbRender();
-    t('43 · under 16, there is no account: everything stays on the phone', /Kept on this phone/.test(txt(d.getElementById('onbBody'))) && !d.getElementById('onbEmail'));
+    t('43 · under 16, there is no account: everything stays on the phone', /Kept on this phone/.test(txt(d.getElementById('onbBody'))) && !d.getElementById('onbEmail') && !d.getElementById('onbHealth') && !d.getElementById('onbSkipBackup'));
     G.finishOnboarding();
     const S = G.S;
     t('43 · fat loss became a fitness aim', S.profile.aim === 'hold');
@@ -3889,6 +3892,14 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
           let x = byEmail(body.email); if (!x) { const id = 'user-' + (++db.n); x = db.users[id] = { id, email: body.email, anon: false }; }
           return res(200, session(x.id));
         }
+        if (p === '/rest/v1/rpc/handle_available') {
+          if (!me || (db.users[me] && db.users[me].anon)) return res(401, { message: 'sign in with an email first' });
+          const h = String(body.h || '').toLowerCase();
+          const v = !/^[a-z0-9_]{3,20}$/.test(h) ? 'format' : (/^admin$/.test(h.replace(/[0-9_]/g, '')) ? 'blocked'
+            : (db.rows.profiles.some(r => r.handle === h && r.user_id !== me) ? 'taken' : 'ok'));
+          db.handleChecks = (db.handleChecks || 0) + 1;
+          return res(200, v);
+        }
         if (p === '/rest/v1/rpc/delete_my_account') {
           if (!me) return res(401, {}); delete db.users[me];
           for (const t of Object.keys(db.rows)) db.rows[t] = db.rows[t].filter(r => r.user_id !== me && r.follower !== me && r.followee !== me);
@@ -3911,6 +3922,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
         if (table === 'profiles') {
           if (!/^[a-z0-9_]{3,20}$/.test(body.handle)) return res(400, { message: 'profiles_handle_format' });
           if (db.rows.profiles.some(r => r.handle === body.handle && r.user_id !== me)) return res(409, { message: 'duplicate' });
+          const had = db.rows.profiles.find(r => r.user_id === me);
+          if (db.refuseHandleChange && had && had.handle !== body.handle) return res(400, { message: 'handle_changed_recently' });
         }
         db.rows[table] = db.rows[table].filter(r => !(r.user_id === me && table !== 'posts')).concat([Object.assign({}, body)]);
         return res(201, [body]);
@@ -3933,7 +3946,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('55 · before anything is agreed, nothing is sent, not even an anonymous account',
       !(await CA.pushState()).ok && (await CA.signInAnonymously()).reason === 'consent' && db.calls.length === 0, db.calls.join());
     A.G.renderProgress();
-    t('55 · the account panel offers to back up or sign in', /Back up or sign in/.test(txt(A.d.getElementById('cloudPanel'))));
+    t('55 · the account panel offers to back up, or to sign in with an email',
+      !!A.d.getElementById('cloudBackup') && /Sign in with email/.test(txt(A.d.getElementById('cloudSignIn'))) && /Only on this phone/.test(txt(A.d.getElementById('cloudPanel'))));
     A.d.getElementById('cloudSignIn').click();
     const sendA = () => A.d.getElementById('sgSend');
     t('55 · the sheet asks for an email and two separate consents, neither ticked',
@@ -4106,26 +4120,239 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
       t('55 · the panel says it is on the test project', /Connected to the test project/.test(txt(T.d.getElementById('cloudPanel'))));
     }
 
-    /* ---- the account step in onboarding uses a code too ---- */
+    /* ---- the last onboarding step backs up without an email (build 53) ---- */
     {
       const db3 = fakeSupabase();
       const N = await boot({ fetch: db3.fetch, before: live }); allErrs.push(...N.errs);
       N.G.startOnboarding();
       Object.assign(N.G.onbDraft, { handle: 'nia', aim: 'lose', sex: 'f', age: 30, height: 165, weight: 70, liftDays: 3, cardioDays: 2, checkinDay: 6, kit: N.G.ALL_KIT.slice() });
       type(N.w, N.d.getElementById('handleIn'), 'nia');
-      for (let i = 0; i < 8 && !N.d.getElementById('onbEmail'); i++) { N.d.getElementById('onbNext').click(); await tick(20); }
+      for (let i = 0; i < 8 && !N.d.getElementById('onbHealth'); i++) { N.d.getElementById('onbNext').click(); await tick(20); }
       const next = N.d.getElementById('onbNext');
-      t('55 · onboarding ends on the account step, which can be skipped', !!N.d.getElementById('onbEmail') && next.textContent === 'Skip for now', next.textContent);
-      type(N.w, N.d.getElementById('onbEmail'), 'nia@example.ie');
-      t('55 · with an email it offers a code, locked until both consents are ticked', next.textContent === 'Send me a code' && next.disabled);
-      tickBox(N.w, N.d.getElementById('onbHealth')); tickBox(N.w, N.d.getElementById('onbTerms'));
-      t('55 · ticking both unlocks it', !next.disabled);
-      next.click(); await tick();
-      t('55 · then asks for the code', !!N.d.getElementById('onbCode') && next.textContent === 'Check code' && next.disabled);
-      type(N.w, N.d.getElementById('onbCode'), '123456');
-      next.click(); await tick(250);
-      t('55 · the code signs in, records consent and backs up', N.w.__CLOUD.claimed() && N.w.__CLOUD.hasConsent()
-        && db3.rows.settings.length === 1 && db3.rows.state.length === 1 && !N.d.getElementById('onb').classList.contains('on'));
+      t('55 · onboarding ends on backing up, with two separate unticked consents and no email box',
+        !!N.d.getElementById('onbHealth') && !!N.d.getElementById('onbTerms') && !N.d.getElementById('onbHealth').checked && !N.d.getElementById('onbTerms').checked
+        && !N.d.getElementById('onbEmail') && !N.d.querySelector('#onbBody input[type=email]'));
+      t('55 · nothing has been sent before anyone agrees', db3.calls.length === 0, db3.calls.join());
+      t('55 · back up is locked until both are ticked', next.textContent === 'Back up and start' && next.disabled, next.textContent);
+      tickBox(N.w, N.d.getElementById('onbHealth'));
+      t('55 · one is not enough', next.disabled);
+      t('55 · and it can be skipped, keeping everything on the phone', /Keep it on this phone only/.test(txt(N.d.getElementById('onbSkipBackup'))));
+      tickBox(N.w, N.d.getElementById('onbTerms'));
+      t('55 · both unlock it', !next.disabled);
+      next.click(); await tick(300);
+      const CN = N.w.__CLOUD;
+      t('55 · an account is made silently, with no email, and consent is recorded', CN.isAnon() && CN.hasConsent() && db3.calls[0] === 'POST /auth/v1/signup', db3.calls.join(' | '));
+      t('55 · settings then state go up', db3.rows.settings.length === 1 && db3.rows.state.length === 1 && db3.rows.settings[0].body.profile.handle === 'nia');
+      t('55 · and no handle is shared, because there is no email yet', db3.rows.profiles.length === 0);
+      t('55 · onboarding closes onto Today', !N.d.getElementById('onb').classList.contains('on') && N.d.getElementById('s-today').classList.contains('on'));
+    }
+    {
+      const db4 = fakeSupabase();
+      const K = await boot({ fetch: db4.fetch, before: live }); allErrs.push(...K.errs);
+      K.G.startOnboarding();
+      Object.assign(K.G.onbDraft, { handle: 'kev', aim: 'lose', sex: 'm', age: 30, height: 180, weight: 80, liftDays: 3, cardioDays: 2, checkinDay: 6, kit: K.G.ALL_KIT.slice() });
+      type(K.w, K.d.getElementById('handleIn'), 'kev');
+      for (let i = 0; i < 8 && !K.d.getElementById('onbSkipBackup'); i++) { K.d.getElementById('onbNext').click(); await tick(20); }
+      K.d.getElementById('onbSkipBackup').click(); await tick(100);
+      t('55 · skipping finishes onboarding and sends nothing at all',
+        !K.d.getElementById('onb').classList.contains('on') && K.G.S.profile.onboarded && db4.calls.length === 0 && !K.w.__CLOUD.hasConsent(), db4.calls.join());
+    }
+
+    /* ---------------------------------------------------------- 56 */
+    journey(56, 'Build 53: year of birth, backing up without an email, privacy and terms, handles, and the prompt to add an email');
+    const Y = new Date().getFullYear();
+    const toStep2 = async (X, draft) => {
+      X.G.startOnboarding(); Object.assign(X.G.onbDraft, draft);
+      type(X.w, X.d.getElementById('handleIn'), draft.handle || 'yob');
+      X.d.getElementById('onbNext').click(); X.d.getElementById('onbNext').click(); await tick(20);
+    };
+    /* ---- year of birth, not age ---- */
+    {
+      const Yb = await boot({ before: live }); allErrs.push(...Yb.errs);
+      await toStep2(Yb, { handle: 'yob', aim: 'lose', sex: 'm', height: 180, weight: 82, liftDays: 3, cardioDays: 2, kit: Yb.G.ALL_KIT.slice() });
+      t('56 · step 2 asks the year you were born, not your age', Yb.G.step === 2 && !!Yb.d.getElementById('onbBorn') && !Yb.d.getElementById('onbAge')
+        && /Year you were born/.test(txt(Yb.d.getElementById('onbBody'))));
+      const born = Yb.d.getElementById('onbBorn');
+      type(Yb.w, born, String(Y - 40));
+      t('56 · the age is worked out from the year', Yb.G.onbDraft.age === 40, String(Yb.G.onbDraft.age));
+      await tick(700);
+      t('56 · an ordinary year asks nothing more, and Next is open', !Yb.d.querySelector('[data-onbbday]') && !Yb.d.getElementById('onbNext').disabled);
+      type(Yb.w, Yb.d.getElementById('onbBorn'), '2090'); await tick(700);
+      t('56 · a year in the future is caught, plainly', /does not look right/.test(txt(Yb.d.getElementById('onbBody'))) && Yb.d.getElementById('onbNext').disabled);
+      type(Yb.w, Yb.d.getElementById('onbBorn'), String(Y - 16)); await tick(700);
+      t('56 · the year someone may turn 16 asks whether the birthday has been yet', !!Yb.d.querySelector('[data-onbbday="1"]') && !!Yb.d.querySelector('[data-onbbday="0"]'));
+      t('56 · until it is answered the younger age is taken, and Next waits', Yb.G.onbDraft.age === 15 && Yb.d.getElementById('onbNext').disabled, String(Yb.G.onbDraft.age));
+      Yb.d.querySelector('[data-onbbday="0"]').click();
+      t('56 · not yet: 15, on the teen version', Yb.G.onbDraft.age === 15 && /under 18/.test(txt(Yb.d.getElementById('onbBody'))));
+      for (let i = 0; i < 6 && Yb.G.step < 5; i++) { Yb.d.getElementById('onbNext').click(); await tick(20); }
+      t('56 · and under 16 the last step keeps everything on the phone, with no consent boxes', /Kept on this phone/.test(txt(Yb.d.getElementById('onbBody'))) && !Yb.d.getElementById('onbHealth'));
+      Yb.d.getElementById('onbNext').click(); await tick(50);
+      t('56 · the year is kept in the profile, with the answer about the birthday', Yb.G.S.profile.birthYear === Y - 16 && Yb.G.S.profile.bday && Yb.G.S.profile.bday.passed === false && Yb.G.S.profile.age === 15);
+      Yb.G.renderProgress();
+      t('56 · Progress offers no back up under 16, and says why', !Yb.d.getElementById('cloudBackup') && /Under 16/.test(txt(Yb.d.getElementById('cloudPanel'))));
+      Yb.w.__CLOUD.recordConsent();
+      t('56 · and backing up is refused under 16 even with consent on record', !(await Yb.w.__CLOUD.startBackup()).ok);
+    }
+    {
+      const Yc = await boot({ before: live }); allErrs.push(...Yc.errs);
+      await toStep2(Yc, { handle: 'yoc', aim: 'build', sex: 'f', height: 170, weight: 60, liftDays: 3, cardioDays: 2, kit: Yc.G.ALL_KIT.slice() });
+      type(Yc.w, Yc.d.getElementById('onbBorn'), String(Y - 16)); await tick(700);
+      Yc.d.querySelector('[data-onbbday="1"]').click();
+      t('56 · yes: 16, which is old enough to back up', Yc.G.onbDraft.age === 16 && Yc.G.canHaveAccount({ age: Yc.G.onbDraft.age }));
+      type(Yc.w, Yc.d.getElementById('onbBorn'), String(Y - 13)); await tick(700);
+      Yc.d.querySelector('[data-onbbday="0"]').click();
+      t('56 · born 13 years ago with no birthday yet is 12, and Gauntlet says it is for 13 and over', Yc.G.onbDraft.age === 12 && /13 and over/.test(txt(Yc.d.getElementById('onbBody'))) && Yc.d.getElementById('onbNext').disabled);
+      t('56 · the helpers agree at every line', Yc.G.ageFromBirth(Y - 18) === 17 && Yc.G.ageFromBirth(Y - 18, { y: Y, passed: true }) === 18
+        && Yc.G.ageFromBirth(Y - 30) === 30 && Yc.G.ageFromBirth(Y - 30, { y: Y, passed: false }) === 29 && Yc.G.ageFromBirth(Y - 18, { y: Y - 1, passed: true }) === 17
+        && Yc.G.ageFromBirth('') === null && Yc.G.ageFromBirth(Y + 1) === null);
+      /* the age moves on by itself: a profile saved last year with an age that is now out of date */
+      onboard(Yc.G); Yc.G.S.profile.birthYear = Y - 41; Yc.G.S.profile.bday = null; Yc.G.S.profile.age = 40; Yc.G.save();
+      const Yd = await boot({ before: w2 => { for (const k of Object.keys(Yc.w.localStorage)) w2.localStorage.setItem(k, Yc.w.localStorage.getItem(k)); } }); allErrs.push(...Yd.errs);
+      t('56 · a stored age follows the year on the next open', Yd.G.S.profile.age === 41, String(Yd.G.S.profile.age));
+      t('56 · and the settings row carries the year', Yd.w.__CLOUD.settingsRow().birth_year === Y - 41);
+      /* the details sheet: the year, and an age-only profile keeps its age */
+      onboard(Yd.G); delete Yd.G.S.profile.birthYear; Yd.G.S.profile.age = 34; Yd.G.save();
+      Yd.G.openDetails();
+      const range = Yd.d.querySelector('[data-range="birthYear"]');
+      t('56 · editing your numbers shows the year you were born, not an age slider', !!range && !Yd.d.querySelector('[data-range="age"]')
+        && new RegExp((Y - 34) + ' · 34 years').test(txt(Yd.d.getElementById('outbirthYear'))), txt(Yd.d.getElementById('outbirthYear')));
+      Yd.d.getElementById('saveDetails').click();
+      t('56 · saving an age-only profile keeps the same age and records the year', Yd.G.S.profile.age === 34 && Yd.G.S.profile.birthYear === Y - 34);
+      Yd.G.openDetails();
+      const r2 = Yd.d.querySelector('[data-range="birthYear"]'); r2.value = String(Y - 50); r2.dispatchEvent(new Yd.w.Event('input', { bubbles: true }));
+      Yd.d.getElementById('saveDetails').click();
+      t('56 · moving the year changes the age', Yd.G.S.profile.age === 50 && Yd.G.S.profile.birthYear === Y - 50);
+    }
+
+    /* ---- backing up waits for the project, then goes up on its own ---- */
+    {
+      const db5 = fakeSupabase(); db5.anonEnabled = false;
+      const W = await boot({ fetch: db5.fetch, before: live }); allErrs.push(...W.errs);
+      const CW = W.w.__CLOUD; onboard(W.G, { handle: 'wait_a' });
+      W.G.renderProgress(); W.d.getElementById('cloudBackup').click();
+      t('56 · Back up opens the two consents with no email box, and a way to sign in instead',
+        !!W.d.getElementById('sgHealth') && !!W.d.getElementById('sgTerms') && !W.d.getElementById('sgEmail') && !!W.d.getElementById('sgOther') && W.d.getElementById('sgBackup').disabled);
+      tickBox(W.w, W.d.getElementById('sgHealth')); tickBox(W.w, W.d.getElementById('sgTerms'));
+      W.d.getElementById('sgBackup').click(); await tick(200);
+      t('56 · when the project will not make the account, consent is kept and the phone waits', CW.hasConsent() && !CW.signedIn() && CW.backupWaiting());
+      W.G.renderProgress();
+      t('56 · the panel says it goes up on its own, and why it has not yet',
+        /goes up on its own/.test(txt(W.d.getElementById('cloudPanel'))) && /not switched on/.test(txt(W.d.getElementById('cloudPanel'))), txt(W.d.getElementById('cloudPanel')));
+      db5.anonEnabled = true;
+      const W2 = await boot({ fetch: db5.fetch, wait: 900, before: w2 => { for (const k of Object.keys(W.w.localStorage)) w2.localStorage.setItem(k, W.w.localStorage.getItem(k)); } }); allErrs.push(...W2.errs);
+      t('56 · the next open makes the account and backs up, without asking again',
+        W2.w.__CLOUD.isAnon() && db5.rows.state.length === 1 && db5.rows.settings.length === 1, db5.calls.join(' | '));
+      /* signing out of an account with an email never makes a fresh one behind someone's back */
+      const db6 = fakeSupabase();
+      const O2 = await boot({ fetch: db6.fetch, before: live }); allErrs.push(...O2.errs);
+      const CO2 = O2.w.__CLOUD; onboard(O2.G, { handle: 'out_o' }); CO2.recordConsent(); await CO2.startBackup();
+      CO2.C.session.anon = false; db6.users[CO2.myId()].anon = false; db6.users[CO2.myId()].email = 'o@example.ie';
+      CO2.signOut();
+      const callsBefore = db6.calls.length;
+      const O3 = await boot({ fetch: db6.fetch, wait: 900, before: w2 => { for (const k of Object.keys(O2.w.localStorage)) w2.localStorage.setItem(k, O2.w.localStorage.getItem(k)); } }); allErrs.push(...O3.errs);
+      t('56 · after signing out, the next open makes no new account', !O3.w.__CLOUD.signedIn() && !db6.calls.slice(callsBefore).some(c => c === 'POST /auth/v1/signup'), db6.calls.slice(callsBefore).join());
+    }
+
+    /* ---- the privacy policy and terms ---- */
+    {
+      const Lg = await boot({ before: live }); allErrs.push(...Lg.errs);
+      onboard(Lg.G); Lg.G.renderProgress(); Lg.d.getElementById('cloudBackup').click();
+      const link = Lg.d.querySelector('#cloudBody [data-legal="privacy"]');
+      t('56 · the consents link to the privacy policy and the terms', !!link && !!Lg.d.querySelector('#cloudBody [data-legal="terms"]'));
+      link.click();
+      const page = Lg.d.getElementById('legal');
+      t('56 · the policy opens as a page of its own, above the sheet', page && page.classList.contains('on') && Lg.d.getElementById('cloudSheet').classList.contains('on'));
+      t('56 · and reading it ticks nothing', !Lg.d.getElementById('sgHealth').checked && !Lg.d.getElementById('sgTerms').checked);
+      const pt = txt(page);
+      t('56 · it says what is kept, where, why, for how long, and how to get it or delete it',
+        /Ireland/.test(pt) && /Supabase/.test(pt) && /Article 9\(2\)\(a\)/.test(pt) && /How long it is kept/.test(pt) && /Download everything/.test(pt) && /Delete everything/.test(pt) && /Withdraw consent/.test(pt));
+      t('56 · names the regulator, the age of consent, and the version agreed to', /Data Protection Commission/.test(pt) && /16 or over/.test(pt) && pt.indexOf(Lg.w.__CLOUD.TERMS_VERSION) >= 0);
+      t('56 · and does not invent a contact address', Lg.G.LEGAL_CONTACT !== '' || /added here before anyone outside the test group/.test(pt));
+      t('56 · no em dashes anywhere in it', !/—/.test(pt));
+      Lg.d.dispatchEvent(new Lg.w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      t('56 · Escape closes the page and leaves the consent sheet open', !page.classList.contains('on') && Lg.d.getElementById('cloudSheet').classList.contains('on'));
+      Lg.G.openLegal('terms');
+      const tt = txt(Lg.d.getElementById('legal'));
+      t('56 · the terms say it is not medical advice and when to stop', /not medical advice/.test(tt) && /chest pain/.test(tt) && /Irish law/.test(tt) && !/—/.test(tt));
+      Lg.d.getElementById('legalBack').click();
+      t('56 · Back closes it', !Lg.d.getElementById('legal').classList.contains('on'));
+    }
+
+    /* ---- a changed policy pauses backing up until it is agreed again ---- */
+    {
+      const db7 = fakeSupabase();
+      const V = await boot({ fetch: db7.fetch, before: live }); allErrs.push(...V.errs);
+      const CV = V.w.__CLOUD; onboard(V.G, { handle: 'vee' }); CV.recordConsent(); await CV.startBackup();
+      V.G.S.profile.consent.version = '2026-10-b52'; V.G.save();
+      t('56 · consent to an older version no longer counts', !CV.hasConsent() && CV.consentStale());
+      const before7 = db7.rows.state[0].rev;
+      const p7 = await CV.pushState();
+      t('56 · and nothing more goes up', !p7.ok && db7.rows.state[0].rev === before7);
+      V.G.renderProgress();
+      t('56 · the panel says the words changed', /changed since you agreed/.test(txt(V.d.getElementById('cloudPanel'))) && /Read what changed/.test(txt(V.d.getElementById('cloudSignIn'))));
+      V.G.openData();
+      t('56 · withdrawing is still offered while data from the old consent is up there', !!V.d.getElementById('withdrawBtn'));
+      V.G.closeSheets(); V.G.renderProgress(); V.d.getElementById('cloudSignIn').click();
+      t('56 · the sheet explains, with both boxes unticked again', /have changed since you agreed/.test(txt(V.d.getElementById('cloudBody'))) && !V.d.getElementById('sgHealth').checked);
+      tickBox(V.w, V.d.getElementById('sgHealth')); tickBox(V.w, V.d.getElementById('sgTerms'));
+      V.d.getElementById('sgAgree').click(); await tick(200);
+      t('56 · agreeing again records the new version and backs up', CV.hasConsent() && db7.rows.settings[0].terms_version === CV.TERMS_VERSION && db7.rows.state[0].rev > before7);
+    }
+
+    /* ---- picking a handle, checked against the database ---- */
+    {
+      const db8 = fakeSupabase();
+      db8.users['other'] = { id: 'other', email: 'x@example.ie' }; db8.rows.profiles.push({ user_id: 'other', handle: 'taken_one' });
+      const Hd = await boot({ fetch: db8.fetch, before: live }); allErrs.push(...Hd.errs);
+      const CH = Hd.w.__CLOUD; onboard(Hd.G, { handle: 'f.x' }); CH.recordConsent();
+      const tok = 'tokHd'; db8.tokens[tok] = 'user-hd'; db8.users['user-hd'] = { id: 'user-hd', email: 'hd@example.ie' };
+      CH.C.session = { access_token: tok, user_id: 'user-hd', email: 'hd@example.ie', anon: false, expires_at: Date.now() + 36e5 };
+      await CH.ensureProfile(); Hd.G.renderProgress();
+      t('56 · a handle from before the rules gets a way to fix it', /Pick a handle/.test(txt(Hd.d.getElementById('handlePick'))) && /Pick a new one below/.test(txt(Hd.d.getElementById('cloudPanel'))));
+      Hd.d.getElementById('handlePick').click();
+      const hi = Hd.d.getElementById('sgHandle'), save = () => Hd.d.getElementById('sgHandleSave'), note = () => txt(Hd.d.getElementById('sgHandleNote'));
+      t('56 · the picker opens on the current handle', !!hi && Hd.d.getElementById('cloudSheet').classList.contains('on'));
+      type(Hd.w, hi, 'Ab'); await tick(30);
+      t('56 · too short is said straight away, without asking the server', /3 to 20/.test(note()) && save().disabled && !db8.handleChecks);
+      type(Hd.w, hi, 'Taken.One'); await tick(450);
+      t('56 · it is tidied to the rules and checked: someone has it', hi.value === 'taken_one' && /Someone already has @taken_one/.test(note()) && save().disabled && db8.handleChecks === 1, note());
+      type(Hd.w, hi, 'admin_1'); await tick(450);
+      t('56 · a blocked word is refused', /not allowed/.test(note()) && save().disabled, note());
+      type(Hd.w, hi, 'feargal_x'); await tick(450);
+      t('56 · a free one says so and can be saved', /@feargal_x is free/.test(note()) && !save().disabled, note());
+      save().click(); await tick(150);
+      t('56 · saving shares it and clears the problem', db8.rows.profiles.some(r => r.user_id === 'user-hd' && r.handle === 'feargal_x') && Hd.G.S.profile.handle === 'feargal_x' && !CH.C.handleIssue
+        && !Hd.d.getElementById('cloudSheet').classList.contains('on'));
+      Hd.G.renderProgress();
+      t('56 · the panel now shows the handle, with a way to change it', /@feargal_x · change/.test(txt(Hd.d.getElementById('handlePick'))));
+      db8.refuseHandleChange = true;
+      const r8 = await CH.saveHandle('another_one');
+      t('56 · a change the database refuses (once a month) is undone on the phone, with the reason', !r8.ok && /once a month/.test(r8.reason) && Hd.G.S.profile.handle === 'feargal_x', JSON.stringify(r8));
+      /* an account without an email has no handle to check */
+      const Ah = await boot({ fetch: db8.fetch, before: live }); allErrs.push(...Ah.errs);
+      onboard(Ah.G); Ah.w.__CLOUD.recordConsent(); await Ah.w.__CLOUD.startBackup(); const checks = db8.handleChecks;
+      t('56 · without an email, the handle check asks nothing of the server', (await Ah.w.__CLOUD.checkHandle('someone')) === 'unknown' && db8.handleChecks === checks);
+    }
+
+    /* ---- after the first logged session: add your email ---- */
+    {
+      const db9 = fakeSupabase();
+      const Cl = await boot({ fetch: db9.fetch, before: live }); allErrs.push(...Cl.errs);
+      const CC9 = Cl.w.__CLOUD; onboard(Cl.G, { handle: 'cl_a' }); CC9.recordConsent(); await CC9.startBackup();
+      const finish = async () => { Cl.G.startWorkout('t_push'); Cl.G.GYM.ex[0].sets.forEach(x => { x.kg = 40; x.reps = 8; x.done = true; }); Cl.G.finishWorkout(); await tick(30); };
+      await finish();
+      const card = Cl.d.getElementById('claimCard');
+      t('56 · the first logged session ends with a prompt to add an email', !!card && Cl.d.getElementById('gymBody').contains(card) && /without an email/.test(txt(card)));
+      t('56 · it is asked once, and remembered', !!Cl.G.S.profile.claimAsked);
+      Cl.d.getElementById('claimGo').click();
+      t('56 · tapping it opens adding an email, above the session', Cl.d.getElementById('cloudSheet').classList.contains('on') && !!Cl.d.getElementById('sgEmail') && /same account, nothing copied/.test(txt(Cl.d.getElementById('cloudBody'))));
+      Cl.G.closeSheets(); Cl.d.getElementById('gymDone') && Cl.d.getElementById('gymDone').click();
+      await finish();
+      t('56 · the second session does not ask again', !Cl.d.getElementById('claimCard'));
+      /* nobody without a backup, and nobody already with an email, is asked */
+      const Nb = await boot({ before: live }); allErrs.push(...Nb.errs); onboard(Nb.G);
+      Nb.G.startWorkout('t_push'); Nb.G.GYM.ex[0].sets.forEach(x => { x.kg = 40; x.reps = 8; x.done = true; }); Nb.G.finishWorkout(); await tick(30);
+      t('56 · a phone that is not backed up is not asked for an email', !Nb.d.getElementById('claimCard'));
     }
   }
 

@@ -1012,6 +1012,23 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 .consentmore{margin:0 0 12px;font-size:12.5px;color:var(--mute)}
 .consentmore summary{cursor:pointer;font-weight:600;color:var(--ink);padding:4px 0}
 .consentmore p{margin:6px 0 0;line-height:1.45}
+/* privacy policy and terms (build 53): a page of its own above everything,
+   so reading it never closes the sheet with the consent boxes underneath */
+.legal{position:fixed;inset:0;z-index:300;background:var(--paper);max-width:460px;margin:0 auto;display:none;flex-direction:column}
+.legal.on{display:flex}
+.legal-top{display:flex;align-items:center;padding:8px 10px;border-bottom:1px solid var(--line-soft);padding-top:calc(8px + env(safe-area-inset-top))}
+.legal-back{display:flex;align-items:center;gap:4px;font-weight:700;font-size:14px;color:var(--ink);min-height:44px;padding:0 8px}
+.legal-body{flex:1;overflow:auto;padding:4px 18px calc(18px + env(safe-area-inset-bottom))}
+.legal-body h2{font-family:"Archivo Black";font-size:26px;letter-spacing:-.05em;line-height:1.05;margin:14px 0 4px}
+.legal-ver{font-size:12px;color:var(--mute);margin:0 0 6px}
+.legal-body h4{font-size:14px;margin:18px 0 4px}
+.legal-body p{font-size:13.5px;line-height:1.55;margin:0;color:var(--subtle)}
+.legallinks{font-size:12.5px;color:var(--mute);margin:-4px 0 12px}
+.legallinks .inlinebtn{font-size:12.5px;min-height:32px}
+/* the one-time prompt to add an email, on the finish screen */
+.claimcard{display:flex;flex-direction:column;gap:6px;margin:16px 0 4px;padding:12px 14px;border-radius:12px;background:var(--t-marine);color:var(--ink);font-size:13px;line-height:1.45;text-align:left}
+.claimcard b{font-size:14px}
+.claimbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
 </style>
 </head>
 <body>
@@ -1280,7 +1297,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='52';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='53';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -1751,6 +1768,27 @@ const ageOf=p=>+((p||S.profile||{}).age)||0;
 const isTeen=p=>{ const a=ageOf(p); return a>=TEEN_MIN&&a<ADULT_AGE; };
 const tooYoung=a=>a!==undefined&&a!==null&&a!==''&&+a>0&&+a<TEEN_MIN;
 const canHaveAccount=p=>{ const a=ageOf(p); return !a||a>=ACCOUNT_MIN; };
+/* Year of birth, not age (build 53). An age typed once goes out of date; a
+   year does not, and it is what the settings row keeps. A year alone leaves
+   the age one out either way, which only matters in the years someone
+   crosses a line the app draws (13, 16, 18). Then the app asks whether the
+   birthday has been yet this year, and until it knows it takes the younger
+   age, the safe side of each line. Everywhere else a year is close enough:
+   a year of age moves the resting burn by 5 kcal. */
+const AGE_LINES=[TEEN_MIN,ACCOUNT_MIN,ADULT_AGE];
+const validBirthYear=y=>{ const n=+y, now=new Date().getFullYear(); return y!==''&&y!==null&&y!==undefined&&Number.isInteger(n)&&n>=now-110&&n<=now; };
+const birthdayMatters=y=>validBirthYear(y)&&AGE_LINES.indexOf(new Date().getFullYear()-(+y))>=0;
+function ageFromBirth(y,bday){
+  if(!validBirthYear(y)) return null;
+  const now=new Date().getFullYear(), base=now-(+y);
+  const known= bday&&bday.y===now? !!bday.passed : null;
+  if(known===true) return base;
+  if(known===false) return base-1;
+  return AGE_LINES.indexOf(base)>=0? base-1 : base;
+}
+/* the stored age follows the year, so it moves on by itself every birthday */
+function syncAge(p){ if(p&&validBirthYear(p.birthYear)){ const a=ageFromBirth(p.birthYear,p.bday); if(a!==null) p.age=a; } return p; }
+if(typeof S!=='undefined'&&S&&S.profile) syncAge(S.profile);
 const SUPPORT_TEEN=[
   ['Childline','Free, 24 hours, for anyone up to 18. Call 1800 66 66 66 or text 50101.','https://www.childline.ie'],
   ['Text About It','Free, 24 hours. Text HELLO to 50808.','https://www.textaboutit.ie'],
@@ -4699,16 +4737,25 @@ $('saveWeight').addEventListener('click',()=>{
   if(last&&last.d===k) last.kg=draft.weight; else S.weights.push({d:k,kg:draft.weight});
   save(); closeSheets(); renderAll(); toast('Logged at '+showW(draft.weight,S.profile.units==='imperial'));
 });
-function openDetails(){ draft=Object.assign({},S.profile); drawDetails(); openSheet('detailsSheet'); }
+function openDetails(){
+  draft=Object.assign({},S.profile);
+  /* From build 53 the year is kept, not the age. Someone who only ever gave an
+     age gets the year it implies, with this year's birthday taken as passed,
+     so their age reads exactly as before until they move the slider. */
+  if(!validBirthYear(draft.birthYear)&&+draft.age>0){
+    draft.birthYear=new Date().getFullYear()-(+draft.age); draft.bday={y:new Date().getFullYear(),passed:true}; }
+  drawDetails(); openSheet('detailsSheet'); }
+const bornText=d=>validBirthYear(d.birthYear)? d.birthYear+' · '+ageFromBirth(d.birthYear,d.bday)+' years' : 'not set';
 function drawDetails(){
   const imp=draft.units==='imperial';
   $('detailsBody').innerHTML=`<div class="pair">
       <button class="big-pick ${draft.sex==='f'?'on':''}" data-set="sex" data-val="f">Female</button>
       <button class="big-pick ${draft.sex==='m'?'on':''}" data-set="sex" data-val="m">Male</button></div>
     <button class="big-pick ${draft.sex==='x'?'on':''}" data-set="sex" data-val="x" style="width:100%;margin-top:8px">Rather not say</button>
-    <div class="field"><div class="fl"><div class="k">Age</div><div class="v" id="outage">${draft.age}</div>
+    <div class="field"><div class="fl"><div class="k">Born</div><div class="v" id="outbirthYear">${bornText(draft)}</div>
       <div class="unitsw"><button class="${!imp?'on':''}" data-units="metric">cm, kg</button><button class="${imp?'on':''}" data-units="imperial">ft, lb</button></div></div>
-      <input type="range" min="14" max="90" value="${draft.age}" data-range="age" aria-label="Age"></div>
+      <input type="range" min="${new Date().getFullYear()-90}" max="${new Date().getFullYear()-14}" value="${draft.birthYear}" data-range="birthYear" aria-label="Year you were born"></div>
+    <div id="detBday">${detBdayHTML()}</div>
     <div class="field"><div class="fl"><div class="k">Height</div><div class="v" id="outheight">${showH(draft.height,imp)}</div></div>
       <input type="range" min="135" max="215" value="${draft.height}" data-range="height" aria-label="Height"></div>
     <div class="field"><div class="fl"><div class="k">Weight</div></div>
@@ -4719,6 +4766,19 @@ function drawDetails(){
       <input id="detBf" type="number" inputmode="decimal" step="0.1" value="${draft.bodyFat||''}" placeholder="blank, and it is estimated"></div>
     <div class="note" id="stepsWorth">${detailsSplitText()}</div>`;
 }
+function detBdayHTML(){
+  if(!draft||!birthdayMatters(draft.birthYear)) return '';
+  const b=draft.bday&&draft.bday.y===new Date().getFullYear()? draft.bday.passed : null;
+  return `<div class="field"><div class="fl"><div class="k">Had your birthday yet this year?</div></div>
+    <div class="chips"><button class="${b===true?'on':''}" data-detbday="1">Yes</button><button class="${b===false?'on':''}" data-detbday="0">Not yet</button></div></div>`;
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-detbday]'); if(!b||!draft) return;
+  draft.bday={y:new Date().getFullYear(),passed:b.dataset.detbday==='1'}; draft.age=ageFromBirth(draft.birthYear,draft.bday);
+  const o=$('outbirthYear'); if(o) o.textContent=bornText(draft);
+  const x=$('detBday'); if(x) x.innerHTML=detBdayHTML();
+  const sw=document.getElementById('stepsWorth'); if(sw) sw.innerHTML=detailsSplitText();
+});
 /* The same figures the app will use once saved, worked out from the unsaved
    draft, so the person sees the consequence before they commit to it. */
 function detailsSplitText(){
@@ -4746,9 +4806,11 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('input',e=>{
   if(e.target.id==='onbPeriod'&&onbDraft){ onbDraft.lastPeriod=e.target.value; }
-  if(onbDraft&&['onbAge','onbHeight','onbWeight','onbGoal','onbSteps','onbBf'].includes(e.target.id)){
+  if(onbDraft&&['onbBorn','onbHeight','onbWeight','onbGoal','onbSteps','onbBf'].includes(e.target.id)){
     const k=e.target.id.replace('onb','').toLowerCase();
     onbDraft[k]= e.target.value===''? null : +e.target.value;
+    /* the year is what is asked; the age is worked out from it (build 53) */
+    if(k==='born'){ if(!birthdayMatters(onbDraft.born)) onbDraft.bday=null; onbDraft.age=ageFromBirth(onbDraft.born,onbDraft.bday); }
     clearTimeout(onbDraft._t);
     onbDraft._t=setTimeout(()=>{ const a=document.activeElement&&document.activeElement.id;
       onbRender(); const el=a&&document.getElementById(a);
@@ -4756,9 +4818,10 @@ document.addEventListener('input',e=>{
   }
   const r=e.target.closest('[data-range]'); if(!r||!draft) return;
   const k=r.dataset.range; draft[k]=+r.value;
+  if(k==='birthYear'){ draft.age=ageFromBirth(draft.birthYear,draft.bday); const x=$('detBday'); if(x) x.innerHTML=detBdayHTML(); }
   const out=$('out'+k);
   if(out) out.textContent = k==='stepTarget'? num(draft.stepTarget)
-    : (k==='age'? draft.age : (k==='height'? showH(draft.height,draft.units==='imperial') : showW(draft.weight,draft.units==='imperial')));
+    : (k==='birthYear'? bornText(draft) : (k==='height'? showH(draft.height,draft.units==='imperial') : showW(draft.weight,draft.units==='imperial')));
   /* every slider can move the answer, so the split follows all of them */
   const sw=document.getElementById('stepsWorth'); if(sw&&typeof detailsSplitText==='function') sw.innerHTML=detailsSplitText();
 });
@@ -4848,7 +4911,7 @@ let step=0, onbDraft=null;
 const cloudAvailable=()=>{ try{ return typeof cloudReady==='function'? !!cloudReady() : !!(window.__CLOUD&&window.__CLOUD.cloudReady()); }catch(e){ return false; } };
 const stepCount=()=>cloudAvailable()?6:5;
 const sameKit=(a,b)=>!!a&&a.length===b.length&&b.every(x=>a.indexOf(x)>=0);
-function startOnboarding(){ onbDraft={handle:S.profile.handle,aim:S.profile.aim,checkinDay:6,sex:'',cycle:false,lastPeriod:'',age:null,height:null,weight:null,activity:'mod',kit:ALL_KIT.slice()}; step=0; $('onb').classList.add('on'); onbRender(); }
+function startOnboarding(){ onbDraft={handle:S.profile.handle,aim:S.profile.aim,checkinDay:6,sex:'',cycle:false,lastPeriod:'',born:S.profile.birthYear||null,bday:S.profile.bday||null,age:ageFromBirth(S.profile.birthYear,S.profile.bday),height:null,weight:null,activity:'mod',kit:ALL_KIT.slice()}; step=0; $('onb').classList.add('on'); onbRender(); }
 function onbRender(){
   const b=$('onbBody');
   $('onbDots').innerHTML=Array.from({length:stepCount()},(_,i)=>`<i class="${i<=step?'on':''}"></i>`).join('');
@@ -4939,14 +5002,17 @@ function onbRender(){
       <div class="note" style="margin-top:6px">The resting burn equation differs by about 166 kcal between the two. Rather not say uses the average, which is less precise.</div>
       <div class="slab">You</div>
       <div class="twoup" style="gap:10px">
-        <div class="nf"><label>Age</label><input id="onbAge" type="number" inputmode="numeric" value="${onbDraft.age||''}" placeholder="36"></div>
+        <div class="nf"><label>Year you were born</label><input id="onbBorn" type="number" inputmode="numeric" min="${new Date().getFullYear()-110}" max="${new Date().getFullYear()}" value="${onbDraft.born||''}" placeholder="1990"></div>
         <div class="nf"><label>Height, cm</label><input id="onbHeight" type="number" inputmode="numeric" value="${onbDraft.height||''}" placeholder="178"></div></div>
+      ${birthdayMatters(onbDraft.born)? `<div class="field" style="margin-top:10px"><div class="fl"><div class="k">Had your birthday yet this year?</div></div>
+        <div class="chips"><button class="${onbDraft.bday&&onbDraft.bday.passed===true?'on':''}" data-onbbday="1">Yes</button><button class="${onbDraft.bday&&onbDraft.bday.passed===false?'on':''}" data-onbbday="0">Not yet</button></div></div>` : ''}
       <div class="twoup" style="gap:10px;margin-top:10px">
         <div class="nf"><label>${isTeen({age:onbDraft.age})?'Weight, kg (optional)':'Weight now, kg'}</label><input id="onbWeight" type="number" inputmode="decimal" step="0.1" value="${onbDraft.weight||''}" placeholder="82"></div>
         <div class="nf" style="${isTeen({age:onbDraft.age})?'display:none':''}"><label>Goal weight, kg</label><input id="onbGoal" type="number" inputmode="decimal" step="0.1" value="${onbDraft.goal||''}" placeholder="optional"></div></div>
       <div class="nf" style="margin-top:10px;${isTeen({age:onbDraft.age})?'display:none':''}"><label>Body fat %, if you know it</label>
         <input id="onbBf" type="number" inputmode="decimal" step="0.1" value="${onbDraft.bf||''}" placeholder="optional, from a scan or scale"></div>
       ${onbDraft.bf&&!validBodyFat(onbDraft.bf)? `<div class="warn" style="margin-top:8px">Body fat should be between 3 and 70%. Leave it blank and it will be estimated.</div>`:''}
+      ${onbDraft.born&&String(onbDraft.born).length>=4&&!validBirthYear(onbDraft.born)? `<div class="warn" style="margin-top:10px">That year does not look right. Four digits, like 1990.</div>` : ''}
       ${tooYoung(onbDraft.age)? `<div class="warn" style="margin-top:10px">Gauntlet is for people aged 13 and over. A parent, PE teacher or coach is the best person to help with being active at your age.</div>`
         : isTeen({age:onbDraft.age})? `<div class="teencard">
             <b>You are under 18, so Gauntlet works a bit differently for you.</b>
@@ -5037,27 +5103,19 @@ function onbRender(){
     onbDraft.email=''; $('onbNext').textContent='Build my week';
     return;
   }
+  /* The last step (build 53): back up without an email. Two separate,
+     unticked consents, and an account is made silently once both are given.
+     Skipping keeps everything on this phone, and the app works the same. An
+     email comes later, prompted after the first logged session. */
   if(step===5){
     const CL=window.__CLOUD;
     if(!onbDraft.agree) onbDraft.agree={health:false,terms:false};
     if(CL&&CL.signedIn()&&CL.hasConsent()){
       b.innerHTML=`<h2>Already backed up.</h2><p class="lead">You signed in earlier, so everything you set up here is backed up already.</p>`;
-      onbDraft.email=''; onbDraft.codeSent=false;
-    } else if(onbDraft.codeSent){
-      b.innerHTML=`<h2>Type the code.</h2><p class="lead">We emailed a 6-digit code to <b>${escHabit(onbDraft.email)}</b>. Type it here and you are signed in on this phone.</p>
-        <div class="nf" style="margin-bottom:10px"><label>Code</label><input id="onbCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456" value="${escHabit(onbDraft.code||'')}" aria-label="The code from the email" style="font-family:Archivo;font-size:22px;font-weight:700;letter-spacing:.3em;text-align:center"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="inlinebtn" id="onbResend">Send a new code</button><button class="inlinebtn" id="onbOtherEmail">Use a different email</button></div>
-        <div class="note" id="onbEmailNote" role="status">It runs out after a while. You can also skip this and do it later from Progress.</div>`;
-      const ci=$('onbCode');
-      if(ci) ci.addEventListener('input',()=>{ onbDraft.code=ci.value.replace(/\D/g,''); ci.value=onbDraft.code; onbCta(); });
     } else {
-      b.innerHTML=`<h2>Keep it safe?</h2><p class="lead">Back your week up and it is safe if you lose this phone, it works on any phone you sign in on, and you can see what the others are doing. No password: we email you a code to type in.</p>
-        <div class="nf" style="margin-bottom:10px"><label>Email</label>
-          <input id="onbEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" value="${escHabit(onbDraft.email||'')}" style="font-family:Archivo;font-size:15px;font-weight:600"></div>
+      b.innerHTML=`<h2>Keep it safe?</h2><p class="lead">Your week is on this phone. Back it up as well and it survives a lost phone or a cleared browser. No email, no password. You can add an email later to use it on another phone.</p>
         ${CL&&CL.consentHTML? CL.consentHTML('onb',onbDraft.agree) : ''}
-        <div class="note" id="onbEmailNote" role="status">You can skip this and do it later from Progress. Nothing is lost either way.</div>`;
-      const inp=$('onbEmail');
-      if(inp) inp.addEventListener('input',()=>{ onbDraft.email=inp.value.trim(); onbCta(); });
+        <button class="skipbtn" id="onbSkipBackup" style="margin-top:12px">Not now. Keep it on this phone only</button>`;
       b.querySelectorAll('#onbHealth,#onbTerms').forEach(x=>x.addEventListener('change',()=>{
         onbDraft.agree={health:!!($('onbHealth')||{}).checked,terms:!!($('onbTerms')||{}).checked}; onbCta(); }));
     }
@@ -5067,16 +5125,17 @@ function onbRender(){
     : (step===0? 'Claim it' : (step===3? 'Looks good' : 'Next'));
   onbCta();
 }
-const onbAccountLabel=()=>onbDraft.codeSent? 'Check code' : (onbDraft.email? 'Send me a code' : 'Skip for now');
+const onbBackedUp=()=>{ const CL=window.__CLOUD; return !!(CL&&CL.signedIn()&&CL.hasConsent()); };
+const onbAccountLabel=()=>onbBackedUp()? 'Start' : 'Back up and start';
 function onbCta(){
   $('onbNext').disabled = (step===0 && onbDraft.handle.length<3) || tooYoung(onbDraft.age);
   if(step===5&&canHaveAccount({age:onbDraft.age})){
     $('onbNext').textContent = onbAccountLabel();
-    const CL=window.__CLOUD, ag=onbDraft.agree||{};
-    if(onbDraft.codeSent) $('onbNext').disabled = !/^\d{6,10}$/.test(onbDraft.code||'');
-    else if(onbDraft.email) $('onbNext').disabled = !(CL&&CL.validEmail(onbDraft.email)&&ag.health&&ag.terms);
+    const ag=onbDraft.agree||{};
+    $('onbNext').disabled = !onbBackedUp()&&!(ag.health&&ag.terms);
   }
-  if(step===2) $('onbNext').disabled = (!onbDraft.sex&&!isTeen({age:onbDraft.age})) || tooYoung(onbDraft.age) || (!isTeen({age:onbDraft.age})&&!onbDraft.age);
+  if(step===2) $('onbNext').disabled = (!onbDraft.sex&&!isTeen({age:onbDraft.age})) || tooYoung(onbDraft.age) || (!isTeen({age:onbDraft.age})&&!onbDraft.age)
+    || (birthdayMatters(onbDraft.born)&&!(onbDraft.bday&&onbDraft.bday.y===new Date().getFullYear()));
   if(step===1) $('onbNext').disabled = (onbDraft.liftDays+onbDraft.cardioDays)>6
     || !(onbDraft.kit&&onbDraft.kit.length);
 }
@@ -5563,6 +5622,8 @@ document.addEventListener('click',e=>{
   if(ld){ onbDraft.liftDays=+ld.dataset.onblift; onbRender(); }
   const cd=e.target.closest('[data-onbcardio]');
   if(cd){ onbDraft.cardioDays=+cd.dataset.onbcardio; onbRender(); }
+  const ob=e.target.closest('[data-onbbday]');
+  if(ob){ onbDraft.bday={y:new Date().getFullYear(),passed:ob.dataset.onbbday==='1'}; onbDraft.age=ageFromBirth(onbDraft.born,onbDraft.bday); onbRender(); return; }
   const dd=e.target.closest('[data-onbday]');
   if(dd){ onbDraft.checkinDay=+dd.dataset.onbday; onbRender(); }
   const os=e.target.closest('[data-onbswap]');
@@ -5570,40 +5631,27 @@ document.addEventListener('click',e=>{
   const oe=e.target.closest('[data-onbedit]');
   if(oe){ openTplEdit(oe.dataset.onbedit); }
   if(e.target.closest('#tempoHelp')) openTempoHelp();
-  if(e.target.closest('#onbOtherEmail')){ onbDraft.codeSent=false; onbDraft.code=''; onbRender(); }
-  if(e.target.closest('#onbResend')&&window.__CLOUD){
-    const note=$('onbEmailNote'); if(note) note.textContent='Sending...';
-    window.__CLOUD.sendCode(onbDraft.email).then(r=>{ const n=$('onbEmailNote'); if(n) n.textContent=r.ok? 'A new code is on its way.' : r.reason; });
-  }
+  if(e.target.closest('#onbSkipBackup')){ $('onb').classList.remove('on'); go('today'); renderAll();
+    toast('Your week is ready, @'+S.profile.handle+'. It stays on this phone. Back up any time from Progress.'); }
 });
 $('onbNext').addEventListener('click',async()=>{
   if($('onbNext').disabled) return;
   if(step===4&&cloudAvailable()){ finishOnboarding(true); step=5; $('onb').classList.add('on'); onbRender(); return; }
   if(step<stepCount()-1){ step++; onbRender(); return; }
   if(step===5){
-    const CL=window.__CLOUD, note=$('onbEmailNote');
-    if(onbDraft.email&&CL&&canHaveAccount({age:onbDraft.age})){
-      $('onbNext').disabled=true;
-      if(!onbDraft.codeSent){
-        if(note) note.textContent='Sending...';
-        const r=await CL.sendCode(onbDraft.email);
-        if(r.ok){ onbDraft.codeSent=true; onbDraft.mode=r.mode; onbDraft.code=''; onbRender(); return; }
-        if(note) note.textContent=r.reason; onbCta(); return;
-      }
-      if(note) note.textContent='Checking...';
-      const r=await CL.verifyCode(onbDraft.email,onbDraft.code,onbDraft.mode);
-      if(!r.ok){ if(note) note.textContent=r.reason; onbCta(); return; }
-      await CL.afterSignIn(onbDraft.agree);
-      $('onb').classList.remove('on'); go('today'); renderAll();
-      toast(CL.hasConsent()? 'Signed in and backed up' : 'Signed in');
-      return;
+    const CL=window.__CLOUD, ag=onbDraft.agree||{};
+    $('onb').classList.remove('on'); go('today'); renderAll();
+    if(CL&&canHaveAccount({age:onbDraft.age})&&!onbBackedUp()&&ag.health&&ag.terms){
+      CL.recordConsent();
+      toast('Your week is ready. Backing it up now.');
+      const r=await CL.startBackup(); CL.renderCloudPanel();
+      toast(r.ok? 'Backed up. Add your email any time from Progress.' : 'Saved on this phone. It backs up on its own as soon as it can.');
     }
-    $('onb').classList.remove('on'); go('today'); return;
+    return;
   }
   finishOnboarding();
 });
 $('onbBack').addEventListener('click',()=>{
-  if(step===5&&onbDraft.codeSent){ onbDraft.codeSent=false; onbDraft.code=''; onbRender(); return; }
   if(step>0){ step--; onbRender(); } });
 function finishOnboarding(keepOpen){
   if(isTeen({age:onbDraft.age})){ if(onbDraft.aim==='lose') onbDraft.aim='hold'; onbDraft.goal=null; onbDraft.bf=null; }
@@ -5613,6 +5661,8 @@ function finishOnboarding(keepOpen){
     kit: (onbDraft.kit&&onbDraft.kit.length)? onbDraft.kit.slice() : ALL_KIT.slice(),
     sexAnswered:!!onbDraft.sex,
     age:onbDraft.age||S.profile.age, height:onbDraft.height||S.profile.height,
+    birthYear: validBirthYear(onbDraft.born)? +onbDraft.born : (S.profile.birthYear||null),
+    bday: validBirthYear(onbDraft.born)? (onbDraft.bday||null) : (S.profile.bday||null),
     weight:onbDraft.weight||S.profile.weight, activity:onbDraft.activity||S.profile.activity,
     stepTarget: validSteps(onbDraft.steps)? Math.round(+onbDraft.steps) : (S.profile.stepTarget||DEFAULT_STEPS),
     bodyFat: validBodyFat(onbDraft.bf)? +onbDraft.bf : (validBodyFat(S.profile.bodyFat)? S.profile.bodyFat : null),
@@ -10174,8 +10224,13 @@ const authHeaders=()=>({apikey:C.key,Authorization:'Bearer '+((C.session&&C.sess
    given separately from agreeing to how the app works, before any of it
    reaches the server. The database refuses settings or saved state from
    anyone who has not recorded both. */
-const TERMS_VERSION='2026-10-b52';
-const hasConsent=()=>{ const c=S.profile&&S.profile.consent; return !!(c&&c.health&&c.terms&&c.version); };
+/* The version of the privacy policy and terms someone agreed to. When either
+   changes, this changes, and backing up stops until they have read what changed
+   and agreed again (build 53). */
+const TERMS_VERSION='2026-10-b53';
+const hasConsent=()=>{ const c=S.profile&&S.profile.consent; return !!(c&&c.health&&c.terms&&c.version===TERMS_VERSION); };
+/* agreed once, to words that have since changed */
+const consentStale=()=>{ const c=S.profile&&S.profile.consent; return !!(c&&c.health&&c.terms&&c.version&&c.version!==TERMS_VERSION); };
 function recordConsent(){
   const now=new Date().toISOString();
   S.profile.consent={health:now,terms:now,version:TERMS_VERSION};
@@ -10215,8 +10270,8 @@ function takeSession(d){
     user_id:u.id||(C.session&&C.session.user_id)||null, email:u.email||null, anon:!!u.is_anonymous};
   saveCloud(); return true;
 }
-/* First open, once consent is given (build 53 calls this silently). Same user
-   id for life, so adding an email later copies nothing. */
+/* First open, once consent is given. Same user id for life, so adding an
+   email later copies nothing. */
 async function signInAnonymously(){
   if(signedIn()) return {ok:true,already:true};
   if(!hasConsent()) return {ok:false,reason:'consent'};
@@ -10224,6 +10279,26 @@ async function signInAnonymously(){
   if(!r.ok) return r;
   return takeSession(r.data)? {ok:true} : {ok:false,reason:'Supabase sent no session back.'};
 }
+/* Backing up without an email (build 53): the person has agreed, so an
+   account is made for them without asking for anything, and their week goes
+   up. C.autoAnon remembers that they chose this, so a phone that was offline,
+   or a project that was not ready, tries again later on its own. Signing out
+   or switching to another account turns it off, so a fresh account is never
+   made behind someone's back. Under 16 there is no account at all. */
+async function startBackup(){
+  if(!configured()) return {ok:false,reason:'This copy of the app has no project behind it.'};
+  if(!hasConsent()) return {ok:false,reason:'consent'};
+  if(!canHaveAccount(S.profile)) return {ok:false,reason:'Under 16, everything stays on this phone.'};
+  C.autoAnon=true; saveCloud();
+  if(!signedIn()){
+    const r=await signInAnonymously();
+    if(!r.ok){ C.pending=true; C.error= r.reason==='consent'? null : r.reason; saveCloud(); return r; }
+  }
+  C.error=null; saveCloud();
+  const p=await pushState();
+  return p.ok? {ok:true} : p;
+}
+const backupWaiting=()=>!signedIn()&&!!C.autoAnon&&hasConsent()&&configured();
 /* Email a code. An anonymous account adds the email to itself (the claim);
    anyone else gets a sign-in code, which also makes the account if it is new. */
 async function sendCode(email){
@@ -10291,7 +10366,7 @@ async function ensureSession(){
   if(C.session&&C.session.expires_at&&C.session.expires_at-Date.now()<120000) await refreshSession();
   return signedIn();
 }
-function signOut(){ C.session=null; C.handleIssue=null; saveCloud(); renderAll(); toast('Signed out. Your week stays on this device.'); }
+function signOut(){ C.session=null; C.handleIssue=null; C.autoAnon=false; saveCloud(); renderAll(); toast('Signed out. Your week stays on this device.'); }
 
 /* ---------- rest helpers ---------- */
 async function api(path,opts){
@@ -10317,7 +10392,6 @@ const upsert=(table,body,conflict)=>api(table+(conflict?'?on_conflict='+conflict
    targets, year of birth and the two consents. The whole saved state still
    travels as well until phase 2 moves it into tables; this row is what other
    devices and, later, friends' features read without opening everything. */
-const validBirthYear=y=>{ const n=+y, now=new Date().getFullYear(); return Number.isInteger(n)&&n>=now-110&&n<=now; };
 function settingsRow(){
   const c=S.profile.consent||{};
   return {user_id:myId(),
@@ -10347,6 +10421,7 @@ async function pullSettings(){
   if(b.target!==undefined) S.target=b.target;
   if(b.targets) S.targets=b.targets;
   if(validBirthYear(row.birth_year)) S.profile.birthYear=row.birth_year;
+  syncAge(S.profile);
   S.rev=row.rev; _save(); renderAll();
   return {ok:true,applied:true};
 }
@@ -10370,7 +10445,7 @@ async function pullState(){
   if(!row) return {ok:true,applied:false,reason:'nothing up there yet'};
   const inbound = row.payload && row.payload.v!==4 ? migrate(row.payload) : row.payload;
   if(inbound && (row.rev||0)>(S.rev||0)){
-    S=normalise(inbound); ensurePlan(); save(); renderAll();
+    S=normalise(inbound); syncAge(S.profile); ensurePlan(); save(); renderAll();
     return {ok:true,applied:true};
   }
   return {ok:true,applied:false,reason:'this device is the newer one'};
@@ -10383,7 +10458,9 @@ function queuePush(){
 }
 const _save=save;
 save=function(){ S.rev=(S.rev||0)+1; const r=_save(); queuePush(); return r; };
-window.addEventListener('online',()=>{ if(C.pending) pushState().then(renderCloudPanel); });
+window.addEventListener('online',()=>{
+  if(backupWaiting()) startBackup().then(renderCloudPanel);
+  else if(C.pending&&signedIn()) pushState().then(renderCloudPanel); });
 
 /* ---------- the shared side ---------- */
 let REMOTE={profiles:{},posts:[],follows:[],loaded:false};
@@ -10478,8 +10555,29 @@ logSession=function(sess){
     publishPost(res.post);
     if(src) recordTry(src.remoteId);
   }
+  if(claimDue()) setTimeout(showClaimCard,0);
   return res;
 };
+/* After the first logged session, once (build 53): an account without an
+   email is safe on the server, but lost with the phone, so this is the
+   moment to ask. It sits on the finish screen, where the session has just
+   been saved, rather than interrupting it. Required before adding a friend,
+   which arrives in phase 3. */
+const claimDue=()=>isAnon()&&hasConsent()&&!S.profile.claimAsked;
+function showClaimCard(){
+  if(!claimDue()) return;
+  const host=document.querySelector('#gym.on #gymBody .summary')||document.querySelector('#player.on #stage .finish');
+  if(!host||document.getElementById('claimCard')) return;
+  host.insertAdjacentHTML('beforeend',`<div class="claimcard" id="claimCard" role="status">
+    <b>Keep this safe</b><span>Your sessions are backed up, but without an email. Add one and you can get everything back on a new phone. We email you a code, no password.</span>
+    <div class="claimbtns"><button class="mini go" id="claimGo">Add your email</button><button class="mini quiet" id="claimLater">Later</button></div></div>`);
+  S.profile.claimAsked=todayKey(); save();
+}
+document.addEventListener('click',e=>{
+  if(e.target.closest('#claimGo')){ e.stopPropagation(); const c=document.getElementById('claimCard'); if(c) c.remove(); openSignIn(); }
+  if(e.target.closest('#claimLater')){ e.stopPropagation(); const c=document.getElementById('claimCard'); if(c) c.remove();
+    toast('Any time from Progress, under Account.'); }
+},true);
 
 /* ---------- your data, and getting it back out ----------
    An app that keeps a record of somebody's body, their food and their moods owes
@@ -10618,7 +10716,7 @@ async function eraseRemote(){
    is on this device stays. If anything is left up there, consent is kept on
    record, because the data it covers is still held. */
 async function withdrawConsent(){
-  if(!signedIn()){ if(S.profile.consent){ delete S.profile.consent; save(); } return {ok:true,left:[]}; }
+  if(!signedIn()){ if(S.profile.consent){ delete S.profile.consent; save(); } C.autoAnon=false; C.pending=false; C.error=null; saveCloud(); return {ok:true,left:[]}; }
   const me=encodeURIComponent(myId()), left=[];
   for(const [label,table] of [['your saved data','state'],['your settings','settings']]){
     const q=table+'?user_id=eq.'+me;
@@ -10633,7 +10731,7 @@ async function withdrawConsent(){
   }
   if(left.length) return {ok:false,left};
   delete S.profile.consent; _save();
-  C.session=null; C.pending=false; C.error=null; C.lastPush=null; saveCloud();
+  C.session=null; C.pending=false; C.error=null; C.lastPush=null; C.autoAnon=false; saveCloud();
   return {ok:true,left:[]};
 }
 function eraseLocal(){
@@ -10664,7 +10762,7 @@ function openData(){
     <button class="sheetcta" id="restoreBtn" style="background:var(--grey-btn);color:var(--ink);margin-top:8px">Restore from a download</button>
     <input type="file" id="restoreFile" accept="application/json,.json" style="display:none" aria-label="Choose a Gauntlet download">
     <div class="note" id="restoreNote">${(()=>{ try{ return localStorage.getItem(RESTORE_BACKUP)? 'This phone was restored from a download. <button class="inlinebtn" id="restoreUndo">Undo the restore</button>' : 'For a new phone, or to go back to an earlier copy. It shows what is in the file before replacing anything.'; }catch(e){ return ''; } })()}</div>
-    ${signed&&hasConsent()?`<div class="method" style="margin-top:14px"><b>Stop backing up</b><span>Withdraws your consent to Gauntlet holding your health information. Your saved data and settings are deleted from the server and checked, then this device signs out. Everything on this device stays.</span></div>
+    ${(signed||backupWaiting())&&(hasConsent()||consentStale())?`<div class="method" style="margin-top:14px"><b>Stop backing up</b><span>Withdraws your consent to Gauntlet holding your health information. Your saved data and settings are deleted from the server and checked, then this device signs out. Everything on this device stays.</span></div>
     <button class="sheetcta" id="withdrawBtn" style="background:var(--grey-btn);color:var(--ink)">Withdraw consent</button>
     <div class="note" id="withdrawNote"></div>`:''}
     <div class="method" style="margin-top:14px"><b>Delete it all</b><span>${signed
@@ -10713,13 +10811,16 @@ document.addEventListener('click',async e=>{
 
 /* ---------- the account panel ---------- */
 const HANDLE_ISSUES={
-  format:h=>'Your handle @'+h+' is kept on this device but not shared yet: handles are now 3 to 20 letters, numbers or underscores. You can pick a new one in the next update.',
-  taken:h=>'Someone else already has @'+h+', so it is not shared yet. You can pick another in the next update.',
+  format:h=>'Your handle @'+h+' is kept on this device but not shared yet: handles are now 3 to 20 letters, numbers or underscores. Pick a new one below.',
+  taken:h=>'Someone else already has @'+h+', so it is not shared yet. Pick another below.',
   refused:h=>'@'+h+' was refused, either because it is not allowed or because a handle can only change once a month.'
 };
 function cloudStatus(){
   if(!configured()) return 'No account needed. Everything stays on this device.';
-  if(!signedIn()) return 'No account yet. Back up and your week is safe, works on a second device, and you can see the others.';
+  if(!signedIn()&&!canHaveAccount(S.profile)) return 'Under 16, everything stays on this phone. You can back up when you turn 16, and nothing is lost.';
+  if(backupWaiting()) return 'Not backed up yet. It goes up on its own as soon as it can.'+(C.error? ' Last try: '+C.error : '');
+  if(!signedIn()) return 'Only on this phone. Back up and your week is safe if you lose it, and you can add an email later to use it on another phone.';
+  if(consentStale()) return 'The privacy policy or terms have changed since you agreed, so backing up has paused until you have read them.';
   if(!hasConsent()) return 'Signed in, but nothing is backed up until you agree to it.';
   if(C.pending) return (isAnon()?'Backed up without an email.':'Signed in.')+' Waiting for a connection to back up.';
   if(C.error) return C.error;
@@ -10733,11 +10834,14 @@ function renderCloudPanel(){
     <div class="note" style="margin:0 0 10px">${escHabit(cloudStatus())}</div>
     ${claimed()&&C.handleIssue&&HANDLE_ISSUES[C.handleIssue]?`<div class="note" style="margin:-4px 0 10px">${escHabit(HANDLE_ISSUES[C.handleIssue](h))}</div>`:''}
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      ${!signedIn()&&configured()?`<button class="mini go" id="cloudSignIn">Back up or sign in</button>`:''}
-      ${signedIn()&&!hasConsent()?`<button class="mini go" id="cloudSignIn">Agree and back up</button>`:''}
+      ${!signedIn()&&configured()&&canHaveAccount(S.profile)&&!backupWaiting()?`<button class="mini go" id="cloudBackup">Back up</button><button class="mini" id="cloudSignIn">Sign in with email</button>`:''}
+      ${backupWaiting()?`<button class="mini go" id="cloudBackup">Try now</button><button class="mini" id="cloudSignIn">Sign in with email</button>`:''}
+      ${signedIn()&&!hasConsent()?`<button class="mini go" id="cloudSignIn">${consentStale()?'Read what changed':'Agree and back up'}</button>`:''}
       ${isAnon()&&hasConsent()?`<button class="mini go" id="cloudSignIn">Add your email</button>`:''}
+      ${claimed()?`<button class="mini${C.handleIssue?' go':''}" id="handlePick">${C.handleIssue?'Pick a handle':'@'+escHabit(h)+' · change'}</button>`:''}
       ${claimed()?`<button class="mini quiet" id="cloudOut">Sign out</button>`:''}
       <button class="mini" id="dataBtn">Your data</button>
+      <button class="mini quiet" data-legal="privacy">Privacy</button>
       ${cloudReady()?'':`<button class="mini" id="cloudSetup">${configured()?'Connection':'Connect a project'}</button>`}</div>
     ${cloudTarget()==='test'?`<div class="note">Connected to the test project. Open the app with ?cloud=live to go back to the real one.</div>`:''}
     ${!configured()?`<div class="note">This copy of the app has no project behind it, so there is nothing to sign in to. Everything stays on this device.</div>`:''}`;
@@ -10762,7 +10866,8 @@ const CONSENT_TERMS='I have read what Gauntlet holds and where, and agree to it 
 function consentHTML(pre,on){
   return `<label class="consent"><input type="checkbox" id="${pre}Health" ${on&&on.health?'checked':''}><span>${CONSENT_HEALTH}</span></label>
     <label class="consent"><input type="checkbox" id="${pre}Terms" ${on&&on.terms?'checked':''}><span>${CONSENT_TERMS}</span></label>
-    <details class="consentmore"><summary>What Gauntlet holds, and where</summary><p>${heldText(true)}</p></details>`;
+    <details class="consentmore"><summary>What Gauntlet holds, and where</summary><p>${heldText(true)}</p></details>
+    <div class="legallinks">Read the <button class="inlinebtn" data-legal="privacy">privacy policy</button> and the <button class="inlinebtn" data-legal="terms">terms</button>.</div>`;
 }
 const consentTicked=pre=>{ const a=document.getElementById(pre+'Health'), b=document.getElementById(pre+'Terms'); return !!(a&&a.checked&&b&&b.checked); };
 const codeInputHTML=id=>`<input id="${id}" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456" aria-label="The code from the email" style="font-family:Archivo;font-size:22px;font-weight:700;letter-spacing:.3em;text-align:center">`;
@@ -10773,8 +10878,26 @@ let SIGN={step:'email',email:'',mode:'email',fromOnb:false,agree:{health:false,t
 function drawSignIn(){
   const body=document.getElementById('cloudBody'); if(!body) return;
   const needConsent=!hasConsent();
+  if(SIGN.step==='backup'){
+    body.innerHTML=`<div class="note" style="padding-top:0">Your week goes up to the server and is safe if this phone is lost or its browser is cleared. No email or password: you can add an email later to use it on another phone.</div>
+      ${consentHTML('sg',SIGN.agree)}
+      <button class="sheetcta" id="sgBackup" ${SIGN.agree.health&&SIGN.agree.terms?'':'disabled'}>Back up</button>
+      <div style="text-align:center;margin-top:8px"><button class="inlinebtn" id="sgOther">Already have an account? Sign in with your email</button></div>
+      <div class="note" id="sgResult" role="status"></div>`;
+    return;
+  }
+  if(SIGN.step==='handle'){
+    body.innerHTML=`<div class="note" style="padding-top:0">Your handle is how friends find you. 3 to 20 letters, numbers or underscores, and it can change once a month.</div>
+      <div class="handle"><span>@</span><input id="sgHandle" value="${escHabit(SIGN.handle||'')}" placeholder="yourname" autocomplete="off" spellcheck="false" autocapitalize="off" aria-label="Handle"></div>
+      <div class="note" id="sgHandleNote" role="status">${escHabit(handleNoteText(SIGN.check))}</div>
+      <button class="sheetcta" id="sgHandleSave" ${SIGN.check&&SIGN.check.v==='ok'&&SIGN.check.h===SIGN.handle?'':'disabled'}>Use this handle</button>
+      <div class="note" id="sgResult" role="status"></div>`;
+    return;
+  }
   if(SIGN.step==='consent'){
-    body.innerHTML=`<div class="note" style="padding-top:0">Nothing has been backed up yet. Agree to it below and your week goes up straight away.</div>
+    body.innerHTML=`<div class="note" style="padding-top:0">${consentStale()
+        ? 'The privacy policy or terms have changed since you agreed. Have a read, and agree again to keep backing up. Until then nothing new goes up.'
+        : 'Nothing has been backed up yet. Agree to it below and your week goes up straight away.'}</div>
       ${consentHTML('sg',SIGN.agree)}
       <button class="sheetcta" id="sgAgree" ${SIGN.agree.health&&SIGN.agree.terms?'':'disabled'}>Agree and back up</button>
       <div class="note" id="sgResult" role="status"></div>`;
@@ -10802,10 +10925,51 @@ function drawSignIn(){
 }
 function openSignIn(opts){
   const o=opts||{};
-  SIGN={step: signedIn()&&!hasConsent()? 'consent' : 'email', email:'', mode:'email', fromOnb:!!o.fromOnb,
-    agree:{health:false,terms:false}};
+  SIGN={step: o.step || (signedIn()&&!hasConsent()? 'consent' : 'email'), email:'', mode:'email', fromOnb:!!o.fromOnb,
+    agree:{health:false,terms:false}, handle:o.handle||'', check:null};
   drawSignIn();
   openSheet('cloudSheet');
+}
+/* ---------- picking a handle (build 53) ----------
+   Checked against the database while typing, by the same rules it enforces
+   when the handle is saved: format, the blocklist, and whether someone else
+   has it. Only accounts with an email can check, because only they can have
+   a handle. */
+const HANDLE_VERDICTS={ok:h=>'@'+h+' is free.', taken:h=>'Someone already has @'+h+'.', blocked:h=>'@'+h+' is not allowed. Try another.',
+  format:()=>'3 to 20 letters, numbers or underscores.', checking:h=>'Checking @'+h+'...', unknown:()=>'Could not check just now. It is checked again when it is saved.',
+  same:h=>'@'+h+' is already yours.'};
+function handleNoteText(c){ return c&&HANDLE_VERDICTS[c.v]? HANDLE_VERDICTS[c.v](c.h) : HANDLE_VERDICTS.format(); }
+const cleanHandle=v=>String(v||'').replace(/[.\s]/g,'_').replace(/[^a-z0-9_]/gi,'').toLowerCase().slice(0,20);
+async function checkHandle(h){
+  h=cleanHandle(h);
+  if(!HANDLE_RE.test(h)) return 'format';
+  if(!claimed()) return 'unknown';
+  const r=await api('rpc/handle_available',{method:'POST',headers:authHeaders(),body:JSON.stringify({h})});
+  return r.ok&&typeof r.data==='string'&&HANDLE_VERDICTS[r.data]? r.data : 'unknown';
+}
+let handleTimer=null;
+function queueHandleCheck(){
+  clearTimeout(handleTimer);
+  const h=SIGN.handle;
+  const paint=()=>{ const n=document.getElementById('sgHandleNote'); if(n) n.textContent=handleNoteText(SIGN.check);
+    const b=document.getElementById('sgHandleSave'); if(b) b.disabled=!(SIGN.check&&(SIGN.check.v==='ok'||SIGN.check.v==='unknown')&&SIGN.check.h===SIGN.handle); };
+  if(!HANDLE_RE.test(h)){ SIGN.check={h,v:'format'}; paint(); return; }
+  if(h===String(S.profile.handle||'')&&!C.handleIssue){ SIGN.check={h,v:'same'}; paint(); return; }
+  SIGN.check={h,v:'checking'}; paint();
+  handleTimer=setTimeout(async()=>{ const v=await checkHandle(h); if(SIGN.handle===h){ SIGN.check={h,v}; paint(); } },350);
+}
+async function saveHandle(h){
+  h=cleanHandle(h);
+  if(!HANDLE_RE.test(h)) return {ok:false,reason:HANDLE_VERDICTS.format()};
+  const before=S.profile.handle, issueBefore=C.handleIssue;
+  S.profile.handle=h; save();
+  const r=await ensureProfile();
+  if(r&&r.ok){ if(typeof ME!=='undefined'){ ME.n=h; ME.full=h.replace(/[._]/g,' '); } return {ok:true}; }
+  /* the database said no, so the phone goes back to what it had */
+  S.profile.handle=before; save();
+  const why=C.handleIssue==='taken'? HANDLE_VERDICTS.taken(h) : (C.handleIssue==='refused'? 'That was refused. A handle can only change once a month, and some words are not allowed.' : ((r&&r.reason)||'That did not save. Try again when you have signal.'));
+  C.handleIssue=issueBefore; saveCloud();
+  return {ok:false,reason:why};
 }
 function signNote(t){ const n=document.getElementById('sgResult'); if(n) n.textContent=t; }
 /* After a code is accepted or consent is given: consent first, then settings
@@ -10836,6 +11000,7 @@ document.addEventListener('input',e=>{
   if(!document.getElementById('cloudSheet')||!e.target.closest('#cloudBody')) return;
   if(e.target.id==='sgEmail'){ SIGN.email=e.target.value.trim(); }
   if(e.target.id==='sgCode'){ const v=e.target.value.replace(/\D/g,''); if(v!==e.target.value) e.target.value=v; }
+  if(e.target.id==='sgHandle'){ const v=cleanHandle(e.target.value); if(v!==e.target.value) e.target.value=v; SIGN.handle=v; queueHandleCheck(); return; }
   const send=document.getElementById('sgSend'); if(send) send.disabled=!(validEmail(SIGN.email)&&(hasConsent()||consentTicked('sg')));
 });
 document.addEventListener('change',e=>{
@@ -10843,6 +11008,7 @@ document.addEventListener('change',e=>{
   SIGN.agree={health:!!(document.getElementById('sgHealth')||{}).checked, terms:!!(document.getElementById('sgTerms')||{}).checked};
   const send=document.getElementById('sgSend'); if(send) send.disabled=!(validEmail(SIGN.email)&&consentTicked('sg'));
   const agree=document.getElementById('sgAgree'); if(agree) agree.disabled=!consentTicked('sg');
+  const bk=document.getElementById('sgBackup'); if(bk) bk.disabled=!consentTicked('sg');
 });
 async function sendFromSheet(){
   signNote('Sending...');
@@ -10860,6 +11026,25 @@ async function sendFromSheet(){
 document.addEventListener('click',async e=>{
   if(e.target.closest('#cloudSetup')) openCloudSetup();
   if(e.target.closest('#cloudSignIn')) openSignIn();
+  if(e.target.closest('#cloudBackup')){
+    if(hasConsent()){ const r=await startBackup(); renderCloudPanel(); toast(r.ok? 'Backed up' : 'Not backed up yet. It tries again on its own.'); }
+    else openSignIn({step:'backup'});
+    return; }
+  if(e.target.closest('#handlePick')){ openSignIn({step:'handle',handle:String(S.profile.handle||'')}); queueHandleCheck(); return; }
+  if(e.target.closest('#sgBackup')){
+    const b=e.target.closest('#sgBackup'); if(b.disabled) return;
+    recordConsent(); b.disabled=true; signNote('Backing up...');
+    const r=await startBackup();
+    closeSheets(); renderAll();
+    toast(r.ok? 'Backed up. Add your email any time from Progress.' : 'Saved on this phone. It backs up on its own as soon as it can.');
+    return; }
+  if(e.target.closest('#sgHandleSave')){
+    const b=e.target.closest('#sgHandleSave'); if(b.disabled) return;
+    b.disabled=true; signNote('Saving...');
+    const r=await saveHandle(SIGN.handle);
+    if(r.ok){ closeSheets(); renderAll(); toast('You are @'+S.profile.handle); }
+    else { b.disabled=false; signNote(r.reason); }
+    return; }
   if(e.target.closest('#onbSignIn')) openSignIn({fromOnb:true});
   if(e.target.closest('#cloudOut')) signOut();
   if(e.target.closest('#cloudSync')){ const r=await pushState(); await loadRemote(); renderCloudPanel(); toast(r.ok?'Backed up':(r.reason||'Could not back up')); }
@@ -10878,7 +11063,7 @@ document.addEventListener('click',async e=>{
     signNote('Tidying up this phone\'s old account...');
     const er=await eraseRemote();
     if(!er.done){ signNote('This phone\'s old account could not be removed yet ('+er.left.join(', ')+'). Try again when you have signal.'); return; }
-    C.session=null; saveCloud(); SIGN.mode='email'; await sendFromSheet(); return;
+    C.session=null; C.autoAnon=false; saveCloud(); SIGN.mode='email'; await sendFromSheet(); return;
   }
   if(e.target.closest('#sgVerify')){
     const b=e.target.closest('#sgVerify'); if(b.disabled) return;
@@ -10910,6 +11095,8 @@ renderProgress=function(){
   const onb=document.getElementById('onb');
   if(onb&&onb.classList.contains('on')&&typeof onbRender==='function') onbRender();
   if(readAuthHash()){ await fetchUser(); }
+  /* agreed to back up, but the account could not be made at the time */
+  if(backupWaiting()){ await startBackup(); renderCloudPanel(); }
   if(signedIn()){
     await ensureSession();
     if(claimed()) await ensureProfile();
@@ -10930,7 +11117,8 @@ function setBuildConfig(url,key){ CLOUD_CONFIG.url=url; CLOUD_CONFIG.key=key;
 window.__CLOUD={get C(){return C},set C(v){C=v}, CLOUD_CONFIG, cloudReady, setBuildConfig,get REMOTE(){return REMOTE},set REMOTE(v){REMOTE=v},
   loadCloud,saveCloud,configured,signedIn,isAnon,claimed,myId,base,authHeaders,readAuthHash,fetchUser,
   CLOUD_PROJECTS,cloudTarget,cloudTargetFromUrl,TERMS_VERSION,hasConsent,recordConsent,validEmail,authReason,authCall,takeSession,
-  signInAnonymously,sendCode,verifyCode,settingsRow,pushSettings,pullSettings,validBirthYear,HANDLE_RE,withdrawConsent,
+  signInAnonymously,startBackup,backupWaiting,consentStale,claimDue,showClaimCard,checkHandle,saveHandle,cleanHandle,queueHandleCheck,HANDLE_VERDICTS,
+  sendCode,verifyCode,settingsRow,pushSettings,pullSettings,validBirthYear,HANDLE_RE,withdrawConsent,
   openSignIn,drawSignIn,afterSignIn,get SIGN(){return SIGN},set SIGN(v){SIGN=v},consentHTML,CONSENT_HEALTH,CONSENT_TERMS,heldText,
   refreshSession,ensureSession,signOut,api,upsert,pushState,pullState,loadRemote,publishPost,recordTry,
   toggleRemoteFollow,ensureProfile,cloudStatus,renderCloudPanel,personFor,CLOUD_KEY,
@@ -11791,6 +11979,85 @@ Object.assign(window.__G||{},{STYLES,circStyle,HIFB,HIFB_ORDER,HIFB_DAYS,hifbPat
   hifbSummary,hifbDetail,openSwap,drawSwapRows,swapSuggest,tplPreview,FIBRE,FIBRE_ROUGH,fibreOf,fibreInfo,openFibre,fibreSheetHtml,hifbProgressPanel,openHifbWhy,tplEntries,drawTplRows,tplFamily,TPL_FILTERS,startWorkout,finishWorkout,loggedTraining,plannedTraining,maintenance,openStyleSheet});
 try{ Object.defineProperty(window.__G,'swapView',{get:()=>swapView,set:v=>{swapView=v},configurable:true}); }catch(e){}
 try{ Object.defineProperty(window.__G,'tplView',{get:()=>tplView,set:v=>{tplView=v},configurable:true}); }catch(e){}
+</script>
+
+<script>
+/* =====================================================================
+   Privacy policy and terms (build 53).
+   Plain English, written to say what the app actually does, and checked
+   against the code: what is stored, where, who can read it, how long it is
+   kept, and how to get it or delete it. It is a draft for a solicitor to
+   review before anyone outside the test group is invited.
+   When either text changes, TERMS_VERSION in cloud.js changes with it, and
+   everyone who backs up is asked to read it and agree again.
+   ===================================================================== */
+/* The email for data protection requests. Empty until Feargal picks one; the
+   policy says so rather than inventing an address. */
+const LEGAL_CONTACT='';
+const contactLine=()=>LEGAL_CONTACT
+  ? 'Email <b>'+escHabit(LEGAL_CONTACT)+'</b> and you will get an answer within a month, which is what the law requires.'
+  : 'A contact email for anything the app cannot do for you is added here before anyone outside the test group is invited. Until then, everything below can be done in the app itself.';
+const LEGAL={
+  privacy:{title:'Privacy policy', sections:()=>[
+    ['The short version','Gauntlet keeps your training, food and body numbers so it can plan your week. They stay on your phone unless you choose to back them up. If you do, a copy is kept on a server in Ireland that only your account can read. No advertising, no selling, no third party analytics or tracking. You can download everything, or delete everything, at any time from Your data.'],
+    ['Who is responsible','Gauntlet is a small independent app made in Ireland. Its maker decides what is collected and why, which makes them the controller under the GDPR. '+contactLine()],
+    ['What is kept on your phone','Everything you put in: your profile (handle, aim, sex, year of birth, height, weight, steps target, equipment), your week, weigh ins, food, sleep, workouts and runs, check ins, pain notes, and your cycle if you track it. It lives in this browser\'s own storage on this device. Nothing leaves the phone unless you back up.'],
+    ['What is kept on the server, if you back up','A copy of the same data, plus your settings and the date and version of what you agreed to. If you add an email, your email address too, used only to send you sign-in codes. If you have an email on your account, your handle, your aim and anything you post to the feed can be seen by other people using Gauntlet with an email. Nothing else of yours can.'],
+    ['Health information','Weight, body measurements, food, sleep, training, check ins, pain notes and your cycle count as health data, which the law protects more strongly. It is only kept on the server if you tick the box agreeing to it, separately from the terms, and you can take that back at any time: Your data, Withdraw consent. That deletes it from the server, checks it is gone, and leaves your phone as it is.'],
+    ['Why it is used, and the legal basis','Only to run the app for you: to plan your week, work out your targets, keep your copy safe and put it on your other phones. Health information is kept on the basis of your explicit consent (GDPR Article 9(2)(a)). The rest is kept because it is needed to give you the app you asked for (Article 6(1)(b)). Nothing is used to train AI models, profile you for anyone else, or decide anything about you without you.'],
+    ['Where it is kept, and who helps','The server is Supabase, in the EU (Ireland, eu-west-1). Supabase stores and serves the data for Gauntlet and may not use it for anything else. The app itself is served by GitHub Pages, and its typeface by Google Fonts. Like any website, those see your internet address when your phone loads the app; they never see what you log.'],
+    ['Who can read it','Only you. The database enforces it, not just the app: every private row can be read only by the account it belongs to, and that is tested automatically before every release. The maker of Gauntlet can reach the database in order to keep it running. Everything travels over encrypted connections.'],
+    ['The coach, if you set it up','The coach sends nothing anywhere until you give it an endpoint of your own. Then it sends your brief (weights, sessions, check ins, habits, your target and the notes you wrote) to that address and nowhere else. What happens to it there is between you and whoever runs it.'],
+    ['How long it is kept','On your phone, until you delete it. On the server, until you withdraw consent, delete everything, or delete your account, which removes every row and the sign-in itself.'],
+    ['Your rights','You can see all of it (Your data, Download everything: one plain file), correct it (edit anything in the app), move it (that file works anywhere), delete it (Delete everything), and withdraw consent (Withdraw consent). You can also object to how it is used or ask for it to be restricted. If you are unhappy with how your data is handled, you can complain to the Data Protection Commission at dataprotection.ie.'],
+    ['Age','You need to be 16 or over to back up, because that is the age of digital consent in Ireland. Under 16, Gauntlet works fully but nothing leaves the phone. Gauntlet is not for children under 13.'],
+    ['Changes','When this policy changes, the app shows it, says what changed, and asks you to agree again before anything more is backed up.']]},
+  terms:{title:'Terms', sections:()=>[
+    ['What Gauntlet is','A training and nutrition log that plans your week and makes suggestions. It is free, and it is offered as it is, while it is being built.'],
+    ['It is not medical advice','Calories, protein, forecasts and training suggestions are estimates from published research, labelled as such. They are not a diagnosis or a prescription, and they are no substitute for a GP, physio or dietitian. If you have a medical condition, are pregnant, are returning from an injury or are unsure, check with a professional first. Stop and get help for chest pain, faintness, or pain that is sharp, sudden or does not settle.'],
+    ['You are in charge of your training','Pick weights you can lift with good form, and change anything the app suggests if it does not suit you. You train at your own risk.'],
+    ['Your account','Backing up needs you to be 16 or over. An account is for one person. If you add an email, keep it yours: a code sent to it is how you get back in.'],
+    ['What you share','Your handle and anything you post can be seen by other people with an email account. Be decent: nothing hateful, sexual, threatening or unlawful, nothing that pretends to be someone else, and nothing private about other people. Handles and posts that break this can be removed.'],
+    ['If things go wrong','Gauntlet tries hard not to lose anything, but keep your own copy (Your data, Download everything). The app can change, pause or stop; if it ever stops, you will be told in the app first, with time to download your data. Nothing here takes away your rights under Irish and EU consumer law.'],
+    ['Ending it','You can stop at any time: Delete everything removes all of it, here and on the server.'],
+    ['The law','These terms are governed by Irish law.'],
+    ['Changes','When these terms change, the app shows them and asks you to agree again before anything more is backed up.']]}
+};
+const legalVersion=()=>(window.__CLOUD&&window.__CLOUD.TERMS_VERSION)||'';
+function openLegal(kind){
+  const L=LEGAL[kind]; if(!L) return;
+  let el=document.getElementById('legal');
+  if(!el){ el=document.createElement('div'); el.id='legal'; el.className='legal'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true');
+    document.body.appendChild(el); }
+  const other=kind==='privacy'? 'terms' : 'privacy';
+  el.setAttribute('aria-label',L.title);
+  el.innerHTML=`<div class="legal-top"><button class="legal-back" id="legalBack" aria-label="Back">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m15 5-7 7 7 7"/></svg> Back</button></div>
+    <div class="legal-body"><h2>${L.title}</h2>
+      <p class="legal-ver">Version ${escHabit(legalVersion())}. A plain English draft, to be checked by a solicitor before testers are invited.</p>
+      ${L.sections().map(([h,t])=>`<h4>${h}</h4><p>${t}</p>`).join('')}
+      <button class="inlinebtn" data-legal="${other}" style="margin:8px 0 24px">Read the ${LEGAL[other].title.toLowerCase()}</button></div>`;
+  legalReturn=legalReturn||document.activeElement;
+  el.classList.add('on'); el.scrollTop=0;
+  const body=el.querySelector('.legal-body'); if(body) body.scrollTop=0;
+  setTimeout(()=>{ const b=document.getElementById('legalBack'); if(b) try{ b.focus({preventScroll:true}); }catch(e){} },30);
+}
+let legalReturn=null;
+function closeLegal(){
+  const el=document.getElementById('legal'); if(!el||!el.classList.contains('on')) return false;
+  el.classList.remove('on');
+  if(legalReturn&&document.contains(legalReturn)) try{ legalReturn.focus({preventScroll:true}); }catch(e){}
+  legalReturn=null; return true;
+}
+/* capture, so a link inside a consent box never ticks the box, and Escape
+   closes the page without closing the sheet underneath it */
+document.addEventListener('click',e=>{
+  const l=e.target.closest('[data-legal]');
+  if(l){ e.preventDefault(); e.stopPropagation(); openLegal(l.dataset.legal); return; }
+  if(e.target.closest('#legalBack')){ e.stopPropagation(); closeLegal(); }
+},true);
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&closeLegal()){ e.preventDefault(); e.stopPropagation(); } },true);
+Object.assign(window.__G,{LEGAL,LEGAL_CONTACT,openLegal,closeLegal,ageFromBirth,syncAge,birthdayMatters,validBirthYear,AGE_LINES});
 </script>
 </body>
 </html>

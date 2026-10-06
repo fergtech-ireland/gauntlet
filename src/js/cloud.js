@@ -62,8 +62,13 @@ const authHeaders=()=>({apikey:C.key,Authorization:'Bearer '+((C.session&&C.sess
    given separately from agreeing to how the app works, before any of it
    reaches the server. The database refuses settings or saved state from
    anyone who has not recorded both. */
-const TERMS_VERSION='2026-10-b52';
-const hasConsent=()=>{ const c=S.profile&&S.profile.consent; return !!(c&&c.health&&c.terms&&c.version); };
+/* The version of the privacy policy and terms someone agreed to. When either
+   changes, this changes, and backing up stops until they have read what changed
+   and agreed again (build 53). */
+const TERMS_VERSION='2026-10-b53';
+const hasConsent=()=>{ const c=S.profile&&S.profile.consent; return !!(c&&c.health&&c.terms&&c.version===TERMS_VERSION); };
+/* agreed once, to words that have since changed */
+const consentStale=()=>{ const c=S.profile&&S.profile.consent; return !!(c&&c.health&&c.terms&&c.version&&c.version!==TERMS_VERSION); };
 function recordConsent(){
   const now=new Date().toISOString();
   S.profile.consent={health:now,terms:now,version:TERMS_VERSION};
@@ -103,8 +108,8 @@ function takeSession(d){
     user_id:u.id||(C.session&&C.session.user_id)||null, email:u.email||null, anon:!!u.is_anonymous};
   saveCloud(); return true;
 }
-/* First open, once consent is given (build 53 calls this silently). Same user
-   id for life, so adding an email later copies nothing. */
+/* First open, once consent is given. Same user id for life, so adding an
+   email later copies nothing. */
 async function signInAnonymously(){
   if(signedIn()) return {ok:true,already:true};
   if(!hasConsent()) return {ok:false,reason:'consent'};
@@ -112,6 +117,26 @@ async function signInAnonymously(){
   if(!r.ok) return r;
   return takeSession(r.data)? {ok:true} : {ok:false,reason:'Supabase sent no session back.'};
 }
+/* Backing up without an email (build 53): the person has agreed, so an
+   account is made for them without asking for anything, and their week goes
+   up. C.autoAnon remembers that they chose this, so a phone that was offline,
+   or a project that was not ready, tries again later on its own. Signing out
+   or switching to another account turns it off, so a fresh account is never
+   made behind someone's back. Under 16 there is no account at all. */
+async function startBackup(){
+  if(!configured()) return {ok:false,reason:'This copy of the app has no project behind it.'};
+  if(!hasConsent()) return {ok:false,reason:'consent'};
+  if(!canHaveAccount(S.profile)) return {ok:false,reason:'Under 16, everything stays on this phone.'};
+  C.autoAnon=true; saveCloud();
+  if(!signedIn()){
+    const r=await signInAnonymously();
+    if(!r.ok){ C.pending=true; C.error= r.reason==='consent'? null : r.reason; saveCloud(); return r; }
+  }
+  C.error=null; saveCloud();
+  const p=await pushState();
+  return p.ok? {ok:true} : p;
+}
+const backupWaiting=()=>!signedIn()&&!!C.autoAnon&&hasConsent()&&configured();
 /* Email a code. An anonymous account adds the email to itself (the claim);
    anyone else gets a sign-in code, which also makes the account if it is new. */
 async function sendCode(email){
@@ -179,7 +204,7 @@ async function ensureSession(){
   if(C.session&&C.session.expires_at&&C.session.expires_at-Date.now()<120000) await refreshSession();
   return signedIn();
 }
-function signOut(){ C.session=null; C.handleIssue=null; saveCloud(); renderAll(); toast('Signed out. Your week stays on this device.'); }
+function signOut(){ C.session=null; C.handleIssue=null; C.autoAnon=false; saveCloud(); renderAll(); toast('Signed out. Your week stays on this device.'); }
 
 /* ---------- rest helpers ---------- */
 async function api(path,opts){
@@ -205,7 +230,6 @@ const upsert=(table,body,conflict)=>api(table+(conflict?'?on_conflict='+conflict
    targets, year of birth and the two consents. The whole saved state still
    travels as well until phase 2 moves it into tables; this row is what other
    devices and, later, friends' features read without opening everything. */
-const validBirthYear=y=>{ const n=+y, now=new Date().getFullYear(); return Number.isInteger(n)&&n>=now-110&&n<=now; };
 function settingsRow(){
   const c=S.profile.consent||{};
   return {user_id:myId(),
@@ -235,6 +259,7 @@ async function pullSettings(){
   if(b.target!==undefined) S.target=b.target;
   if(b.targets) S.targets=b.targets;
   if(validBirthYear(row.birth_year)) S.profile.birthYear=row.birth_year;
+  syncAge(S.profile);
   S.rev=row.rev; _save(); renderAll();
   return {ok:true,applied:true};
 }
@@ -258,7 +283,7 @@ async function pullState(){
   if(!row) return {ok:true,applied:false,reason:'nothing up there yet'};
   const inbound = row.payload && row.payload.v!==4 ? migrate(row.payload) : row.payload;
   if(inbound && (row.rev||0)>(S.rev||0)){
-    S=normalise(inbound); ensurePlan(); save(); renderAll();
+    S=normalise(inbound); syncAge(S.profile); ensurePlan(); save(); renderAll();
     return {ok:true,applied:true};
   }
   return {ok:true,applied:false,reason:'this device is the newer one'};
@@ -271,7 +296,9 @@ function queuePush(){
 }
 const _save=save;
 save=function(){ S.rev=(S.rev||0)+1; const r=_save(); queuePush(); return r; };
-window.addEventListener('online',()=>{ if(C.pending) pushState().then(renderCloudPanel); });
+window.addEventListener('online',()=>{
+  if(backupWaiting()) startBackup().then(renderCloudPanel);
+  else if(C.pending&&signedIn()) pushState().then(renderCloudPanel); });
 
 /* ---------- the shared side ---------- */
 let REMOTE={profiles:{},posts:[],follows:[],loaded:false};
@@ -366,8 +393,29 @@ logSession=function(sess){
     publishPost(res.post);
     if(src) recordTry(src.remoteId);
   }
+  if(claimDue()) setTimeout(showClaimCard,0);
   return res;
 };
+/* After the first logged session, once (build 53): an account without an
+   email is safe on the server, but lost with the phone, so this is the
+   moment to ask. It sits on the finish screen, where the session has just
+   been saved, rather than interrupting it. Required before adding a friend,
+   which arrives in phase 3. */
+const claimDue=()=>isAnon()&&hasConsent()&&!S.profile.claimAsked;
+function showClaimCard(){
+  if(!claimDue()) return;
+  const host=document.querySelector('#gym.on #gymBody .summary')||document.querySelector('#player.on #stage .finish');
+  if(!host||document.getElementById('claimCard')) return;
+  host.insertAdjacentHTML('beforeend',`<div class="claimcard" id="claimCard" role="status">
+    <b>Keep this safe</b><span>Your sessions are backed up, but without an email. Add one and you can get everything back on a new phone. We email you a code, no password.</span>
+    <div class="claimbtns"><button class="mini go" id="claimGo">Add your email</button><button class="mini quiet" id="claimLater">Later</button></div></div>`);
+  S.profile.claimAsked=todayKey(); save();
+}
+document.addEventListener('click',e=>{
+  if(e.target.closest('#claimGo')){ e.stopPropagation(); const c=document.getElementById('claimCard'); if(c) c.remove(); openSignIn(); }
+  if(e.target.closest('#claimLater')){ e.stopPropagation(); const c=document.getElementById('claimCard'); if(c) c.remove();
+    toast('Any time from Progress, under Account.'); }
+},true);
 
 /* ---------- your data, and getting it back out ----------
    An app that keeps a record of somebody's body, their food and their moods owes
@@ -506,7 +554,7 @@ async function eraseRemote(){
    is on this device stays. If anything is left up there, consent is kept on
    record, because the data it covers is still held. */
 async function withdrawConsent(){
-  if(!signedIn()){ if(S.profile.consent){ delete S.profile.consent; save(); } return {ok:true,left:[]}; }
+  if(!signedIn()){ if(S.profile.consent){ delete S.profile.consent; save(); } C.autoAnon=false; C.pending=false; C.error=null; saveCloud(); return {ok:true,left:[]}; }
   const me=encodeURIComponent(myId()), left=[];
   for(const [label,table] of [['your saved data','state'],['your settings','settings']]){
     const q=table+'?user_id=eq.'+me;
@@ -521,7 +569,7 @@ async function withdrawConsent(){
   }
   if(left.length) return {ok:false,left};
   delete S.profile.consent; _save();
-  C.session=null; C.pending=false; C.error=null; C.lastPush=null; saveCloud();
+  C.session=null; C.pending=false; C.error=null; C.lastPush=null; C.autoAnon=false; saveCloud();
   return {ok:true,left:[]};
 }
 function eraseLocal(){
@@ -552,7 +600,7 @@ function openData(){
     <button class="sheetcta" id="restoreBtn" style="background:var(--grey-btn);color:var(--ink);margin-top:8px">Restore from a download</button>
     <input type="file" id="restoreFile" accept="application/json,.json" style="display:none" aria-label="Choose a Gauntlet download">
     <div class="note" id="restoreNote">${(()=>{ try{ return localStorage.getItem(RESTORE_BACKUP)? 'This phone was restored from a download. <button class="inlinebtn" id="restoreUndo">Undo the restore</button>' : 'For a new phone, or to go back to an earlier copy. It shows what is in the file before replacing anything.'; }catch(e){ return ''; } })()}</div>
-    ${signed&&hasConsent()?`<div class="method" style="margin-top:14px"><b>Stop backing up</b><span>Withdraws your consent to Gauntlet holding your health information. Your saved data and settings are deleted from the server and checked, then this device signs out. Everything on this device stays.</span></div>
+    ${(signed||backupWaiting())&&(hasConsent()||consentStale())?`<div class="method" style="margin-top:14px"><b>Stop backing up</b><span>Withdraws your consent to Gauntlet holding your health information. Your saved data and settings are deleted from the server and checked, then this device signs out. Everything on this device stays.</span></div>
     <button class="sheetcta" id="withdrawBtn" style="background:var(--grey-btn);color:var(--ink)">Withdraw consent</button>
     <div class="note" id="withdrawNote"></div>`:''}
     <div class="method" style="margin-top:14px"><b>Delete it all</b><span>${signed
@@ -601,13 +649,16 @@ document.addEventListener('click',async e=>{
 
 /* ---------- the account panel ---------- */
 const HANDLE_ISSUES={
-  format:h=>'Your handle @'+h+' is kept on this device but not shared yet: handles are now 3 to 20 letters, numbers or underscores. You can pick a new one in the next update.',
-  taken:h=>'Someone else already has @'+h+', so it is not shared yet. You can pick another in the next update.',
+  format:h=>'Your handle @'+h+' is kept on this device but not shared yet: handles are now 3 to 20 letters, numbers or underscores. Pick a new one below.',
+  taken:h=>'Someone else already has @'+h+', so it is not shared yet. Pick another below.',
   refused:h=>'@'+h+' was refused, either because it is not allowed or because a handle can only change once a month.'
 };
 function cloudStatus(){
   if(!configured()) return 'No account needed. Everything stays on this device.';
-  if(!signedIn()) return 'No account yet. Back up and your week is safe, works on a second device, and you can see the others.';
+  if(!signedIn()&&!canHaveAccount(S.profile)) return 'Under 16, everything stays on this phone. You can back up when you turn 16, and nothing is lost.';
+  if(backupWaiting()) return 'Not backed up yet. It goes up on its own as soon as it can.'+(C.error? ' Last try: '+C.error : '');
+  if(!signedIn()) return 'Only on this phone. Back up and your week is safe if you lose it, and you can add an email later to use it on another phone.';
+  if(consentStale()) return 'The privacy policy or terms have changed since you agreed, so backing up has paused until you have read them.';
   if(!hasConsent()) return 'Signed in, but nothing is backed up until you agree to it.';
   if(C.pending) return (isAnon()?'Backed up without an email.':'Signed in.')+' Waiting for a connection to back up.';
   if(C.error) return C.error;
@@ -621,11 +672,14 @@ function renderCloudPanel(){
     <div class="note" style="margin:0 0 10px">${escHabit(cloudStatus())}</div>
     ${claimed()&&C.handleIssue&&HANDLE_ISSUES[C.handleIssue]?`<div class="note" style="margin:-4px 0 10px">${escHabit(HANDLE_ISSUES[C.handleIssue](h))}</div>`:''}
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      ${!signedIn()&&configured()?`<button class="mini go" id="cloudSignIn">Back up or sign in</button>`:''}
-      ${signedIn()&&!hasConsent()?`<button class="mini go" id="cloudSignIn">Agree and back up</button>`:''}
+      ${!signedIn()&&configured()&&canHaveAccount(S.profile)&&!backupWaiting()?`<button class="mini go" id="cloudBackup">Back up</button><button class="mini" id="cloudSignIn">Sign in with email</button>`:''}
+      ${backupWaiting()?`<button class="mini go" id="cloudBackup">Try now</button><button class="mini" id="cloudSignIn">Sign in with email</button>`:''}
+      ${signedIn()&&!hasConsent()?`<button class="mini go" id="cloudSignIn">${consentStale()?'Read what changed':'Agree and back up'}</button>`:''}
       ${isAnon()&&hasConsent()?`<button class="mini go" id="cloudSignIn">Add your email</button>`:''}
+      ${claimed()?`<button class="mini${C.handleIssue?' go':''}" id="handlePick">${C.handleIssue?'Pick a handle':'@'+escHabit(h)+' · change'}</button>`:''}
       ${claimed()?`<button class="mini quiet" id="cloudOut">Sign out</button>`:''}
       <button class="mini" id="dataBtn">Your data</button>
+      <button class="mini quiet" data-legal="privacy">Privacy</button>
       ${cloudReady()?'':`<button class="mini" id="cloudSetup">${configured()?'Connection':'Connect a project'}</button>`}</div>
     ${cloudTarget()==='test'?`<div class="note">Connected to the test project. Open the app with ?cloud=live to go back to the real one.</div>`:''}
     ${!configured()?`<div class="note">This copy of the app has no project behind it, so there is nothing to sign in to. Everything stays on this device.</div>`:''}`;
@@ -650,7 +704,8 @@ const CONSENT_TERMS='I have read what Gauntlet holds and where, and agree to it 
 function consentHTML(pre,on){
   return `<label class="consent"><input type="checkbox" id="${pre}Health" ${on&&on.health?'checked':''}><span>${CONSENT_HEALTH}</span></label>
     <label class="consent"><input type="checkbox" id="${pre}Terms" ${on&&on.terms?'checked':''}><span>${CONSENT_TERMS}</span></label>
-    <details class="consentmore"><summary>What Gauntlet holds, and where</summary><p>${heldText(true)}</p></details>`;
+    <details class="consentmore"><summary>What Gauntlet holds, and where</summary><p>${heldText(true)}</p></details>
+    <div class="legallinks">Read the <button class="inlinebtn" data-legal="privacy">privacy policy</button> and the <button class="inlinebtn" data-legal="terms">terms</button>.</div>`;
 }
 const consentTicked=pre=>{ const a=document.getElementById(pre+'Health'), b=document.getElementById(pre+'Terms'); return !!(a&&a.checked&&b&&b.checked); };
 const codeInputHTML=id=>`<input id="${id}" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456" aria-label="The code from the email" style="font-family:Archivo;font-size:22px;font-weight:700;letter-spacing:.3em;text-align:center">`;
@@ -661,8 +716,26 @@ let SIGN={step:'email',email:'',mode:'email',fromOnb:false,agree:{health:false,t
 function drawSignIn(){
   const body=document.getElementById('cloudBody'); if(!body) return;
   const needConsent=!hasConsent();
+  if(SIGN.step==='backup'){
+    body.innerHTML=`<div class="note" style="padding-top:0">Your week goes up to the server and is safe if this phone is lost or its browser is cleared. No email or password: you can add an email later to use it on another phone.</div>
+      ${consentHTML('sg',SIGN.agree)}
+      <button class="sheetcta" id="sgBackup" ${SIGN.agree.health&&SIGN.agree.terms?'':'disabled'}>Back up</button>
+      <div style="text-align:center;margin-top:8px"><button class="inlinebtn" id="sgOther">Already have an account? Sign in with your email</button></div>
+      <div class="note" id="sgResult" role="status"></div>`;
+    return;
+  }
+  if(SIGN.step==='handle'){
+    body.innerHTML=`<div class="note" style="padding-top:0">Your handle is how friends find you. 3 to 20 letters, numbers or underscores, and it can change once a month.</div>
+      <div class="handle"><span>@</span><input id="sgHandle" value="${escHabit(SIGN.handle||'')}" placeholder="yourname" autocomplete="off" spellcheck="false" autocapitalize="off" aria-label="Handle"></div>
+      <div class="note" id="sgHandleNote" role="status">${escHabit(handleNoteText(SIGN.check))}</div>
+      <button class="sheetcta" id="sgHandleSave" ${SIGN.check&&SIGN.check.v==='ok'&&SIGN.check.h===SIGN.handle?'':'disabled'}>Use this handle</button>
+      <div class="note" id="sgResult" role="status"></div>`;
+    return;
+  }
   if(SIGN.step==='consent'){
-    body.innerHTML=`<div class="note" style="padding-top:0">Nothing has been backed up yet. Agree to it below and your week goes up straight away.</div>
+    body.innerHTML=`<div class="note" style="padding-top:0">${consentStale()
+        ? 'The privacy policy or terms have changed since you agreed. Have a read, and agree again to keep backing up. Until then nothing new goes up.'
+        : 'Nothing has been backed up yet. Agree to it below and your week goes up straight away.'}</div>
       ${consentHTML('sg',SIGN.agree)}
       <button class="sheetcta" id="sgAgree" ${SIGN.agree.health&&SIGN.agree.terms?'':'disabled'}>Agree and back up</button>
       <div class="note" id="sgResult" role="status"></div>`;
@@ -690,10 +763,51 @@ function drawSignIn(){
 }
 function openSignIn(opts){
   const o=opts||{};
-  SIGN={step: signedIn()&&!hasConsent()? 'consent' : 'email', email:'', mode:'email', fromOnb:!!o.fromOnb,
-    agree:{health:false,terms:false}};
+  SIGN={step: o.step || (signedIn()&&!hasConsent()? 'consent' : 'email'), email:'', mode:'email', fromOnb:!!o.fromOnb,
+    agree:{health:false,terms:false}, handle:o.handle||'', check:null};
   drawSignIn();
   openSheet('cloudSheet');
+}
+/* ---------- picking a handle (build 53) ----------
+   Checked against the database while typing, by the same rules it enforces
+   when the handle is saved: format, the blocklist, and whether someone else
+   has it. Only accounts with an email can check, because only they can have
+   a handle. */
+const HANDLE_VERDICTS={ok:h=>'@'+h+' is free.', taken:h=>'Someone already has @'+h+'.', blocked:h=>'@'+h+' is not allowed. Try another.',
+  format:()=>'3 to 20 letters, numbers or underscores.', checking:h=>'Checking @'+h+'...', unknown:()=>'Could not check just now. It is checked again when it is saved.',
+  same:h=>'@'+h+' is already yours.'};
+function handleNoteText(c){ return c&&HANDLE_VERDICTS[c.v]? HANDLE_VERDICTS[c.v](c.h) : HANDLE_VERDICTS.format(); }
+const cleanHandle=v=>String(v||'').replace(/[.\s]/g,'_').replace(/[^a-z0-9_]/gi,'').toLowerCase().slice(0,20);
+async function checkHandle(h){
+  h=cleanHandle(h);
+  if(!HANDLE_RE.test(h)) return 'format';
+  if(!claimed()) return 'unknown';
+  const r=await api('rpc/handle_available',{method:'POST',headers:authHeaders(),body:JSON.stringify({h})});
+  return r.ok&&typeof r.data==='string'&&HANDLE_VERDICTS[r.data]? r.data : 'unknown';
+}
+let handleTimer=null;
+function queueHandleCheck(){
+  clearTimeout(handleTimer);
+  const h=SIGN.handle;
+  const paint=()=>{ const n=document.getElementById('sgHandleNote'); if(n) n.textContent=handleNoteText(SIGN.check);
+    const b=document.getElementById('sgHandleSave'); if(b) b.disabled=!(SIGN.check&&(SIGN.check.v==='ok'||SIGN.check.v==='unknown')&&SIGN.check.h===SIGN.handle); };
+  if(!HANDLE_RE.test(h)){ SIGN.check={h,v:'format'}; paint(); return; }
+  if(h===String(S.profile.handle||'')&&!C.handleIssue){ SIGN.check={h,v:'same'}; paint(); return; }
+  SIGN.check={h,v:'checking'}; paint();
+  handleTimer=setTimeout(async()=>{ const v=await checkHandle(h); if(SIGN.handle===h){ SIGN.check={h,v}; paint(); } },350);
+}
+async function saveHandle(h){
+  h=cleanHandle(h);
+  if(!HANDLE_RE.test(h)) return {ok:false,reason:HANDLE_VERDICTS.format()};
+  const before=S.profile.handle, issueBefore=C.handleIssue;
+  S.profile.handle=h; save();
+  const r=await ensureProfile();
+  if(r&&r.ok){ if(typeof ME!=='undefined'){ ME.n=h; ME.full=h.replace(/[._]/g,' '); } return {ok:true}; }
+  /* the database said no, so the phone goes back to what it had */
+  S.profile.handle=before; save();
+  const why=C.handleIssue==='taken'? HANDLE_VERDICTS.taken(h) : (C.handleIssue==='refused'? 'That was refused. A handle can only change once a month, and some words are not allowed.' : ((r&&r.reason)||'That did not save. Try again when you have signal.'));
+  C.handleIssue=issueBefore; saveCloud();
+  return {ok:false,reason:why};
 }
 function signNote(t){ const n=document.getElementById('sgResult'); if(n) n.textContent=t; }
 /* After a code is accepted or consent is given: consent first, then settings
@@ -724,6 +838,7 @@ document.addEventListener('input',e=>{
   if(!document.getElementById('cloudSheet')||!e.target.closest('#cloudBody')) return;
   if(e.target.id==='sgEmail'){ SIGN.email=e.target.value.trim(); }
   if(e.target.id==='sgCode'){ const v=e.target.value.replace(/\D/g,''); if(v!==e.target.value) e.target.value=v; }
+  if(e.target.id==='sgHandle'){ const v=cleanHandle(e.target.value); if(v!==e.target.value) e.target.value=v; SIGN.handle=v; queueHandleCheck(); return; }
   const send=document.getElementById('sgSend'); if(send) send.disabled=!(validEmail(SIGN.email)&&(hasConsent()||consentTicked('sg')));
 });
 document.addEventListener('change',e=>{
@@ -731,6 +846,7 @@ document.addEventListener('change',e=>{
   SIGN.agree={health:!!(document.getElementById('sgHealth')||{}).checked, terms:!!(document.getElementById('sgTerms')||{}).checked};
   const send=document.getElementById('sgSend'); if(send) send.disabled=!(validEmail(SIGN.email)&&consentTicked('sg'));
   const agree=document.getElementById('sgAgree'); if(agree) agree.disabled=!consentTicked('sg');
+  const bk=document.getElementById('sgBackup'); if(bk) bk.disabled=!consentTicked('sg');
 });
 async function sendFromSheet(){
   signNote('Sending...');
@@ -748,6 +864,25 @@ async function sendFromSheet(){
 document.addEventListener('click',async e=>{
   if(e.target.closest('#cloudSetup')) openCloudSetup();
   if(e.target.closest('#cloudSignIn')) openSignIn();
+  if(e.target.closest('#cloudBackup')){
+    if(hasConsent()){ const r=await startBackup(); renderCloudPanel(); toast(r.ok? 'Backed up' : 'Not backed up yet. It tries again on its own.'); }
+    else openSignIn({step:'backup'});
+    return; }
+  if(e.target.closest('#handlePick')){ openSignIn({step:'handle',handle:String(S.profile.handle||'')}); queueHandleCheck(); return; }
+  if(e.target.closest('#sgBackup')){
+    const b=e.target.closest('#sgBackup'); if(b.disabled) return;
+    recordConsent(); b.disabled=true; signNote('Backing up...');
+    const r=await startBackup();
+    closeSheets(); renderAll();
+    toast(r.ok? 'Backed up. Add your email any time from Progress.' : 'Saved on this phone. It backs up on its own as soon as it can.');
+    return; }
+  if(e.target.closest('#sgHandleSave')){
+    const b=e.target.closest('#sgHandleSave'); if(b.disabled) return;
+    b.disabled=true; signNote('Saving...');
+    const r=await saveHandle(SIGN.handle);
+    if(r.ok){ closeSheets(); renderAll(); toast('You are @'+S.profile.handle); }
+    else { b.disabled=false; signNote(r.reason); }
+    return; }
   if(e.target.closest('#onbSignIn')) openSignIn({fromOnb:true});
   if(e.target.closest('#cloudOut')) signOut();
   if(e.target.closest('#cloudSync')){ const r=await pushState(); await loadRemote(); renderCloudPanel(); toast(r.ok?'Backed up':(r.reason||'Could not back up')); }
@@ -766,7 +901,7 @@ document.addEventListener('click',async e=>{
     signNote('Tidying up this phone\'s old account...');
     const er=await eraseRemote();
     if(!er.done){ signNote('This phone\'s old account could not be removed yet ('+er.left.join(', ')+'). Try again when you have signal.'); return; }
-    C.session=null; saveCloud(); SIGN.mode='email'; await sendFromSheet(); return;
+    C.session=null; C.autoAnon=false; saveCloud(); SIGN.mode='email'; await sendFromSheet(); return;
   }
   if(e.target.closest('#sgVerify')){
     const b=e.target.closest('#sgVerify'); if(b.disabled) return;
@@ -798,6 +933,8 @@ renderProgress=function(){
   const onb=document.getElementById('onb');
   if(onb&&onb.classList.contains('on')&&typeof onbRender==='function') onbRender();
   if(readAuthHash()){ await fetchUser(); }
+  /* agreed to back up, but the account could not be made at the time */
+  if(backupWaiting()){ await startBackup(); renderCloudPanel(); }
   if(signedIn()){
     await ensureSession();
     if(claimed()) await ensureProfile();
@@ -818,7 +955,8 @@ function setBuildConfig(url,key){ CLOUD_CONFIG.url=url; CLOUD_CONFIG.key=key;
 window.__CLOUD={get C(){return C},set C(v){C=v}, CLOUD_CONFIG, cloudReady, setBuildConfig,get REMOTE(){return REMOTE},set REMOTE(v){REMOTE=v},
   loadCloud,saveCloud,configured,signedIn,isAnon,claimed,myId,base,authHeaders,readAuthHash,fetchUser,
   CLOUD_PROJECTS,cloudTarget,cloudTargetFromUrl,TERMS_VERSION,hasConsent,recordConsent,validEmail,authReason,authCall,takeSession,
-  signInAnonymously,sendCode,verifyCode,settingsRow,pushSettings,pullSettings,validBirthYear,HANDLE_RE,withdrawConsent,
+  signInAnonymously,startBackup,backupWaiting,consentStale,claimDue,showClaimCard,checkHandle,saveHandle,cleanHandle,queueHandleCheck,HANDLE_VERDICTS,
+  sendCode,verifyCode,settingsRow,pushSettings,pullSettings,validBirthYear,HANDLE_RE,withdrawConsent,
   openSignIn,drawSignIn,afterSignIn,get SIGN(){return SIGN},set SIGN(v){SIGN=v},consentHTML,CONSENT_HEALTH,CONSENT_TERMS,heldText,
   refreshSession,ensureSession,signOut,api,upsert,pushState,pullState,loadRemote,publishPost,recordTry,
   toggleRemoteFollow,ensureProfile,cloudStatus,renderCloudPanel,personFor,CLOUD_KEY,

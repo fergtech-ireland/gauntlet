@@ -65,7 +65,7 @@ const authHeaders=()=>({apikey:C.key,Authorization:'Bearer '+((C.session&&C.sess
 /* The version of the privacy policy and terms someone agreed to. When either
    changes, this changes, and backing up stops until they have read what changed
    and agreed again (build 53). */
-const TERMS_VERSION='2026-10-b53';
+const TERMS_VERSION='2026-10-b54';
 const hasConsent=()=>{ const c=S.profile&&S.profile.consent; return !!(c&&c.health&&c.terms&&c.version===TERMS_VERSION); };
 /* agreed once, to words that have since changed */
 const consentStale=()=>{ const c=S.profile&&S.profile.consent; return !!(c&&c.health&&c.terms&&c.version&&c.version!==TERMS_VERSION); };

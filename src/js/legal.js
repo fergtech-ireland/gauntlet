@@ -7,11 +7,12 @@
    When either text changes, TERMS_VERSION in cloud.js changes with it, and
    everyone who backs up is asked to read it and agree again.
    ===================================================================== */
-/* The email for data protection requests. Empty until Feargal picks one; the
-   policy says so rather than inventing an address. */
-const LEGAL_CONTACT='';
+/* The email for data protection requests (build 54). A separate address for
+   Gauntlet, not anyone's personal one. If it is ever emptied, the policy says
+   a contact is coming rather than inventing one. */
+const LEGAL_CONTACT='gauntlet.privacy@gmail.com';
 const contactLine=()=>LEGAL_CONTACT
-  ? 'Email <b>'+escHabit(LEGAL_CONTACT)+'</b> and you will get an answer within a month, which is what the law requires.'
+  ? 'For anything the app cannot do for you, or any question about your data, email <a class="inlinebtn" href="mailto:'+escHabit(LEGAL_CONTACT)+'">'+escHabit(LEGAL_CONTACT)+'</a>. You will get an answer within a month, which is what the law requires.'
   : 'A contact email for anything the app cannot do for you is added here before anyone outside the test group is invited. Until then, everything below can be done in the app itself.';
 const LEGAL={
   privacy:{title:'Privacy policy', sections:()=>[
@@ -25,7 +26,7 @@ const LEGAL={
     ['Who can read it','Only you. The database enforces it, not just the app: every private row can be read only by the account it belongs to, and that is tested automatically before every release. The maker of Gauntlet can reach the database in order to keep it running. Everything travels over encrypted connections.'],
     ['The coach, if you set it up','The coach sends nothing anywhere until you give it an endpoint of your own. Then it sends your brief (weights, sessions, check ins, habits, your target and the notes you wrote) to that address and nowhere else. What happens to it there is between you and whoever runs it.'],
     ['How long it is kept','On your phone, until you delete it. On the server, until you withdraw consent, delete everything, or delete your account, which removes every row and the sign-in itself.'],
-    ['Your rights','You can see all of it (Your data, Download everything: one plain file), correct it (edit anything in the app), move it (that file works anywhere), delete it (Delete everything), and withdraw consent (Withdraw consent). You can also object to how it is used or ask for it to be restricted. If you are unhappy with how your data is handled, you can complain to the Data Protection Commission at dataprotection.ie.'],
+    ['Your rights','You can see all of it (Your data, Download everything: one plain file), correct it (edit anything in the app), move it (that file works anywhere), delete it (Delete everything), and withdraw consent (Withdraw consent). You can also object to how it is used or ask for it to be restricted. If you are unhappy with how your data is handled, you can complain to the Data Protection Commission at dataprotection.ie.'+(LEGAL_CONTACT? ' Any of these can also be asked for by email at '+escHabit(LEGAL_CONTACT)+'.' : '')],
     ['Age','You need to be 16 or over to back up, because that is the age of digital consent in Ireland. Under 16, Gauntlet works fully but nothing leaves the phone. Gauntlet is not for children under 13.'],
     ['Changes','When this policy changes, the app shows it, says what changed, and asks you to agree again before anything more is backed up.']]},
   terms:{title:'Terms', sections:()=>[

@@ -4268,6 +4268,9 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
         /Ireland/.test(pt) && /Supabase/.test(pt) && /Article 9\(2\)\(a\)/.test(pt) && /How long it is kept/.test(pt) && /Download everything/.test(pt) && /Delete everything/.test(pt) && /Withdraw consent/.test(pt));
       t('56 · names the regulator, the age of consent, and the version agreed to', /Data Protection Commission/.test(pt) && /16 or over/.test(pt) && pt.indexOf(Lg.w.__CLOUD.TERMS_VERSION) >= 0);
       t('56 · and does not invent a contact address', Lg.G.LEGAL_CONTACT !== '' || /added here before anyone outside the test group/.test(pt));
+      t('56 · the contact for data requests is Gauntlet\'s own address, as a link that opens an email (build 54)',
+        Lg.G.LEGAL_CONTACT === 'gauntlet.privacy@gmail.com' && !!page.querySelector('a[href="mailto:gauntlet.privacy@gmail.com"]')
+        && /within a month/.test(pt) && !/added here before anyone outside/.test(pt));
       t('56 · no em dashes anywhere in it', !/—/.test(pt));
       Lg.d.dispatchEvent(new Lg.w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
       t('56 · Escape closes the page and leaves the consent sheet open', !page.classList.contains('on') && Lg.d.getElementById('cloudSheet').classList.contains('on'));

@@ -1,0 +1,61 @@
+name: Test and deploy
+
+# Every push runs the build check and the full test suite.
+# A push to main that passes is then published to GitHub Pages; one that fails is not.
+# This needs Settings > Pages > Source set to "GitHub Actions".
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install test tools
+        run: npm install --no-audit --no-fund
+      - name: index.html is a fresh build of src/
+        run: node build.js --check
+      - name: Every suite
+        run: npm test
+        env:
+          TZ: Europe/Dublin
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Gather the site (the same files Pages served from the branch)
+        run: |
+          mkdir _site
+          rsync -a --exclude .git --exclude .github --exclude _site --exclude node_modules ./ _site/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

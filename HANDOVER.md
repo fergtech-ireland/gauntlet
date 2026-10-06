@@ -1,14 +1,41 @@
 # Gauntlet: handover for a new chat
 
-**Current build:** 51 (all files in this folder). Live: https://fergtech-ireland.github.io/gauntlet/ · Repo: github.com/fergtech-ireland/gauntlet (main)
+## Start here (6 Oct 2026)
+
+**Opening prompt for a new chat:** "Continue Gauntlet from HANDOVER.md in the repo." Claude attaches github.com/fergtech-ireland/gauntlet with push access, clones it, reads this file, and carries on. No uploads needed.
+
+**Current focus:** turning Gauntlet from a local-only app into a real application with accounts, proper data tables, friends and challenges. The full plan, agreed by Feargal on 6 Oct 2026, is the doc "Gauntlet: from local app to real application": https://claude.ai/code/artifact/c2a1c0da-9821-4a96-8763-bd99dd1b1a58 (read it before starting any phase).
+
+**Decisions agreed (all recommendations accepted):**
+1. Split `index.html` into separate source files with a small build step (replaces the old "one file, no build" rule).
+2. Mutual friends instead of one-way follows; retire the open feed.
+3. Sessions shared with friends by default, each with a Private switch; weight, food, sleep, check-ins, pain and cycle are never shared.
+4. Social features from 16; under 16 keeps the teen version with no social features.
+5. Sign-in by a 6-digit emailed code typed into the app, not a magic link (iPhone opens links in Safari, outside the home-screen app).
+6. Free up the "snacked" Supabase project. It is paused, so it did not block the test project; Feargal deletes it in the dashboard (no delete tool here).
+
+**Phase 0 (foundations) progress:**
+- [x] Test Supabase project created: `gauntlet-test`, ref `cfrraitjazkcnxjjkgoj`, eu-west-1. Live project: `gauntlet`, ref `zerclmrlwniaogtxyngw`.
+- [x] Live database structure recorded as `supabase/migrations/0001_baseline.sql`. Rule from now: every database change is a numbered file there, applied to gauntlet-test first, live only after its gate.
+- [ ] Apply 0001 to gauntlet-test. Two attempts through the Supabase connector came back "cancelled" (writes need an approval that did not reach Feargal on mobile; reads work). Try once at the start of the next chat; if cancelled again, Feargal pastes the file into the SQL editor of gauntlet-test and runs it.
+- [ ] Split `index.html` into `src/` files with a build script that writes the root `index.html` (so GitHub Pages needs no change). First build must be byte-identical to the current file; tests run against the built file; a test checks the committed `index.html` equals a fresh build.
+- [ ] GitHub Action: run `npm test` on every push; then move Pages to deploy from that workflow so a failing test blocks the deploy (may need Feargal to switch Pages source to "GitHub Actions" in repo settings, and the app may need `workflows` permission).
+- [ ] RLS test harness: SQL tests run against gauntlet-test that act as two users (`set local role authenticated` plus `request.jwt.claims`) and prove each sees only their own private rows.
+- Gate: the split app passes every existing check, deployed from GitHub, with the test project live.
+
+**Then:** Phase 1 (accounts), one build per chat, per the plan doc.
+
+**Working notes:** run the full suite in the background (`nohup node test.js > out.txt &`, then check) because it takes about 4 minutes and single commands time out at 5. Commits are authored as Claude (`git config user.email noreply@anthropic.com`). `package-lock.json` is gitignored.
+
+**Current build:** 51. Live: https://fergtech-ireland.github.io/gauntlet/ · Repo: github.com/fergtech-ireland/gauntlet (main)
 **Deploys:** Claude now has push access to the repo and the Supabase connector, so builds are committed and pushed directly (pushing to main publishes the live site). Build 49 pushed 6 Oct 2026; the repo was on build 47 before that.
 **Supabase:** delete policies in place. 6 Oct 2026: `increment_try` restricted to signed-in users (see `supabase-increment-try.sql`). Still open: switch on leaked password protection in the dashboard (Authentication, password settings).
 **Tests:** `npm install && npm test` = 1,482 checks, 0 failures (regression, cta, uat with 54 journeys, sw). `node upgrade.test.js` for older-build upgrades.
 
 ## How we work
-- Single-file PWA (`index.html`), no build step. Tests run in jsdom; layout is checked in real Chrome (Playwright, phone widths 320 to 430px).
+- PWA served from `index.html` (being split into `src/` files with a build step, see Start here). Tests run in jsdom; layout is checked in real Chrome (Playwright, phone widths 320 to 430px).
 - Research first, cite evidence in the app's method sheet, label rules of thumb as such. Never use em dashes.
-- Every build: account for every changed line, never weaken a test, check in a real browser, re-test from a clean install, then list files changed since Feargal's LAST UPLOAD (not the last build).
+- Every build: account for every changed line, never weaken a test, check in a real browser, re-test from a clean install, then commit and push to main (that publishes the live site).
 - Keep verified backups somewhere that survives resets, and check for half-finished interrupted attempts before continuing.
 
 ## Builds 44 to 51 in brief

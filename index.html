@@ -236,6 +236,7 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .rpe button{min-height:44px;border-radius:10px;background:var(--grey-btn);font-weight:800}
 .rpe button.on{background:var(--ink);color:var(--on-ink)}
 .splits{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.fibtn{font:inherit;color:inherit;background:none;border:0;padding:0;min-height:32px;text-decoration:underline dotted;text-underline-offset:3px}
 /* HIFB runs in a session (build 49) */
 .runcard{margin:0 0 12px;padding:10px 12px;border-radius:12px;border:1px dashed var(--line);background:var(--t-marine)}
 .runcard.live{border-style:solid;border-color:var(--marine)}
@@ -1257,7 +1258,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='49';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='50';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -7759,6 +7760,30 @@ const MEALS=[['b','Breakfast'],['l','Lunch'],['d','Dinner'],['s','Snacks']];
 const customFoods=()=>Array.isArray(S.customFoods)? S.customFoods : [];
 const savedMeals=()=>Array.isArray(S.savedMeals)? S.savedMeals : [];
 const allFoods=()=>FOODS.concat(customFoods());
+/* ---------- fibre (build 50) ----------
+   Grams of dietary fibre per portion, as each food's portion is written. Most
+   come from standard food composition tables (McCance and Widdowson, USDA
+   FoodData Central), measured the way food labels in Ireland and the UK
+   measure it (AOAC). Meat, fish, eggs, dairy and most drinks have none.
+   Mixed dishes, takeaways and protein bars vary with the recipe, so those are
+   typical values and the app says so.
+   The daily target is 30g, the UK SACN recommendation (2015); EFSA's adequate
+   intake for adults is 25g. The case for it: a Lancet review of 185
+   prospective studies and 58 trials found people eating 25 to 29g a day had
+   15 to 30% lower death and heart disease, stroke, type 2 diabetes and bowel
+   cancer rates than those eating the least, with more benefit above that
+   (Reynolds and colleagues, 2019). Observational for the most part, so an
+   association, said as such. */
+const FIBRE={shepherds:5,egg:0,eggwhite:0,oats:5,porridge_milk:4,weetabix:3.8,cornflakes:1.2,granola:3,muesli:4,fullirish:6,rasher:0,sausage:0.5,blackpud:0.5,whitepud:0.5,beans:7.5,pancakes:1,croissant:1.5,chicken:0,chickenthigh:0,chickenfillet_bd:0.8,turkey:0,mince5:0,mince20:0,steak:0,porkchop:0,lamb:0,ham:0,bacon_med:0,mackerel:0,salmon:0,smokedsalmon:0,cod:0,tuna:0,sardines:0,prawns:0,fishfingers:0.8,chicken_raw:0,chickenthigh_raw:0,turkey_raw:0,mince5_raw:0,mince20_raw:0,steak_raw:0,pork_raw:0,lamb_raw:0,salmon_raw:0,cod_raw:0,prawns_raw:0,mince_turkey_raw:0,brownbread:2.2,wholemeal:2.5,whitebread:1,sourdough:1.2,bagel:2.5,wrap:2,pitta:2,roll:1.5,potato:3.6,mash:3,roastspuds:2.7,chips_oven:4.2,chips_bag:5.5,sweetpot:6.6,rice:0.7,ricebrown:3.2,pasta:3.6,noodles:2,couscous:2.1,quinoa:4.2,banana:3.1,apple:4.4,orange:3.1,berries:3.5,grapes:0.9,pear:5.5,avocado:5,broccoli:3,carrots:2.8,cabbage:2.5,peas:5.1,saladmix:1.5,tomato:1.2,mushrooms:1,onion:1.4,veg_mixed:4.5,beetroot:2,skyr:0,greekyog:0,yoghurt_fruit:0.3,milk:0,milk_whole:0,cheddar:0,lowfatcheese:0,cottage:0,mozzarella:0,butter:0,cream:0,whey:0,chickencurry:4,stew:4,baconcabbage:6,chowder:1.5,lasagne:2.5,spagbol:5,stirfry:5,chickensalad:3,sandwich_chicken:2.5,sandwich_ham:2.5,toastie:2.5,soup:4,chickenroll:2.5,breakfastroll:3,pizza:5,burger_meal:6,fishchips:6,chinese_curry:3,kebab:4,sushi:1.5,omelette:0,protein_bowl:4,crisps:1.2,peanuts:2.6,almonds:3.8,peanutbutter:1,proteinbar:4,choc_bar:1,biscuits:1.2,scone:1.5,flapjack:2,muffin:1.5,icecream:0.5,popcorn:3.3,ricecakes:0.8,hummus:3,olives:1.6,darkchoc:2.7,tea:0,coffee_black:0,latte:0,cappuccino:0,oj:0.4,smoothie:2,proteinshake:0,cola:0,diet_drink:0,sportsdrink:0,pint_stout:0,pint_lager:0,wine:0,spirit:0,water:0,ketchup:0.1,mayo:0,mayo_light:0,brownsauce:0.2,mustard:0.2,bbqsauce:0.1,sweetchilli:0.1,soysauce:0.1,hotsauce:0,garlicsauce:0,taco_sauce:0.2,saladcream:0,caesar:0,vinaigrette:0,pesto:0.3,gravy:0.1,currysauce:1,tartare:0.1,sourcream:0,oliveoil:0,honey:0,jam:0.1,chocspread:0.6,salsa:0.3};
+const FIBRE_ROUGH=new Set(["shepherds","fullirish", "chickencurry", "stew", "baconcabbage", "chowder", "lasagne", "spagbol", "stirfry", "chickensalad", "sandwich_chicken", "sandwich_ham", "toastie", "soup", "chickenroll", "breakfastroll", "pizza", "burger_meal", "fishchips", "chinese_curry", "kebab", "sushi", "protein_bowl", "proteinbar", "saladmix", "smoothie", "berries", "veg_mixed"]);
+FOODS.forEach(f=>{ if(FIBRE[f.id]!==undefined) f.fb=FIBRE[f.id]; });
+/* a logged item's fibre: its own, else the food's, else unknown */
+function fibreOf(x){ if(typeof x.fb==='number') return x.fb; const f=foodOf(x.id); return f&&typeof f.fb==='number'? f.fb : null; }
+function fibreInfo(k){
+  const items=dayFood(k); let g=0, unknown=0, rough=0;
+  items.forEach(x=>{ const v=fibreOf(x); if(v===null) unknown++; else { g+=v*x.q; if(FIBRE_ROUGH.has(x.id)&&v>0) rough++; } });
+  return {g:Math.round(g*10)/10, unknown, rough, n:items.length};
+}
 const foodOf=id=>allFoods().find(f=>f.id===id)||null;
 function addCustomFood(f){
   S.customFoods=customFoods().concat([f]); save(); return f;
@@ -7785,7 +7810,7 @@ function repeatYesterday(){
 function dayFood(k){ const r=S.days[k||todayKey()]; return (r&&Array.isArray(r.food))? r.food : []; }
 function foodTotals(k){
   return dayFood(k).reduce((t,x)=>({kcal:t.kcal+x.kcal*x.q, protein:t.protein+x.p*x.q,
-    carbs:t.carbs+x.c*x.q, fat:t.fat+x.f*x.q}),{kcal:0,protein:0,carbs:0,fat:0});
+    carbs:t.carbs+x.c*x.q, fat:t.fat+x.f*x.q, fibre:t.fibre+(fibreOf(x)||0)*x.q}),{kcal:0,protein:0,carbs:0,fat:0,fibre:0});
 }
 /* One row per food per meal, with a count, rather than a new row every time
    the same thing is tapped. Two eggs at breakfast is one line that says 2,
@@ -7799,7 +7824,7 @@ function addFood(id,q,meal){
   const list=(S.days[k].food||[]).slice();
   const same=list.find(x=>x.id===f.id&&(x.meal||'s')===m);
   if(same) same.q=+(same.q+n).toFixed(2);
-  else list.push({id:f.id,n:f.n,u:f.u,q:n,meal:m,kcal:f.kcal,p:f.p,c:f.c,f:f.f,at:mealAtMs(k,m)});
+  else { const row={id:f.id,n:f.n,u:f.u,q:n,meal:m,kcal:f.kcal,p:f.p,c:f.c,f:f.f,at:mealAtMs(k,m)}; if(typeof f.fb==='number') row.fb=f.fb; list.push(row); }
   /* eating something in a meal marked skipped means it was not skipped */
   if(S.days[k].skipped&&S.days[k].skipped.indexOf(m)>=0) S.days[k].skipped=S.days[k].skipped.filter(x=>x!==m);
   S.days[k].food=list;
@@ -7900,9 +7925,12 @@ function applyFoodTotals(k){
   if(!dayFood(k).length) return;
   S.days[k].kcal=Math.round(t.kcal); S.days[k].protein=Math.round(t.protein);
   S.days[k].carbs=Math.round(t.carbs); S.days[k].fat=Math.round(t.fat);
+  /* fibre follows the food log once anything logged has a fibre figure */
+  const fi=fibreInfo(k); if(fi.n>fi.unknown) S.days[k].fibre=Math.round(t.fibre);
   if(typeof dayDraft!=='undefined'&&dayDraft&&k===todayKey()){
     dayDraft.kcal=S.days[k].kcal; dayDraft.protein=S.days[k].protein;
     dayDraft.carbs=S.days[k].carbs; dayDraft.fat=S.days[k].fat;
+    if(S.days[k].fibre!==undefined) dayDraft.fibre=S.days[k].fibre;
   }
 }
 function recentFoods(){
@@ -8007,6 +8035,7 @@ function drawFood(){
     ${isTeen()? `<div class="fhead"><div><b>${logged.length}</b> ${logged.length===1?'thing':'things'} logged today</div><div>regular meals, plenty of variety</div></div>` : `<div class="fhead">
       <div><b>${left===null? num(Math.round(t.kcal)) : num(Math.abs(left))}</b> kcal ${left===null? 'today' : (left>=0? 'left' : 'over')}</div>
       <div><b>${Math.round(t.protein)}</b>${tg.protein? '/'+tg.protein:''}g protein</div>
+      <div><button class="fibtn" id="fibreWhy" aria-label="Fibre today, and why it matters"><b>${Math.round(t.fibre)}</b>${tg.fibre? '/'+tg.fibre:''}g fibre</button></div>
     </div>`}
     ${tg.kcal? `<div class="bar" style="margin-bottom:12px"><i style="width:${Math.min(100,Math.round(t.kcal/tg.kcal*100))}%;background:${left<0?'var(--oxblood)':'var(--forest-bg)'}"></i></div>`:''}
     <div class="mealtabs" role="tablist" aria-label="Which meal">${MEALS.map(([id,label])=>`<button role="tab" aria-selected="${foodSlot===id}"
@@ -8047,6 +8076,30 @@ function drawFood(){
     <div class="fdone"><button class="sheetcta" id="foodDone">${foodCameFromLog?'Back to the log':'Done'}</button></div>`;
 }
 /* Adding a food you have not got in the list, without leaving the sheet. */
+/* Fibre today: what counted, what did not, where it came from, and why 30g */
+function fibreSheetHtml(k){
+  const fi=fibreInfo(k), tg=(S.targets||{}).fibre||30, items=dayFood(k);
+  const top=items.map(x=>({n:x.n,g:(fibreOf(x)||0)*x.q})).filter(x=>x.g>=0.5).sort((a,b)=>b.g-a.g).slice(0,4);
+  const gram=Math.round(fi.g), gap=Math.max(0,tg-gram);
+  return `<div style="padding:0 14px 10px">
+    <div class="fhead"><div><b>${gram}</b>g fibre today</div><div>target ${tg}g</div></div>
+    <div class="bar" style="margin:4px 0 12px"><i style="width:${Math.min(100,Math.round(fi.g/tg*100))}%;background:var(--forest-bg)"></i></div>
+    ${top.length? `<div class="slab">Where it came from</div>${top.map(x=>`<div class="note" style="margin:2px 0"><b>${escHabit(x.n)}</b> ${Math.round(x.g*10)/10}g</div>`).join('')}` : ''}
+    ${fi.unknown? `<div class="note">${fi.unknown} thing${fi.unknown===1?' has':'s have'} no fibre figure (your own numbers, or a food added before fibre was counted), so the real total is higher.</div>` : ''}
+    ${fi.rough? `<div class="note">Mixed dishes, takeaways and protein bars vary with the recipe, so their fibre is a typical value.</div>` : ''}
+    ${fi.n&&gap? `<div class="note">${gap}g to go. Easy ways to get there: a pear (5.5g), half a tin of beans (7.5g), a bowl of porridge (4g), peas or broccoli with dinner (3 to 5g), wholemeal bread over white (2.5g against 1g a slice).</div>` : ''}
+    ${fi.n&&!gap? `<div class="note">Target met.</div>` : ''}
+    <div class="slab">Why 30g</div>
+    <div class="note">30g a day is the UK recommendation (SACN, 2015); Europe's food safety authority sets 25g. A review of 185 studies and 58 trials found people eating 25 to 29g a day had 15 to 30% lower rates of death, heart disease, stroke, type 2 diabetes and bowel cancer than those eating least (Reynolds and colleagues, Lancet, 2019). Most of that evidence is observational: a strong association, not proof. Go up gradually and drink with it, or your gut will let you know.</div>
+  </div>`;
+}
+function openFibre(){
+  document.getElementById('altTitle').textContent='Fibre';
+  document.getElementById('altSub').textContent='Counted from what you logged.';
+  document.getElementById('altBody').innerHTML=fibreSheetHtml(todayKey());
+  openSheet('altSheet');
+}
+document.addEventListener('click',e=>{ if(e.target.closest('#fibreWhy')) openFibre(); });
 function drawFoodNew(){
   foodAdding=true;
   $('foodBody').innerHTML=`
@@ -8061,7 +8114,9 @@ function drawFoodNew(){
     <div class="twoup" style="gap:10px">
       <div class="nf"><label>Carbs g</label><input id="nfC" type="number" inputmode="decimal" placeholder="30"></div>
       <div class="nf"><label>Fat g</label><input id="nfF" type="number" inputmode="decimal" placeholder="2"></div></div>
-    <div class="note">Off the packet is fine. Carbs and fat can be left blank if you only care about protein.</div>
+    <div class="twoup" style="gap:10px;margin-top:10px">
+      <div class="nf"><label>Fibre g</label><input id="nfFb" type="number" inputmode="decimal" placeholder="3"></div><div></div></div>
+    <div class="note">Off the packet is fine. Carbs, fat and fibre can be left blank if you only care about protein.</div>
     <button class="sheetcta" id="nfSave">Save it and add it</button>
     <button class="skipbtn" id="nfCancel">Back to the list</button>`;
 }
@@ -8091,6 +8146,7 @@ document.addEventListener('click',e=>{
     if(!name||!kcal){ toast('It needs a name and a calorie figure'); return; }
     const f=addCustomFood({id:'cf'+Date.now(),n:name,u:v('nfUnit')||'portion',mine:true,
       kcal:kcal,p:+v('nfP')||0,c:+v('nfC')||0,f:+v('nfF')||0});
+    if(v('nfFb')!==''&&!Number.isNaN(+v('nfFb'))&&+v('nfFb')>=0) f.fb=+v('nfFb');
     foodAdding=false; foodQuery=''; addFood(f.id,1); drawFood(); renderAll();
     toast(f.n+' saved and added'); }
   const fa=e.target.closest('[data-foodadd]');
@@ -11258,7 +11314,7 @@ document.addEventListener('click',e=>{
 });
 Object.assign(window.__G||{},{renderSettings,openThemeSheet,openSession,openAllSessions,workoutFor,setRow,prettyDateSafe});
 Object.assign(window.__G||{},{STYLES,circStyle,HIFB,HIFB_ORDER,HIFB_DAYS,hifbPattern,isHifb,hifbRunKm,hifbMins,parseSplit,perKm,runOf,gymRuns,startRun,stopRun,runStats,fadeText,
-  hifbSummary,hifbDetail,hifbProgressPanel,openHifbWhy,tplEntries,drawTplRows,tplFamily,TPL_FILTERS,startWorkout,finishWorkout,loggedTraining,plannedTraining,maintenance,openStyleSheet});
+  hifbSummary,hifbDetail,FIBRE,FIBRE_ROUGH,fibreOf,fibreInfo,openFibre,fibreSheetHtml,hifbProgressPanel,openHifbWhy,tplEntries,drawTplRows,tplFamily,TPL_FILTERS,startWorkout,finishWorkout,loggedTraining,plannedTraining,maintenance,openStyleSheet});
 try{ Object.defineProperty(window.__G,'tplView',{get:()=>tplView,set:v=>{tplView=v},configurable:true}); }catch(e){}
 </script>
 </body>

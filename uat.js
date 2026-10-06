@@ -3756,6 +3756,46 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('52 · fitted to the kit they said they have', bc.ex.every(r => ['dumbbell', 'bodyweight', 'bench', 'other'].indexOf(b3.G.exOf(r.exId).eq) >= 0), bc.ex.map(r => r.exId + ':' + b3.G.exOf(r.exId).eq).join(' '));
   }
 
+  /* ---------------------------------------------------------- 53 */
+  journey(53, 'Fibre counted from the food you log, against a target with the evidence behind it');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const ev = (el, type) => el.dispatchEvent(new w.Event(type, { bubbles: true }));
+    t('53 · every food in the list has a fibre figure', G.FOODS.every(f => typeof f.fb === 'number' && f.fb >= 0), G.FOODS.filter(f => typeof f.fb !== 'number').map(f => f.id).join(','));
+    t('53 · meat, fish, eggs and dairy have none; oats, beans and pears plenty', ['chicken', 'salmon', 'egg', 'milk'].every(id => G.foodOf(id).fb === 0) && G.foodOf('oats').fb >= 4 && G.foodOf('beans').fb >= 6 && G.foodOf('pear').fb >= 5);
+    G.openFood(true);
+    G.addFood('oats', 1, 'b'); G.addFood('pear', 1, 'b'); G.addFood('beans', 1, 'l'); G.addFood('chicken', 1, 'd');
+    G.drawFood();
+    const k = G.todayKey();
+    t('53 · logging food adds up the fibre', G.fibreInfo(k).g === 18);
+    t('53 · and the day record picks it up, like calories', S.days[k].fibre === 18);
+    t('53 · the food screen shows fibre against the target', /18\/30g fibre/.test(txt(d.getElementById('foodBody'))));
+    d.getElementById('fibreWhy').click();
+    const sh = txt(d.getElementById('altBody'));
+    t('53 · tapping it shows where the fibre came from', /Where it came from/.test(sh) && /Baked beans 7\.5g/.test(sh));
+    t('53 · how far to go, with easy foods to get there', /12g to go/.test(sh) && /pear/.test(sh));
+    t('53 · and why 30g, with the evidence and its limits', /SACN, 2015/.test(sh) && /Reynolds and colleagues, Lancet, 2019/.test(sh) && /observational/.test(sh));
+    G.closeSheets();
+    G.addFood('chickencurry', 1, 'd');
+    t('53 · takeaways and mixed dishes are flagged as typical values', G.fibreInfo(k).rough === 1 && /typical value/.test(G.fibreSheetHtml(k)));
+    G.quickAddFood(400, 30, 's');
+    t('53 · numbers typed in by hand count as unknown, and it says so', G.fibreInfo(k).unknown === 1 && /no fibre figure/.test(G.fibreSheetHtml(k)));
+    /* a custom food takes a fibre figure */
+    G.openFood(true); G.drawFoodNew();
+    const set = (id, v) => { const i = d.getElementById(id); i.value = v; ev(i, 'input'); };
+    set('nfName', "Mam's brown bread"); set('nfUnit', 'slice'); set('nfKcal', '120'); set('nfFb', '3');
+    const before = G.fibreInfo(k).g;
+    d.getElementById('nfSave').click();
+    t('53 · your own foods can carry fibre too', G.customFoods().some(f => f.fb === 3) && G.fibreInfo(k).g === before + 3);
+    G.closeFood && G.closeFood();
+    /* an older log without fibre on the row still counts, from the food */
+    S.days[k].food.forEach(x => { if (x.id === 'oats') delete x.fb; });
+    t('53 · food logged before fibre existed still counts', G.fibreInfo(k).g === before + 3);
+  }
+
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);
 })();

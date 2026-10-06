@@ -94,6 +94,7 @@ TZ=America/Los_Angeles node test.js
 50. HYROX, CrossFit, or a mix: fresh each week, fitted to your kit, every part editable
 51. Lots of templates, easy to find: your week first, search, filters, duplicate and delete
 52. HIFB: bodybuilding blocks with a run after each, every set and every run tracked
+53. Fibre counted from the food you log, against a target with the evidence behind it
 
 ## Things the tests cannot cover
 

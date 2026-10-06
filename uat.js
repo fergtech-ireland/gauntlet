@@ -3796,6 +3796,58 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('53 · food logged before fibre existed still counts', G.fibreInfo(k).g === before + 3);
   }
 
+  /* ---------------------------------------------------------- 54 */
+  journey(54, 'Changing a day: quick options, suggestions, search, a look inside before choosing, edit and come back');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const ev = (el, type) => el.dispatchEvent(new w.Event(type, { bubbles: true }));
+    const n = S.plan.days.findIndex(x => x.templateId), cur = S.plan.days[n].templateId;
+    G.openSwap(n);
+    const body = () => d.getElementById('swapBody');
+    t('54 · the sheet says what the day is now, with Edit', new RegExp(G.DAYS[n] + ' is').test(txt(body())) && !!body().querySelector('.swapnow [data-tpledit="' + cur + '"]'));
+    t('54 · rest, walk and cook are one tap', ['rest', 'walk', 'cook'].every(c => body().querySelector('.swapquick [data-swapto="' + n + ':' + c + '"]')));
+    t('54 · three suggestions, each with a reason, not including today', body().querySelectorAll('#swapRows .srow2 .why-row').length >= 2 && !/now/.test(txt(body().querySelector('.slab.tsec').nextElementSibling || body())) && G.swapSuggest(n).every(x => x.id !== cur));
+    t('54 · the rest is in groups that fold, with today\'s group open', d.querySelectorAll('#swapRows details.tgrp').length >= 5 && !!d.querySelector('#swapRows details.tgrp[open] .tkind.cur'));
+    t('54 · old generated circuits from past weeks are not in the list', ![...d.querySelectorAll('#swapRows [data-swappeek]')].some(b => /^g\d/.test(b.dataset.swappeek) && !(S.styleWeek && S.styleWeek.ids.includes(b.dataset.swappeek))));
+    const q = d.getElementById('swapQ'); q.value = 'deadlift'; ev(q, 'input');
+    t('54 · search finds sessions by a movement in them', d.querySelectorAll('#swapRows .srow2').length > 0 && !!d.querySelector('#swapRows [data-swappeek="t_back"]') && /match/.test(txt(d.getElementById('swapRows'))));
+    t('54 · the search box keeps its text', d.getElementById('swapQ') === q && q.value === 'deadlift');
+    q.value = ''; ev(q, 'input');
+    d.querySelector('[data-swapfilter="run"]').click();
+    t('54 · filters narrow it to one kind', [...d.querySelectorAll('#swapRows [data-swappeek]')].every(b => S.runPlans.some(r => r.id === b.dataset.swappeek)) && d.querySelectorAll('#swapRows .srow2').length === S.runPlans.length);
+    t('54 · there is no "In your week" filter here, it would not help', !d.querySelector('[data-swapfilter="week"]'));
+    d.querySelector('[data-swapfilter="hifb"]').click();
+    d.querySelector('[data-swappeek="t_hifb_legs"]').click();
+    const pv = txt(d.querySelector('#swapRows .srow2.open'));
+    t('54 · tapping a name shows what is in it, runs included, before choosing', /Back Squat/.test(pv) && /Buy-in run 800m/.test(pv) && /4 × 8 to 10/.test(pv) && !!d.querySelector('#swapRows .srow2.open [data-swapto="' + n + ':t_hifb_legs"]'));
+    d.querySelector('[data-swappeek="t_hifb_legs"]').click();
+    t('54 · tapping again closes it', !d.querySelector('#swapRows .srow2.open'));
+    d.querySelector('#swapRows [data-swapto="' + n + ':t_hifb_back"]').click();
+    t('54 · Use sets the day straight away', S.plan.days[n].templateId === 't_hifb_back' && !d.getElementById('swapSheet').classList.contains('on'));
+    t('54 · with Undo', /is now/.test(txt(d.getElementById('toast'))));
+    d.getElementById('toastAct').click();
+    t('54 · and Undo puts it back', S.plan.days[n].templateId === cur);
+    /* edit from the sheet and come back to it */
+    G.openSwap(n);
+    d.querySelector('.swapnow [data-tpledit]').click();
+    t('54 · Edit opens the workout', d.getElementById('tplEdit').classList.contains('on') && d.getElementById('tplName').value === S.templates.find(x => x.id === cur).name);
+    d.getElementById('tplSave').click();
+    t('54 · saving brings you back to the day you were changing', d.getElementById('swapSheet').classList.contains('on') && G.swapView.n === n);
+    G.closeSheets();
+    G.openSwap(n); d.querySelector('.swapquick [data-swapto="' + n + ':rest"]').click();
+    t('54 · a quick option works in one tap', S.plan.days[n].slot === 'rest');
+    G.openSwap(n);
+    t('54 · and shows as the current choice next time', !!d.querySelector('.swapquick button.on[data-swapto="' + n + ':rest"]'));
+    G.closeSheets();
+    /* the template manager gets the same look inside */
+    G.drawTemplates(); G.openSheet('tplSheet');
+    d.querySelector('[data-tplpeek="t_push"]').click();
+    t('54 · the template list can look inside a template too', /Bench Press/.test(txt(d.querySelector('#tplRows .srow2.open'))));
+  }
+
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);
 })();

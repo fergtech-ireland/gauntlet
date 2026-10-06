@@ -95,6 +95,7 @@ TZ=America/Los_Angeles node test.js
 51. Lots of templates, easy to find: your week first, search, filters, duplicate and delete
 52. HIFB: bodybuilding blocks with a run after each, every set and every run tracked
 53. Fibre counted from the food you log, against a target with the evidence behind it
+54. Changing a day: quick options, suggestions, search, a look inside before choosing, edit and come back
 
 ## Things the tests cannot cover
 

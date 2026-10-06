@@ -268,7 +268,7 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .tfilters::-webkit-scrollbar{display:none}
 .tfilters button{flex:0 0 auto;min-height:36px;padding:0 12px;border-radius:18px;border:1px solid var(--line);background:var(--paper);font-size:12.5px;font-weight:700;color:var(--ink)}
 .tfilters button.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
-#tplRows .tsec,#tplRows .tcount{padding:0 14px}
+#tplRows .tsec,#tplRows .tcount,#swapRows .tsec,#swapRows .tcount{padding:0 14px}
 .tgrp{border-bottom:1px solid var(--line-soft)}
 .tgrp summary{display:flex;align-items:center;justify-content:space-between;min-height:48px;padding:0 14px;cursor:pointer;list-style:none;font-size:14px}
 .tgrp summary::-webkit-details-marker{display:none}
@@ -278,6 +278,22 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .tday{display:inline-block;min-width:30px;margin-right:6px;font-size:11px;font-weight:800;color:var(--marine);text-transform:uppercase;letter-spacing:.06em}
 .tkind{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 5px;border-radius:4px;background:var(--t-marine);color:var(--marine);vertical-align:middle}
 .tkind.mine{background:var(--t-forest);color:var(--forest)}
+/* change a day (build 51) */
+.swapnow{display:flex;align-items:center;gap:10px;margin:0 14px 10px;padding:12px;border-radius:12px;background:var(--grey-btn)}
+.swapnow .txt{flex:1;min-width:0}.swapnow .k{font-size:11px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.08em}
+.swapnow .t{font-weight:800;font-size:16px}.swapnow .mini{background:var(--paper);border:1px solid var(--line);min-height:44px}.swapnow .s{font-size:12px;color:var(--mute)}
+.swapquick{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:0 14px 12px}
+.swapquick button{min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--paper);font-weight:700;color:var(--ink)}
+.swapquick button.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.srow2 .trow{border-bottom:0}.srow2{border-bottom:1px solid var(--line-soft)}
+.tpeek{flex:1;min-width:0;text-align:left;background:none;border:0;padding:0;font:inherit;color:inherit;min-height:44px}
+.tkind.cur{background:var(--ink);color:var(--on-ink)}
+.tpwrap{padding:0 14px 12px}
+.tprev{list-style:none;margin:0 0 8px;padding:8px 10px;border-radius:10px;background:var(--grey-btn);font-size:13px}
+.tprev li{display:flex;justify-content:space-between;gap:10px;padding:4px 0;border-bottom:1px solid var(--line-soft)}
+.tprev li:last-child{border-bottom:0}.tprev li span{color:var(--mute);font-weight:600;white-space:nowrap}
+.tprev li.prun{color:var(--marine);font-weight:700}
+.tpwrap .setbtns .go{background:var(--ink);color:var(--on-ink)}
 #tplEditBody .setbtns button.bad{color:var(--oxblood)}
 .splits span{padding:4px 8px;border-radius:8px;background:var(--grey-btn);font-size:12.5px;font-weight:700}
 .twocol{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}
@@ -1258,7 +1274,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='50';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='51';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -3900,21 +3916,99 @@ function renderPlan(){
       <button class="mini" id="rebuild">Rebuild the week</button></div>
   </div>`;
 }
-function openSwap(n){
-  const d=S.plan.days[n];
-  $('swapTitle').textContent=DAYS[n];
-  const opts=(S.templates||[]).map(t=>({code:t.id,label:t.name+' day',sub:t.ex.length+' movements'}))
-    .concat((S.runPlans||[]).map(r=>({code:r.id,label:r.name,sub:r.sub})))
-    .concat((S.circuits||[]).map(c=>({code:c.id,label:c.name,sub:c.sub})))
-    .concat([{code:'walk',label:'Walk',sub:'Counted by your tracker'},
-      {code:'cook',label:'Cook',sub:'Something with protein in it'},{code:'rest',label:'Rest',sub:'Nothing owed'}]);
-  $('swapBody').innerHTML=opts.map(o=>{
-    const why=(typeof suggestFor==='function')? suggestFor(o.code) : '';
-    return `<button class="logrow" data-swapto="${n}:${o.code}">
-      <div class="txt"><div class="t">${o.label}${d.slot===o.code?' · current':''}</div><div class="s">${o.sub}</div>
-      ${why?`<div class="why-row">${why}</div>`:''}</div></button>`;}).join('');
+/* ---------- changing a day (build 51) ----------
+   It was one long list of every template, run and circuit (old generated
+   weeks included), each with a sentence under it. Now: what the day is and a
+   way to edit it, rest, walk or cook in one tap, three suggestions with the
+   reason, then the same search, filters and folding groups as the template
+   manager. Tap a name to see what is in it before choosing; Use sets the day,
+   with Undo. */
+let swapView={q:'',f:'all',n:0,open:null};
+function swapSuggest(n){
+  const d=S.plan.days[n]||{}, inWeek=new Set(S.plan.days.map(x=>x.templateId||x.circuitId||x.runId).filter(Boolean));
+  const st=styleOf(), sp=splitOf();
+  let pool= st==='hifb'? HIFB_ORDER.slice()
+    : circStyle(st)? ((S.styleWeek&&S.styleWeek.ids)||[]).slice()
+    : (sp? SPLITS[sp].order : LIFT_ORDER).slice();
+  pool=pool.concat((CARDIO_BY_AIM[S.profile.aim]||CARDIO_BY_AIM.lose).filter(x=>x!=='walk'));
+  const cur=d.templateId||d.circuitId||d.runId;
+  const seen=new Set(); const out=[];
+  /* things missing from the week first, then the rest of the shape */
+  pool.filter(id=>!inWeek.has(id)).concat(pool).forEach(id=>{ if(id===cur||seen.has(id)) return; seen.add(id);
+    const x=tplEntries().find(y=>y.id===id); if(x) out.push(x); });
+  return out.slice(0,3);
+}
+function tplPreview(x){
+  if(x.kind==='lift'||x.kind==='hifb'){ const t=S.templates.find(y=>y.id===x.id); if(!t) return '';
+    const rows=[];
+    if(t.hifb&&t.hifb.buyIn) rows.push(`<li class="prun">Buy-in run ${t.hifb.buyIn.m}m</li>`);
+    t.ex.forEach(r=>{ rows.push(`<li><b>${escHabit(exOf(r.exId).n)}</b> <span>${repText(r)}</span></li>`);
+      if(r.run) rows.push(`<li class="prun">Run ${r.run.m}m</li>`); });
+    if(t.hifb&&t.hifb.buyOut) rows.push(`<li class="prun">Buy-out run ${t.hifb.buyOut.m}m</li>`);
+    return `<ul class="tprev">${rows.join('')}</ul>`; }
+  if(x.kind==='circuit'){ const c=circuitOf(x.id); if(!c) return '';
+    return `<ul class="tprev">${(c.strength||[]).map(z=>`<li><b>${escHabit((moveOf(z.move)||{n:z.move}).n)}</b> <span>${z.sets||3} sets</span></li>`).join('')}${c.items.map(it=>`<li class="${it.t==='run'?'prun':''}">${escHabit(it.move? itemText(it) : it.label)}</li>`).join('')}</ul>`; }
+  const r=(S.runPlans||[]).find(y=>y.id===x.id); if(!r) return '';
+  return `<ul class="tprev">${(r.steps||[]).map(z=>`<li><b>${escHabit(z.n)}</b> <span>${escHabit(z.r)}</span></li>`).join('')}</ul>`;
+}
+function swapRowHtml(x,why){
+  const n=swapView.n, d=S.plan.days[n]||{}, cur=(d.templateId||d.circuitId||d.runId)===x.id, open=swapView.open===x.id;
+  const editAttr= x.kind==='circuit'? `data-circedit="${x.id}"` : (x.kind==='run'? '' : `data-tpledit="${x.id}"`);
+  return `<div class="srow2 ${open?'open':''}">
+    <div class="trow">
+      <button class="txt tpeek" data-swappeek="${x.id}" aria-expanded="${open}"><div class="n">${escHabit(x.name)}${x.kind==='hifb'?' <span class="tkind">HIFB</span>':''}${x.mine?' <span class="tkind mine">yours</span>':''}${cur?' <span class="tkind cur">now</span>':''}</div>
+        <div class="s">${escHabit(x.sub)}</div>${why? `<div class="why-row">${escHabit(why)}</div>` : ''}</button>
+      ${cur? '' : `<button class="mini go" data-swapto="${n}:${x.id}">Use</button>`}</div>
+    ${open? `<div class="tpwrap">${tplPreview(x)}<div class="setbtns">${cur? '' : `<button class="go" data-swapto="${n}:${x.id}">Use for ${DAYS[n]}</button>`}${editAttr? `<button ${editAttr}>Edit</button>` : ''}</div></div>` : ''}
+  </div>`;
+}
+function drawSwapRows(){
+  const box=$('swapRows'); if(!box) return;
+  const all=tplEntries(), q=swapView.q.trim().toLowerCase(), f=swapView.f, words=q.split(/\s+/).filter(Boolean);
+  let list=all.filter(x=>words.every(w=>x.terms.indexOf(w)>=0));
+  if(f==='mine') list=list.filter(x=>x.mine); else if(f!=='all') list=list.filter(x=>x.kind===f);
+  let html='';
+  if(q||f!=='all'){
+    list.sort((a,b)=>(b.name.toLowerCase().indexOf(q)===0)-(a.name.toLowerCase().indexOf(q)===0));
+    html= list.length? `<div class="slab tcount">${list.length} ${list.length===1?'match':'matches'}</div>`+list.map(x=>swapRowHtml(x)).join('')
+      : `<div class="empty">Nothing matches${q? ' "'+escHabit(swapView.q.trim())+'"' : ''}.</div>`;
+  } else {
+    const sug=swapSuggest(swapView.n);
+    if(sug.length) html+=`<div class="slab tsec">Suggested for ${DAYS[swapView.n]}</div>`+sug.map(x=>swapRowHtml(x,suggestFor(x.id))).join('');
+    const fams=[]; all.forEach(x=>{ if(fams.indexOf(x.family)<0) fams.push(x.family); });
+    const d=S.plan.days[swapView.n]||{}, curX=all.find(y=>y.id===(d.templateId||d.circuitId||d.runId));
+    html+=`<div class="slab tsec">Everything</div>`+fams.map(fam=>{ const items=all.filter(x=>x.family===fam);
+      const openIt=(curX&&curX.family===fam)||(swapView.open&&items.some(x=>x.id===swapView.open));
+      return `<details class="tgrp" ${openIt?'open':''}><summary><b>${escHabit(fam)}</b><span>${items.length}</span></summary>${items.map(x=>swapRowHtml(x)).join('')}</details>`; }).join('');
+  }
+  box.innerHTML=html;
+}
+function openSwap(n,keep){
+  if(!keep) swapView={q:'',f:'all',n:+n,open:null}; else swapView.n=+n;
+  const d=S.plan.days[n]||{}, all=tplEntries(), curX=all.find(y=>y.id===(d.templateId||d.circuitId||d.runId));
+  $('swapTitle').textContent='Change '+DAYS[n];
+  const quick=[['rest','Rest'],['walk','Walk'],['cook','Cook']];
+  $('swapBody').innerHTML=`
+    <div class="swapnow"><div class="txt"><div class="k">${DAYS[n]} is</div><div class="t">${escHabit(dayLabel(d)||'Rest')}</div>${curX? `<div class="s">${escHabit(curX.sub)}</div>` : ''}</div>
+      ${curX&&curX.kind!=='run'? `<button class="mini" ${curX.kind==='circuit'? `data-circedit="${curX.id}"` : `data-tpledit="${curX.id}"`}>Edit</button>` : ''}</div>
+    <div class="swapquick" role="group" aria-label="Quick change">${quick.map(([c,l])=>`<button class="${d.slot===c?'on':''}" data-swapto="${n}:${c}" ${d.slot===c?'aria-pressed="true"':''}>${l}</button>`).join('')}</div>
+    <div class="search tsearch"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="swapQ" type="search" placeholder="Name or movement: squat, chest, run" aria-label="Search sessions" value="${escHabit(swapView.q)}"></div>
+    <div class="tfilters" role="group" aria-label="Show">${TPL_FILTERS.filter(([id])=>id!=='week').map(([id,t])=>`<button class="${swapView.f===id?'on':''}" data-swapfilter="${id}" aria-pressed="${swapView.f===id}">${t}</button>`).join('')}</div>
+    <div id="swapRows"></div>`;
+  drawSwapRows();
   openSheet('swapSheet');
 }
+document.addEventListener('input',e=>{ if(e.target.id==='swapQ'){ swapView.q=e.target.value; swapView.open=null; drawSwapRows(); } });
+document.addEventListener('click',e=>{
+  const f=e.target.closest('[data-swapfilter]');
+  if(f){ swapView.f=f.dataset.swapfilter; swapView.open=null;
+    document.querySelectorAll('[data-swapfilter]').forEach(x=>{ const on=x===f; x.classList.toggle('on',on); x.setAttribute('aria-pressed',on); });
+    drawSwapRows(); return; }
+  const pk=e.target.closest('[data-swappeek]');
+  if(pk){ swapView.open= swapView.open===pk.dataset.swappeek? null : pk.dataset.swappeek;
+    const st=$('swapRows').closest('.sheet'), y=st? st.scrollTop : 0; drawSwapRows(); if(st) st.scrollTop=y; return; }
+});
 
 /* ===================== progress ===================== */
 function sparkline(points){
@@ -8742,7 +8836,7 @@ let altSwapPick=null;
    long list. It now opens on what is in this week and what was done
    recently, then everything else in families that fold away, with a search
    that matches movements as well as names and filters by kind. */
-let tplView={q:'',f:'all'};
+let tplView={q:'',f:'all',open:null};
 const TPL_FILTERS=[['all','All'],['week','In your week'],['lift','Lifting'],['hifb','HIFB'],['circuit','Circuits'],['run','Running'],['mine','Yours']];
 function tplFamily(t){
   if(isHifb(t)) return 'HIFB';
@@ -8772,9 +8866,10 @@ function tplRowHtml(x,dayLabel){
   const acts= x.kind==='circuit'? `<button class="mini" data-circedit="${x.id}">Edit</button><button class="mini go" data-circstart="${x.id}">Start</button>`
     : x.kind==='run'? `<button class="mini go" data-runstart="${x.id}">Start</button>`
     : `<button class="mini" data-tpledit="${x.id}">Edit</button><button class="mini go" data-tplstart="${x.id}">Start</button>`;
-  return `<div class="trow">
-    <div class="txt"><div class="n">${dayLabel? `<span class="tday">${dayLabel}</span>` : ''}${escHabit(x.name)}${x.kind==='hifb'?' <span class="tkind">HIFB</span>':''}${x.mine?' <span class="tkind mine">yours</span>':''}</div>
-      <div class="s">${escHabit(x.sub)}${x.last? ' · '+agoText(x.last) : ''}</div></div>${acts}</div>`;
+  const open=tplView.open===x.id;
+  return `<div class="srow2 ${open?'open':''}"><div class="trow">
+    <button class="txt tpeek" data-tplpeek="${x.id}" aria-expanded="${open}"><div class="n">${dayLabel? `<span class="tday">${dayLabel}</span>` : ''}${escHabit(x.name)}${x.kind==='hifb'?' <span class="tkind">HIFB</span>':''}${x.mine?' <span class="tkind mine">yours</span>':''}</div>
+      <div class="s">${escHabit(x.sub)}${x.last? ' · '+agoText(x.last) : ''}</div></button>${acts}</div>${open? `<div class="tpwrap">${tplPreview(x)}</div>` : ''}</div>`;
 }
 function tplWeek(all){
   return (S.plan&&S.plan.days||[]).map((d,k)=>{ const id=d.templateId||d.circuitId||d.runId; if(!id) return null;
@@ -8822,6 +8917,9 @@ function drawTemplates(){
   drawTplRows();
 }
 document.addEventListener('input',e=>{ if(e.target.id==='tplQ'){ tplView.q=e.target.value; drawTplRows(); } });
+document.addEventListener('click',e=>{ const pk=e.target.closest('[data-tplpeek]'); if(!pk) return;
+  tplView.open= tplView.open===pk.dataset.tplpeek? null : pk.dataset.tplpeek;
+  const st=$('tplRows').closest('.sheet'), y=st? st.scrollTop : 0; drawTplRows(); if(st) st.scrollTop=y; });
 document.addEventListener('click',e=>{ const b=e.target.closest('[data-tplfilter]'); if(!b) return;
   tplView.f=b.dataset.tplfilter;
   document.querySelectorAll('[data-tplfilter]').forEach(x=>{ const on=x===b; x.classList.toggle('on',on); x.setAttribute('aria-pressed',on); });
@@ -8943,10 +9041,10 @@ document.addEventListener('click',e=>{
   const st=e.target.closest('[data-tplstart]');
   if(st){ startWorkout(st.dataset.tplstart||null); return; }
   const ed=e.target.closest('[data-tpledit]');
-  if(ed){ openTplEdit(ed.dataset.tpledit); return; }
+  if(ed){ swapReturn= ed.closest('#swapSheet')? {n:swapView.n} : null; openTplEdit(ed.dataset.tpledit); return; }
   if(e.target.closest('[data-tplopen]')){ drawTemplates(); openSheet('tplSheet'); }
 });
-let tplDraft=null, tplPicking=false;
+let tplDraft=null, tplPicking=false, swapReturn=null;
 function openTplEdit(id){
   const t=S.templates.find(x=>x.id===id); if(!t) return;
   tplDraft=JSON.parse(JSON.stringify(t));
@@ -9104,6 +9202,7 @@ $('tplSave').addEventListener('click',()=>{
   const uses=(S.plan&&S.plan.days||[]).filter(d=>d.templateId===tplDraft.id).length;
   if(i>=0) S.templates[i]=tplDraft; else S.templates.push(tplDraft);
   save(); closeSheets(); toast(tplDraft.name+' saved'+(uses? ', for every '+tplDraft.name+' day from now on' : '')); tplDraft=null;
+  if(swapReturn){ const n=swapReturn.n; swapReturn=null; renderAll(); openSwap(n,true); return; }
   if(document.getElementById('onb').classList.contains('on')&&typeof onbRender==='function') onbRender();
   else renderAll();
 });
@@ -11314,7 +11413,8 @@ document.addEventListener('click',e=>{
 });
 Object.assign(window.__G||{},{renderSettings,openThemeSheet,openSession,openAllSessions,workoutFor,setRow,prettyDateSafe});
 Object.assign(window.__G||{},{STYLES,circStyle,HIFB,HIFB_ORDER,HIFB_DAYS,hifbPattern,isHifb,hifbRunKm,hifbMins,parseSplit,perKm,runOf,gymRuns,startRun,stopRun,runStats,fadeText,
-  hifbSummary,hifbDetail,FIBRE,FIBRE_ROUGH,fibreOf,fibreInfo,openFibre,fibreSheetHtml,hifbProgressPanel,openHifbWhy,tplEntries,drawTplRows,tplFamily,TPL_FILTERS,startWorkout,finishWorkout,loggedTraining,plannedTraining,maintenance,openStyleSheet});
+  hifbSummary,hifbDetail,openSwap,drawSwapRows,swapSuggest,tplPreview,FIBRE,FIBRE_ROUGH,fibreOf,fibreInfo,openFibre,fibreSheetHtml,hifbProgressPanel,openHifbWhy,tplEntries,drawTplRows,tplFamily,TPL_FILTERS,startWorkout,finishWorkout,loggedTraining,plannedTraining,maintenance,openStyleSheet});
+try{ Object.defineProperty(window.__G,'swapView',{get:()=>swapView,set:v=>{swapView=v},configurable:true}); }catch(e){}
 try{ Object.defineProperty(window.__G,'tplView',{get:()=>tplView,set:v=>{tplView=v},configurable:true}); }catch(e){}
 </script>
 </body>

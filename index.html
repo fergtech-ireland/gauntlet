@@ -223,6 +223,63 @@ header.top{position:sticky;top:0;z-index:40;background:var(--paper);border-botto
 .splitopt b{font-size:14px}.splitopt span{font-size:12.5px;color:var(--mute);font-weight:600}
 .splitopt small{font-size:11.5px;color:var(--mute)}
 .splitopt.on{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink) inset}
+.citemrow{display:flex;gap:6px;align-items:stretch}
+.citemrow .citem{flex:1;min-width:0}
+.citemedit{min-width:64px;border-radius:12px;background:var(--grey-btn);font-size:12px;font-weight:700;color:var(--ink)}
+.citem .split{display:block;font-size:11.5px;font-weight:700;color:var(--marine);margin-top:2px}
+.roundsctl{display:flex;align-items:center;gap:10px;margin:0 0 10px;padding:10px 12px;border-radius:12px;background:var(--grey-btn)}
+.roundsctl span{flex:1;font-size:13px;font-weight:700}
+.roundsctl b{font-size:20px;min-width:28px;text-align:center}
+.mini-in{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:700;color:var(--mute)}
+.mini-in input{width:64px;min-height:40px;border:1px solid var(--line);border-radius:8px;text-align:center;font:inherit;font-size:15px;font-weight:700;color:var(--ink);background:var(--paper)}
+.rpe{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:6px}
+.rpe button{min-height:44px;border-radius:10px;background:var(--grey-btn);font-weight:800}
+.rpe button.on{background:var(--ink);color:var(--on-ink)}
+.splits{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+/* HIFB runs in a session (build 49) */
+.runcard{margin:0 0 12px;padding:10px 12px;border-radius:12px;border:1px dashed var(--line);background:var(--t-marine)}
+.runcard.live{border-style:solid;border-color:var(--marine)}
+.runcard.done{border-style:solid;background:var(--paper)}
+.runcard .rch{display:flex;align-items:center;gap:8px}
+.runcard .rtag{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:3px 6px;border-radius:6px;background:var(--marine);color:var(--paper)}
+.runcard .rct{flex:1;min-width:0;display:flex;flex-direction:column}
+.runcard .rct b{font-size:14px}.runcard .rct span{font-size:12px;color:var(--mute);font-weight:600}
+.runcard .runlive{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.runcard .rcrow{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
+.runcard .rcrow .mini{min-height:40px}
+.runcard .rcrow .mini.go{margin-left:auto}
+.runcard .rpace{font-size:12.5px;font-weight:700;color:var(--mute);flex:1}
+.rsplits{display:flex;flex-direction:column;gap:2px;margin:4px 0 6px}
+.rsrow{display:grid;grid-template-columns:1fr auto;column-gap:10px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--line-soft);font-size:13px}
+.rsrow .rsl{display:flex;flex-direction:column;min-width:0;font-weight:700}
+.rsrow .rsl small{font-size:11.5px;color:var(--mute);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rsrow b{font-size:15px;font-variant-numeric:tabular-nums}
+.rsrow .rsd{grid-column:1/-1;font-size:11.5px;color:var(--mute);font-weight:600}
+.rsrow em{font-style:normal;font-weight:800}.rsrow em.up{color:var(--forest)}.rsrow em.down{color:var(--burnt)}
+.rsrow.miss b{color:var(--mute);font-size:12.5px}
+.hrow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-soft)}
+.hrow .txt{flex:1;min-width:0}.hrow .t{font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hrow .w{font-size:11.5px;color:var(--mute)}
+.hbar{flex:0 0 22%;height:8px;border-radius:4px;background:var(--grey-btn);overflow:hidden}.hbar i{display:block;height:100%;background:var(--marine)}
+.hrow .hv{font-variant-numeric:tabular-nums;font-size:14px;min-width:40px;text-align:right}
+/* template manager (build 49) */
+.tsearch{margin:0 14px 8px}.tsearch input{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:15px;color:var(--ink);height:100%}
+.tfilters{display:flex;gap:6px;overflow-x:auto;padding:0 14px 8px;scrollbar-width:none}
+.tfilters::-webkit-scrollbar{display:none}
+.tfilters button{flex:0 0 auto;min-height:36px;padding:0 12px;border-radius:18px;border:1px solid var(--line);background:var(--paper);font-size:12.5px;font-weight:700;color:var(--ink)}
+.tfilters button.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+#tplRows .tsec,#tplRows .tcount{padding:0 14px}
+.tgrp{border-bottom:1px solid var(--line-soft)}
+.tgrp summary{display:flex;align-items:center;justify-content:space-between;min-height:48px;padding:0 14px;cursor:pointer;list-style:none;font-size:14px}
+.tgrp summary::-webkit-details-marker{display:none}
+.tgrp summary span{font-size:12px;font-weight:700;color:var(--mute);display:flex;align-items:center;gap:6px}
+.tgrp summary span::after{content:'';width:7px;height:7px;border-right:2px solid var(--mute);border-bottom:2px solid var(--mute);transform:rotate(45deg);margin:-3px 2px 0 4px}
+.tgrp[open] summary span::after{transform:rotate(-135deg);margin-top:3px}
+.tday{display:inline-block;min-width:30px;margin-right:6px;font-size:11px;font-weight:800;color:var(--marine);text-transform:uppercase;letter-spacing:.06em}
+.tkind{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 5px;border-radius:4px;background:var(--t-marine);color:var(--marine);vertical-align:middle}
+.tkind.mine{background:var(--t-forest);color:var(--forest)}
+#tplEditBody .setbtns button.bad{color:var(--oxblood)}
+.splits span{padding:4px 8px;border-radius:8px;background:var(--grey-btn);font-size:12.5px;font-weight:700}
+.twocol{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}
 .prios{display:flex;flex-direction:column;gap:8px;padding:0 14px 12px}
 .prio{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:start;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--paper)}
 .prio .pn{width:26px;height:26px;border-radius:50%;background:var(--ink);color:var(--on-ink);display:grid;place-items:center;font-size:12.5px;font-weight:800}
@@ -1200,7 +1257,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 const HUE={run:{deep:'#1e3a6e',tint:'#eaeef6'},workout:{deep:'#6e1f2e',tint:'#f7ecee'},
   fast:{deep:'#1b4a3c',tint:'#e9f1ee'},meal:{deep:'#a8552a',tint:'#f8efe7'},any:{deep:'#161618',tint:'#efefef'},
   walk:{deep:'#1e3a6e',tint:'#eaeef6'},rest:{deep:'#9a9a9f',tint:'#efefef'},checkin:{deep:'#dfa33c',tint:'#fbf3e4'}};
-const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='47';
+const MARIGOLD='#dfa33c', CLAY='#eadfcb', STORE_KEY='gauntlet.v4', APP_VERSION='49';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -1446,7 +1503,10 @@ const KIT=[{id:'bodyweight',t:'Bodyweight',s:'Floor, a wall, maybe a bar'},
   {id:'cable',t:'Cables',s:'A pulley stack'},
   {id:'kettlebell',t:'Kettlebells',s:''},
   {id:'band',t:'Bands',s:''},
-  {id:'other',t:'Odds and ends',s:'Sled, med ball, the rest'}];
+  {id:'other',t:'Odds and ends',s:'Anything else'},
+  {id:'rower',t:'Rowing machine',s:''},{id:'skierg',t:'SkiErg',s:''},{id:'sled',t:'Sled',s:'To push and pull'},
+  {id:'medball',t:'Wall ball or med ball',s:''},{id:'pullup',t:'Pull-up bar',s:''},
+  {id:'box',t:'Plyo box',s:''},{id:'rope',t:'Skipping rope',s:''}];
 const ALL_KIT=KIT.map(x=>x.id);
 const KIT_PRESETS=[
   {id:'gym',t:'Full gym',kit:ALL_KIT.slice()},
@@ -1808,7 +1868,8 @@ function maintenance(){
       const steps=recent.reduce((a,b)=>a+b,0)/recent.length;
       const kg=+p.weight;
       const w21=(S.workouts||[]).filter(x=>x.d>=(typeof addDays==='function'? addDays(todayKey(),-21) : '0'));
-      const liftMin=w21.length? w21.reduce((a,x)=>a+(x.minutes||0),0)/21 : plannedLiftMinPerDay(p);
+      /* an HIFB session's running is in the step count already, so only its lifting minutes are added */
+      const liftMin=w21.length? w21.reduce((a,x)=>a+Math.max(0,(x.minutes||0)-(x.runMin||0)),0)/21 : plannedLiftMinPerDay(p);
       const kcal=Math.round(bmrOf(p)*1.2+stepKcal(steps,kg)+liftNetKcal(liftMin,kg)+plannedCardioKcalPerDay(p));
       return {kcal, source:'measured', steps:Math.round(steps),
         label:'resting burn plus the '+num(Math.round(steps))+' steps a day your tracker counted and your sessions'};
@@ -2175,6 +2236,8 @@ function slotFor(code){
   if(c) return {slot:code, circuitId:code, templateId:null, runId:null, label:c.name, sub:c.sub, mins:c.mins,
     kind:'workout', type:'workout', exclude:[], setDelta:0};
   const t=(S.templates||[]).find(x=>x.id===code);
+  if(isHifb(t)) return {slot:code, templateId:code, label:t.name, sub:t.ex.length+' blocks, '+fmtKm(hifbRunKm(t))+' km of running',
+    mins:hifbMins(t), kind:'workout', type:'workout', exclude:[], setDelta:0};
   return {slot:code, templateId:code, label:(t?t.name:'Lift')+' day', sub:t? t.ex.length+' movements':'Lift',
     mins:50, kind:'workout', type:'workout', exclude:[], setDelta:0};
 }
@@ -2214,6 +2277,308 @@ function liftOrder(){
   return {order:order.length? order : LIFT_ORDER, offset:(week*dayCounts().lift)%Math.max(1,order.length)};
 }
 /* an honest line about the fit between a split and the number of days */
+/* ---------- HIFB: high-intensity functional bodybuilding (build 49) ----------
+   Bodybuilding blocks, each finished with a run: a buy-in run, four lifting
+   blocks of four sets with a 400m run straight after each, and a buy-out run.
+   What the evidence says, and what it does not:
+   - No trial has tested HIFB itself. It is a way of arranging concurrent
+     training, so the evidence is the concurrent training evidence.
+   - A meta-analysis of 43 studies found adding aerobic work to strength
+     training did not reduce whole-muscle growth or maximal strength, but did
+     blunt explosive strength, more so in the same session (Schumann and
+     colleagues, Sports Medicine, 2022).
+   - A companion analysis of muscle fibres found a small negative effect on
+     type I fibre growth when the aerobic work was running, not cycling
+     (Lundberg and colleagues, Sports Medicine, 2022). So the app says plainly
+     that a bike or rower can stand in for the runs.
+   - Session effort is rated 1 to 10 after the session and multiplied by its
+     minutes: the session-RPE method (Foster and colleagues, 2001), a cheap,
+     well-validated way to see training load and fatigue building.
+   - 60 to 90 seconds between sets, and the run distances, are the method's
+     own prescription, labelled as such: rules of thumb, not findings.
+   - Where the method gives one number (8 reps), the row is a range topping
+     out at it (6 to 8), because progression adds weight once the top of the
+     range is reached on every set.
+   Run splits are timed one by one, so the app can show whether the 400s hold
+   up under fatigue and whether they get quicker from week to week. */
+const HIFB={buyIn:800, between:400, buyOut:800, rest:75};
+const HIFB_ORDER=['t_hifb_chest','t_hifb_back','t_hifb_shoulders','t_hifb_legs'];
+/* where the sessions sit in a Monday-first week: four days is the classic
+   shape, two on, a day off, two on */
+const HIFB_DAYS={1:[0],2:[0,3],3:[0,2,4],4:[0,1,3,4],5:[0,1,3,4,5],6:[0,1,2,3,4,5]};
+function hifbPattern(){
+  const n=Math.max(1,Math.min(6,sessionsWanted()));
+  const order=HIFB_ORDER.filter(id=>(S.templates||[]).some(t=>t.id===id));
+  const out=Array(7).fill(S.profile.aim==='eat'? 'cook':'rest');
+  if(!order.length) return out;
+  /* with fewer days than sessions the week rolls on, so nothing is skipped for good */
+  const week=Math.floor(dateOf(mondayKey()).getTime()/(7*864e5)), off=n<order.length? (week*n)%order.length : 0;
+  (HIFB_DAYS[n]||HIFB_DAYS[4]).forEach((pos,j)=>{ out[pos]=order[(j+off)%order.length]; });
+  return out;
+}
+const isHifb=t=>!!(t&&t.hifb);
+function hifbRunKm(t){
+  if(!isHifb(t)) return 0;
+  const m=(+(t.hifb.buyIn&&t.hifb.buyIn.m)||0)+(+(t.hifb.buyOut&&t.hifb.buyOut.m)||0)+t.ex.reduce((a,r)=>a+(r.run? +r.run.m||0 : 0),0);
+  return Math.round(m/100)/10;
+}
+/* minutes: two a set with its rest, six a kilometre, five for changeovers. An
+   estimate for planning the day, not a target */
+const hifbMins=t=>Math.round(t.ex.reduce((a,r)=>a+(+r.sets||0)*2,0)+hifbRunKm(t)*6+5);
+const fmtKm=km=>(Math.round(km*10)/10).toString().replace(/\.0$/,'');
+const parseSplit=v=>{ v=String(v||'').trim().replace(/[.,']/g,':'); if(!v) return null;
+  let sec; if(v.indexOf(':')>=0){ const [m,ss]=v.split(':'); if(ss===undefined||!/^\d+$/.test(m)||!/^\d{1,2}$/.test(ss)||+ss>59) return NaN; sec=+m*60+ +ss; }
+  else { if(!/^\d+$/.test(v)) return NaN; sec=+v; }
+  return sec>=5&&sec<=7200? sec*1000 : NaN; };
+const perKm=(ms,m)=>m? fmtSplit(ms/(m/1000)) : '';
+
+/* ---------- week styles: HYROX, CrossFit, or both (build 48) ---------- */
+/* HYROX is a fixed race: 8 runs of 1km, each followed by one of eight stations
+   in a fixed order. Open weights are the same in every source: sled push 152kg
+   for men and 102kg for women, sled pull 103 and 78, farmers carry 2 x 24 and
+   2 x 16, sandbag lunges 20 and 10, wall balls 6kg and 4kg. Pro weights differ
+   between sources, so Pro is pointed to the official site, not guessed.
+   CrossFit is varied work against the clock. Systematic reviews put its injury
+   rate alongside weightlifting and powerlifting (Klimek and colleagues, 2018;
+   Meyer and colleagues, 2017), with the shoulder the place to watch, so every
+   movement has a scaled version and the pain check works here too.
+   Both are offered because people stick to training they like; neither is
+   presented as better than lifting. */
+const STYLES={
+  gym:{t:'Gym',s:'Strength sessions, split the way you like'},
+  hyrox:{t:'HYROX',s:'Runs and the eight race stations, building towards race day'},
+  crossfit:{t:'CrossFit',s:'Varied workouts against the clock, with a strength piece'},
+  hybrid:{t:'HYROX and CrossFit',s:'A mix of both: you choose how many days of each'},
+  hifb:{t:'HIFB',s:'Bodybuilding blocks with a run after each one: functional bodybuilding with an engine'}};
+/* the three styles built from weekly circuits; Gym and HIFB are built from templates */
+const circStyle=s=>s==='hyrox'||s==='crossfit'||s==='hybrid';
+/* how many of a mixed week are HYROX; the rest are CrossFit */
+function hyroxDaysOf(n){ const h=S.profile&&S.profile.hyroxDays; return Math.max(1,Math.min(Math.max(1,n-1),(h===undefined||h===null)? Math.ceil(n/2) : +h)); }
+const styleOf=()=>{ const s=(S.profile&&S.profile.style)||'gym'; return STYLES[s]? s : 'gym'; };
+/* Every movement a session can use: what it needs, how it is measured, the
+   Rx or race weight, and what to do instead when the kit is not there. The
+   factor converts the amount: 1000m on a SkiErg is not 1000 band pulldowns. */
+const MOVES={
+  run:{n:'Run',kit:[],u:'m',cat:'mono'},
+  skierg:{n:'SkiErg',kit:['skierg'],u:'m',cat:'hyrox',alt:[{id:'row',f:1},{id:'bandpull',f:0.06},{id:'burpee',f:0.02}]},
+  sledpush:{n:'Sled push',kit:['sled'],u:'m',kg:{m:152,f:102},cat:'hyrox',alt:[{id:'dblungewalk',f:0.4},{id:'wallsprint',f:0.6}]},
+  sledpull:{n:'Sled pull',kit:['sled'],u:'m',kg:{m:103,f:78},cat:'hyrox',alt:[{id:'dbrow',f:0.4},{id:'bandrow',f:0.6},{id:'bearcrawl',f:0.5}]},
+  bbj:{n:'Burpee broad jumps',kit:[],u:'m',cat:'hyrox'},
+  row:{n:'Row',kit:['rower'],u:'m',cat:'hyrox',alt:[{id:'skierg',f:1},{id:'run',f:1}]},
+  farmers:{n:'Farmers carry',kit:['kettlebell','dumbbell'],u:'m',kg:{m:24,f:16},each:true,cat:'hyrox',alt:[{id:'bearcrawl',f:0.25}]},
+  sblunge:{n:'Sandbag lunges',kit:['other'],u:'m',kg:{m:20,f:10},cat:'hyrox',alt:[{id:'dblungewalk',f:1},{id:'lunge',f:1}]},
+  wallball:{n:'Wall balls',kit:['medball'],u:'reps',kg:{m:6,f:4},cat:'hyrox',r:20,alt:[{id:'dbthruster',f:1},{id:'squatjump',f:0.6}]},
+  dblungewalk:{n:'Dumbbell walking lunges',kit:['dumbbell','kettlebell'],u:'m',kg:{m:20,f:12},each:true,alt:[{id:'lunge',f:1}]},
+  wallsprint:{n:'Wall drive sprints',kit:[],u:'s',scaleNote:'Hands on a wall, drive the knees hard'},
+  bandpull:{n:'Band straight-arm pulldowns',kit:['band'],u:'reps',alt:[{id:'burpee',f:0.4}]},
+  dbrow:{n:'Dumbbell rows',kit:['dumbbell','kettlebell'],u:'reps',kg:{m:22.5,f:12.5},each:true,r:12,alt:[{id:'bandrow',f:1},{id:'bearcrawl',f:1}]},
+  bandrow:{n:'Band rows',kit:['band'],u:'reps',r:15,alt:[{id:'bearcrawl',f:1}]},
+  bearcrawl:{n:'Bear crawl',kit:[],u:'m'},
+  lunge:{n:'Walking lunges',kit:[],u:'m'},
+  squatjump:{n:'Squat jumps',kit:[],u:'reps',r:15},
+  dbthruster:{n:'Dumbbell thrusters',kit:['dumbbell'],u:'reps',kg:{m:15,f:10},each:true,r:12,alt:[{id:'squatjump',f:0.8}]},
+  pushup:{n:'Push-ups',kit:[],u:'reps',r:10,cat:'bw'},
+  airsquat:{n:'Air squats',kit:[],u:'reps',r:15,cat:'bw'},
+  situp:{n:'Sit-ups',kit:[],u:'reps',r:15,cat:'bw'},
+  burpee:{n:'Burpees',kit:[],u:'reps',r:10,cat:'bw'},
+  pullup:{n:'Pull-ups',kit:['pullup'],u:'reps',r:8,cat:'gym',scaleNote:'Band assisted, or jumping pull-ups',alt:[{id:'dbrow',f:1.5},{id:'bandrow',f:2},{id:'burpee',f:1}]},
+  t2b:{n:'Toes to bar',kit:['pullup'],u:'reps',r:10,cat:'gym',scaleNote:'Hanging knee raises',alt:[{id:'vup',f:1}]},
+  vup:{n:'V-ups',kit:[],u:'reps',r:12},
+  boxjump:{n:'Box jumps',kit:['box'],u:'reps',r:12,cat:'gym',scaleNote:'Step ups, or a lower box',alt:[{id:'squatjump',f:1}]},
+  du:{n:'Double unders',kit:['rope'],u:'reps',r:30,cat:'mono',scaleNote:'Single unders, twice the number',alt:[{id:'jumpingjack',f:2}]},
+  jumpingjack:{n:'Jumping jacks',kit:[],u:'reps',r:40},
+  thruster:{n:'Thrusters',kit:['barbell'],u:'reps',kg:{m:43,f:29},r:12,cat:'wl',alt:[{id:'dbthruster',f:1},{id:'wallball',f:1.5},{id:'squatjump',f:1}]},
+  kbswing:{n:'Kettlebell swings',kit:['kettlebell'],u:'reps',kg:{m:24,f:16},r:15,cat:'wl',alt:[{id:'dbswing',f:1},{id:'glutebridge',f:1.5}]},
+  dbswing:{n:'Dumbbell swings',kit:['dumbbell'],u:'reps',kg:{m:22.5,f:15},r:15,alt:[{id:'glutebridge',f:1.5}]},
+  glutebridge:{n:'Glute bridges',kit:[],u:'reps',r:20},
+  deadlift:{n:'Deadlifts',kit:['barbell'],u:'reps',kg:{m:102,f:70},r:9,cat:'wl',alt:[{id:'dbdeadlift',f:1.2},{id:'glutebridge',f:2}]},
+  dbdeadlift:{n:'Dumbbell deadlifts',kit:['dumbbell','kettlebell'],u:'reps',kg:{m:30,f:20},each:true,r:12,alt:[{id:'glutebridge',f:2}]},
+  clean:{n:'Power cleans',kit:['barbell'],u:'reps',kg:{m:61,f:43},r:6,cat:'wl',alt:[{id:'dbclean',f:1.5},{id:'burpee',f:1.5}]},
+  cleanjerk:{n:'Clean and jerks',kit:['barbell'],u:'reps',kg:{m:61,f:43},r:5,cat:'wl',alt:[{id:'dbclean',f:1.5},{id:'burpee',f:1.5}]},
+  dbclean:{n:'Dumbbell cleans',kit:['dumbbell','kettlebell'],u:'reps',kg:{m:22.5,f:15},each:true,r:10,alt:[{id:'burpee',f:1}]},
+  pushpress:{n:'Push press',kit:['barbell'],u:'reps',kg:{m:52,f:34},r:10,cat:'wl',alt:[{id:'dbpushpress',f:1},{id:'pikepushup',f:1}]},
+  dbpushpress:{n:'Dumbbell push press',kit:['dumbbell','kettlebell'],u:'reps',kg:{m:20,f:12.5},each:true,r:10,alt:[{id:'pikepushup',f:1}]},
+  pikepushup:{n:'Pike push-ups',kit:[],u:'reps',r:10},
+  rowcal:{n:'Row',kit:['rower'],u:'cal',r:15,cat:'mono',alt:[{id:'skicals',f:1},{id:'runm',f:14}]},
+  skicals:{n:'SkiErg',kit:['skierg'],u:'cal',r:15,alt:[{id:'runm',f:14}]},
+  runm:{n:'Run',kit:[],u:'m'},
+  backsquat:{n:'Back squat',kit:['barbell'],u:'reps',cat:'lift',alt:[{id:'gobletsquat',f:2}]},
+  frontsquat:{n:'Front squat',kit:['barbell'],u:'reps',cat:'lift',alt:[{id:'gobletsquat',f:2}]},
+  gobletsquat:{n:'Goblet squat',kit:['dumbbell','kettlebell'],u:'reps',alt:[{id:'airsquat',f:3}]},
+  strictpress:{n:'Strict press',kit:['barbell'],u:'reps',cat:'lift',alt:[{id:'dbpress',f:1.5},{id:'pikepushup',f:2}]},
+  dbpress:{n:'Dumbbell shoulder press',kit:['dumbbell','kettlebell'],u:'reps',alt:[{id:'pikepushup',f:1.5}]},
+  liftdl:{n:'Deadlift',kit:['barbell'],u:'reps',cat:'lift',alt:[{id:'dbdeadlift',f:2}]}};
+const HYROX_ORDER=['skierg','sledpush','sledpull','bbj','row','farmers','sblunge','wallball'];
+const HYROX_RACE={skierg:1000,sledpush:50,sledpull:50,bbj:80,row:1000,farmers:200,sblunge:100,wallball:100};
+const moveOf=id=>MOVES[id]||null;
+const kitList=()=>((S.profile&&Array.isArray(S.profile.kit)&&S.profile.kit.length)? S.profile.kit : ALL_KIT);
+const kitOK=m=>!m||!m.kit||!m.kit.length||m.kit.some(k=>kitList().indexOf(k)>=0);
+const sexKey=()=>((S.profile&&S.profile.sex==='f')||(typeof isTeen==='function'&&isTeen()))? 'f' : 'm';
+function niceAmt(v,u){
+  if(u==='m') return v>=200? Math.round(v/50)*50 : Math.max(10,Math.round(v/5)*5);
+  if(u==='s') return Math.max(10,Math.round(v/5)*5);
+  return Math.max(1,Math.round(v));
+}
+/* Readable text for a part of a session, structured or written by hand. */
+function itemText(it){
+  if(!it) return '';
+  const m=it.move&&moveOf(it.move);
+  if(!m) return it.label||'';
+  const a=it.amt;
+  const amount= m.u==='m'? (a>=1000&&a%1000===0? (a/1000)+'km' : a+'m') : (m.u==='cal'? a+' cal' : (m.u==='s'? a+' s' : String(a||'')));
+  const lead= it.sets? it.sets+' × '+(a||'') : amount;
+  const kg= it.kg? ' @ '+it.kg+'kg'+(m.each?' each':'') : '';
+  if(it.t==='run'&&it.move==='run') return amount+' run';
+  return (lead? lead+' ' : '')+m.n.toLowerCase().replace(/^./,ch=>ch.toUpperCase())+kg;
+}
+/* What to do when the kit is not there: the first stand in the person can
+   do, with the amount converted, and a note saying what it stands in for. */
+function fitItem(it){
+  if(!it||!it.move) return it;
+  const orig=it.origMove||it.move, om=moveOf(orig);
+  if(!om) return it;
+  if(kitOK(om)){
+    if(it.origMove&&it.move!==it.origMove){ /* the kit is back: return to the real thing */
+      Object.assign(it,{move:orig,amt:it.origAmt,kg:it.origKg,sub:it.origSub||''});
+      delete it.origMove; delete it.origAmt; delete it.origKg; delete it.origSub; }
+    return it;
+  }
+  const seen={};
+  const walk=(id,f)=>{ if(seen[id]) return null; seen[id]=1; const m=moveOf(id);
+    if(!m) return null; if(kitOK(m)) return {id,f};
+    for(const a of (m.alt||[])){ const r=walk(a.id,f*a.f); if(r) return r; } return null; };
+  let pick=null;
+  for(const a of (om.alt||[])){ pick=walk(a.id,a.f); if(pick) break; }
+  if(!pick) pick={id:'burpee',f:om.u==='m'? 0.1 : 1};
+  const nm=moveOf(pick.id), base=it.origAmt!==undefined? it.origAmt : it.amt;
+  if(it.origMove===undefined){ it.origMove=orig; it.origAmt=it.amt; it.origKg=it.kg; it.origSub=it.sub||''; }
+  it.move=pick.id;
+  it.amt=niceAmt((+base||nm.r||10)*pick.f,nm.u);
+  it.kg=nm.kg? nm.kg[sexKey()] : null;
+  it.sub='Standing in for '+om.n.toLowerCase()+', which needs '+(om.kit.map(k=>(KIT.find(x=>x.id===k)||{t:k}).t.toLowerCase()).join(' or '))+'.';
+  return it;
+}
+/* a seeded random, so a week's sessions are the same every time it is drawn
+   and different from the week before */
+function seeded(seed){ let a=seed>>>0; return ()=>{ a=(a+0x6D2B79F5)>>>0; let t=a; t=Math.imul(t^(t>>>15),t|1); t^=t+Math.imul(t^(t>>>7),t|61); return ((t^(t>>>14))>>>0)/4294967296; }; }
+const weekIndex=()=>Math.floor(dateOf(mondayKey()).getTime()/(7*864e5));
+const st=(move,amt,extra)=>Object.assign({t:move==='run'?'run':'station',move,amt,kg:(moveOf(move)&&moveOf(move).kg)? moveOf(move).kg[sexKey()] : null},extra||{});
+/* ---- HYROX: compromised running, station strength, running engine, and a
+   race simulation every fourth week. Amounts build across the four weeks:
+   half, 60%, three quarters, then the full race. */
+function hyroxSession(kind,w,k){
+  const frac=[0.5,0.6,0.75,1][w%4], race=(id)=>niceAmt(HYROX_RACE[id]*frac,moveOf(id).u);
+  if(kind==='sim'){
+    const items=[]; HYROX_ORDER.forEach(id=>{ items.push(st('run',1000)); items.push(st(id,HYROX_RACE[id])); });
+    return {name:'HYROX race simulation',sub:'8 x 1km and every station at race distance',mins:90,format:'fortime',items,
+      why:'The whole race, in race order, at race distances. The time to beat for the next block.',
+      warn:'Pace the first two runs. If a station falls apart, finish it at a lighter weight rather than stopping.'};
+  }
+  if(kind==='comp'){
+    const start=(w*2+k*3)%8, ids=[0,1,2,3].map(n=>HYROX_ORDER[(start+n)%8]);
+    const items=[]; ids.forEach(id=>{ items.push(st('run',1000)); items.push(st(id,race(id))); });
+    return {name:'Compromised running',sub:ids.map(id=>moveOf(id).n).join(', '),mins:45,format:'fortime',items,
+      why:'Run, then straight into a station, the way the race works. This week: '+Math.round(frac*100)+'% of race distance on each station.',
+      warn:'Hold the same run pace each time. If it drops away, ease the station, not the running.'};
+  }
+  if(kind==='strength'){
+    const push=(w+k)%2===0;
+    const items= push? [st('sledpush',25,{kg:Math.round(moveOf('sledpush').kg[sexKey()]*1.1)}),st('wallball',20),st('sblunge',20)]
+                     : [st('sledpull',25,{kg:Math.round(moveOf('sledpull').kg[sexKey()]*1.1)}),st('farmers',100),st('row',250)];
+    return {name:push? 'Station strength: push' : 'Station strength: pull',sub:'4 rounds, a little heavier than race weight',mins:40,format:'fortime',rounds:4,items,
+      why:'Heavier than race weight on the sled, so race weight feels manageable. Rest as long as you need between rounds.',
+      warn:'Form over speed here. This is the strength day, not the race.'};
+  }
+  const reps=[5,6,6,4][w%4], dist=[1000,1000,800,1000][(w+k)%4];
+  const items=Array.from({length:reps},()=>st('run',dist,{sub:'then 90 seconds easy'}));
+  return {name:'Running engine',sub:reps+' x '+(dist>=1000?dist/1000+'km':dist+'m')+' at race pace',mins:40,format:'fortime',items,
+    why:'Most of a HYROX is running. Race pace with short recoveries builds the engine the stations sit on.',
+    warn:'Race pace, not flat out. You should be able to say a few words at the end of each one.'};
+}
+function hyroxWeek(n,w){
+  const base=['comp','engine','strength','comp','engine','strength','comp'];
+  const kinds=base.slice(0,Math.max(1,n));
+  if(w%4===3) kinds[0]='sim';
+  return kinds.map((kd,k)=>hyroxSession(kd,w,k));
+}
+/* ---- CrossFit: AMRAP, for time, EMOM, and a named benchmark each week, with
+   a strength piece before the AMRAP and EMOM days. */
+const CF_BENCH={
+  cindy:{name:'Cindy',format:'amrap',mins:20,items:[['pullup',5],['pushup',10],['airsquat',15]]},
+  fran:{name:'Fran',format:'fortime',mins:12,items:[['thruster',21],['pullup',21],['thruster',15],['pullup',15],['thruster',9],['pullup',9]]},
+  helen:{name:'Helen',format:'fortime',rounds:3,mins:20,items:[['run',400],['kbswing',21],['pullup',12]]},
+  grace:{name:'Grace',format:'fortime',mins:10,items:[['cleanjerk',30]]},
+  annie:{name:'Annie',format:'fortime',mins:15,items:[['du',50],['situp',50],['du',40],['situp',40],['du',30],['situp',30],['du',20],['situp',20],['du',10],['situp',10]]},
+  karen:{name:'Karen',format:'fortime',mins:15,items:[['wallball',150]]},
+  jackie:{name:'Jackie',format:'fortime',mins:20,items:[['row',1000],['thruster',50,{kg:{m:20,f:15}}],['pullup',30]]},
+  diane:{name:'Diane',format:'fortime',mins:15,items:[['deadlift',21],['pikepushup',21,{sub:'Handstand push-ups in the original; pike push-ups are the scaled version'}],['deadlift',15],['pikepushup',15],['deadlift',9],['pikepushup',9]]}};
+const CF_BENCH_ORDER=['cindy','fran','helen','grace','annie','karen','jackie','diane'];
+const CF_POOLS={bw:['pushup','airsquat','situp','burpee','lunge'],gym:['pullup','t2b','boxjump','du'],
+  wl:['thruster','kbswing','deadlift','clean','wallball','pushpress'],mono:['rowcal','run','du']};
+const CF_LIFTS=['backsquat','liftdl','strictpress','frontsquat','pushpress'];
+function cfItem(id,amt,extra){
+  const m=moveOf(id), kg=(extra&&extra.kg)? extra.kg[sexKey()] : (m.kg? (id==='wallball'? (sexKey()==='f'?6:9) : m.kg[sexKey()]) : null);
+  return Object.assign({t:id==='run'?'run':'station',move:id,amt:amt||m.r||(m.u==='m'?(id==='run'||id==='runm'?400:20):10),kg},extra&&extra.sub? {sub:extra.sub} : {});
+}
+function crossfitSession(w,k){
+  const r=seeded(w*977+k*131+7), pick=a=>a[Math.floor(r()*a.length)];
+  const fmt=['amrap','fortime','emom','bench'][(w+k)%4];
+  const lift=CF_LIFTS[(w+k)%CF_LIFTS.length];
+  const strength=(fmt==='amrap'||fmt==='emom')? [{t:'lift',move:lift,sets:5,amt:[5,3,5,3,5][(w+k)%5],kg:null}] : [];
+  if(fmt==='bench'){
+    const b=CF_BENCH[CF_BENCH_ORDER[(w+k)%CF_BENCH_ORDER.length]];
+    return {name:b.name,sub:'A CrossFit benchmark. Write the result down; it comes round again.',mins:b.mins,format:b.format,rounds:b.rounds||0,
+      items:b.items.map(([id,a,ex])=>cfItem(id,a,ex)),strength:[],
+      why:'Benchmarks are the same workout every time, so they show progress honestly. Scale the weight or reps so you can keep moving.',
+      warn:'Shoulders are where CrossFit injuries tend to show up. If a press or a pull-up pinches, scale it or use "This one hurts".'};
+  }
+  const moves=[pick(CF_POOLS.wl),pick(CF_POOLS.gym),pick(CF_POOLS.bw.concat(CF_POOLS.mono))].filter((x,i,a)=>a.indexOf(x)===i);
+  if(fmt==='amrap'){ const mins=[12,15,18,20][Math.floor(r()*4)];
+    return {name:'AMRAP '+mins,sub:'As many rounds as possible in '+mins+' minutes',mins:mins+15,format:'amrap',amrapMins:mins,
+      strength,items:moves.map(id=>cfItem(id)),
+      why:'Steady from the first round. Count rounds as you go; the clock does the rest.',
+      warn:'Scale anything you cannot do cleanly for the whole time.'}; }
+  if(fmt==='emom'){ const mins=[10,12,14,16][Math.floor(r()*4)];
+    return {name:'EMOM '+mins,sub:'Every minute on the minute, alternating',mins:mins+15,format:'emom',amrapMins:mins,
+      strength,items:moves.slice(0,2).map(id=>cfItem(id,Math.max(1,Math.round((moveOf(id).r||10)*0.6)))),
+      why:'Each minute, do the movement for that minute, then rest until the next one starts.',
+      warn:'If you are not finishing with at least 15 seconds to spare, take reps off.'}; }
+  const rounds=[3,4,5][Math.floor(r()*3)];
+  return {name:rounds+' rounds for time',sub:moves.map(id=>moveOf(id).n).join(', '),mins:rounds*6+10,format:'fortime',rounds,
+    strength:[],items:moves.map(id=>cfItem(id)),
+    why:'Move steadily rather than sprinting the first round.',warn:'Scale the weight before you slow to a crawl.'};
+}
+function crossfitWeek(n,w){ return Array.from({length:Math.max(1,n)},(_,k)=>crossfitSession(w,k)); }
+/* The week's sessions for the chosen style. Generated once per week, then
+   kept, so edits stick; a change of kit refits them in place. */
+function sessionsWanted(){ const {lift,cardio}=dayCounts(); return Math.max(1,Math.min(7,lift+cardio)); }
+function ensureStyleWeek(){
+  const style=styleOf(); if(!circStyle(style)) return [];
+  S.circuits=Array.isArray(S.circuits)? S.circuits : [];
+  const wk=mondayKey(), n=sessionsWanted(), key=wk+'|'+style+'|'+n+(style==='hybrid'? '|h'+hyroxDaysOf(n) : '');
+  if(S.styleWeek&&S.styleWeek.key===key&&S.styleWeek.ids.every(id=>S.circuits.some(c=>c.id===id))){
+    S.styleWeek.ids.forEach(id=>{ const c=S.circuits.find(x=>x.id===id); (c.items||[]).concat(c.strength||[]).forEach(fitItem); });
+    return S.styleWeek.ids;
+  }
+  const w=weekIndex();
+  let list;
+  if(style==='hyrox') list=hyroxWeek(n,w);
+  else if(style==='crossfit') list=crossfitWeek(n,w);
+  else {
+    /* the chosen split, spread so the two kinds alternate as far as they can */
+    const h=hyroxDaysOf(n), hw=hyroxWeek(h,w), cw=crossfitWeek(n-h,w);
+    list=[]; let a=0,b=0;
+    for(let k=0;k<n;k++){ const wantH= a<hw.length&&(b>=cw.length||a/Math.max(1,h)<=b/Math.max(1,n-h)); list.push(wantH? hw[a++] : cw[b++]); }
+  }
+  const used=new Set((S.workouts||[]).map(x=>x.circuitId));
+  S.circuits=S.circuits.filter(c=>!c.gen||used.has(c.id));
+  const ids=list.map((c,i)=>{ const id='g'+wk.replace(/-/g,'')+'_'+style.slice(0,2)+i;
+    const full=Object.assign({id,gen:true,weekOf:wk,forTime:true,style},c);
+    (full.items||[]).concat(full.strength||[]).forEach(fitItem);
+    S.circuits=S.circuits.filter(x=>x.id!==id); S.circuits.push(full); return id; });
+  S.styleWeek={key,weekOf:wk,ids};
+  return ids;
+}
 function splitFit(id,days){
   const s=SPLITS[id]; if(!s||!s.best) return '';
   /* said plainly, as for body part: fewer than six days means once a week */
@@ -2236,6 +2601,14 @@ function dayCounts(){
    then fill what is left with rest, or cooking if that is the aim. */
 function weekPattern(){
   const {lift,cardio}=dayCounts();
+  if(styleOf()==='hifb') return hifbPattern();
+  if(circStyle(styleOf())){
+    /* HYROX, CrossFit or both: every training day is one of this week's
+       sessions, spread across the week rather than bunched together */
+    const ids=ensureStyleWeek(), out=Array(7).fill(S.profile.aim==='eat'? 'cook':'rest');
+    ids.forEach((id,j)=>{ let pos=Math.min(6,Math.round(j*7/ids.length)); while(out[pos]!=='rest'&&out[pos]!=='cook'&&pos<6) pos++; out[pos]=id; });
+    return out;
+  }
   const slots=[0,1,2,3,4,5,6];
   const LO=liftOrder();
   const lifts=Array.from({length:Math.min(lift,slots.length)},(_,n)=>LO.order[(n+LO.offset)%LO.order.length]);
@@ -3162,7 +3535,11 @@ function mealSlots(k){
       let t;
       if(f.at){ const d=new Date(f.at); t=d.getHours()*60+d.getMinutes(); }
       else t=slots[0].min;
-      const pool=want? slots : (slots.filter(x=>!['breakfast','lunch','last'].includes(x.tag)).length? slots.filter(x=>!['breakfast','lunch','last'].includes(x.tag)) : slots);
+      /* a snack never counts towards breakfast, lunch or dinner, whatever they
+         are called today: on a training day the meal after training is dinner
+         without being named that, and snacks were landing on it by the clock */
+      const snackSlots=slots.filter(x=>!x.role);
+      const pool=want? slots : (snackSlots.length? snackSlots : slots);
       let gap=1e9; best=pool[0];
       pool.forEach(x=>{ const g=Math.min(Math.abs(x.min-t),1440-Math.abs(x.min-t)); if(g<gap){gap=g;best=x;} });
     }
@@ -4394,7 +4771,17 @@ function onbRender(){
         const heavy=f.rx.heavy, iso=f.rx.isolation;
         return `<div class="focusnote"><b>Your lifting: ${f.t.toLowerCase()}</b>
           <span>Big lifts ${heavy.repMin} to ${heavy.reps} reps, smaller ones ${iso.repMin} to ${iso.reps}. ${f.effort} You can change this any time.</span></div>`; })()+
-      `<div class="slab">How many days a week</div>
+      `<div class="slab">How you like to train</div>
+       <div class="splitopts">${Object.keys(STYLES).map(id=>`<button class="splitopt ${(onbDraft.style||'gym')===id?'on':''}" data-onbstyle="${id}" aria-pressed="${(onbDraft.style||'gym')===id}">
+         <b>${STYLES[id].t}</b><span>${STYLES[id].s}</span></button>`).join('')}</div>`+
+      ((onbDraft.style||'gym')!=='gym'? `<div class="slab">Sessions a week</div>
+       <div class="field" style="margin-bottom:12px"><div class="fl"><div class="k">Sessions</div><div class="v">${onbDraft.liftDays}</div></div>
+         <div class="chips">${[2,3,4,5,6].map(n=>`<button class="${onbDraft.liftDays===n?'on':''}" data-onbsess="${n}">${n}</button>`).join('')}</div></div>
+       ${onbDraft.style==='hybrid'&&onbDraft.liftDays>=2? `<div class="field" style="margin-bottom:12px"><div class="fl"><div class="k">HYROX days in the mix</div><div class="v">${hyroxMixDraft()} HYROX, ${onbDraft.liftDays-hyroxMixDraft()} CrossFit</div></div>
+         <div class="chips">${Array.from({length:onbDraft.liftDays-1},(_,i)=>i+1).map(n=>`<button class="${hyroxMixDraft()===n?'on':''}" data-onbhx="${n}">${n}</button>`).join('')}</div></div>` : ''}
+       ${onbDraft.style==='hifb'? `<div class="note" style="margin-bottom:14px">Four is the classic HIFB week: chest and triceps, back and biceps, a day off, shoulders and abs, legs. Every block ends with a 400m run, and every set and every run is logged. Movements are fitted to your equipment.</div>`
+         : `<div class="note" style="margin-bottom:14px">A fresh set of sessions every week, fitted to the equipment you said you have. You can change any part of any session: the movement, the reps, the weight.</div>`}` : '')+
+      ((onbDraft.style||'gym')==='gym'? `<div class="slab">How many days a week</div>
        <div class="field" style="margin-bottom:12px"><div class="fl"><div class="k">Lifting</div><div class="v">${onbDraft.liftDays}</div></div>
          <div class="chips">${[0,1,2,3,4,5,6].map(n=>`<button class="${onbDraft.liftDays===n?'on':''}" data-onblift="${n}">${n}</button>`).join('')}</div></div>
        <div class="field"><div class="fl"><div class="k">Cardio</div><div class="v">${onbDraft.cardioDays}</div></div>
@@ -4403,7 +4790,7 @@ function onbRender(){
        <div class="splitopts">${Object.keys(SPLITS).filter(id=>id!=='pplul'||onbDraft.liftDays>=5).map(id=>`<button class="splitopt ${(onbDraft.split||'auto')===id?'on':''}" data-onbsplit="${id}">
          <b>${SPLITS[id].t}</b><span>${id==='auto'? 'For '+onbDraft.liftDays+' day'+(onbDraft.liftDays===1?'':'s')+': '+SPLITS[autoSplit(onbDraft.liftDays)].t.toLowerCase() : SPLITS[id].s}</span>
          ${id!=='auto'? `<small>${splitFit(id,onbDraft.liftDays)}</small>` : ''}</button>`).join('')}</div>
-       <div class="note" style="margin-bottom:14px">Research finds full body and splits build strength and muscle equally when the weekly work is the same, so pick the one you will enjoy and stick to.</div>` : ''}
+       <div class="note" style="margin-bottom:14px">Research finds full body and splits build strength and muscle equally when the weekly work is the same, so pick the one you will enjoy and stick to.</div>` : ''}` : '')+`
        <div class="slab">What have you got to train with?</div>
        <div class="chips" style="margin-bottom:10px">${KIT_PRESETS.map(pre=>`<button class="${sameKit(onbDraft.kit,pre.kit)?'on':''}" data-onbkitpre="${pre.id}">${pre.t}</button>`).join('')}</div>
        <div class="chips">${KIT.map(k=>`<button class="${(onbDraft.kit||ALL_KIT).indexOf(k.id)>=0?'on':''}" data-onbkit="${k.id}">${k.t}</button>`).join('')}</div>
@@ -4784,6 +5171,30 @@ document.addEventListener('click',e=>{
     toast(r.changed+' movement'+(r.changed===1?'':'s')+' updated','Undo',()=>{ S.templates=r.snap; buildPlan(); save(); renderAll(); });
     return; }
 });
+const hyroxMixDraft=()=>{ const n=onbDraft.liftDays||2, h=onbDraft.hyroxDays; return Math.max(1,Math.min(n-1,(h===undefined||h===null)? Math.ceil(n/2) : +h)); };
+function openStyleSheet(){
+  const cur=styleOf(), n=sessionsWanted(), h=hyroxDaysOf(n);
+  document.getElementById('altTitle').textContent='Training style';
+  document.getElementById('altSub').textContent='Changing it rebuilds this week from today. Your history carries across.';
+  document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 10px">
+    ${Object.keys(STYLES).map(id=>`<button class="opt ${cur===id?'on':''}" data-setstyle="${id}"><div class="txt"><div class="t">${STYLES[id].t}</div><div class="s">${STYLES[id].s}</div></div><div class="rad"></div></button>`).join('')}
+    ${cur==='hifb'? `<button class="inlinebtn" data-hifbwhy="1" style="margin-top:8px">How HIFB works, and the evidence</button>` : ''}
+    ${cur==='hybrid'&&n>=2? `<div class="field" style="margin-top:10px"><div class="fl"><div class="k">HYROX days in the mix</div><div class="v">${h} HYROX, ${n-h} CrossFit</div></div>
+      <div class="chips">${Array.from({length:n-1},(_,i)=>i+1).map(k=>`<button class="${h===k?'on':''}" data-sethx="${k}">${k}</button>`).join('')}</div></div>` : ''}
+  </div>`;
+  openSheet('altSheet');
+}
+document.addEventListener('click',e=>{
+  const s=e.target.closest('[data-setstyle]');
+  if(s){ S.profile.style=s.dataset.setstyle; if(S.profile.style!=='gym'&&sessionsWanted()<2){ S.profile.liftDays=3; }
+    if(S.profile.style==='hifb'&&!S.profile.hifbSet){ S.profile.liftDays=4; S.profile.cardioDays=0; S.profile.hifbSet=true; }
+    S.styleWeek=null; S.plan=buildPlan(); save(); renderAll();
+    if(S.profile.style==='hybrid') openStyleSheet(); else closeSheets();
+    toast('Training style: '+STYLES[styleOf()].t+'. This week has been rebuilt.'); return; }
+  const hx=e.target.closest('[data-sethx]');
+  if(hx){ S.profile.hyroxDays=+hx.dataset.sethx; S.styleWeek=null; S.plan=buildPlan(); save(); renderAll(); openStyleSheet();
+    toast(hyroxDaysOf(sessionsWanted())+' HYROX and '+(sessionsWanted()-hyroxDaysOf(sessionsWanted()))+' CrossFit this week'); }
+});
 function openSplitSheet(){
   const days=dayCounts().lift, cur=(S.profile&&S.profile.split)||null;
   document.getElementById('altTitle').textContent='Training split';
@@ -5016,6 +5427,12 @@ document.addEventListener('click',e=>{
     onbRender(); }
   const osp=e.target.closest('[data-onbsplit]');
   if(osp){ onbDraft.split=osp.dataset.onbsplit; onbRender(); return; }
+  const ostyle=e.target.closest('[data-onbstyle]');
+  if(ostyle){ onbDraft.style=ostyle.dataset.onbstyle; if(onbDraft.style!=='gym'){ onbDraft.liftDays=onbDraft.style==='hifb'? 4 : Math.max(2,Math.min(6,(onbDraft.liftDays||0)+(onbDraft.cardioDays||0)||4)); onbDraft.cardioDays=0; } onbRender(); return; }
+  const ons=e.target.closest('[data-onbsess]');
+  if(ons){ onbDraft.liftDays=+ons.dataset.onbsess; onbDraft.cardioDays=0; if(onbDraft.hyroxDays>=onbDraft.liftDays) onbDraft.hyroxDays=null; onbRender(); return; }
+  const ohx=e.target.closest('[data-onbhx]');
+  if(ohx){ onbDraft.hyroxDays=+ohx.dataset.onbhx; onbRender(); return; }
   const ld=e.target.closest('[data-onblift]');
   if(ld){ onbDraft.liftDays=+ld.dataset.onblift; onbRender(); }
   const cd=e.target.closest('[data-onbcardio]');
@@ -5047,7 +5464,7 @@ $('onbNext').addEventListener('click',async()=>{
 $('onbBack').addEventListener('click',()=>{ if(step>0){ step--; onbRender(); } });
 function finishOnboarding(keepOpen){
   if(isTeen({age:onbDraft.age})){ if(onbDraft.aim==='lose') onbDraft.aim='hold'; onbDraft.goal=null; onbDraft.bf=null; }
-  S.profile=Object.assign({},S.profile,{split:onbDraft.split||'auto',handle:onbDraft.handle,aim:onbDraft.aim,checkinDay:onbDraft.checkinDay,
+  S.profile=Object.assign({},S.profile,{style:onbDraft.style||'gym',hyroxDays:onbDraft.style==='hybrid'? hyroxMixDraft() : null,split:onbDraft.split||'auto',handle:onbDraft.handle,aim:onbDraft.aim,checkinDay:onbDraft.checkinDay,
     sex:onbDraft.sex||S.profile.sex,
     liftDays:onbDraft.liftDays, cardioDays:onbDraft.cardioDays,
     kit: (onbDraft.kit&&onbDraft.kit.length)? onbDraft.kit.slice() : ALL_KIT.slice(),
@@ -5350,6 +5767,7 @@ function plannedTraining(){
   if(d.circuitId) return ['cardio'];
   if(d.templateId){
     const t=(S.templates||[]).find(x=>x.id===d.templateId);
+    if(isHifb(t)) return [t.focus||'push','cardio'];
     const name=((t&&t.name)||d.label||'').toLowerCase();
     if(/push/.test(name)) return ['push'];
     if(/pull/.test(name)) return ['pull'];
@@ -5364,6 +5782,7 @@ function loggedTraining(){
   (S.workouts||[]).filter(w=>w.d===k).forEach(w=>{
     const name=(w.name||'').toLowerCase();
     if(w.kind==='circuit') { if(out.indexOf('cardio')<0) out.push('cardio'); return; }
+    if(w.kind==='hifb'){ [w.focus||'push','cardio'].forEach(k=>{ if(out.indexOf(k)<0) out.push(k); }); return; }
     const key=/push/.test(name)?'push':(/pull/.test(name)?'pull':(/lower|leg/.test(name)?'lower':'push'));
     if(out.indexOf(key)<0) out.push(key);
   });
@@ -5780,7 +6199,7 @@ function copyBrief(){
 
 renderProgress();
 Object.assign(window.__G,{TRAIN_DAYS,DEFAULT_TARGETS,ownTargets,allMovements,drawWeekStep,
-  lastNDays,avg,steers,coachBrief,slotLetter,splitFit,proteinPaceText,readiness,readinessPanel,painAdvice,painMorningDue,painPattern,PAIN_FLAGS,priorities,prioritiesRow,confidence,sleepStats,sleepTarget,openSleep,lightsOut,realSleep,isTeen,tooYoung,canHaveAccount,SUPPORT_TEEN,TEEN_MIN,PACE,paceOf,openPaceSheet,isMinorAge,ADULT_AGE,eatingPlan,nextEating,openEating,openEatTimes,eatingRow,perMealProtein,mealSlots,timingStats,MEAL_NAMES,proteinBasis,hhmmToMin,minToHhmm,todayTrains,activeHabits,habitCount,habitRoom,HABIT_MAX,slotForNew,habitSlotOf,trainingList,trainingText,plannedTraining,loggedTraining,TRAIN_DAYS,plannedCardioKcalPerDay,openDay,openWeek,
+  lastNDays,avg,steers,coachBrief,slotLetter,splitFit,STYLES,styleOf,hyroxDaysOf,openStyleSheet,HYROX_ORDER,weekIndex,MOVES,moveOf,kitOK,itemText,fitItem,niceAmt,hyroxSession,hyroxWeek,crossfitSession,crossfitWeek,ensureStyleWeek,sessionsWanted,CF_BENCH,HYROX_RACE,HYROX_ORDER,weekIndex,proteinPaceText,readiness,readinessPanel,painAdvice,painMorningDue,painPattern,PAIN_FLAGS,priorities,prioritiesRow,confidence,sleepStats,sleepTarget,openSleep,lightsOut,realSleep,isTeen,tooYoung,canHaveAccount,SUPPORT_TEEN,TEEN_MIN,PACE,paceOf,openPaceSheet,isMinorAge,ADULT_AGE,eatingPlan,nextEating,openEating,openEatTimes,eatingRow,perMealProtein,mealSlots,timingStats,MEAL_NAMES,proteinBasis,hhmmToMin,minToHhmm,todayTrains,activeHabits,habitCount,habitRoom,HABIT_MAX,slotForNew,habitSlotOf,trainingList,trainingText,plannedTraining,loggedTraining,TRAIN_DAYS,plannedCardioKcalPerDay,openDay,openWeek,
   HABITS,habitOf,currentHabit,startHabit,retireHabit,toggleHabitDay,habitWeek,habitStreak,habitRate,suggestHabit,openHabitSheet,habitRow,habitRowFor,habitApplies,habitSlots,addOwnHabit,ownHabits,escHabit,OWN_MAX,colophonText,
   TARGET_KINDS,setTarget,clearTarget,targetNow,targetProgress,openTargetSheet,targetLine,
   nudgeState,nextNudgeAt,scheduleNudge,enableNudges,disableNudges,fireNudge,nudgeHelp,onIOS,installed,NUDGE_KEY,
@@ -6404,7 +6823,8 @@ function rowMatches(row,focus){
 function applyFocusToTemplates(focus){
   const snap=JSON.parse(JSON.stringify(S.templates||[]));
   let changed=0;
-  (S.templates||[]).forEach(t=>t.ex.forEach(r=>{
+  /* HIFB sessions keep the method's own four sets and short rests */
+  (S.templates||[]).filter(t=>!isHifb(t)).forEach(t=>t.ex.forEach(r=>{
     if(rowMatches(r,focus)) return;
     Object.assign(r,recommendedFor(r.exId,focus)); changed++;
   }));
@@ -6478,13 +6898,36 @@ function seedTemplates(){
       ['pushdown',''],['inclinecurl',''],['ohtri','']]),
     mk('t_mobility','Mobility and core',[['catcow','Slow, no forcing it.'],
       ['deadbug',''],['paloff',''],['90_90',''],['sidplank','Thirty seconds a side.']]),
+    hifbTpl('t_hifb_chest','HIFB chest and triceps','push','Fast',['Sustained effort'],[
+      ['dbpress',8,12,''],['incline',8,12,'Thirty degrees. Any steeper and it becomes a shoulder press.'],
+      ['fly',12,15,'Squeeze, do not clap.'],['ohtri',10,12,'Elbows point at the ceiling.']]),
+    hifbTpl('t_hifb_back','HIFB back and biceps','pull','Fast',['Sustained effort'],[
+      ['deadlift',6,8,'Brace, then push the floor away. Barbell rows work here too.'],['pulldown',10,12,'Wide grip.'],
+      ['cablerow',10,12,'Pinch at the back.'],['dbcurl',10,12,'Up to twelve each arm, alternating.']]),
+    hifbTpl('t_hifb_shoulders','HIFB shoulders and abs','push','Fast',['Sustained effort'],[
+      ['dbohp',8,10,'Seated.'],['lateral',12,15,''],
+      ['frontraise',10,12,'Or upright rows, if your shoulders are happy with them.'],['hanging',12,15,'Or cable crunches.']]),
+    hifbTpl('t_hifb_legs','HIFB legs','lower','Sustained',['Max effort'],[
+      ['squat',8,10,'Or the leg press.'],['rdl',8,10,'Stop before the back rounds.'],
+      ['lunge',16,20,'Steps in total: twenty is ten a leg.'],['legext',12,15,'Or hamstring curls.']],
+      'The compromised run day: the legs will feel heavy on every 400. Hold a pace you can keep, not a sprint.'),
   ];
+}
+/* An HIFB session: four sets of each movement, a short rest between sets,
+   and a run straight after the fourth set of each block. */
+function hifbTpl(id,name,focus,pace,[outPace],rows,why){
+  return {id,name,seeded:true,kind:'hifb',focus,why:why||'',
+    hifb:{buyIn:{m:HIFB.buyIn,pace:'Moderate'},buyOut:{m:HIFB.buyOut,pace:outPace}},
+    ex:rows.map(([exId,lo,hi,note])=>prescribe(exId,{sets:4,repMin:lo,reps:hi,rest:HIFB.rest,note,run:{m:HIFB.between,pace}}))};
 }
 S.templates=Array.isArray(S.templates)&&S.templates.length? S.templates : seedTemplates();
 /* People who joined before the splits arrived get the new templates too,
    added alongside theirs; nothing of their own is touched. */
 (()=>{ const have=new Set(S.templates.map(t=>t.id)); const add=seedTemplates().filter(t=>!have.has(t.id));
-  if(add.length){ S.templates=S.templates.concat(add); S.templatesAdded=(S.templatesAdded||0)+add.length; } })();
+  if(add.length){
+    /* new templates arrive fitted to the kit the person already said they have */
+    if(S.profile&&S.profile.kit&&typeof fitToKit==='function') add.forEach(t=>t.ex.forEach(r=>{ const id2=fitToKit(r.exId); if(id2!==r.exId){ r.exId=id2; r.tempo=tempoOf(id2); } }));
+    S.templates=S.templates.concat(add); S.templatesAdded=(S.templatesAdded||0)+add.length; } })();
 S.workouts=Array.isArray(S.workouts)? S.workouts : [];
 S.restPrefs=S.restPrefs&&typeof S.restPrefs==='object'? S.restPrefs : {};
 S.habits=(S.habits&&typeof S.habits==='object')? S.habits : {};
@@ -6803,6 +7246,12 @@ function groupHead(list,gi){
   const names=list.slice(gi.start,gi.end+1).length;
   return `<div class="grouphead"><b>${gi.label} ${gi.letter}</b><span>${names} movements: one set of each back to back, then rest ${groupRest(list,gi)}s. Repeat.</span></div>`;
 }
+/* a run in a live session: the plan (metres, pace) and what happened (start,
+   finish, the split). On an easy week the fast 400s become steady ones. */
+function runOf(r,easy){
+  if(!r||!(+r.m>0)) return undefined;
+  return {m:+r.m, pace: easy&&/fast|max/i.test(r.pace||'')? 'Steady' : (r.pace||''), startAt:null, endAt:null, ms:null, manual:false};
+}
 function newExEntry(row){
   const rest=S.restPrefs[row.exId]!==undefined? S.restPrefs[row.exId] : (row.rest||90);
   const prev=lastSets(row.exId);
@@ -6814,14 +7263,14 @@ function newExEntry(row){
   if(GYM&&GYM.deload){
     const dp=deloadPrescription(row.exId,row,DELOAD_TIERS[GYM.deload]);
     return {exId:row.exId, group:row.group||undefined, tempo:row.tempo||tempoOf(row.exId), reps:row.reps||12, repMin:row.repMin,
-      rx, dp, rest, note:row.note||'',
+      rx, dp, rest, note:row.note||'', run:runOf(row.run,true),
       sets:Array.from({length:dp.sets},()=>({kg: dp.kg!==null? dp.kg : '', reps: dp.reps, warm:false, done:false}))};
   }
   /* planSets is fixed here, when the session starts. Counting it at the end
      from whatever sets were left made "planned" silently match "done" as soon
      as a set was added, removed or marked as a warm up. */
   return {exId:row.exId, group:row.group||undefined, tempo:row.tempo||tempoOf(row.exId), reps:row.reps||12, repMin:row.repMin, rx, rest, note:row.note||'',
-    planSets:row.sets||3,
+    run:runOf(row.run,GYM&&GYM.deload), planSets:row.sets||3,
     sets:Array.from({length:row.sets||3},(_,i)=>({
       kg: rx.kg!==null? rx.kg : (prev&&prev[i]? prev[i].kg : ''),
       reps: rx.kg!==null? rx.reps : (prev&&prev[i]? prev[i].reps : ''),
@@ -6840,14 +7289,52 @@ function startWorkout(templateId,opts){
   }
   GYM={name: opts.name || (tpl? tpl.name : 'Workout'), templateId: tpl?tpl.id:null, started:Date.now(),
     ex:[], pre:{}, done:false, deload: T? T.id : null};
+  if(isHifb(tpl)) GYM.hifb={focus:tpl.focus||null, why:tpl.why||'',
+    buyIn:runOf(tpl.hifb.buyIn,!!T), buyOut:runOf(tpl.hifb.buyOut,!!T)};
   rows.forEach(r=>{ GYM.pre[r.exId]=exerciseStats(r.exId); });
   GYM.ex=rows.map(newExEntry);
   closeSheets();
   $('gym').classList.add('on');
   drawGym();
   clearInterval(gymTick);
-  gymTick=setInterval(()=>{ if(GYM&&!GYM.done) $('gymSub').textContent=elapsed(); },1000);
+  gymTick=setInterval(()=>{ if(GYM&&!GYM.done){ $('gymSub').textContent=elapsed(); tickRuns(); } },1000);
   return GYM;
+}
+/* ---------- the runs inside an HIFB session ---------- */
+function gymRuns(G){
+  G=G||GYM; if(!G||!G.hifb) return [];
+  const out=[]; let n=0;
+  if(G.hifb.buyIn) out.push({key:'in',label:'Buy-in run',r:G.hifb.buyIn});
+  G.ex.forEach((e,i)=>{ if(e.run) out.push({key:String(i),label:'Run '+(++n),after:e.exId,r:e.run}); });
+  if(G.hifb.buyOut) out.push({key:'out',label:'Buy-out run',r:G.hifb.buyOut});
+  return out;
+}
+const runByKey=k=>{ const x=gymRuns().find(y=>y.key===String(k)); return x? x.r : null; };
+const runsDone=()=>gymRuns().filter(x=>x.r.ms).length;
+function tickRuns(){
+  document.querySelectorAll('[data-runlive]').forEach(el=>{ const r=runByKey(el.dataset.runlive);
+    if(r&&r.startAt&&!r.ms) el.textContent=fmtSplit(Date.now()-r.startAt); });
+}
+function startRun(k){ const r=runByKey(k); if(!r||r.ms) return null;
+  /* one run at a time: starting this one finishes any other still going */
+  gymRuns().forEach(x=>{ if(x.r!==r&&x.r.startAt&&!x.r.ms) stopRun(x.key,true); });
+  r.startAt=Date.now(); r.endAt=null; r.manual=false; return r; }
+function stopRun(k,quiet){ const r=runByKey(k); if(!r||!r.startAt||r.ms) return null;
+  r.endAt=Date.now(); r.ms=Math.max(1000,r.endAt-r.startAt);
+  if(!quiet&&navigator.vibrate) navigator.vibrate(80); return r; }
+/* the last time this session was done, for run-by-run comparison */
+const lastHifb=(tid,notId)=>(S.workouts||[]).find(w=>w.kind==='hifb'&&w.templateId===tid&&w.id!==notId&&(w.runs||[]).some(r=>r.ms));
+function runCard(x){
+  const r=x.r, live=r.startAt&&!r.ms, prev=GYM&&lastHifb(GYM.templateId), pr=prev&&(prev.runs||[]).find(y=>y.key===x.key&&y.ms);
+  return `<div class="runcard ${r.ms?'done':''} ${live?'live':''}">
+    <div class="rch"><span class="rtag">run</span><div class="rct"><b>${x.label}: ${r.m}m</b><span>${escHabit(r.pace||'Your pace')}${r.pace?' pace':''}${pr? ' · last time '+fmtSplit(pr.ms) : ''}</span></div>
+      ${live? `<span class="runlive" data-runlive="${x.key}" aria-live="off">${fmtSplit(Date.now()-r.startAt)}</span>` : ''}</div>
+    <div class="rcrow">
+      <label class="mini-in rtime">time <input type="text" inputmode="numeric" placeholder="m:ss" value="${r.ms? fmtSplit(r.ms) : ''}" data-runtime="${x.key}" aria-label="${x.label} time, minutes and seconds"></label>
+      ${r.ms? `<span class="rpace">${perKm(r.ms,r.m)} /km</span><button class="mini" data-runclear="${x.key}">Clear</button>`
+        : live? `<button class="mini go" data-runstop="${x.key}">Finish run</button>`
+        : `<button class="mini go" data-runbegin="${x.key}">Start run</button>`}
+    </div></div>`;
 }
 function elapsed(){
   const s=Math.floor((Date.now()-GYM.started)/1000);
@@ -6886,7 +7373,9 @@ function drawGym(){
   const GI=groupInfo(GYM.ex);
   const lastW=(S.workouts||[]).find(w=>w.d<todayKey()), away=lastW? gapDays(lastW.d) : 0;
   const backBanner= away>=14? `<div class="deloadbanner"><b>Welcome back.</b> ${weeksText(away)} since your last session. Anything you have not done in a while starts a little lighter today; the weights climb back quickly.</div>` : '';
-  $('gymBody').innerHTML=backBanner+deloadBanner()+GYM.ex.map((e,i)=>{
+  const RUNS=gymRuns(), runAt=k=>{ const x=RUNS.find(y=>y.key===k); return x? runCard(x) : ''; };
+  const hifbHead=GYM.hifb? `<div class="focusnote gymfocus"><b>HIFB: run, lift, run</b><span>Rest about ${HIFB.rest} seconds between sets. After the last set of each block, go straight into the run: it starts timing itself when you tick that set. Type a time instead if you use a watch.${GYM.hifb.why? ' '+escHabit(GYM.hifb.why) : ''}</span></div>` : '';
+  $('gymBody').innerHTML=backBanner+deloadBanner()+hifbHead+runAt('in')+GYM.ex.map((e,i)=>{
     const x=exOf(e.exId), prev=lastSets(e.exId), pre=GYM.pre? GYM.pre[e.exId] : null, gi=GI[i];
     const range=repRangeFor({reps:e.reps,repMin:e.repMin});
     return `${i===0? `<div class="focusnote gymfocus"><b>${LIFT_FOCUS[liftFocus()].t}</b><span>${LIFT_FOCUS[liftFocus()].effort}</span></div>` : ''}${gi&&gi.first? groupHead(GYM.ex,gi) : ''}<div class="exc ${gi?'ingroup':''} ${gi&&gi.last?'grouplast':''}" data-ex="${i}">
@@ -6919,15 +7408,30 @@ function drawGym(){
         const pl=kg? plateLine(e.exId,kg) : '';
         return pl? `<div class="tempoline">${pl}</div>` : ''; })()}
       <div class="setbtns"><button data-addset="${i}">+ Set</button><button data-addwarm="${i}">+ Warm up</button>
-        ${e.sets.length>1?`<button data-delset="${i}">Remove set</button>`:''}</div>
-    </div>`;
-  }).join('')
+        ${e.sets.length>1?`<button data-delset="${i}">Remove set</button>`:''}${GYM.hifb&&!e.run?`<button data-addrun="${i}">+ Run after</button>`:''}</div>
+    </div>${runAt(String(i))}`;
+  }).join('')+runAt('out')
   + (GYM.ex.length? '' : `<div class="empty">Nothing in here yet.<br>Add your first movement and the sets appear.</div>`)
   + `<div class="addex"><button id="addExBtn">+ Add exercise</button></div>`;
   $('gymFoot').innerHTML=`<div>Volume <b>${num(Math.round(gymVolume()))} kg</b></div>
-    <div>Sets <b>${gymSets()}</b></div><div class="hint">Tap the tick to start the rest clock</div>`;
+    <div>Sets <b>${gymSets()}</b></div>${RUNS.length? `<div>Runs <b>${runsDone()} of ${RUNS.length}</b></div>` : `<div class="hint">Tap the tick to start the rest clock</div>`}`;
   fitNumbers($('gymBody'));
 }
+document.addEventListener('click',e=>{
+  if(!GYM||GYM.done||!GYM.hifb) return;
+  const b=e.target.closest('[data-runbegin]'); if(b){ startRest(0); startRun(b.dataset.runbegin); drawGym(); return; }
+  const f=e.target.closest('[data-runstop]'); if(f){ const r=stopRun(f.dataset.runstop); if(r) toast('Run done in '+fmtSplit(r.ms)); drawGym(); return; }
+  const c=e.target.closest('[data-runclear]'); if(c){ const r=runByKey(c.dataset.runclear); if(r){ r.startAt=null; r.endAt=null; r.ms=null; r.manual=false; } drawGym(); return; }
+  const a=e.target.closest('[data-addrun]'); if(a){ const ex=GYM.ex[+a.dataset.addrun]; if(ex){ ex.run=runOf({m:HIFB.between,pace:'Fast'},GYM.deload); drawGym(); } return; }
+});
+document.addEventListener('change',e=>{
+  const t=e.target.closest&&e.target.closest('[data-runtime]'); if(!t||!GYM||!GYM.hifb) return;
+  const r=runByKey(t.dataset.runtime); if(!r) return;
+  const ms=parseSplit(t.value);
+  if(ms===null){ r.startAt=null; r.endAt=null; r.ms=null; r.manual=false; drawGym(); return; }
+  if(Number.isNaN(ms)){ toast('Times look like 1:45, minutes then seconds'); t.value=r.ms? fmtSplit(r.ms) : ''; return; }
+  r.ms=ms; r.manual=true; r.endAt=r.endAt||Date.now(); drawGym();
+});
 function startRest(sec,label){
   rest={left:sec,label};
   if(!sec){ $('restBar').classList.remove('on'); return; }
@@ -6961,6 +7465,11 @@ document.addEventListener('click',e=>{
         startRest(groupRest(GYM.ex,gi), gi.label+' '+gi.letter);
       } else {
         startRest(st.warm?0:GYM.ex[i].rest, exOf(GYM.ex[i].exId).n);
+      }
+      /* HIFB: the block is finished, so no rest, straight into the run */
+      const ex=GYM.ex[i], blockDone=ex.sets.filter(x=>!x.warm).every(x=>x.done);
+      if(ex.run&&!st.warm&&blockDone&&!ex.run.startAt&&!ex.run.ms&&(!gi||gi.last)){
+        startRest(0); startRun(String(i)); toast('Block done. Straight into the '+ex.run.m+'m run, the clock is going');
       }
     }
     drawGym(); }
@@ -7309,7 +7818,11 @@ function addFood(id,q,meal){
 function mealAtMs(k,m){
   const t=((S.days[k]||{}).mealAt||{})[m];
   if(t){ const mm=hhmmToMin(t); if(mm!==null) return dateOf(k).getTime()+mm*60000; }
-  return Date.now();
+  /* No time set: store the same time the screen shows. It used to stamp the
+     clock, so breakfast logged in the evening said 07:30 but was saved at
+     19:45, which also skewed "last food before bed". */
+  const shown=hhmmToMin(mealAtValue(k,m));
+  return shown!==null? dateOf(k).getTime()+shown*60000 : Date.now();
 }
 function mealAtValue(k,m){
   const r=S.days[k]||{}, t=(r.mealAt||{})[m];
@@ -7624,44 +8137,152 @@ document.addEventListener('input',e=>{
 });
 
 /* ---------- circuits, run for time ---------- */
+/* ---------- the session player, for HYROX and CrossFit as well as circuits ----------
+   One screen for every format: for time, AMRAP (as many rounds as possible,
+   with a round counter) and EMOM (a new round each minute, with the minute
+   shown). Strength work before a WOD is logged set by set with weight and
+   reps. Runs record their split when ticked, so you can see whether the
+   running holds up under fatigue. Any part can be changed mid-session:
+   the movement, the amount and the weight, and the change can be kept for
+   next time. At the end it asks how hard it was, 1 to 10. */
+const FORMAT_TEXT={fortime:'For time',amrap:'AMRAP',emom:'EMOM'};
+/* what was lifted last time on this movement in a session like this, as a
+   normal workout does, so the boxes start with something sensible */
+function lastStrengthKg(move){
+  for(const w of (S.workouts||[])){ const s=(w.strength||[]).find(x=>x.move===move&&x.sets&&x.sets.length);
+    if(s){ const top=Math.max(...s.sets.map(x=>+x.kg||0)); if(top>0) return top; } }
+  return null;
+}
 function startCircuit(id){
   const c=circuitOf(id); if(!c) return null;
   closeSheets();
   GYM={mode:'circuit', circuitId:id, name:c.name, templateId:null, started:Date.now(),
+    /* the workout's own length for AMRAP and EMOM, not the whole session with its strength work */
+    format:c.format||'fortime', mins:(c.format==='amrap'||c.format==='emom')? (c.amrapMins||c.mins||null) : (c.mins||null), rounds:c.rounds||null, roundsDone:0, lastTick:Date.now(),
+    strength:(c.strength||[]).map(x=>{ const prev=lastStrengthKg(x.move); return Object.assign({},x,{prev,sets:Array.from({length:+x.sets||3},()=>({kg:prev||x.kg||'',reps:x.amt||x.reps||5,done:false}))}); }),
     items:c.items.map(x=>Object.assign({},x,{done:false})), ex:[], pre:{}, done:false};
   document.getElementById('gym').classList.add('on');
   drawCircuit();
   clearInterval(gymTick);
-  gymTick=setInterval(()=>{ if(GYM&&!GYM.done) $('gymSub').textContent=elapsed()+' · for time'; },1000);
+  gymTick=setInterval(()=>{ if(GYM&&!GYM.done&&GYM.mode==='circuit') $('gymSub').textContent=circSubText(); },1000);
   return GYM;
 }
 function circuitDone(){ return GYM.items.filter(x=>x.done).length; }
+function circSubText(){
+  const t=elapsed();
+  if(GYM.format==='amrap'&&GYM.mins) return t+' · AMRAP '+GYM.mins+' min';
+  if(GYM.format==='emom'&&GYM.mins){ const m=Math.min(GYM.mins,Math.floor((Date.now()-GYM.started)/60000)+1); return t+' · EMOM, minute '+m+' of '+GYM.mins; }
+  return t+' · for time';
+}
+const fmtSplit=ms=>{ const s=Math.round(ms/1000); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
 function drawCircuit(){
-  const c=circuitOf(GYM.circuitId);
+  const c=circuitOf(GYM.circuitId)||{};
   $('gymName').textContent=GYM.name;
-  $('gymSub').textContent=elapsed()+' · for time';
-  $('gymBody').innerHTML=`
-    <div class="exc"><div class="cue">${c.why}</div>
-      ${c.warn?`<div class="warn">${c.warn}</div>`:''}</div>
-    ${GYM.items.map((x,i)=>`<button class="citem ${x.done?'done':''}" data-citem="${i}">
+  $('gymSub').textContent=circSubText();
+  const howTo= GYM.format==='amrap'? `As many rounds as you can in ${GYM.mins} minutes. Count each full round below.`
+    : GYM.format==='emom'? `Every minute on the minute, for ${GYM.mins} minutes. Do the round, rest what is left of the minute.`
+    : (GYM.rounds&&GYM.rounds>1? `${GYM.rounds} rounds, for time.` : 'For time: straight through, as quickly as you can do it well.');
+  const strength=GYM.strength.length? `<div class="slab" style="margin:4px 0 6px">Strength first</div>`+GYM.strength.map((s,si)=>{ const m=moveOf(s.move)||{n:s.move};
+    return `<div class="exc"><div class="exh"><div class="n">${escHabit(m.n)}</div></div>${s.prev? `<div class="note" style="margin:0 0 4px">Last time ${s.prev} kg</div>` : `<div class="note" style="margin:0 0 4px">First time here: pick a weight you could do a couple more reps with.</div>`}
+      ${s.sets.map((x,j)=>`<div class="setline ${x.done?'done':''}">
+        <span class="sn">${j+1}</span>
+        <label class="mini-in">kg <input type="number" inputmode="decimal" step="0.5" value="${x.kg}" placeholder="kg" data-strset="${si}:${j}:kg" aria-label="${escHabit(m.n)} set ${j+1} weight"></label>
+        <label class="mini-in">reps <input type="number" inputmode="numeric" value="${x.reps}" data-strset="${si}:${j}:reps" aria-label="${escHabit(m.n)} set ${j+1} reps"></label>
+        <button class="tick" data-strdone="${si}:${j}" aria-label="Set ${j+1} done">${x.done?'✓':''}</button></div>`).join('')}</div>`; }).join('') : '';
+  let prevAt=GYM.started;
+  const items=GYM.items.map((x,i)=>{ const text=x.move? itemText(x) : x.label;
+    let split='';
+    if(x.done&&x.at){ if(x.t==='run') split=fmtSplit(x.at-prevAt); prevAt=x.at; }
+    return `<div class="citemrow"><button class="citem ${x.done?'done':''}" data-citem="${i}">
         <span class="cn">${x.t==='run'?'run':'station'}</span>
-        <span class="ct"><b>${x.label}</b>${x.sub?`<span>${x.sub}</span>`:''}</span>
-        <span class="ctick">${x.done?'✓':''}</span></button>`).join('')}
+        <span class="ct"><b>${escHabit(text)}</b>${x.sub?`<span>${escHabit(x.sub)}</span>`:''}${split?`<span class="split">split ${split}</span>`:''}</span>
+        <span class="ctick">${x.done?'✓':''}</span></button>
+        ${x.move? `<button class="citemedit" data-citemedit="${i}" aria-label="Change ${escHabit(text)}">Change</button>` : ''}</div>`; }).join('');
+  const roundsCtl= GYM.format==='amrap'||GYM.format==='emom'||(GYM.rounds&&GYM.rounds>1)? `<div class="roundsctl">
+      <span>${GYM.format==='emom'?'Minutes done':'Rounds done'}</span>
+      <button class="mini" data-rounds="-1" aria-label="One fewer">&minus;</button><b id="roundsN">${GYM.roundsDone}</b>
+      <button class="mini go" data-rounds="1" aria-label="One more">+</button></div>` : '';
+  $('gymBody').innerHTML=`
+    <div class="exc"><div class="cue">${escHabit(howTo)}</div>${c.why?`<div class="note" style="margin:6px 0 0">${escHabit(c.why)}</div>`:''}
+      ${c.warn?`<div class="warn">${escHabit(c.warn)}</div>`:''}</div>
+    ${strength}
+    ${GYM.strength.length? '<div class="slab" style="margin:10px 0 6px">The workout</div>' : ''}
+    ${roundsCtl}
+    ${items}
     <div class="addex"><button id="cAdd">+ Add a station</button></div>`;
   $('gymFoot').innerHTML=`<div>Done <b>${circuitDone()} of ${GYM.items.length}</b></div>
     <div style="margin-left:auto">Tap each one as you finish it</div>`;
 }
+/* change one part, mid-session: movement, amount, weight; kept for next time if wanted */
+let citemSel=null;
+function moveOptions(cur){
+  return Object.keys(MOVES).filter(id=>id===cur||kitOK(MOVES[id])).sort((a,b)=>MOVES[a].n.localeCompare(MOVES[b].n))
+    .map(id=>`<option value="${id}" ${id===cur?'selected':''}>${escHabit(MOVES[id].n)}${MOVES[id].u==='m'?' (metres)':(MOVES[id].u==='cal'?' (calories)':(MOVES[id].u==='s'?' (seconds)':''))}</option>`).join('');
+}
+function openItemSheet(i){
+  const x=GYM.items[i]; if(!x||!x.move) return;
+  citemSel={i,move:x.move,amt:x.amt,kg:x.kg,keep:true};
+  drawItemSheet(); openSheet('altSheet');
+}
+function drawItemSheet(){
+  const s=citemSel, m=moveOf(s.move)||{};
+  document.getElementById('altTitle').textContent='Change this part';
+  document.getElementById('altSub').textContent='Pick the movement, how much, and the weight.';
+  document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 10px">
+    <div class="nf"><label for="isMove">Movement</label><select id="isMove">${moveOptions(s.move)}</select></div>
+    <div class="nf" style="margin-top:8px"><label for="isAmt">${m.u==='m'?'Metres':(m.u==='cal'?'Calories':(m.u==='s'?'Seconds':'Reps'))}</label>
+      <input id="isAmt" type="number" inputmode="numeric" value="${s.amt||''}"></div>
+    ${m.kg||s.kg? `<div class="nf" style="margin-top:8px"><label for="isKg">Weight, kg${m.each?' each':''}</label><input id="isKg" type="number" inputmode="decimal" step="0.5" value="${s.kg||''}"></div>` : ''}
+    <label class="flagrow"><input type="checkbox" id="isKeep" ${s.keep?'checked':''}> <span>Keep this change for next time</span></label>
+    <button class="sheetcta" id="isSave" style="width:100%">Use this</button></div>`;
+}
+document.addEventListener('change',e=>{
+  if(!citemSel) return;
+  if(e.target.id==='isMove'){ const m=moveOf(e.target.value)||{}; citemSel.move=e.target.value; citemSel.amt=m.r||citemSel.amt; citemSel.kg=m.kg? m.kg[sexKey()] : null; drawItemSheet(); }
+  if(e.target.id==='isKeep') citemSel.keep=e.target.checked;
+});
+document.addEventListener('input',e=>{
+  if(!citemSel) return;
+  if(e.target.id==='isAmt') citemSel.amt=+e.target.value||citemSel.amt;
+  if(e.target.id==='isKg') citemSel.kg=e.target.value===''? null : +e.target.value;
+  const ss=e.target.closest&&e.target.closest('[data-strset]');
+});
+document.addEventListener('click',e=>{
+  if(e.target.closest('#isSave')&&citemSel&&GYM){
+    const s=citemSel, x=GYM.items[s.i];
+    const apply=it=>{ it.move=s.move; it.amt=s.amt; it.kg=s.kg; it.t=s.move==='run'?'run':'station';
+      delete it.origMove; delete it.origAmt; delete it.origKg; delete it.origSub; it.sub=''; };
+    apply(x);
+    if(s.keep){ const c=circuitOf(GYM.circuitId); if(c&&c.items[s.i]) apply(c.items[s.i]); save(); }
+    citemSel=null; closeSheets(); drawCircuit(); toast('Changed to '+itemText(x)); return;
+  }
+  const ce=e.target.closest('[data-citemedit]'); if(ce&&GYM){ openItemSheet(+ce.dataset.citemedit); return; }
+  const rd=e.target.closest('[data-rounds]'); if(rd&&GYM){ GYM.roundsDone=Math.max(0,GYM.roundsDone+ +rd.dataset.rounds); const n=document.getElementById('roundsN'); if(n) n.textContent=GYM.roundsDone; return; }
+  const sd=e.target.closest('[data-strdone]'); if(sd&&GYM){ const [si,j]=sd.dataset.strdone.split(':').map(Number); const x=GYM.strength[si].sets[j]; x.done=!x.done; drawCircuit(); return; }
+  const rp=e.target.closest('[data-rpe]'); if(rp&&GYM&&GYM.record){ GYM.record.rpe=+rp.dataset.rpe; save();
+    const sl=document.getElementById('sLoad'); if(sl&&GYM.record.minutes) sl.textContent='Effort '+GYM.record.rpe+' out of 10 over '+GYM.record.minutes+' minutes: a training load of '+num(GYM.record.rpe*GYM.record.minutes)+' (session RPE times minutes).';
+    document.querySelectorAll('[data-rpe]').forEach(b=>b.classList.toggle('on',b===rp)); return; }
+});
+document.addEventListener('input',e=>{
+  const ss=e.target.closest&&e.target.closest('[data-strset]'); if(!ss||!GYM) return;
+  const [si,j,k]=ss.dataset.strset.split(':'); GYM.strength[+si].sets[+j][k]=e.target.value===''? '' : +e.target.value;
+});
 function finishCircuit(){
   if(!GYM||GYM.done) return null;
   GYM.done=true; clearInterval(gymTick);
   const mins=Math.max(1,Math.round((Date.now()-GYM.started)/60000));
   const done=circuitDone(), total=GYM.items.length;
+  let prevAt=GYM.started;
+  const splits=GYM.items.filter(x=>x.done&&x.at).map(x=>{ const ms=x.at-prevAt; prevAt=x.at; return x.t==='run'? {what:itemText(x)||x.label,ms} : null; }).filter(Boolean);
+  const strength=GYM.strength.map(s=>({move:s.move,sets:s.sets.filter(x=>x.done).map(x=>({kg:+x.kg||0,reps:+x.reps||0}))})).filter(s=>s.sets.length);
   const record={id:'w'+Date.now(),d:todayKey(),name:GYM.name,kind:'circuit',circuitId:GYM.circuitId,
-    minutes:mins,sets:done,volume:0,stations:done,ofStations:total,
+    minutes:mins,sets:done,volume:strength.reduce((a,s)=>a+s.sets.reduce((b,x)=>b+x.kg*x.reps,0),0),stations:done,ofStations:total,
+    format:GYM.format,rounds:GYM.roundsDone||null,splits,strength,rpe:null,
     ex:[]};
+  GYM.record=record;
   S.workouts.unshift(record);
   const prev=S.workouts.filter(w=>w.circuitId===GYM.circuitId&&w.id!==record.id)[0];
-  logSession({title:GYM.name,type:'workout',adds:1,steps:GYM.items.map(x=>({n:x.label,r:x.t}))});
+  logSession({title:GYM.name,type:'workout',adds:1,steps:GYM.items.map(x=>({n:x.label||itemText(x)||'Part',r:x.t}))});
   $('gymBody').innerHTML=`<div class="summary">
     <div class="big">${mins} minutes.</div>
     <div class="numline" style="margin-top:10px"><div><b>${done}</b> of ${total} finished</div>
@@ -7669,7 +8290,12 @@ function finishCircuit(){
     ${prev? `<div class="note">${mins<prev.minutes? 'That is '+(prev.minutes-mins)+' minutes quicker than last time.' :
       (mins>prev.minutes? 'That is '+(mins-prev.minutes)+' minutes slower. Conditions, sleep and the weights all move this number.' :
       'Same time as last time.')}</div>`:'<div class="note">That is the time to beat.</div>'}
-    ${done<total? `<div class="note">You ticked ${done} of ${total}, so the time is not comparable to a full one.</div>`:''}
+    ${done<total&&GYM.format==='fortime'? `<div class="note">You ticked ${done} of ${total}, so the time is not comparable to a full one.</div>`:''}
+    ${GYM.roundsDone? `<div class="note"><b>${GYM.roundsDone}</b> ${GYM.format==='emom'?'minutes':'rounds'} done.</div>` : ''}
+    ${splits.length? `<div class="slab" style="margin-top:10px">Run splits</div><div class="splits">${splits.map((s,i)=>`<span>${i+1}. ${fmtSplit(s.ms)}</span>`).join('')}</div>` : ''}
+    <div class="slab" style="margin-top:12px">How hard was that?</div>
+    <div class="rpe" role="group" aria-label="Effort from 1 to 10">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button data-rpe="${n}" aria-label="${n} out of 10">${n}</button>`).join('')}</div>
+    <div class="note">1 is easy, 10 is everything you had. It helps spot when fatigue is building.</div>
   </div>`;
   $('gymFoot').innerHTML=`<div style="margin-left:auto"><button class="mini go" id="gymDone">Close</button></div>`;
   save(); renderAll();
@@ -7677,6 +8303,7 @@ function finishCircuit(){
 }
 document.addEventListener('click',e=>{
   const ci=e.target.closest('[data-citem]');
+  if(ci&&GYM&&GYM.items[+ci.dataset.citem]){ const it=GYM.items[+ci.dataset.citem]; if(!it.done) it.at=Date.now(); }
   if(ci&&GYM&&GYM.mode==='circuit'){ const i=+ci.dataset.citem;
     GYM.items[i].done=!GYM.items[i].done;
     if(GYM.items[i].done&&navigator.vibrate) navigator.vibrate(60);
@@ -7850,9 +8477,22 @@ function finishWorkout(){
       /* what was prescribed, kept so the session can say whether the range was hit */
       plan:{sets:(e.dp? e.dp.sets : (e.planSets||e.sets.filter(s=>!s.warm).length)), repMin:e.repMin||null, reps:e.dp? e.dp.reps : (e.reps||null),
         kg:e.dp? e.dp.kg : (e.rx&&typeof e.rx.kg==='number'? e.rx.kg : null), rest:e.rest||null}}))};
+  if(GYM.hifb){
+    /* a run left going when Finish is pressed ends there */
+    gymRuns().forEach(x=>{ if(x.r.startAt&&!x.r.ms) stopRun(x.key,true); });
+    const runs=gymRuns().map(x=>({key:x.key,label:x.label,after:x.after||null,m:x.r.m,pace:x.r.pace||'',ms:x.r.ms||null,manual:!!x.r.manual}));
+    const timed=runs.filter(r=>r.ms), first=GYM.hifb.buyIn, last=GYM.hifb.buyOut;
+    record.kind='hifb'; record.focus=GYM.hifb.focus||null; record.runs=runs;
+    record.runMs=timed.reduce((a,r)=>a+r.ms,0); record.runM=timed.reduce((a,r)=>a+r.m,0);
+    record.runMin=Math.round(record.runMs/60000);
+    /* first metre of the buy-in to the last metre of the buy-out, when both were timed live */
+    record.totalMs= first&&last&&first.startAt&&last.endAt&&!last.manual? last.endAt-first.startAt : null;
+    record.rpe=null;
+  }
   /* which movements set a personal best, kept so the session can show it later */
   try{ record.prs=GYM.ex.filter(e=>typeof exHasPR==='function'&&exHasPR(e)).map(e=>e.exId); }catch(err){ record.prs=[]; }
   S.workouts.unshift(record);
+  if(record.kind==='hifb') GYM.record=record;
   GYM.done=true; clearInterval(gymTick); clearInterval(restTick); $('restBar').classList.remove('on');
   logSession({title:GYM.name,type:'workout',adds:1,workoutId:record.id,steps:GYM.ex.map(e=>({n:exOf(e.exId).n,r:''}))});
   const amended = GYM.templateId && templateChanged(GYM.templateId, GYM);
@@ -7869,6 +8509,7 @@ function finishWorkout(){
         <div class="nw">You moved ${num(Math.round(l.tonnage))}kg on it today.</div>
       </div>`).join('')
       +`<div class="note">Reps first, then the weight. That is double progression, and the trials say it grows muscle about as well as any other way of adding load, provided something goes up. These numbers are a suggestion: change them in the session if they are wrong.</div>` : ''; })()}
+    ${record.kind==='hifb'? hifbSummary(record) : ''}
     <button class="sheetcta" id="seeSession" data-wid="${record.id}" style="margin:16px 0 0;width:100%">See everything you did</button>
     <div class="setbtns" style="margin-top:12px">
       ${amended? `<button id="tplUpdate">Update the ${GYM.name} template</button>`:''}
@@ -7878,14 +8519,45 @@ function finishWorkout(){
   save(); renderAll();
   return {record,prs};
 }
+/* ---------- reading an HIFB session's runs ---------- */
+const betweenRuns=w=>(w.runs||[]).filter(r=>r.ms&&r.key!=='in'&&r.key!=='out');
+/* average 400 pace, and how much the last run between blocks slowed against the first */
+function runStats(w){
+  const b=betweenRuns(w); if(!b.length) return null;
+  const avg=b.reduce((a,r)=>a+r.ms,0)/b.length;
+  return {avg, n:b.length, m:b[0].m, fade: b.length>1? b[b.length-1].ms-b[0].ms : null};
+}
+const secs=ms=>Math.round(ms/1000);
+function fadeText(f){ if(f===null) return '';
+  const s2=secs(f); return s2>2? 'The last run between blocks was '+s2+' seconds slower than the first.' : (s2<-2? 'The last run between blocks was '+(-s2)+' seconds quicker than the first.' : 'Your runs held steady from first block to last.'); }
+function hifbRunsTable(w,prev){
+  const runs=(w.runs||[]); if(!runs.length) return '';
+  return `<div class="slab" style="margin-top:12px">Run splits</div><div class="rsplits">${runs.map(r=>{
+    const p=prev&&(prev.runs||[]).find(y=>y.key===r.key&&y.ms), d=p&&r.ms? secs(r.ms-p.ms) : null;
+    return `<div class="rsrow ${r.ms?'':'miss'}"><span class="rsl">${escHabit(r.label)}<small>${r.m}m${r.after? ' · after '+escHabit(exOf(r.after).n) : ''}</small></span>
+      <b>${r.ms? fmtSplit(r.ms) : 'not timed'}</b><span class="rsd">${r.ms? perKm(r.ms,r.m)+' /km' : ''}${d!==null&&d!==0? ` <em class="${d<0?'up':'down'}">${d<0?'−':'+'}${Math.abs(d)}s</em>` : ''}</span></div>`; }).join('')}</div>`;
+}
+function hifbSummary(rec){
+  const prev=lastHifb(rec.templateId,rec.id), st=runStats(rec), pst=prev&&runStats(prev);
+  const lines=[];
+  if(st){ lines.push(`Average ${st.m}m between blocks: <b>${fmtSplit(st.avg)}</b>`+(pst? ', against '+fmtSplit(pst.avg)+' last time.' : '. That is the number to beat.'));
+    if(st.fade!==null) lines.push(fadeText(st.fade)); }
+  if(rec.totalMs) lines.push(`First run to last: <b>${fmtSplit(rec.totalMs)}</b>`+(prev&&prev.totalMs? ', against '+fmtSplit(prev.totalMs)+' last time.' : '.'));
+  if(!st&&!(rec.runs||[]).some(r=>r.ms)) lines.push('No runs were timed this time, so there is nothing to compare yet.');
+  return hifbRunsTable(rec,prev)+lines.map(l=>`<div class="note">${l}</div>`).join('')+
+    `<div class="slab" style="margin-top:12px">How hard was that?</div>
+    <div class="rpe" role="group" aria-label="Effort from 1 to 10">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button data-rpe="${n}" aria-label="${n} out of 10">${n}</button>`).join('')}</div>
+    <div class="note" id="sLoad">1 is easy, 10 is everything you had. Times the minutes, it gives the session's training load, which shows fatigue building over a week.</div>`;
+}
 function templateChanged(id,gym){
   const t=S.templates.find(x=>x.id===id); if(!t) return false;
   if(t.ex.length!==gym.ex.length) return true;
-  return t.ex.some((row,i)=>row.exId!==gym.ex[i].exId || row.sets!==gym.ex[i].sets.filter(s=>!s.warm).length);
+  return t.ex.some((row,i)=>row.exId!==gym.ex[i].exId || row.sets!==gym.ex[i].sets.filter(s=>!s.warm).length || !!row.run!==!!gym.ex[i].run);
 }
 function gymToTemplateRows(){
   return normaliseGroups(GYM.ex.map(e=>{ const r={exId:e.exId,sets:Math.max(1,e.sets.filter(s=>!s.warm).length),
-    reps:e.reps,repMin:e.repMin,tempo:e.tempo,rest:e.rest,note:e.note}; if(e.group) r.group=e.group; return r; }));
+    reps:e.reps,repMin:e.repMin,tempo:e.tempo,rest:e.rest,note:e.note}; if(e.group) r.group=e.group;
+    if(e.run) r.run={m:e.run.m,pace:e.run.pace}; return r; }));
 }
 $('gymFinish').addEventListener('click',()=>{
   if(!GYM||GYM.done) return;
@@ -7904,6 +8576,8 @@ document.addEventListener('click',e=>{
   }
   if(e.target.closest('#tplNew')){
     const t={id:'t'+Date.now(),name:GYM.name+' (mine)',ex:gymToTemplateRows()};
+    if(GYM.hifb){ t.kind='hifb'; t.focus=GYM.hifb.focus; t.hifb={buyIn:GYM.hifb.buyIn? {m:GYM.hifb.buyIn.m,pace:GYM.hifb.buyIn.pace} : null,
+      buyOut:GYM.hifb.buyOut? {m:GYM.hifb.buyOut.m,pace:GYM.hifb.buyOut.pace} : null}; }
     S.templates.push(t); save(); toast('Saved as "'+t.name+'"');
   }
 });
@@ -8007,29 +8681,95 @@ document.addEventListener('click',e=>{
 });
 let altSwapPick=null;
 
-/* ---------- template manager ---------- */
-function drawTemplates(){
-  $('tplList').innerHTML=
-    `<div class="slab" style="padding:0 14px">Lifting</div>`+
-    S.templates.map(t=>`<div class="trow">
-      <div class="txt"><div class="n">${t.name}</div>
-        <div class="s">${t.ex.length} movements · ${t.ex.map(r=>exOf(r.exId).n.split(' ')[0]).slice(0,3).join(', ')}${t.ex.length>3?'...':''}</div></div>
-      <button class="mini" data-tpledit="${t.id}">Edit</button>
-      <button class="mini go" data-tplstart="${t.id}">Start</button></div>`).join('')+
-    `<div class="slab" style="padding:12px 14px 0">Circuits and HYROX</div>`+
-    (S.circuits||[]).map(c=>`<div class="trow">
-      <div class="txt"><div class="n">${c.name}</div><div class="s">${c.sub} · ${c.items.length} parts</div></div>
-      <button class="mini" data-circedit="${c.id}">Edit</button>
-      <button class="mini go" data-circstart="${c.id}">Start</button></div>`).join('')+
-    `<div class="slab" style="padding:12px 14px 0">Running</div>`+
-    (S.runPlans||[]).map(r=>`<div class="trow">
-      <div class="txt"><div class="n">${r.name}</div><div class="s">${r.sub} · about ${r.mins} min</div></div>
-      <button class="mini go" data-runstart="${r.id}">Start</button></div>`).join('')+
-    `<button class="logrow" data-tplstart=""><div class="txt"><div class="t">Empty workout</div>
-      <div class="s">Build it as you go, save it as a template after</div></div></button>
-     <button class="logrow" id="circNew"><div class="txt"><div class="t">New circuit</div>
-      <div class="s">Copy one of the HYROX sessions and make it yours</div></div></button>`;
+/* ---------- template manager (build 49) ----------
+   Twenty-odd lifting templates, the week's circuits and the runs made one
+   long list. It now opens on what is in this week and what was done
+   recently, then everything else in families that fold away, with a search
+   that matches movements as well as names and filters by kind. */
+let tplView={q:'',f:'all'};
+const TPL_FILTERS=[['all','All'],['week','In your week'],['lift','Lifting'],['hifb','HIFB'],['circuit','Circuits'],['run','Running'],['mine','Yours']];
+function tplFamily(t){
+  if(isHifb(t)) return 'HIFB';
+  if(!t.seeded) return 'Yours';
+  if(t.id==='t_mobility') return 'Mobility';
+  const k=['full','ul','ppl','bro'].find(k2=>SPLITS[k2].order.indexOf(t.id)>=0);
+  return k? SPLITS[k].t : 'More lifting';
 }
+const lastDone=(match)=>{ const w=(S.workouts||[]).find(match); return w? w.d : null; };
+function agoText(d){ if(!d) return ''; const n=gapDays(d); return n<=0? 'done today' : (n===1? 'done yesterday' : 'done '+n+' days ago'); }
+function tplEntries(){
+  const out=[];
+  (S.templates||[]).forEach(t=>{ const hf=isHifb(t);
+    out.push({kind:hf?'hifb':'lift', id:t.id, name:t.name, mine:!t.seeded, family:tplFamily(t),
+      sub: hf? t.ex.length+' blocks · '+fmtKm(hifbRunKm(t))+' km running' : t.ex.length+' movements · '+t.ex.map(r=>exOf(r.exId).n.split(' ')[0]).slice(0,3).join(', ')+(t.ex.length>3?'...':''),
+      terms:(t.name+' '+t.ex.map(r=>exOf(r.exId).n).join(' ')).toLowerCase(),
+      last:lastDone(w=>w.templateId===t.id)}); });
+  const wk=(S.styleWeek&&S.styleWeek.ids)||[];
+  (S.circuits||[]).filter(c=>!c.gen||wk.indexOf(c.id)>=0).forEach(c=>out.push({kind:'circuit',id:c.id,name:c.name,family:'Circuits and HYROX',
+    sub:c.sub+' · '+c.items.length+' parts', terms:(c.name+' '+c.sub+' '+c.items.map(x=>x.label||'').join(' ')).toLowerCase(),
+    last:lastDone(w=>w.circuitId===c.id)}));
+  (S.runPlans||[]).forEach(r=>out.push({kind:'run',id:r.id,name:r.name,family:'Running and cardio',sub:r.sub+' · about '+r.mins+' min',
+    terms:(r.name+' '+r.sub).toLowerCase(), last:null}));
+  return out;
+}
+function tplRowHtml(x,dayLabel){
+  const acts= x.kind==='circuit'? `<button class="mini" data-circedit="${x.id}">Edit</button><button class="mini go" data-circstart="${x.id}">Start</button>`
+    : x.kind==='run'? `<button class="mini go" data-runstart="${x.id}">Start</button>`
+    : `<button class="mini" data-tpledit="${x.id}">Edit</button><button class="mini go" data-tplstart="${x.id}">Start</button>`;
+  return `<div class="trow">
+    <div class="txt"><div class="n">${dayLabel? `<span class="tday">${dayLabel}</span>` : ''}${escHabit(x.name)}${x.kind==='hifb'?' <span class="tkind">HIFB</span>':''}${x.mine?' <span class="tkind mine">yours</span>':''}</div>
+      <div class="s">${escHabit(x.sub)}${x.last? ' · '+agoText(x.last) : ''}</div></div>${acts}</div>`;
+}
+function tplWeek(all){
+  return (S.plan&&S.plan.days||[]).map((d,k)=>{ const id=d.templateId||d.circuitId||d.runId; if(!id) return null;
+    const x=all.find(y=>y.id===id); return x? {x,day:DAYS[k]} : null; }).filter(Boolean);
+}
+function drawTplRows(){
+  const box=$('tplRows'); if(!box) return;
+  const all=tplEntries(), q=tplView.q.trim().toLowerCase(), f=tplView.f;
+  const words=q.split(/\s+/).filter(Boolean);
+  let list=all.filter(x=>words.every(w=>x.terms.indexOf(w)>=0));
+  if(f==='lift') list=list.filter(x=>x.kind==='lift'); else if(f==='hifb') list=list.filter(x=>x.kind==='hifb');
+  else if(f==='circuit') list=list.filter(x=>x.kind==='circuit'); else if(f==='run') list=list.filter(x=>x.kind==='run');
+  else if(f==='mine') list=list.filter(x=>x.mine);
+  let html='';
+  if(f==='week'){
+    const wk=tplWeek(all).filter(w=>list.indexOf(w.x)>=0);
+    html= wk.length? wk.map(w=>tplRowHtml(w.x,w.day)).join('') : `<div class="empty">Nothing from this list is in your week${q?' that matches':''}.</div>`;
+  } else if(q||f!=='all'){
+    /* names that start with the search come first, then the rest */
+    list.sort((a,b)=>(b.name.toLowerCase().indexOf(q)===0)-(a.name.toLowerCase().indexOf(q)===0));
+    html= list.length? `<div class="slab tcount">${list.length} ${list.length===1?'match':'matches'}</div>`+list.map(x=>tplRowHtml(x)).join('')
+      : `<div class="empty">Nothing matches${q? ' "'+escHabit(tplView.q.trim())+'"' : ''}.${f==='mine'? '<br>Your own templates appear here once you save or duplicate one.' : ''}</div>`;
+  } else {
+    const wk=tplWeek(all), inWk=new Set(wk.map(w=>w.x.id));
+    const recent=all.filter(x=>x.last&&!inWk.has(x.id)).sort((a,b)=>a.last<b.last?1:-1).slice(0,3);
+    if(wk.length) html+=`<div class="slab tsec">In your week</div>`+wk.map(w=>tplRowHtml(w.x,w.day)).join('');
+    if(recent.length) html+=`<div class="slab tsec">Done recently</div>`+recent.map(x=>tplRowHtml(x)).join('');
+    const fams=[]; all.forEach(x=>{ if(fams.indexOf(x.family)<0) fams.push(x.family); });
+    const mineFam=styleOf()==='hifb'? 'HIFB' : (splitOf()? SPLITS[splitOf()].t : null);
+    html+=`<div class="slab tsec">Everything</div>`+fams.map(fam=>{ const items=all.filter(x=>x.family===fam);
+      return `<details class="tgrp" ${fam===mineFam||fam==='Yours'?'open':''}><summary><b>${escHabit(fam)}</b><span>${items.length}</span></summary>
+        ${items.map(x=>tplRowHtml(x)).join('')}</details>`; }).join('');
+  }
+  box.innerHTML=html;
+}
+function drawTemplates(){
+  $('tplList').innerHTML=`<div class="search tsearch"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="tplQ" type="search" placeholder="Name or movement: squat, chest, run" aria-label="Search templates" value="${escHabit(tplView.q)}"></div>
+    <div class="tfilters" role="group" aria-label="Show">${TPL_FILTERS.map(([id,t])=>`<button class="${tplView.f===id?'on':''}" data-tplfilter="${id}" aria-pressed="${tplView.f===id}">${t}</button>`).join('')}</div>
+    <div id="tplRows"></div>
+    <button class="logrow" data-tplstart=""><div class="txt"><div class="t">Empty workout</div>
+      <div class="s">Build it as you go, save it as a template after</div></div></button>
+    <button class="logrow" id="circNew"><div class="txt"><div class="t">New circuit</div>
+      <div class="s">Copy one of the HYROX sessions and make it yours</div></div></button>`;
+  drawTplRows();
+}
+document.addEventListener('input',e=>{ if(e.target.id==='tplQ'){ tplView.q=e.target.value; drawTplRows(); } });
+document.addEventListener('click',e=>{ const b=e.target.closest('[data-tplfilter]'); if(!b) return;
+  tplView.f=b.dataset.tplfilter;
+  document.querySelectorAll('[data-tplfilter]').forEach(x=>{ const on=x===b; x.classList.toggle('on',on); x.setAttribute('aria-pressed',on); });
+  drawTplRows(); });
 /* ---------- editing a circuit ---------- */
 let circDraft=null;
 function openCircEdit(id){
@@ -8045,7 +8785,29 @@ function drawCircEdit(){
     <div class="nf" style="margin-bottom:12px"><label for="circSub">One line about it</label>
       <input id="circSub" value="${escHabit(circDraft.sub||'')}" style="font-family:Archivo;font-size:13.5px;font-weight:600"></div>
     <div class="note" style="margin:0 0 12px">Changes apply every time you do this circuit from now on. Ones you have already done stay as they were.</div>
+    ${circDraft.items.some(x=>x.move)? `<div class="nf" style="margin-bottom:10px"><label for="circFormat">Format</label>
+      <select id="circFormat">${Object.keys(FORMAT_TEXT).map(f=>`<option value="${f}" ${(circDraft.format||'fortime')===f?'selected':''}>${FORMAT_TEXT[f]}</option>`).join('')}</select></div>
+      <div class="twocol" style="margin-bottom:10px">
+        <div class="nf"><label for="circMins">${(circDraft.format||'fortime')==='fortime'?'About how long, minutes':'Workout minutes'}</label><input id="circMins" type="number" inputmode="numeric" value="${(circDraft.format==='amrap'||circDraft.format==='emom')? (circDraft.amrapMins||circDraft.mins||'') : (circDraft.mins||'')}"></div>
+        <div class="nf"><label for="circRounds">Rounds</label><input id="circRounds" type="number" inputmode="numeric" value="${circDraft.rounds||''}" placeholder="1"></div></div>
+      ${(circDraft.strength||[]).length? `<div class="slab">Strength first</div>`+circDraft.strength.map((s,si)=>`<div class="tcard cecard">
+        <div class="nf"><label>Lift</label><select data-cstr="${si}:move">${moveOptions(s.move)}</select></div>
+        <div class="twocol"><div class="nf"><label>Sets</label><input type="number" inputmode="numeric" value="${s.sets||3}" data-cstr="${si}:sets"></div>
+          <div class="nf"><label>Reps</label><input type="number" inputmode="numeric" value="${s.amt||5}" data-cstr="${si}:amt"></div>
+          <div class="nf"><label>kg</label><input type="number" inputmode="decimal" step="0.5" value="${s.kg||''}" data-cstr="${si}:kg"></div></div>
+        <div class="tacts"><button class="tact bad" data-cstrdel="${si}">Remove</button></div></div>`).join('') : ''}
+      <div class="tacts" style="margin:0 0 10px"><button class="tadd" id="circAddLift">+ Add a strength lift first</button></div>` : ''}
     ${circDraft.items.map((it,i)=>{ const last=i===circDraft.items.length-1, run=it.t==='run';
+      if(it.move){ const m=moveOf(it.move)||{};
+        return `<div class="tcard cecard"><span class="ceno">Part ${i+1}</span>
+        <div class="nf"><label>Movement</label><select data-cimv="${i}">${moveOptions(it.move)}</select></div>
+        <div class="twocol"><div class="nf"><label>${m.u==='m'?'Metres':(m.u==='cal'?'Calories':(m.u==='s'?'Seconds':'Reps'))}</label><input type="number" inputmode="numeric" value="${it.amt||''}" data-ciamt="${i}"></div>
+          ${m.kg||it.kg? `<div class="nf"><label>kg${m.each?' each':''}</label><input type="number" inputmode="decimal" step="0.5" value="${it.kg||''}" data-cikg="${i}"></div>` : ''}</div>
+        ${it.sub? `<div class="note" style="margin:4px 0 0">${escHabit(it.sub)}</div>` : ''}
+        <div class="tacts">
+          <button class="tact icon" data-cimove="${i}:-1" aria-label="Move part ${i+1} up" ${i===0?'disabled':''}>&uarr;</button>
+          <button class="tact icon" data-cimove="${i}:1" aria-label="Move part ${i+1} down" ${last?'disabled':''}>&darr;</button>
+          <button class="tact bad" data-cidel="${i}" ${circDraft.items.length<2?'disabled':''}>Remove</button></div></div>`; }
       return `<div class="tcard cecard">
       <div class="cekind" role="group" aria-label="Part ${i+1} is a">
         <button class="${run?'on':''}" data-citype="${i}:run" aria-pressed="${run}">Run</button>
@@ -8065,9 +8827,33 @@ document.addEventListener('input',e=>{
   if(f&&circDraft){ const [i,k]=f.dataset.cifield.split(':'); circDraft.items[+i][k]=f.value; }
   if(e.target.id==='circName'&&circDraft) circDraft.name=e.target.value;
   if(e.target.id==='circSub'&&circDraft) circDraft.sub=e.target.value;
+  if(!circDraft) return;
+  const a=e.target.closest&&e.target.closest('[data-ciamt]'); if(a) circDraft.items[+a.dataset.ciamt].amt=+a.value||circDraft.items[+a.dataset.ciamt].amt;
+  const k=e.target.closest&&e.target.closest('[data-cikg]'); if(k) circDraft.items[+k.dataset.cikg].kg=k.value===''? null : +k.value;
+  const sr=e.target.closest&&e.target.closest('[data-cstr]'); if(sr&&sr.tagName==='INPUT'){ const [si,f]=sr.dataset.cstr.split(':'); circDraft.strength[+si][f]=sr.value===''? null : +sr.value; }
+  if(e.target.id==='circMins'){ if(circDraft.format==='amrap'||circDraft.format==='emom') circDraft.amrapMins=+e.target.value||null; else circDraft.mins=+e.target.value||null; }
+  if(e.target.id==='circRounds') circDraft.rounds=+e.target.value||null;
+});
+document.addEventListener('change',e=>{
+  if(!circDraft) return;
+  const mv=e.target.closest&&e.target.closest('[data-cimv]');
+  if(mv){ const it=circDraft.items[+mv.dataset.cimv], m=moveOf(mv.value)||{};
+    Object.assign(it,{move:mv.value,amt:m.r||it.amt,kg:m.kg? m.kg[sexKey()] : null,t:mv.value==='run'?'run':'station',sub:''});
+    delete it.origMove; delete it.origAmt; delete it.origKg; delete it.origSub; drawCircEdit(); }
+  const sr=e.target.closest&&e.target.closest('[data-cstr]'); if(sr&&sr.tagName==='SELECT'){ const si=+sr.dataset.cstr.split(':')[0], m=moveOf(sr.value)||{};
+    Object.assign(circDraft.strength[si],{move:sr.value,kg:m.kg? m.kg[sexKey()] : circDraft.strength[si].kg}); drawCircEdit(); }
+  if(e.target.id==='circFormat'){ circDraft.format=e.target.value; drawCircEdit(); }
+});
+document.addEventListener('click',e=>{
+  if(!circDraft) return;
+  if(e.target.closest('#circAddLift')){ circDraft.strength=(circDraft.strength||[]).concat([{move:'backsquat',sets:5,amt:5,kg:null}]); drawCircEdit(); }
+  const sd=e.target.closest('[data-cstrdel]'); if(sd){ circDraft.strength.splice(+sd.dataset.cstrdel,1); drawCircEdit(); }
 });
 document.addEventListener('click',e=>{
   const ed=e.target.closest('[data-circedit]'); if(ed) openCircEdit(ed.dataset.circedit);
+  if(circDraft&&circDraft.items.some(x=>x.move)&&(e.target.closest('#circAddRun')||e.target.closest('#circAddStation'))){
+    circDraft.items.push(e.target.closest('#circAddRun')? {t:'run',move:'run',amt:400,kg:null} : {t:'station',move:'burpee',amt:10,kg:null});
+    drawCircEdit(); e.stopImmediatePropagation(); return; }
   const cs=e.target.closest('[data-circstart]'); if(cs){ closeSheets(); startCircuit(cs.dataset.circstart); }
   const rs2=e.target.closest('[data-runstart]'); if(rs2){ closeSheets(); const sess=runSession(rs2.dataset.runstart); if(sess) startSession(sess); }
   if(e.target.closest('#circNew')){
@@ -8136,21 +8922,30 @@ function tplErrors(t){
   if(!t||!String(t.name||'').trim()) out.push({i:-1,k:'name',msg:'Give it a name.'});
   if(!t||!t.ex.length) out.push({i:-1,k:'ex',msg:'Add at least one movement.'});
   (t&&t.ex||[]).forEach((r,i)=>tplRowErrors(r).forEach(([k,msg])=>out.push({i,k,msg:exOf(r.exId).n+': '+msg})));
+  /* runs are whole metres from 0 (no run) to 5,000 */
+  const badM=v=>v!==null&&v!==undefined&&v!==''&&(Number.isNaN(+v)||+v<0||+v>5000||!Number.isInteger(+v));
+  if(t&&t.hifb){ ['buyIn','buyOut'].forEach(k=>{ if(t.hifb[k]&&badM(t.hifb[k].m)) out.push({i:-1,k,msg:(k==='buyIn'?'Buy-in':'Buy-out')+' run: metres from 0 to 5,000.'}); });
+    t.ex.forEach((r,i)=>{ if(r.run&&badM(r.run.m)) out.push({i,k:'run',msg:exOf(r.exId).n+': the run after it should be 0 to 5,000 metres.'}); }); }
   return out;
 }
 function drawTplEdit(){
   const t=tplDraft, uses=(S.plan&&S.plan.days||[]).filter(d=>d.templateId===t.id).length;
   const errs=tplDraft.__showErrors? tplErrors(t) : [];
   const errAt=(i,k)=>errs.some(e=>e.i===i&&e.k===k);
-  const offRows=t.ex.filter(r=>!rowMatches(r)).length;
+  const offRows=t.hifb? 0 : t.ex.filter(r=>!rowMatches(r)).length;
   $('tplEditBody').innerHTML=`
-    <div class="focusnote" style="margin:0 0 12px"><b>Lifting focus: ${LIFT_FOCUS[liftFocus()].t.toLowerCase()}</b>
+    ${t.hifb? '' : `<div class="focusnote" style="margin:0 0 12px"><b>Lifting focus: ${LIFT_FOCUS[liftFocus()].t.toLowerCase()}</b>
       <span>${LIFT_FOCUS[liftFocus()].effort}${offRows? ` ${offRows} movement${offRows>1?'s':''} here ${offRows>1?'are':'is'} set differently.` : ''}</span>
-      ${offRows? `<button class="inlinebtn" id="tplRecAll">Set them all to the recommendation</button>` : ''}</div>
+      ${offRows? `<button class="inlinebtn" id="tplRecAll">Set them all to the recommendation</button>` : ''}</div>`}
     <div class="note" style="margin:0 0 12px">Changes apply to every ${escHabit(t.name||'')} day from now on${uses? ', including '+uses+' this week' : ''}. Sessions you have already done stay exactly as they were.</div>
     <div class="nf ${errAt(-1,'name')?'bad':''}" style="margin-bottom:12px"><label for="tplName">Name</label>
       <input id="tplName" value="${escHabit(t.name)}" style="font-family:Archivo;font-size:15px;font-weight:700"></div>
     ${errs.length? `<div class="warn" role="alert" style="margin-bottom:12px"><b>Not saved yet.</b> ${errs.map(e=>escHabit(e.msg)).join(' ')}</div>`:''}
+    ${t.hifb? `<div class="focusnote" style="margin:0 0 12px"><b>Runs</b><span>A run before the first block, after each block, and after the last. Metres, and 0 for no run.</span>
+      <div class="tfields" style="margin-top:8px">
+        <label class="tf ${errAt(-1,'buyIn')?'bad':''}"><span>Buy-in, m</span><input type="number" inputmode="numeric" min="0" max="5000" step="100" value="${t.hifb.buyIn? t.hifb.buyIn.m : 0}" data-tplbuy="buyIn" aria-label="Buy-in run in metres"></label>
+        <label class="tf ${errAt(-1,'buyOut')?'bad':''}"><span>Buy-out, m</span><input type="number" inputmode="numeric" min="0" max="5000" step="100" value="${t.hifb.buyOut? t.hifb.buyOut.m : 0}" data-tplbuy="buyOut" aria-label="Buy-out run in metres"></label>
+      </div></div>` : ''}
     ${(()=>{ const TGI=groupInfo(t.ex); return t.ex.map((r,i)=>{ const tgi=TGI[i];
       const x=exOf(r.exId), hold=rxClass(r.exId)==='hold', last=i===t.ex.length-1;
       const field=(k,label,val,min,max)=>`<label class="tf ${errAt(i,k)?'bad':''}"><span>${label}</span>
@@ -8159,7 +8954,7 @@ function drawTplEdit(){
       return `${tgi&&tgi.first? groupHead(t.ex,tgi) : ''}<div class="tcard ${tgi?'ingroup':''}">
         <div class="tch"><span class="tcn">${i+1}</span>
           <div class="tt"><b>${escHabit(x.n)}</b><span>${rxClass(r.exId)}${x.eq? ' · '+(EQUIP[x.eq]||x.eq).toLowerCase() : ''}</span></div></div>
-        ${(()=>{ const rec=recommendedFor(r.exId); if(rowMatches(r)) return `<div class="recline ok">Matches your focus: ${LIFT_FOCUS[liftFocus()].t.toLowerCase()}</div>`;
+        ${(()=>{ const rec=recommendedFor(r.exId); if(t.hifb) return `<div class="recline ok">Set by the HIFB method: four sets, short rests</div>`; if(rowMatches(r)) return `<div class="recline ok">Matches your focus: ${LIFT_FOCUS[liftFocus()].t.toLowerCase()}</div>`;
           return `<div class="recline">Recommended for ${LIFT_FOCUS[liftFocus()].t.toLowerCase()}: ${rec.sets} × ${hold? rec.repMin+' to '+rec.reps+'s' : rec.repMin+' to '+rec.reps}, rest ${rec.rest}s
             <button class="inlinebtn" data-tplrec="${i}">Use it</button></div>`; })()}
         <div class="tfields">
@@ -8167,6 +8962,7 @@ function drawTplEdit(){
           ${field('repMin',hold?'Seconds from':'Reps from',r.repMin!=null? r.repMin : Math.max(1,(r.reps||2)-2),1,hold?300:100)}
           ${field('reps','to',r.reps,1,hold?300:100)}
           ${field('rest','Rest, s',r.rest,0,600)}
+          ${t.hifb? `<label class="tf ${errAt(i,'run')?'bad':''}"><span>Run after, m</span><input type="number" inputmode="numeric" min="0" max="5000" step="100" value="${r.run? r.run.m : 0}" data-tplrun="${i}" aria-label="${escHabit(x.n)}: run after it, in metres"></label>` : ''}
         </div>
         ${showTempo()?`<div class="tempoline">tempo ${r.tempo||tempoOf(r.exId)}${tempoMatters(r.tempo||tempoOf(r.exId))?', '+tempoWords(r.tempo||tempoOf(r.exId)):''}</div>`:''}
         <div class="tacts">
@@ -8178,7 +8974,11 @@ function drawTplEdit(){
           <button class="tact bad" data-tpldel="${i}">Remove</button>
         </div></div>`;
     }).join(''); })()}
-    <button class="tadd" id="tplAddEx">+ Add a movement</button>`;
+    <button class="tadd" id="tplAddEx">+ Add a movement</button>
+    <div class="setbtns" style="margin:12px 0 4px">
+      <button id="tplDup">Duplicate</button>
+      ${t.seeded? '' : `<button id="tplDel" class="bad">Delete template</button>`}</div>
+    ${t.seeded? `<div class="note">A built-in template. Duplicate it to keep this one as it is and make a version of your own.</div>` : ''}`;
 }
 document.addEventListener('input',e=>{
   const f=e.target.closest('[data-tpl]');
@@ -8187,6 +8987,28 @@ document.addEventListener('input',e=>{
     /* once an error has been shown, it clears itself as soon as it is fixed */
     if(tplDraft.__showErrors){ const card=f.closest('.tf'); if(card&&!tplRowErrors(tplDraft.ex[+i]).some(([kk])=>kk===k)) card.classList.remove('bad'); } }
   if(e.target.id==='tplName'&&tplDraft) tplDraft.name=e.target.value;
+  const tr=e.target.closest&&e.target.closest('[data-tplrun]');
+  if(tr&&tplDraft){ const r=tplDraft.ex[+tr.dataset.tplrun], v=tr.value.trim();
+    r.run= v===''? {m:null,pace:(r.run&&r.run.pace)||'Fast'} : {m:+v,pace:(r.run&&r.run.pace)||'Fast'}; }
+  const tb=e.target.closest&&e.target.closest('[data-tplbuy]');
+  if(tb&&tplDraft&&tplDraft.hifb){ const k=tb.dataset.tplbuy, v=tb.value.trim();
+    tplDraft.hifb[k]={m: v===''? null : +v, pace:(tplDraft.hifb[k]&&tplDraft.hifb[k].pace)||(k==='buyIn'?'Moderate':'Sustained effort')}; }
+});
+/* duplicate a template, or delete one of your own */
+document.addEventListener('click',e=>{
+  if(e.target.closest('#tplDup')&&tplDraft){
+    const src=S.templates.find(x=>x.id===tplDraft.id)||tplDraft;
+    const copy=JSON.parse(JSON.stringify(src)); delete copy.__showErrors;
+    copy.id='t'+Date.now().toString(36)+Math.random().toString(36).slice(2,5); copy.seeded=false; copy.name=src.name+' (copy)';
+    S.templates.push(copy); save(); toast('Duplicated as "'+copy.name+'"');
+    openTplEdit(copy.id); return; }
+  if(e.target.closest('#tplDel')&&tplDraft){
+    const id=tplDraft.id, i=S.templates.findIndex(x=>x.id===id); if(i<0){ closeSheets(); tplDraft=null; return; }
+    const days=(S.plan&&S.plan.days||[]).map((d,k)=>d.templateId===id? DAYS[k] : null).filter(Boolean);
+    if(days.length){ toast('It is in your week on '+days.join(', ')+'. Change '+(days.length>1?'those days':'that day')+' first.'); return; }
+    const gone=S.templates[i]; S.templates.splice(i,1); save(); closeSheets(); tplDraft=null;
+    drawTemplates(); openSheet('tplSheet');
+    toast(gone.name+' deleted','Undo',()=>{ S.templates.splice(Math.min(i,S.templates.length),0,gone); save(); drawTemplates(); }); return; }
 });
 document.addEventListener('click',e=>{
   const del=e.target.closest('[data-tpldel]');
@@ -8219,7 +9041,9 @@ $('tplSave').addEventListener('click',()=>{
   }
   delete tplDraft.__showErrors;
   tplDraft.name=String(tplDraft.name).trim();
-  tplDraft.ex.forEach(r=>{ ['sets','repMin','reps','rest'].forEach(k=>{ r[k]=+r[k]; }); });
+  tplDraft.ex.forEach(r=>{ ['sets','repMin','reps','rest'].forEach(k=>{ r[k]=+r[k]; });
+    if(r.run){ if(+r.run.m>0) r.run.m=+r.run.m; else delete r.run; } });
+  if(tplDraft.hifb) ['buyIn','buyOut'].forEach(k=>{ const b=tplDraft.hifb[k]; if(!b||!(+b.m>0)) tplDraft.hifb[k]=null; else b.m=+b.m; });
   const i=S.templates.findIndex(t=>t.id===tplDraft.id);
   const uses=(S.plan&&S.plan.days||[]).filter(d=>d.templateId===tplDraft.id).length;
   if(i>=0) S.templates[i]=tplDraft; else S.templates.push(tplDraft);
@@ -8242,8 +9066,43 @@ renderProgress=function(){
         w.map(x=>`<div class="actrow"><div class="txt"><div class="t"><b>${x.name}</b> · ${x.sets} sets · ${num(x.volume)} kg</div>
           <div class="w">${x.d} · ${x.minutes} min</div></div></div>`).join('')
         : `<div class="note" style="margin:0">No sessions logged yet. Templates are ready to go, and every one of them is yours to change.</div>`}
-    </div>`);
+    </div>`)+hifbProgressPanel();
 };
+/* Are the 400s getting quicker, and do they hold up? Session by session. */
+function hifbProgressPanel(){
+  const ws=(S.workouts||[]).filter(w=>w.kind==='hifb'&&runStats(w)).slice(0,8);
+  if(!ws.length) return '';
+  const st=ws.map(runStats), latest=st[0], older=st.slice(1).filter(x=>x.m===latest.m);
+  let trend='';
+  if(older.length>=2){ const base=older.reduce((a,x)=>a+x.avg,0)/older.length, d=secs(latest.avg-base);
+    trend= d<-1? `Your latest ${latest.m}m average is ${-d} seconds quicker than your ${older.length} sessions before it.`
+      : d>1? `Your latest ${latest.m}m average is ${d} seconds slower than your ${older.length} sessions before it. Sleep, food and how heavy the lifting was all move this.`
+      : `Your ${latest.m}m average is holding steady across your last ${older.length+1} sessions.`; }
+  else trend='A couple more sessions and this shows whether your runs are getting quicker.';
+  const loads=ws.filter(w=>w.rpe&&w.d>=addDays(todayKey(),-6));
+  const top=Math.max(...st.map(x=>x.avg)), low=Math.min(...st.map(x=>x.avg)), span=Math.max(1,top-low);
+  return `<div class="panel">
+    <div class="ph"><h3>HIFB runs</h3><button data-hifbwhy="1">How it works</button></div>
+    <div class="note" style="margin:0 0 10px">${trend}${loads.length? ' Training load this week: '+num(loads.reduce((a,w)=>a+w.rpe*(w.minutes||0),0))+'.' : ''}</div>
+    ${ws.map((w,i)=>{ const x=st[i], pct=Math.round(30+70*(top-x.avg)/span);
+      return `<div class="hrow"><div class="txt"><div class="t"><b>${escHabit(w.name)}</b></div><div class="w">${prettyDateSafe(w.d)}${x.fade!==null? ' · '+(secs(x.fade)>=0?'+':'−')+Math.abs(secs(x.fade))+'s first to last' : ''}${w.rpe? ' · effort '+w.rpe : ''}</div></div>
+        <div class="hbar" aria-hidden="true"><i style="width:${pct}%"></i></div><b class="hv">${fmtSplit(x.avg)}</b></div>`; }).join('')}
+    <div class="note" style="margin:8px 0 0">Average ${latest.m}m between blocks. A longer bar is a quicker run.</div>
+  </div>`;
+}
+/* the method, said honestly */
+function openHifbWhy(){
+  document.getElementById('altTitle').textContent='How HIFB works';
+  document.getElementById('altSub').textContent='What is behind it, and what is only a rule of thumb.';
+  document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 10px">
+    <div class="note"><b>The session.</b> A buy-in run, four lifting blocks of four sets, a 400m run straight after each block, and a buy-out run. Four days a week by default: chest and triceps, back and biceps, a day off, shoulders and abs, legs.</div>
+    <div class="note"><b>Does the running cost muscle?</b> No trial has tested HIFB itself. It is lifting and running in the same session, and for that the evidence is reassuring: a review of 43 studies found adding aerobic training did not reduce muscle growth or maximal strength, though it did blunt explosive power, more so in the same session (Schumann and colleagues, 2022).</div>
+    <div class="note"><b>One caveat.</b> Looking at muscle fibres rather than whole muscles, a second review found a small cost to growth when the aerobic work was running, but not cycling (Lundberg and colleagues, 2022). If size matters most, a bike or rower can stand in for the runs: change any run in the template editor.</div>
+    <div class="note"><b>What is tracked, and why.</b> Every set's weight and reps, as with any lifting session. Each run's time, so you can see whether the 400s hold up under fatigue and get quicker from week to week. The time from the first run to the last. And effort from 1 to 10, which times the minutes gives a training load (the session-RPE method, Foster and colleagues, 2001): a rising load with flat or slower runs is the early sign of fatigue building.</div>
+    <div class="note"><b>Rules of thumb, not findings.</b> 60 to 90 seconds between sets, the run distances and the paces are how the method is written. Change any of them.</div></div>`;
+  openSheet('altSheet');
+}
+document.addEventListener('click',e=>{ if(e.target.closest('[data-hifbwhy]')) openHifbWhy(); });
 
 /* the coach brief now reads real sets */
 const _brief=coachBrief;
@@ -8478,7 +9337,7 @@ function buildForecast(weekOf){
   const recent=hist.slice(0,3);
   const stepsAvg=mean(recent.map(w=>w.steps).filter(v=>v!==null));
   const liftMinAvg=(()=>{ const w=(S.workouts||[]).filter(x=>x.d>=addDays(weekOf,-21));
-    return w.length? w.reduce((a,x)=>a+x.minutes,0)/21 : 0; })();
+    return w.length? w.reduce((a,x)=>a+Math.max(0,(x.minutes||0)-(x.runMin||0)),0)/21 : 0; })();
   const planned=S.plan? S.plan.days.filter(d=>d.type&&d.slot!=='walk').length : 4;
   const adherence=recent.length? Math.min(1.2,mean(recent.map(w=>w.sessions))/Math.max(1,planned)) : 0.8;
 
@@ -8991,6 +9850,8 @@ function openHow(){
     <div class="method"><b>Sleep</b><span>The aim is 7 hours or more a night for adults, the joint recommendation of the American Academy of Sleep Medicine and the Sleep Research Society (2015), which also notes that individual need varies; 8 to 10 hours for teenagers. How regular sleep is may matter as much as how long it is (Windred and colleagues, 2024, from UK Biobank), but that needs bed and wake times, which only a connected tracker supplies here.</span></div>
     <div class="method"><b>Training splits</b><span>Full body, upper and lower, push pull legs, or a body part split: a 2024 meta-analysis of 14 trials (Ramos-Campo and colleagues) found no difference in strength or muscle growth between them when the weekly work is matched, so the right one is the one you will stick to. Weekly sets per muscle are what drive growth (Pelland and colleagues, 2025), which is why full body suits two or three days and a body part split needs about five. With fewer days than a split has sessions, the week rolls on from where it stopped, so nothing is left out.</span></div>
     <div class="method"><b>Meal times and skipped meals</b><span>Each meal records when you ate it, not when you logged it, and you can mark a meal as skipped. The American Heart Association's statement on meal timing (St-Onge and colleagues, 2017) notes that irregular eating patterns appear less favourable for heart and metabolic health, and a randomised trial found regular meal times lowered glucose responses and hunger (Alhussain and colleagues, 2016). Much of that evidence is observational, so the app shows the pattern back to you rather than setting rules.</span></div>
+    <div class="method"><b>HYROX</b><span>A HYROX race is eight 1 km runs, each followed by a station in a fixed order: SkiErg 1,000 m, sled push 50 m, sled pull 50 m, burpee broad jumps 80 m, row 1,000 m, farmers carry 200 m, sandbag lunges 100 m, and 100 wall balls. Weights default to the Open division (men: 152 kg push, 103 kg pull, 2 × 24 kg carry, 20 kg sandbag, 6 kg ball; women: 102, 78, 2 × 16, 10 and 4 kg). HYROX can change weights between seasons, so check the current standards with HYROX before a race, and change any weight here. Each week mixes running under fatigue, a running engine session and station strength, building towards a full simulation; without a sled, SkiErg or rower, each station is swapped for the closest thing your equipment allows, and the session says what it stands in for.</span></div>
+    <div class="method"><b>CrossFit</b><span>Varied workouts in three formats: for time, AMRAP (as many rounds as possible) and EMOM (every minute on the minute), with benchmark workouts that come round again so you can compare, and some days a strength piece first. Weights default to the standard prescribed loads; scale any of them, or swap a movement, and it is kept for next time. Injury rates in CrossFit are similar to weightlifting, powerlifting and gymnastics (Klimek and colleagues, 2018), and scaling is how that stays true for you.</span></div>
     <div class="method"><b>Readiness</b><span>Built only from what you log, sleep, stress and how your day went, compared with your own last four weeks, never a universal score. A systematic review of 56 studies (Saw and colleagues, 2016) found that self-reported measures like these track the response to training more sensitively than objective markers such as heart rate; those studies were in athletes. It says better, about usual or lower, and what is driving it, rather than a number more precise than it can be.</span></div>
     <div class="method"><b>Coming back after a break</b><span>Strength largely holds for about three weeks off, with real losses appearing between the third and fourth week and growing with time (Bosquet and colleagues, 2013), and it comes back faster than it was first built. Anything you have not done for two weeks starts 5% lighter, four weeks 10%, eight weeks or more 20%. Those steps are this app's rule of thumb built on that timeline; the research says when losses start, not an exact load to return at.</span></div>
     <div class="method"><b>When something hurts</b><span>In a session, "This one hurts" asks for a 0 to 10 rating and a few warning signs. It follows the pain-monitoring model from a randomised trial in Achilles tendon pain (Silbernagel and colleagues, 2007): up to 5 out of 10 is generally fine to train with if it settles by the next morning and does not build week to week, and people who trained that way did as well as those who rested. It was tested in tendon pain, so treat it as a guide. Sharp or sudden pain, swelling, numbness or weakness, pain after a knock, or pain at rest are not for monitoring: stop, and see a GP or physio. The app asks how it is the next morning, and says so plainly if something keeps not settling.</span></div>
@@ -10121,7 +10982,8 @@ function renderSettings(){
     ${setRow('body','burnt','Calories and body', p.detailsSet&&ct? 'Eat '+num(ct.kcal)+' kcal · maintenance '+num(ct.maintenance) : 'Add your details to work these out')}
     ${setRow('steps','marine','Daily steps', num(stepTarget())+' a day')}
     ${setRow('habits','forest','Habits', habits.length? habits.join('<br>') : 'None yet. One to start, one to stop')}
-    ${setRow('split','marine','Training split', (()=>{ const sp=splitOf(); return sp? SPLITS[(S.profile.split||'auto')].t+(S.profile.split==='auto'? ' ('+SPLITS[sp].t.toLowerCase()+')' : '') : 'Push, lower, pull (the original week)'; })())}
+    ${setRow('style','burnt','Training style', STYLES[styleOf()].t+(styleOf()==='hybrid'? ' · '+hyroxDaysOf(sessionsWanted())+' HYROX, '+(sessionsWanted()-hyroxDaysOf(sessionsWanted()))+' CrossFit' : ''))}
+    ${styleOf()!=='gym'? '' : setRow('split','marine','Training split', (()=>{ const sp=splitOf(); return sp? SPLITS[(S.profile.split||'auto')].t+(S.profile.split==='auto'? ' ('+SPLITS[sp].t.toLowerCase()+')' : '') : 'Push, lower, pull (the original week)'; })())})}
     ${setRow('focus','burnt','Lifting focus', LIFT_FOCUS[liftFocus()].t+' · '+(()=>{ const r=LIFT_FOCUS[liftFocus()].rx.heavy; return 'big lifts '+r.repMin+' to '+r.reps+' reps'; })()+(S.profile.liftFocus?'':' (from your aim)'))}
     ${(()=>{ const dir=goalDirection(); return dir==='hold'? '' :
       setRow('pace','forest','Pace', paceOf().label+' · '+(dir==='lose'? (paceOf().lose*100)+'% of your weight a week' : (paceOf().gain*100)+'% a week')); })()}
@@ -10191,6 +11053,7 @@ document.addEventListener('click',e=>{
   else if(k==='focus') openFocusSheet();
   else if(k==='split') openSplitSheet();
   else if(k==='pace') openPaceSheet();
+  else if(k==='style') openStyleSheet();
   else if(k==='kit') openKitSheet();
   else if(k==='cycle') openCycle();
   else if(k==='records') openYou();
@@ -10266,6 +11129,17 @@ function sessionDetail(w){
   return {exs,work,warm,reps,vol,muscles,start,end,prev,
     prevVolPct: prev&&prev.volume? Math.round((vol-prev.volume)/prev.volume*100) : null};
 }
+/* an HIFB session's runs, as recorded, against the one before it */
+function hifbDetail(w){
+  const prev=lastHifbBefore(w), st=runStats(w), pst=prev&&runStats(prev), lines=[];
+  if(st) lines.push(`Average ${st.m}m between blocks ${fmtSplit(st.avg)}${pst? ', against '+fmtSplit(pst.avg)+' on '+prettyDateSafe(prev.d) : ''}. ${fadeText(st.fade)}`);
+  if(w.totalMs) lines.push(`First run to last: ${fmtSplit(w.totalMs)}${prev&&prev.totalMs? ', against '+fmtSplit(prev.totalMs) : ''}.`);
+  if(w.runM) lines.push(`${fmtKm(w.runM/1000)} km run in ${fmtSplit(w.runMs)}.`);
+  if(w.rpe) lines.push(`Effort ${w.rpe} out of 10, a training load of ${num(w.rpe*(w.minutes||0))} (session RPE times minutes).`);
+  return hifbRunsTable(w,prev)+lines.map(l=>`<div class="note sline">${l}</div>`).join('');
+}
+const lastHifbBefore=w=>{ const all=(S.workouts||[]); const i=all.indexOf(w);
+  return all.slice(i+1).find(x=>x.kind==='hifb'&&x.templateId===w.templateId&&(x.runs||[]).some(r=>r.ms))||null; };
 function exerciseDetail(e,w){
   const x=exOf(e.exId), ws=workSets(e), b=bestSet(e), weighted=ws.some(s=>+s.kg>0);
   const prev=previousOf(e.exId,w), pws=prev? prev.sets.filter(s=>!s.warm) : [];
@@ -10311,6 +11185,7 @@ function openSession(id){
       <div><b>${D.work}</b><span>working sets${D.warm?' + '+D.warm+' warm up':''}</span></div>
       <div><b>${num(D.reps)}</b><span>reps</span></div>
       <div><b>${num(Math.round(D.vol))}</b><span>kg lifted</span></div></div>`;
+    if(w.kind==='hifb') body+=hifbDetail(w);
     if(D.prev&&D.prevVolPct!==null)
       body+=`<div class="note sline">${D.prevVolPct===0?'The same total as':(Math.abs(D.prevVolPct)+'% '+(D.prevVolPct>0?'more':'less')+' in total than')} your last ${escHabit(w.name)}, on ${prettyDateSafe(D.prev.d)}.</div>`;
     if(D.muscles.length)
@@ -10382,6 +11257,9 @@ document.addEventListener('click',e=>{
   if(rd){ const id=rd.dataset.redo; closeSheets(); startWorkout(id); }
 });
 Object.assign(window.__G||{},{renderSettings,openThemeSheet,openSession,openAllSessions,workoutFor,setRow,prettyDateSafe});
+Object.assign(window.__G||{},{STYLES,circStyle,HIFB,HIFB_ORDER,HIFB_DAYS,hifbPattern,isHifb,hifbRunKm,hifbMins,parseSplit,perKm,runOf,gymRuns,startRun,stopRun,runStats,fadeText,
+  hifbSummary,hifbDetail,hifbProgressPanel,openHifbWhy,tplEntries,drawTplRows,tplFamily,TPL_FILTERS,startWorkout,finishWorkout,loggedTraining,plannedTraining,maintenance,openStyleSheet});
+try{ Object.defineProperty(window.__G,'tplView',{get:()=>tplView,set:v=>{tplView=v},configurable:true}); }catch(e){}
 </script>
 </body>
 </html>

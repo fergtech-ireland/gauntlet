@@ -1535,7 +1535,15 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('25 · today\'s card is open by itself, and only today\'s', cards()[ti].classList.contains('open') && cards().filter(c => c.classList.contains('open')).length === 1);
     t('25 · closed cards carry no buttons of their own', cards().filter(c => !c.classList.contains('open')).every(c => c.querySelectorAll('button').length === 1));
     t('25 · open and closed are announced', cards()[ti].querySelector('.dch').getAttribute('aria-expanded') === 'true');
-    const push = S.plan.days.findIndex((x, i) => x.templateId === 't_push' && i !== ti);
+    /* The splits in build 47 mean a three-day lifter gets full body, so on some
+       weekdays the plan has no Push day apart from today. This journey is about
+       a Push day, so make sure there is one that is not today. */
+    let push = S.plan.days.findIndex((x, i) => x.templateId === 't_push' && i !== ti);
+    if (push < 0) {
+      push = S.plan.days.findIndex((x, i) => x.templateId && i !== ti);
+      S.plan.days[push] = Object.assign({}, S.plan.days[push], { templateId: 't_push' });
+      G.save(); G.renderAll();
+    }
     pv().querySelector('[data-planopen="' + push + '"]').click();
     const open = () => pv().querySelector('.daycard.open');
     t('25 · tapping another day opens it and closes today', cards()[push].classList.contains('open') && cards().filter(c => c.classList.contains('open')).length === 1);
@@ -2632,7 +2640,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const { slots, per } = G.mealSlots();
     const by = tag => slots.find(s => s.tag === tag);
     t('39 · the meal chosen wins over the time it was logged', by('breakfast').p === G.foodOf('oats').p && by('lunch').p === G.foodOf('chicken').p);
-    t('39 · snacks go to the nearest snack', slots.filter(s => !['breakfast','lunch','last','presleep'].includes(s.tag)).some(s => s.p === G.foodOf('proteinbar').p));
+    t('39 · snacks go to a snack slot, never breakfast, lunch or dinner, whatever time they are logged',
+      slots.filter(s => !G.slotLetter(s).match(/^[bld]$/)).some(s => s.p === G.foodOf('proteinbar').p) && slots.filter(s => /^[bld]$/.test(G.slotLetter(s))).every(s => s.p !== G.foodOf('proteinbar').p));
     G.renderAll();
     const lunch = d.querySelector('.mealstrip [data-mealslot="l"]');
     t('39 · a meal that reaches the mark is marked done', lunch.classList.contains('done'));
@@ -3377,11 +3386,18 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     at.value = '19:45'; at.dispatchEvent(new w.Event('change', { bubbles: true }));
     const dinnerTimes = G.dayFood(k).filter(f => f.meal === 'd').map(f => { const t2 = new Date(f.at); return t2.getHours() * 60 + t2.getMinutes(); });
     t('meals · setting it moves that meal\'s food to the time you ate', dinnerTimes.length && dinnerTimes.every(m => m === 19 * 60 + 45), dinnerTimes.join());
-    t('meals · and only that meal', G.dayFood(k).filter(f => f.meal === 'b').every(f => { const t2 = new Date(f.at); return t2.getHours() * 60 + t2.getMinutes() !== 19 * 60 + 45; }));
+    /* breakfast keeps the time it shows, whatever the clock says now (this used
+       to fail if the tests happened to run at 19:45) */
+    const atMin = f => { const t2 = new Date(f.at); return t2.getHours() * 60 + t2.getMinutes(); };
+    t('meals · and only that meal', G.dayFood(k).filter(f => f.meal === 'b').every(f => atMin(f) === G.hhmmToMin(G.mealAtValue(k, 'b'))));
+    t('meals · food is saved at the time the screen shows for its meal, not the clock', (() => {
+      const keep = S.days[k]; S.days[k] = { food: [] };
+      G.addFood('oats', 1, 'b'); const f = G.dayFood(k)[0], shown = G.hhmmToMin(G.mealAtValue(k, 'b')); S.days[k] = keep;
+      return atMin(f) === shown; })());
     t('meals · the time shown is the time you set', G.mealAtValue(k, 'd') === '19:45');
     t('meals · an empty main meal defaults to its planned time, not the clock, when it is not near it', (() => {
       const keep = S.days[k]; S.days[k] = { food: [] };
-      const sl = G.mealSlots(k).slots.find(x => G.slotLetter(x) === 'd'), now = new Date(), nm = now.getHours() * 60 + now.getMinutes();
+      const sl = G.mealSlots(k).slots.find(x => G.slotLetter(x) === 'd'), now = new w.Date(), nm = now.getHours() * 60 + now.getMinutes();
       const v = G.mealAtValue(k, 'd'); S.days[k] = keep;
       const near = Math.min(Math.abs(nm - sl.min), 1440 - Math.abs(nm - sl.min)) <= 120;
       const want = near ? String(now.getHours()).padStart(2, '0') + ':' + String(Math.floor(now.getMinutes() / 5) * 5).padStart(2, '0') : G.minToHhmm(Math.floor(sl.min / 5) * 5);
@@ -3439,6 +3455,305 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     allErrs.push(...b3.errs);
     t('splits · someone who already has a plan keeps it until they choose to change', !b3.G.S.profile.split && JSON.stringify(b3.G.S.plan.days.map(x => x.templateId)) === JSON.stringify(S.plan.days.map(x => x.templateId)));
     t('splits · and they get the new templates to choose from', ['t_chest', 't_fullB', 't_upperA'].every(id => b3.G.S.templates.some(tp => tp.id === id)));
+  }
+
+  /* ---------------------------------------------------------- 50 */
+  journey(50, 'HYROX, CrossFit, or a mix: fresh each week, fitted to your kit, every part editable');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const ev = (el, type) => el.dispatchEvent(new w.Event(type, { bubbles: true }));
+    t('50 · four styles: gym, HYROX, CrossFit, and a mix', ['gym', 'hyrox', 'crossfit', 'hybrid'].every(k => G.STYLES[k]));
+    t('50 · someone who never chose keeps the gym week they had', G.styleOf() === 'gym' && S.plan.days.some(x => x.templateId));
+
+    /* HYROX facts */
+    t('50 · the race stations are in the official order', JSON.stringify(G.HYROX_ORDER) === JSON.stringify(['skierg', 'sledpush', 'sledpull', 'bbj', 'row', 'farmers', 'sblunge', 'wallball']), JSON.stringify(G.HYROX_ORDER));
+    const R = G.HYROX_RACE;
+    t('50 · at the official distances: 1,000 m ski and row, 50 m sleds, 80 m burpee broad jumps, 200 m carry, 100 m lunges, 100 wall balls',
+      R.skierg === 1000 && R.row === 1000 && R.sledpush === 50 && R.sledpull === 50 && R.bbj === 80 && R.farmers === 200 && R.sblunge === 100 && R.wallball === 100);
+    const W = (id, sex) => G.MOVES[id].kg[sex];
+    t('50 · Open weights for men: 152, 103, 2 × 24, 20, 6', W('sledpush', 'm') === 152 && W('sledpull', 'm') === 103 && W('farmers', 'm') === 24 && W('sblunge', 'm') === 20 && W('wallball', 'm') === 6);
+    t('50 · and for women: 102, 78, 2 × 16, 10, 4', W('sledpush', 'f') === 102 && W('sledpull', 'f') === 78 && W('farmers', 'f') === 16 && W('sblunge', 'f') === 10 && W('wallball', 'f') === 4);
+
+    /* fresh each week, steady within a week */
+    S.profile.style = 'hyrox'; S.styleWeek = null; S.plan = G.buildPlan();
+    const wk = G.weekIndex ? G.weekIndex() : 0;
+    const a = JSON.stringify(G.hyroxWeek(5, 3000).map(c => c.items.map(G.itemText)));
+    t('50 · the same week always draws the same sessions', a === JSON.stringify(G.hyroxWeek(5, 3000).map(c => c.items.map(G.itemText))));
+    t('50 · the next week is different', a !== JSON.stringify(G.hyroxWeek(5, 3001).map(c => c.items.map(G.itemText))));
+    t('50 · a HYROX week fills the plan with its sessions', S.plan.days.filter(x => x.circuitId).length === G.sessionsWanted());
+
+    /* fitted to the kit, and back again */
+    S.profile.kit = ['bodyweight', 'dumbbell']; S.styleWeek = null; S.plan = G.buildPlan();
+    const items = () => S.styleWeek.ids.flatMap(id => G.circuitOf(id).items.concat(G.circuitOf(id).strength || []));
+    t('50 · with dumbbells only, nothing needs kit they do not have', items().every(it => !it.move || G.kitOK(G.moveOf(it.move))), items().filter(it => it.move && !G.kitOK(G.moveOf(it.move))).map(it => it.move).join());
+    t('50 · and each stand in says what it replaces', items().filter(it => it.origMove).every(it => /Standing in for/.test(it.sub)) && items().some(it => it.origMove));
+    S.profile.kit = G.ALL_KIT.slice(); G.ensureStyleWeek();
+    t('50 · when the kit is back, the real stations come back', items().every(it => !it.origMove) && items().some(it => ['sledpush', 'sledpull', 'skierg', 'row'].includes(it.move)));
+
+    /* CrossFit */
+    S.profile.style = 'crossfit'; S.styleWeek = null; S.plan = G.buildPlan();
+    const fmts = new Set(); let bench = false, strength = false;
+    for (let k = 0; k < 4; k++) G.crossfitWeek(5, 3000 + k).forEach(c => { fmts.add(c.format || 'fortime'); if (Object.values(G.CF_BENCH).some(b => b.name === c.name)) bench = true; if ((c.strength || []).length) strength = true; });
+    t('50 · CrossFit weeks use for time, AMRAP and EMOM', ['fortime', 'amrap', 'emom'].every(f => fmts.has(f)), [...fmts].join());
+    t('50 · with benchmark workouts that come round again', bench);
+    t('50 · and a strength piece on some days', strength);
+
+    /* the mix */
+    S.profile.liftDays = 4; S.profile.cardioDays = 0; S.profile.style = 'hybrid'; S.profile.hyroxDays = 1; S.styleWeek = null; S.plan = G.buildPlan();
+    const hNames = new Set(G.hyroxWeek(4, G.weekIndex()).map(c => c.name));
+    const isH = id => !G.circuitOf(id).format || G.circuitOf(id).format === 'fortime' && hNames.has(G.circuitOf(id).name) && !/rounds for time|^[A-Z][a-z]+$/.test(G.circuitOf(id).name);
+    const kinds = () => S.styleWeek.ids.map(id => G.circuitOf(id).items.some(it => ['skierg', 'sledpush', 'sledpull', 'bbj', 'farmers', 'sblunge'].includes(it.origMove || it.move) || (it.move === 'run' && it.amt >= 400)) ? 'H' : 'C');
+    t('50 · a mix of 1 HYROX day out of 4 gives one HYROX and three CrossFit', kinds().filter(k => k === 'H').length === 1 && kinds().length === 4, kinds().join(''));
+    S.profile.hyroxDays = 3; S.styleWeek = null; S.plan = G.buildPlan();
+    t('50 · and 3 of 4 gives three HYROX', kinds().filter(k => k === 'H').length === 3, kinds().join(''));
+
+    /* settings */
+    G.go('progress'); G.renderAll();
+    const row = d.querySelector('[data-setting="style"]');
+    t('50 · there is a training style setting, showing the mix', !!row && /3 HYROX, 1 CrossFit/.test(txt(row)), txt(row));
+    t('50 · the split setting is only for gym weeks', !d.querySelector('[data-setting="split"]'));
+    row.click(); d.querySelector('#altBody [data-sethx="2"]').click();
+    t('50 · the mix can be changed from settings', S.profile.hyroxDays === 2 && kinds().filter(k => k === 'H').length === 2);
+    G.openStyleSheet(); d.querySelector('#altBody [data-setstyle="gym"]').click();
+    t('50 · and going back to gym brings back lifting days', S.plan.days.some(x => x.templateId) && !S.plan.days.some(x => x.circuitId && /^g/.test(x.circuitId)));
+
+    /* the player */
+    S.profile.style = 'crossfit'; S.styleWeek = null; S.plan = G.buildPlan();
+    let cf = null; for (let k = 0; k < 6 && !cf; k++) cf = G.crossfitWeek(5, 3000 + k).find(c => (c.strength || []).length && (c.format === 'amrap' || c.format === 'emom'));
+    cf = Object.assign({ id: 'c_test_cf', forTime: true }, cf); S.circuits.push(cf);
+    G.startCircuit('c_test_cf');
+    t('50 · AMRAP and EMOM count down the workout itself, not the whole session', new RegExp((cf.format === 'amrap' ? 'AMRAP ' : 'minute 1 of ') + (cf.amrapMins || cf.mins)).test(txt(d.getElementById('gymSub'))), txt(d.getElementById('gymSub')));
+    const kg = d.querySelector('[data-strset="0:0:kg"]'); kg.value = '80'; ev(kg, 'input');
+    const rp = d.querySelector('[data-strset="0:0:reps"]'); rp.value = '5'; ev(rp, 'input');
+    d.querySelector('[data-strdone="0:0"]').click();
+    t('50 · strength sets take a weight and reps, and tick off', G.GYM.strength[0].sets[0].kg === 80 && G.GYM.strength[0].sets[0].done);
+    d.querySelector('[data-rounds="1"]').click(); d.querySelector('[data-rounds="1"]').click(); d.querySelector('[data-rounds="-1"]').click();
+    t('50 · rounds are counted', G.GYM.roundsDone === 1);
+    d.querySelector('[data-citemedit="0"]').click();
+    const mv = d.getElementById('isMove'); mv.value = 'pushup'; ev(mv, 'change');
+    const am = d.getElementById('isAmt'); am.value = '25'; ev(am, 'input');
+    d.getElementById('isKeep').checked = false; ev(d.getElementById('isKeep'), 'change');
+    d.getElementById('isSave').click();
+    t('50 · any part can be changed mid-session: movement and amount', G.itemText(G.GYM.items[0]) === '25 Push-ups');
+    t('50 · and "keep for next time" off leaves the saved session as it was', G.circuitOf('c_test_cf').items[0].move !== 'pushup');
+    G.GYM.items.forEach((x, i) => d.querySelector('[data-citem="' + i + '"]').click());
+    const r = G.finishCircuit();
+    t('50 · the record keeps the strength, the rounds and the format', r.record.strength[0].sets[0].kg === 80 && r.record.rounds === 1 && r.record.format === cf.format);
+    d.querySelector('[data-rpe="8"]').click();
+    t('50 · and asks how hard it was, 1 to 10', S.workouts[0].rpe === 8);
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+    G.startCircuit('c_test_cf');
+    t('50 · next time, the strength boxes start at what you lifted last time', G.GYM.strength[0].sets[0].kg === 80 && /Last time 80 kg/.test(txt(d.getElementById('gymBody'))));
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+    S.profile.style = 'hyrox'; S.styleWeek = null; S.plan = G.buildPlan();
+    const hr = S.styleWeek.ids.map(id => G.circuitOf(id)).find(c => c.items.filter(x => x.t === 'run').length >= 2);
+    G.startCircuit(hr.id); G.GYM.items.forEach((x, i) => d.querySelector('[data-citem="' + i + '"]').click());
+    const r2 = G.finishCircuit();
+    t('50 · every run records its split', r2.record.splits.length === hr.items.filter(x => x.t === 'run').length);
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+
+    /* the editor */
+    G.openCircEdit(hr.id);
+    t('50 · the editor offers the movement, amount and weight for each part', !!d.querySelector('[data-cimv]') && !!d.querySelector('[data-ciamt]'));
+    const sel = d.querySelector('[data-cimv="1"]'); sel.value = 'wallball'; ev(sel, 'change');
+    const amt = d.querySelector('[data-ciamt="1"]'); amt.value = '40'; ev(amt, 'input');
+    const kgi = d.querySelector('[data-cikg="1"]'); kgi.value = '9'; ev(kgi, 'input');
+    d.getElementById('circAddLift').click();
+    t('50 · a strength lift can be added first', G.circDraft ? G.circDraft.strength.length >= 1 : d.querySelectorAll('[data-cstrdel]').length >= 1);
+    const fm = d.getElementById('circFormat'); fm.value = 'amrap'; ev(fm, 'change');
+    d.getElementById('circSave').click();
+    const saved = G.circuitOf(hr.id);
+    t('50 · and it all saves: movement, amount, weight, format, lift', G.itemText(saved.items[1]) === '40 Wall balls @ 9kg' && saved.format === 'amrap' && (saved.strength || []).length >= 1, G.itemText(saved.items[1]) + ' / ' + saved.format);
+
+    /* sign up */
+    const b2 = await boot(); allErrs.push(...b2.errs);
+    b2.G.startOnboarding(); let onPage = false;
+    for (let s2 = 0; s2 < 8 && !onPage; s2++) { b2.G.step = s2; b2.G.onbRender(); onPage = !!b2.d.querySelector('[data-onbstyle]'); }
+    t('50 · sign up asks how you like to train', onPage && b2.d.querySelectorAll('[data-onbstyle]').length === 5 && !!b2.d.querySelector('[data-onbstyle="hifb"]'));
+    b2.d.querySelector('[data-onbstyle="hybrid"]').click();
+    t('50 · choosing a mix asks for sessions, not lifting and cardio days', !!b2.d.querySelector('[data-onbsess]') && !b2.d.querySelector('[data-onblift]') && !b2.d.querySelector('[data-onbsplit]'));
+    b2.d.querySelector('[data-onbsess="5"]').click(); b2.d.querySelector('[data-onbhx="2"]').click();
+    t('50 · and how many of them are HYROX', /2 HYROX, 3 CrossFit/.test(txt(b2.d.getElementById('onbBody'))));
+    Object.assign(b2.G.onbDraft, { handle: 'mix', aim: 'build', sex: 'm', age: 30, height: 180, weight: 80, checkinDay: 6, steps: 8000, kit: b2.G.ALL_KIT.slice() });
+    b2.G.finishOnboarding();
+    t('50 · finishing sign up saves it and builds the week from it', b2.G.S.profile.style === 'hybrid' && b2.G.S.profile.hyroxDays === 2 && b2.G.S.plan.days.filter(x => x.circuitId).length === 5);
+    G.openHow(); const how = d.body.textContent; G.closeSheets();
+    t('50 · the method sheet explains HYROX and CrossFit, and says to check current race weights', /eight 1 km runs/.test(how) && /check the current standards with HYROX/.test(how) && /Klimek and colleagues, 2018/.test(how));
+  }
+
+  /* ---------------------------------------------------------- 51 */
+  journey(51, 'Lots of templates, easy to find: your week first, search, filters, duplicate and delete');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const ev = (el, type) => el.dispatchEvent(new w.Event(type, { bubbles: true }));
+    const open = () => { G.tplView = { q: '', f: 'all' }; G.drawTemplates(); G.openSheet('tplSheet'); };
+    const rows = () => [...d.querySelectorAll('#tplRows .trow')];
+    open();
+    t('51 · the templates sheet has a search and filters', !!d.getElementById('tplQ') && d.querySelectorAll('[data-tplfilter]').length === G.TPL_FILTERS.length);
+    const weekIds = S.plan.days.map(x => x.templateId || x.circuitId || x.runId).filter(Boolean);
+    const sec = txt(d.getElementById('tplRows'));
+    t('51 · it opens on what is in your week, with the day', /In your week/.test(sec) && weekIds.every(id => d.querySelector('#tplRows [data-tplstart="' + id + '"],#tplRows [data-runstart="' + id + '"],#tplRows [data-circstart="' + id + '"]')) && /Mon/.test(sec));
+    t('51 · everything else sits in families that fold away', d.querySelectorAll('#tplRows details.tgrp').length >= 5 && /Body part/.test(sec) && /HIFB/.test(sec));
+    t('51 · every template can still be started and edited from the list', S.templates.every(tp => d.querySelector('#tplRows [data-tplstart="' + tp.id + '"]') && d.querySelector('#tplRows [data-tpledit="' + tp.id + '"]')));
+    const q = d.getElementById('tplQ'); q.value = 'squat'; ev(q, 'input');
+    t('51 · search matches movements, not only names', rows().length > 0 && !!d.querySelector('#tplRows [data-tplstart="t_lower"]') && !d.querySelector('#tplRows [data-tplstart="t_push"]'));
+    t('51 · and says how many it found', /\d+ match/.test(txt(d.getElementById('tplRows'))));
+    t('51 · the search box keeps its text while the list changes', d.getElementById('tplQ') === q && q.value === 'squat');
+    q.value = 'zzzz'; ev(q, 'input');
+    t('51 · nothing found says so', /Nothing matches/.test(txt(d.getElementById('tplRows'))));
+    q.value = ''; ev(q, 'input');
+    d.querySelector('[data-tplfilter="hifb"]').click();
+    t('51 · the HIFB filter shows the four HIFB sessions and nothing else', rows().length === 4 && G.HIFB_ORDER.every(id => d.querySelector('#tplRows [data-tplstart="' + id + '"]')));
+    t('51 · the chosen filter shows as chosen', d.querySelector('[data-tplfilter="hifb"]').getAttribute('aria-pressed') === 'true');
+    d.querySelector('[data-tplfilter="run"]').click();
+    t('51 · Running lists the runs', rows().length === S.runPlans.length && !!d.querySelector('#tplRows [data-runstart]'));
+    d.querySelector('[data-tplfilter="mine"]').click();
+    t('51 · Yours starts empty and says how to fill it', rows().length === 0 && /duplicate/i.test(txt(d.getElementById('tplRows'))));
+    open(); d.querySelector('#tplRows [data-tpledit="t_push"]').click();
+    t('51 · a built-in template has Duplicate but no Delete', !!d.getElementById('tplDup') && !d.getElementById('tplDel'));
+    const n0 = S.templates.length;
+    d.getElementById('tplDup').click();
+    const copy = S.templates[S.templates.length - 1];
+    t('51 · Duplicate makes a copy of your own and opens it', S.templates.length === n0 + 1 && copy.name === 'Push (copy)' && !copy.seeded && d.getElementById('tplName').value === 'Push (copy)'
+      && JSON.stringify(copy.ex.map(r => r.exId)) === JSON.stringify(S.templates.find(x => x.id === 't_push').ex.map(r => r.exId)));
+    t('51 · the original is untouched', S.templates.find(x => x.id === 't_push').seeded === true);
+    open(); d.querySelector('[data-tplfilter="mine"]').click();
+    t('51 · and it shows under Yours', rows().length === 1 && /Push \(copy\)/.test(txt(rows()[0])) && /yours/i.test(txt(rows()[0])));
+    const pi = S.plan.days.findIndex(x => x.templateId);
+    const was = S.plan.days[pi].templateId; S.plan.days[pi].templateId = copy.id;
+    G.openTplEdit(copy.id); d.getElementById('tplDel').click();
+    t('51 · a template in this week cannot be deleted from under it', S.templates.some(x => x.id === copy.id) && /in your week/.test(txt(d.getElementById('toast'))));
+    S.plan.days[pi].templateId = was;
+    G.openTplEdit(copy.id); d.getElementById('tplDel').click();
+    t('51 · otherwise Delete removes it', !S.templates.some(x => x.id === copy.id) && d.getElementById('tplSheet').classList.contains('on'));
+    d.getElementById('toastAct').click();
+    t('51 · and Undo brings it back', S.templates.some(x => x.id === copy.id));
+    const offWeek = ['t_arms', 't_shoulders', 't_mobility'].find(id => weekIds.indexOf(id) < 0);
+    G.startWorkout(offWeek); d.querySelector('[data-done="0:0"]').click(); d.getElementById('gymFinish').click();
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+    open();
+    const rec = txt(d.getElementById('tplRows'));
+    t('51 · a template done lately shows under Done recently, with when', /Done recently/.test(rec) && /done today/.test(rec) && rec.indexOf('Done recently') < rec.indexOf(S.templates.find(x => x.id === offWeek).name));
+  }
+
+  /* ---------------------------------------------------------- 52 */
+  journey(52, 'HIFB: bodybuilding blocks with a run after each, every set and every run tracked');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const ev = (el, type) => el.dispatchEvent(new w.Event(type, { bubbles: true }));
+    G.startOnboarding(); let onPage = false;
+    for (let s2 = 0; s2 < 8 && !onPage; s2++) { G.step = s2; G.onbRender(); onPage = !!d.querySelector('[data-onbstyle]'); }
+    d.querySelector('[data-onbstyle="hifb"]').click();
+    t('52 · choosing HIFB at sign up asks for sessions, four to start, and no split', !!d.querySelector('[data-onbsess="4"].on') && !d.querySelector('[data-onbsplit]') && /chest and triceps, back and biceps/.test(txt(d.getElementById('onbBody'))));
+    Object.assign(G.onbDraft, { handle: 'hifb', aim: 'build', sex: 'm', age: 30, height: 180, weight: 80, checkinDay: 6, steps: 8000, kit: G.ALL_KIT.slice() });
+    G.finishOnboarding();
+    const S = G.S;
+    const week = S.plan.days.map(x => x.templateId || '-');
+    t('52 · the week is chest, back, a day off, shoulders, legs', JSON.stringify(week.slice(0, 5)) === JSON.stringify(['t_hifb_chest', 't_hifb_back', '-', 't_hifb_shoulders', 't_hifb_legs']), week.join(','));
+    t('52 · and the check ins see lifting and cardio on those days', JSON.stringify(G.HIFB_ORDER.map(id => S.templates.find(x => x.id === id).focus)) === JSON.stringify(['push', 'pull', 'push', 'lower']));
+    const chest = S.templates.find(x => x.id === 't_hifb_chest'), legs = S.templates.find(x => x.id === 't_hifb_legs');
+    t('52 · each session is four blocks of four sets, with a 400m run after each', G.HIFB_ORDER.every(id => { const tp = S.templates.find(x => x.id === id); return tp.ex.length === 4 && tp.ex.every(r => r.sets === 4 && r.run && r.run.m === 400); }));
+    t('52 · with an 800m buy-in and buy-out', G.HIFB_ORDER.every(id => { const tp = S.templates.find(x => x.id === id); return tp.hifb.buyIn.m === 800 && tp.hifb.buyOut.m === 800; }));
+    t('52 · chest day is the four movements asked for', JSON.stringify(chest.ex.map(r => r.exId)) === JSON.stringify(['dbpress', 'incline', 'fly', 'ohtri']));
+    t('52 · every row is a range topping out at the number given, so progression works', chest.ex.every(r => r.repMin < r.reps) && S.templates.find(x => x.id === 't_hifb_back').ex[0].reps === 8);
+    t('52 · legs is the compromised-run day, sustained not fast', legs.ex.every(r => r.run.pace === 'Sustained') && legs.hifb.buyOut.pace === 'Max effort' && /heavy/.test(legs.why));
+    const slot = G.slotFor('t_hifb_chest');
+    t('52 · the plan says what the day is: blocks and how far you run', /4 blocks, 3\.2 km of running/.test(slot.sub) && slot.mins > 40, slot.sub + ' ' + slot.mins);
+    G.startWorkout('t_hifb_chest');
+    const body = () => d.getElementById('gymBody');
+    t('52 · a session shows a run before, between every block, and after', d.querySelectorAll('#gymBody .runcard').length === 6 && /Buy-in run: 800m/.test(txt(body())) && /Buy-out run: 800m/.test(txt(body())));
+    t('52 · and counts runs in the footer', /Runs 0 of 6/.test(txt(d.getElementById('gymFoot'))));
+    d.querySelector('[data-runbegin="in"]').click();
+    t('52 · Start run starts its clock', !!G.GYM.hifb.buyIn.startAt && !!d.querySelector('[data-runlive="in"]') && !!d.querySelector('[data-runstop="in"]'));
+    G.GYM.hifb.buyIn.startAt -= 200000;
+    d.querySelector('[data-runstop="in"]').click();
+    t('52 · Finish run records the split, and the pace', Math.abs(G.GYM.hifb.buyIn.ms - 200000) < 3000 && /\/km/.test(txt(d.querySelector('.runcard.done'))));
+    G.GYM.ex[0].sets.forEach(x => { x.kg = 22.5; });
+    for (let j = 0; j < 4; j++) d.querySelector('[data-done="0:' + j + '"]').click();
+    t('52 · ticking the last set of a block goes straight into the run, no rest', !!G.GYM.ex[0].run.startAt && !G.GYM.ex[0].run.ms && !d.getElementById('restBar').classList.contains('on'));
+    t('52 · and says so', /Straight into the 400m run/.test(txt(d.getElementById('toast'))));
+    const typeTime = (k, v) => { const i = d.querySelector('[data-runtime="' + k + '"]'); i.value = v; ev(i, 'change'); };
+    typeTime('0', '1:45');
+    t('52 · a time can be typed instead, for watch users', G.GYM.ex[0].run.ms === 105000 && G.GYM.ex[0].run.manual);
+    typeTime('1', '1:75');
+    t('52 · a time that is not a time is refused, with how to write it', !G.GYM.ex[1].run.ms && /1:45/.test(txt(d.getElementById('toast'))));
+    t('52 · times parse as minutes and seconds, or seconds', G.parseSplit('2:05') === 125000 && G.parseSplit('95') === 95000 && G.parseSplit('1.40') === 100000 && Number.isNaN(G.parseSplit('abc')) && G.parseSplit('') === null);
+    typeTime('1', '1:50'); typeTime('2', '1:55'); typeTime('3', '2:00');
+    for (let i = 1; i < 4; i++) for (let j = 0; j < 4; j++) { const b = d.querySelector('[data-done="' + i + ':' + j + '"]'); if (b && !G.GYM.ex[i].sets[j].done) b.click(); }
+    d.querySelector('[data-runbegin="out"]') && d.querySelector('[data-runbegin="out"]').click();
+    G.GYM.hifb.buyOut.startAt = Date.now() - 240000;
+    d.querySelector('[data-runstop="out"]').click();
+    t('52 · the footer keeps count', /Runs 6 of 6/.test(txt(d.getElementById('gymFoot'))));
+    d.getElementById('gymFinish').click();
+    const r1 = S.workouts[0];
+    t('52 · the record keeps every set, like any lifting session', r1.kind === 'hifb' && r1.ex.length === 4 && r1.ex.every(e => e.sets.length === 4) && (S.lifts.dbpress || []).length >= 1);
+    t('52 · and every run: distance, split, and whether it was typed', r1.runs.length === 6 && r1.runs.every(r => r.ms) && r1.runs[1].manual && r1.runs[1].after === 'dbpress' && r1.runM === 3200);
+    t('52 · and the time from the first run to the last', r1.totalMs >= 200000);
+    t('52 · the running is kept apart from the lifting minutes, so it is not counted twice with the steps', r1.runMin === Math.round(r1.runMs / 60000));
+    const fin = txt(body());
+    t('52 · the finish screen shows the splits and the average 400', /Run splits/.test(fin) && /Average 400m between blocks: 1:53/.test(fin));
+    t('52 · and whether the runs held up from first block to last', /15 seconds slower than the first/.test(fin));
+    d.querySelector('[data-rpe="7"]').click();
+    t('52 · effort is asked, and becomes a training load', S.workouts[0].rpe === 7 && new RegExp('training load of ' + 7 * r1.minutes).test(txt(d.getElementById('sLoad'))));
+    t('52 · the check in counts it as lifting and cardio', ['push', 'cardio'].every(k => G.loggedTraining().indexOf(k) >= 0));
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+    G.startWorkout('t_hifb_chest');
+    t('52 · next time, each run shows last time', /last time 1:45/.test(txt(body())));
+    const tt = (k, v) => { const i = d.querySelector('[data-runtime="' + k + '"]'); i.value = v; ev(i, 'change'); };
+    tt('in', '3:10'); tt('0', '1:40'); tt('1', '1:45'); tt('2', '1:46'); tt('3', '1:48'); tt('out', '3:30');
+    d.querySelector('[data-done="0:0"]').click();
+    d.getElementById('gymFinish').click();
+    const fin2 = txt(body());
+    t('52 · the finish screen compares each run with last time', /−5s/.test(fin2) && /against 1:53 last time/.test(fin2));
+    t('52 · typed times do not invent a total', S.workouts[0].totalMs === null);
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+    const post = S.mine.find(m => m.session && m.session.workoutId === S.workouts[0].id) || S.mine.find(m => m.workoutId === S.workouts[0].id);
+    G.openSession(post.id);
+    const ss = txt(d.getElementById('sessBody'));
+    t('52 · the past session keeps the runs, against the one before', /Run splits/.test(ss) && /Buy-in run/.test(ss) && /−5s/.test(ss) && /km run in/.test(ss));
+    G.closeSheets();
+    G.renderProgress();
+    const dash = txt(d.getElementById('dashLifts'));
+    t('52 · You shows HIFB runs session by session', /HIFB runs/.test(dash) && d.querySelectorAll('#dashLifts .hrow').length === 2 && /1:45/.test(dash) && /1:53/.test(dash));
+    [['1:44', '1:46'], ['1:42', '1:44'], ['1:38', '1:40']].forEach(([a, b]) => { G.startWorkout('t_hifb_chest');
+      tt('0', a); tt('1', b); tt('2', b); tt('3', b); d.querySelector('[data-done="0:0"]').click(); d.getElementById('gymFinish').click(); G.GYM = null; });
+    G.renderProgress();
+    t('52 · and says whether the 400s are getting quicker', /seconds quicker than your 4 sessions before it/.test(txt(d.getElementById('dashLifts'))), txt(d.getElementById('dashLifts')).slice(0, 300));
+    G.openTplEdit('t_hifb_chest');
+    t('52 · the editor has the buy-in, buy-out and a run after each block', !!d.querySelector('[data-tplbuy="buyIn"]') && !!d.querySelector('[data-tplbuy="buyOut"]') && d.querySelectorAll('[data-tplrun]').length === 4);
+    const set = (sel, v) => { const i = d.querySelector(sel); i.value = v; ev(i, 'input'); };
+    set('[data-tplbuy="buyOut"]', '6000'); d.getElementById('tplSave').click();
+    t('52 · a run distance out of range is not saved, and says why', S.templates.find(x => x.id === 't_hifb_chest').hifb.buyOut.m === 800 && /0 to 5,000/.test(txt(d.getElementById('tplEditBody'))));
+    set('[data-tplbuy="buyOut"]', '1000'); set('[data-tplrun="3"]', '0'); d.getElementById('tplSave').click();
+    const c2 = S.templates.find(x => x.id === 't_hifb_chest');
+    t('52 · run distances can be changed, and a run taken out', c2.hifb.buyOut.m === 1000 && !c2.ex[3].run && c2.ex[0].run.m === 400);
+    G.startWorkout('t_hifb_chest');
+    t('52 · and the next session follows', d.querySelectorAll('#gymBody .runcard').length === 5 && /Buy-out run: 1000m/.test(txt(body())));
+    d.querySelector('[data-addrun="3"]').click();
+    t('52 · a run can be added after any block mid-session', d.querySelectorAll('#gymBody .runcard').length === 6);
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+    G.startWorkout('t_hifb_back', { deload: Object.keys(G.DELOAD_TIERS)[0] });
+    t('52 · on an easy week the fast 400s become steady', G.GYM.ex.every(e => !e.run || e.run.pace === 'Steady') && G.GYM.hifb.buyIn.pace === 'Moderate');
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+    G.openHifbWhy();
+    const why = txt(d.getElementById('altBody'));
+    t('52 · How HIFB works gives the evidence and says what is only a rule of thumb', /No trial has tested HIFB itself/.test(why) && /Schumann and colleagues, 2022/.test(why) && /Lundberg and colleagues, 2022/.test(why) && /Foster and colleagues, 2001/.test(why) && /Rules of thumb/.test(why));
+    G.closeSheets();
+    G.openStyleSheet();
+    t('52 · HIFB is in the training style setting', !!d.querySelector('[data-setstyle="hifb"]') && !!d.querySelector('#altBody [data-hifbwhy]'));
+    G.closeSheets();
+    const old = JSON.parse(JSON.stringify(S)); old.templates = old.templates.filter(x => !/^t_hifb/.test(x.id)); old.profile.style = 'gym'; old.profile.kit = ['dumbbell', 'bench'];
+    const b3 = await boot({ before: w3 => w3.localStorage.setItem('gauntlet.v4', JSON.stringify(old)) }); allErrs.push(...b3.errs);
+    t('52 · someone already using the app gets the HIFB templates, and keeps their week', G.HIFB_ORDER.every(id => b3.G.S.templates.some(x => x.id === id)) && b3.G.styleOf() === 'gym');
+    const bc = b3.G.S.templates.find(x => x.id === 't_hifb_chest');
+    t('52 · fitted to the kit they said they have', bc.ex.every(r => ['dumbbell', 'bodyweight', 'bench', 'other'].indexOf(b3.G.exOf(r.exId).eq) >= 0), bc.ex.map(r => r.exId + ':' + b3.G.exOf(r.exId).eq).join(' '));
   }
 
   const r = s.report(allErrs);

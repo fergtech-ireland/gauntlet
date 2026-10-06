@@ -3848,6 +3848,287 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('54 · the template list can look inside a template too', /Bench Press/.test(txt(d.querySelector('#tplRows .srow2.open'))));
   }
 
+  /* ---------------------------------------------------------- 55 */
+  journey(55, 'Accounts: sign in with a typed code, consent first, the same settings on a second phone');
+  {
+    /* A fake Supabase that keeps the rules migration 0002 puts in the database:
+       nothing stored before both consents, state only after settings, anonymous
+       accounts kept out of profiles and posts, handles 3 to 20 of a-z 0-9 _.
+       One server, several phones. */
+    const fakeSupabase = () => {
+      const db = { users: {}, codes: {}, rows: { state: [], settings: [], profiles: [], posts: [], follows: [], tries: [] },
+        calls: [], noSettings: false, anonEnabled: true, tokens: {}, n: 0 };
+      const res = (status, body) => Promise.resolve({ ok: status < 300, status,
+        json: async () => body, text: async () => body == null ? '' : JSON.stringify(body) });
+      const session = uid => { const tok = 'tok' + (++db.n); db.tokens[tok] = uid; const u = db.users[uid];
+        return { access_token: tok, refresh_token: 'r' + tok, expires_in: 3600, user: { id: uid, email: u.email, is_anonymous: !!u.anon } }; };
+      const byEmail = e => Object.values(db.users).find(u => u.email === e);
+      db.fetch = (url, init) => {
+        const u = new URL(url), method = (init && init.method) || 'GET', h = (init && init.headers) || {};
+        const me = db.tokens[String(h.Authorization || '').replace('Bearer ', '')];
+        const body = init && init.body ? JSON.parse(init.body) : null;
+        db.calls.push(method + ' ' + u.pathname + u.search + (body && body.type ? ' type=' + body.type : ''));
+        const p = u.pathname;
+        if (p === '/auth/v1/signup') {
+          if (!db.anonEnabled) return res(422, { error_code: 'anonymous_provider_disabled' });
+          const id = 'anon-' + (++db.n); db.users[id] = { id, email: null, anon: true }; return res(200, session(id));
+        }
+        if (p === '/auth/v1/otp') { db.codes[body.email] = { code: '123456' }; return res(200, {}); }
+        if (p === '/auth/v1/user' && method === 'PUT') {
+          if (!me) return res(401, {});
+          if (byEmail(body.email)) return res(422, { error_code: 'email_exists', msg: 'A user with this email address has already been registered' });
+          db.codes[body.email] = { code: '654321', change: me }; return res(200, { id: me });
+        }
+        if (p === '/auth/v1/user') { if (!me) return res(401, {}); const x = db.users[me]; return res(200, { id: x.id, email: x.email, is_anonymous: !!x.anon }); }
+        if (p === '/auth/v1/verify') {
+          const c = db.codes[body.email];
+          if (!c || c.code !== body.token) return res(403, { error_code: 'otp_expired', msg: 'Token has expired or is invalid' });
+          delete db.codes[body.email];
+          if (body.type === 'email_change') { if (c.change !== me) return res(403, { error_code: 'otp_expired' });
+            Object.assign(db.users[me], { email: body.email, anon: false }); return res(200, session(me)); }
+          let x = byEmail(body.email); if (!x) { const id = 'user-' + (++db.n); x = db.users[id] = { id, email: body.email, anon: false }; }
+          return res(200, session(x.id));
+        }
+        if (p === '/rest/v1/rpc/delete_my_account') {
+          if (!me) return res(401, {}); delete db.users[me];
+          for (const t of Object.keys(db.rows)) db.rows[t] = db.rows[t].filter(r => r.user_id !== me && r.follower !== me && r.followee !== me);
+          return res(204, null);
+        }
+        const table = p.replace('/rest/v1/', '');
+        if (!db.rows[table] || (table === 'settings' && db.noSettings)) return res(404, { message: 'missing' });
+        if (!me) return res(401, {});
+        const anon = db.users[me] && db.users[me].anon;
+        if (anon && /^(profiles|posts|follows|tries)$/.test(table)) return method === 'GET' ? res(200, []) : res(403, { message: 'rls' });
+        const filters = [...u.searchParams].filter(([k, v]) => /^eq\./.test(v)).map(([k, v]) => [k, v.slice(3)]);
+        const own = r => (r.user_id || r.follower) === me;
+        const match = r => own(r) && filters.every(([k, v]) => String(r[k]) === v);
+        if (method === 'GET') return res(200, db.rows[table].filter(match));
+        if (method === 'DELETE') { db.rows[table] = db.rows[table].filter(r => !match(r)); return res(204, null); }
+        /* insert or upsert */
+        if (body.user_id !== me) return res(403, { message: 'rls' });
+        if (table === 'settings' && !(body.health_consent_at && body.terms_accepted_at && body.terms_version)) return res(400, { message: 'settings_consented' });
+        if (table === 'state' && !db.rows.settings.some(r => r.user_id === me)) return res(403, { message: 'rls' });
+        if (table === 'profiles') {
+          if (!/^[a-z0-9_]{3,20}$/.test(body.handle)) return res(400, { message: 'profiles_handle_format' });
+          if (db.rows.profiles.some(r => r.handle === body.handle && r.user_id !== me)) return res(409, { message: 'duplicate' });
+        }
+        db.rows[table] = db.rows[table].filter(r => !(r.user_id === me && table !== 'posts')).concat([Object.assign({}, body)]);
+        return res(201, [body]);
+      };
+      return db;
+    };
+    const tick = (ms) => new Promise(r => setTimeout(r, ms || 60));
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const type = (w, el, v) => { el.value = v; el.dispatchEvent(new w.Event('input', { bubbles: true })); };
+    const tickBox = (w, el) => { el.checked = true; el.dispatchEvent(new w.Event('change', { bubbles: true })); };
+    const live = w2 => w2.localStorage.setItem('gauntlet.cloud', JSON.stringify({}));
+
+    const db = fakeSupabase();
+    /* ---- phone A: a normal first install, backs up from Progress ---- */
+    const A = await boot({ fetch: db.fetch, before: live }); allErrs.push(...A.errs);
+    const CA = A.w.__CLOUD;
+    onboard(A.G, { handle: 'ferg_a', aim: 'build', weight: 84 });
+    A.G.S.profile.kit = A.G.ALL_KIT.slice(0, 5); A.G.save();
+    t('55 · the app points at the live project by default', CA.C.url === CA.CLOUD_PROJECTS.live.url && CA.cloudTarget() === 'live');
+    t('55 · before anything is agreed, nothing is sent, not even an anonymous account',
+      !(await CA.pushState()).ok && (await CA.signInAnonymously()).reason === 'consent' && db.calls.length === 0, db.calls.join());
+    A.G.renderProgress();
+    t('55 · the account panel offers to back up or sign in', /Back up or sign in/.test(txt(A.d.getElementById('cloudPanel'))));
+    A.d.getElementById('cloudSignIn').click();
+    const sendA = () => A.d.getElementById('sgSend');
+    t('55 · the sheet asks for an email and two separate consents, neither ticked',
+      !!A.d.getElementById('sgEmail') && !A.d.getElementById('sgHealth').checked && !A.d.getElementById('sgTerms').checked
+      && /health information/.test(txt(A.d.getElementById('cloudBody'))) && /Ireland/.test(txt(A.d.getElementById('cloudBody'))));
+    type(A.w, A.d.getElementById('sgEmail'), 'Ferg@Example.ie');
+    t('55 · a valid email alone does not unlock Send', sendA().disabled);
+    tickBox(A.w, A.d.getElementById('sgHealth'));
+    t('55 · one consent is not enough', sendA().disabled);
+    tickBox(A.w, A.d.getElementById('sgTerms'));
+    t('55 · both consents and an email unlock Send', !sendA().disabled);
+    sendA().click(); await tick();
+    t('55 · it asks Supabase for a code, not a link to tap', db.calls.some(c => c.startsWith('POST /auth/v1/otp')) && !!db.codes['ferg@example.ie']);
+    t('55 · then shows a box for the code that phones can fill from the email',
+      !!A.d.getElementById('sgCode') && A.d.getElementById('sgCode').getAttribute('autocomplete') === 'one-time-code'
+      && A.d.getElementById('sgCode').getAttribute('inputmode') === 'numeric' && /ferg@example\.ie/.test(txt(A.d.getElementById('cloudBody'))));
+    type(A.w, A.d.getElementById('sgCode'), '999 999');
+    t('55 · the code box keeps only digits', A.d.getElementById('sgCode').value === '999999');
+    A.d.getElementById('sgVerify').click(); await tick();
+    t('55 · a wrong code says so plainly and signs nobody in', /wrong or has run out/.test(txt(A.d.getElementById('sgResult'))) && !CA.signedIn());
+    A.d.getElementById('sgResend').click(); await tick();
+    t('55 · a new code is one tap', Object.keys(db.codes).length === 1 && db.calls.filter(c => c.startsWith('POST /auth/v1/otp')).length === 2);
+    type(A.w, A.d.getElementById('sgCode'), '123456');
+    A.d.getElementById('sgVerify').click(); await tick(200);
+    t('55 · the right code signs in, with an email, not anonymous', CA.claimed() && CA.C.session.email === 'ferg@example.ie');
+    t('55 · consent is recorded with the date and the version agreed to',
+      CA.hasConsent() && A.G.S.profile.consent.version === CA.TERMS_VERSION && !isNaN(Date.parse(A.G.S.profile.consent.health)));
+    const sIdx = db.calls.findIndex(c => c.startsWith('POST /rest/v1/settings')), stIdx = db.calls.findIndex(c => c.startsWith('POST /rest/v1/state'));
+    t('55 · settings go up before the saved state, which the database requires', sIdx > -1 && stIdx > sIdx, db.calls.join(' | '));
+    const setA = db.rows.settings[0];
+    t('55 · the settings row holds the profile and both consents',
+      setA && setA.body.profile.handle === 'ferg_a' && setA.body.profile.aim === 'build' && !!setA.health_consent_at && !!setA.terms_accepted_at && setA.terms_version === CA.TERMS_VERSION);
+    t('55 · and the handle is shared', db.rows.profiles.some(r => r.handle === 'ferg_a'));
+    t('55 · the sheet closes and the panel says who is signed in',
+      !A.d.getElementById('cloudSheet').classList.contains('on') && /Signed in as ferg@example\.ie/.test(txt(A.d.getElementById('cloudPanel'))));
+
+    /* ---- phone B: a new phone, signs in from the first screen ---- */
+    const B = await boot({ fetch: db.fetch, before: live }); allErrs.push(...B.errs);
+    const CB = B.w.__CLOUD;
+    B.G.startOnboarding();
+    t('55 · a new phone can sign in from the first screen', !!B.d.getElementById('onbSignIn'));
+    B.d.getElementById('onbSignIn').click();
+    t('55 · the sheet opens above onboarding',
+      B.d.getElementById('cloudSheet').classList.contains('on') && +B.d.getElementById('cloudSheet').style.zIndex > 90, B.d.getElementById('cloudSheet').style.zIndex);
+    type(B.w, B.d.getElementById('sgEmail'), 'ferg@example.ie');
+    tickBox(B.w, B.d.getElementById('sgHealth')); tickBox(B.w, B.d.getElementById('sgTerms'));
+    B.d.getElementById('sgSend').click(); await tick();
+    type(B.w, B.d.getElementById('sgCode'), '123456');
+    B.d.getElementById('sgVerify').click(); await tick(250);
+    t('55 · the same account on phone B', CB.myId() === CA.myId());
+    t('55 · with the same settings: handle, aim, weight and kit',
+      B.G.S.profile.handle === 'ferg_a' && B.G.S.profile.aim === 'build' && +B.G.S.profile.weight === 84
+      && JSON.stringify(B.G.S.profile.kit) === JSON.stringify(A.G.S.profile.kit));
+    t('55 · and onboarding gets out of the way', !B.d.getElementById('onb').classList.contains('on'));
+
+    /* the settings row alone is enough to bring a profile down */
+    {
+      const P = await boot({ fetch: db.fetch, before: live }); allErrs.push(...P.errs);
+      const CP = P.w.__CLOUD;
+      db.rows.state = db.rows.state.filter(r => r.user_id !== CA.myId());
+      CP.C.session = { access_token: Object.keys(db.tokens).find(k => db.tokens[k] === CA.myId()), user_id: CA.myId(), email: 'ferg@example.ie', anon: false, expires_at: Date.now() + 36e5 };
+      const ps = await CP.pullSettings();
+      t('55 · settings come down from their own row when there is no saved state', ps.applied && P.G.S.profile.handle === 'ferg_a' && P.G.S.profile.aim === 'build', JSON.stringify(ps));
+    }
+
+    /* ---- phone C: an account without an email, then claimed ---- */
+    const C2 = await boot({ fetch: db.fetch, before: live }); allErrs.push(...C2.errs);
+    const CC = C2.w.__CLOUD;
+    onboard(C2.G, { handle: 'cara_c' });
+    CC.recordConsent();
+    db.calls.length = 0;
+    const an = await CC.signInAnonymously();
+    t('55 · with consent, an account without an email can be made', an.ok && CC.isAnon() && !CC.claimed() && db.calls[0] === 'POST /auth/v1/signup');
+    await CC.pushState();
+    t('55 · it backs up settings and state', db.rows.state.some(r => r.user_id === CC.myId()) && db.rows.settings.some(r => r.user_id === CC.myId()));
+    await CC.ensureProfile(); await CC.loadRemote(); await CC.publishPost({ kind: 'lift', title: 'x' });
+    t('55 · but takes no handle, reads no feed and posts nothing', !db.calls.some(c => /\/rest\/v1\/(profiles|posts|follows)/.test(c)), db.calls.join(' | '));
+    C2.G.renderProgress();
+    t('55 · the panel asks for an email, and has no sign out that would lose the account',
+      /without an email/.test(txt(C2.d.getElementById('cloudPanel'))) && /Add your email/.test(txt(C2.d.getElementById('cloudPanel'))) && !C2.d.getElementById('cloudOut'));
+    C2.d.getElementById('cloudSignIn').click();
+    t('55 · claiming does not ask for consent again', !C2.d.getElementById('sgHealth') && /same account, nothing copied/.test(txt(C2.d.getElementById('cloudBody'))));
+    type(C2.w, C2.d.getElementById('sgEmail'), 'ferg@example.ie');
+    C2.d.getElementById('sgSend').click(); await tick();
+    t('55 · an email that already has an account is caught, with a way to sign in to it',
+      /already has a Gauntlet account/.test(txt(C2.d.getElementById('sgResult'))) && !!C2.d.getElementById('sgUseExisting'));
+    const anonId = CC.myId();
+    type(C2.w, C2.d.getElementById('sgEmail'), 'cara@example.ie');
+    C2.d.getElementById('sgSend').click(); await tick();
+    t('55 · a new email is added to the same account', db.calls.some(c => c === 'PUT /auth/v1/user') && /Add this email/.test(txt(C2.d.getElementById('sgVerify'))));
+    type(C2.w, C2.d.getElementById('sgCode'), '654321');
+    C2.d.getElementById('sgVerify').click(); await tick(250);
+    t('55 · it is checked as an email change, and keeps the same id', db.calls.some(c => c === 'POST /auth/v1/verify type=email_change') && CC.myId() === anonId && CC.claimed());
+    t('55 · now the handle is shared', db.rows.profiles.some(r => r.handle === 'cara_c' && r.user_id === anonId));
+
+    /* ---- switching to an existing account from an anonymous one leaves nothing behind ---- */
+    {
+      const X = await boot({ fetch: db.fetch, before: live }); allErrs.push(...X.errs);
+      const CX = X.w.__CLOUD; onboard(X.G, { handle: 'xan' }); CX.recordConsent();
+      await CX.signInAnonymously(); await CX.pushState(); const xid = CX.myId();
+      X.G.renderProgress(); X.d.getElementById('cloudSignIn').click();
+      type(X.w, X.d.getElementById('sgEmail'), 'ferg@example.ie');
+      X.d.getElementById('sgSend').click(); await tick();
+      X.d.getElementById('sgUseExisting').click(); await tick(200);
+      t('55 · signing in to the existing account removes the old one from the server first',
+        !db.users[xid] && !db.rows.state.some(r => r.user_id === xid) && !db.rows.settings.some(r => r.user_id === xid));
+      t('55 · then sends a sign-in code for the existing account', !!X.d.getElementById('sgCode') && CX.SIGN.mode === 'email');
+    }
+
+    /* ---- withdrawing consent ---- */
+    C2.G.openData();
+    t('55 · Your data offers to withdraw consent', !!C2.d.getElementById('withdrawBtn'));
+    const before = JSON.stringify(C2.G.S.weights);
+    C2.d.getElementById('withdrawBtn').click();
+    t('55 · withdrawing asks twice', C2.d.getElementById('withdrawBtn').textContent === 'Tap again to withdraw');
+    C2.d.getElementById('withdrawBtn').click(); await tick(150);
+    t('55 · withdrawing takes saved data and settings off the server',
+      !db.rows.state.some(r => r.user_id === anonId) && !db.rows.settings.some(r => r.user_id === anonId));
+    t('55 · signs this phone out and forgets the consent, keeping what is on the phone',
+      !CC.signedIn() && !CC.hasConsent() && JSON.stringify(C2.G.S.weights) === before && C2.G.S.profile.handle === 'cara_c');
+
+    /* ---- delete everything covers the settings row ---- */
+    t('55 · delete everything includes the settings table', CA.ERASE_TABLES.some(([, tb]) => tb === 'settings'));
+
+    /* ---- a project without migration 0002 still backs up ---- */
+    {
+      const db2 = fakeSupabase(); db2.noSettings = true;
+      const O = await boot({ fetch: db2.fetch, before: live }); allErrs.push(...O.errs);
+      const CO = O.w.__CLOUD; onboard(O.G); CO.recordConsent();
+      db2.rows.settings = [{ user_id: 'x' }];   /* the old project has no consent rule on state */
+      await CO.signInAnonymously();
+      db2.rows.settings.push({ user_id: CO.myId() });
+      const r = await CO.pushState();
+      t('55 · a project without the settings table still backs up the saved state', r.ok && db2.rows.state.length === 1, JSON.stringify(r));
+      const er = await CO.eraseRemote();
+      t('55 · and delete everything does not get stuck on the missing table', er.done, JSON.stringify(er));
+    }
+
+    /* ---- handles follow the database's rules ---- */
+    {
+      const H = await boot({ fetch: db.fetch, before: live }); allErrs.push(...H.errs);
+      H.G.startOnboarding();
+      const hi = H.d.getElementById('handleIn');
+      type(H.w, hi, 'Fe.rg Smith!');
+      t('55 · a handle is lower case letters, numbers and underscores', hi.value === 'fe_rg_smith' && H.G.onbDraft.handle === 'fe_rg_smith');
+      type(H.w, hi, 'ab');
+      t('55 · two characters is not enough any more', H.d.getElementById('onbNext').disabled);
+      type(H.w, hi, 'abcdefghijklmnopqrstuvwxyz');
+      t('55 · and it stops at 20', hi.value.length === 20);
+      const CH = H.w.__CLOUD; onboard(H.G, { handle: 'f.x' });
+      CH.recordConsent();
+      const tok = 'tokH'; db.tokens[tok] = 'user-h'; db.users['user-h'] = { id: 'user-h', email: 'h@example.ie' };
+      CH.C.session = { access_token: tok, user_id: 'user-h', email: 'h@example.ie', anon: false, expires_at: Date.now() + 36e5 };
+      const pr = await CH.ensureProfile();
+      H.G.renderProgress();
+      t('55 · an old handle that breaks the rules is kept on the phone, not sent, and the panel says why',
+        pr && !pr.ok && !db.rows.profiles.some(r => r.user_id === 'user-h') && /3 to 20 letters/.test(txt(H.d.getElementById('cloudPanel'))));
+    }
+
+    /* ---- the test project switch ---- */
+    {
+      const T = await boot({ fetch: db.fetch, url: 'https://example.test/?cloud=test',
+        before: w2 => w2.localStorage.setItem('gauntlet.cloud', JSON.stringify({ fromConfig: true, url: 'https://zerclmrlwniaogtxyngw.supabase.co', key: 'k',
+          session: { access_token: 't', user_id: 'u', email: 'a@b.c' } })) });
+      allErrs.push(...T.errs);
+      const CT = T.w.__CLOUD;
+      t('55 · ?cloud=test points this phone at the test project', CT.cloudTarget() === 'test' && CT.C.url === CT.CLOUD_PROJECTS.test.url && CT.C.key === CT.CLOUD_PROJECTS.test.key);
+      t('55 · and drops the live sign-in, which belongs to the other project', !CT.signedIn());
+      onboard(T.G); T.G.renderProgress();
+      t('55 · the panel says it is on the test project', /Connected to the test project/.test(txt(T.d.getElementById('cloudPanel'))));
+    }
+
+    /* ---- the account step in onboarding uses a code too ---- */
+    {
+      const db3 = fakeSupabase();
+      const N = await boot({ fetch: db3.fetch, before: live }); allErrs.push(...N.errs);
+      N.G.startOnboarding();
+      Object.assign(N.G.onbDraft, { handle: 'nia', aim: 'lose', sex: 'f', age: 30, height: 165, weight: 70, liftDays: 3, cardioDays: 2, checkinDay: 6, kit: N.G.ALL_KIT.slice() });
+      type(N.w, N.d.getElementById('handleIn'), 'nia');
+      for (let i = 0; i < 8 && !N.d.getElementById('onbEmail'); i++) { N.d.getElementById('onbNext').click(); await tick(20); }
+      const next = N.d.getElementById('onbNext');
+      t('55 · onboarding ends on the account step, which can be skipped', !!N.d.getElementById('onbEmail') && next.textContent === 'Skip for now', next.textContent);
+      type(N.w, N.d.getElementById('onbEmail'), 'nia@example.ie');
+      t('55 · with an email it offers a code, locked until both consents are ticked', next.textContent === 'Send me a code' && next.disabled);
+      tickBox(N.w, N.d.getElementById('onbHealth')); tickBox(N.w, N.d.getElementById('onbTerms'));
+      t('55 · ticking both unlocks it', !next.disabled);
+      next.click(); await tick();
+      t('55 · then asks for the code', !!N.d.getElementById('onbCode') && next.textContent === 'Check code' && next.disabled);
+      type(N.w, N.d.getElementById('onbCode'), '123456');
+      next.click(); await tick(250);
+      t('55 · the code signs in, records consent and backs up', N.w.__CLOUD.claimed() && N.w.__CLOUD.hasConsent()
+        && db3.rows.settings.length === 1 && db3.rows.state.length === 1 && !N.d.getElementById('onb').classList.contains('on'));
+    }
+  }
+
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);
 })();

@@ -24,6 +24,15 @@ create function auth.uid() returns uuid language sql stable as $$
   )::uuid
 $$;
 
+-- Supabase's own auth.jwt(): every claim in the request's token, as jsonb.
+-- The rules read is_anonymous from it.
+create function auth.jwt() returns jsonb language sql stable as $$
+  select coalesce(
+    nullif(current_setting('request.jwt.claim', true), ''),
+    nullif(current_setting('request.jwt.claims', true), '')
+  )::jsonb
+$$;
+
 create function auth.role() returns text language sql stable as $$
   select coalesce(
     nullif(current_setting('request.jwt.claim.role', true), ''),

@@ -1,21 +1,26 @@
 /* =====================================================================
    Accounts and the shared feed.
-   Sign in is a magic link: no password to forget, no password to leak.
-   Your own logs stay private to your row, enforced by row level security
-   in Postgres rather than by this file. The feed is shared with whoever
-   else is signed in to the same project.
+   Sign in is a 6-digit code emailed and typed into the app (build 52). A
+   link would open in Safari on an iPhone, outside the home screen app, which
+   keeps its own storage, so the person would end up signed in in the wrong
+   place. No password to forget, none to leak.
+   Your own logs stay private to your row, enforced by row level security in
+   Postgres rather than by this file. Nothing is stored on the server until
+   health data consent has been given, which the database also enforces.
    ===================================================================== */
 /* ============================================================
-   PASTE YOUR PROJECT HERE BEFORE YOU UPLOAD, and nobody else has
-   to type anything. Both values are public by design: what
-   protects people is row level security in the database, not
-   secrecy. Never put the service role key here.
-   Supabase: Project Settings, API keys.
+   The projects this build talks to. Both keys are public by design: what
+   protects people is row level security in the database, not secrecy.
+   Never put the service role key here.
+   live: the project real people use. test: gauntlet-test, where every
+   database change is tried first. Opening the app with ?cloud=test points
+   this device at the test project until ?cloud=live points it back.
    ============================================================ */
-const CLOUD_CONFIG={
-  url: 'https://zerclmrlwniaogtxyngw.supabase.co',
-  key: 'sb_publishable_C5lUkvG-ZtESrhc_-71HOg_jejh2AJG'
+const CLOUD_PROJECTS={
+  live:{url:'https://zerclmrlwniaogtxyngw.supabase.co', key:'sb_publishable_C5lUkvG-ZtESrhc_-71HOg_jejh2AJG'},
+  test:{url:'https://cfrraitjazkcnxjjkgoj.supabase.co', key:'sb_publishable_0IaQo88S-EEkNBLR8dJ4Xg_3L8R88Nf'}
 };
+const CLOUD_CONFIG={url:CLOUD_PROJECTS.live.url, key:CLOUD_PROJECTS.live.key};
 const cloudReady=()=>!!(CLOUD_CONFIG.url&&CLOUD_CONFIG.key);
 const CLOUD_KEY='gauntlet.cloud';
 function loadCloud(){
@@ -24,36 +29,123 @@ function loadCloud(){
   catch(e){ return {url:'',key:'',session:null,auto:true,pending:false,error:null,lastPush:null}; }
 }
 let C=loadCloud();
+function cloudTargetFromUrl(){
+  try{ const m=/[?&]cloud=(test|live)(?:&|$)/.exec(location.search||''); return m? m[1] : null; }catch(e){ return null; }
+}
+/* A sign-in belongs to one project, so moving between them signs out of the old one. */
+(function(){
+  const wanted=cloudTargetFromUrl();
+  if(wanted&&wanted!==(C.target||'live')){
+    C.target=wanted; C.session=null; C.pending=false; C.error=null; C.lastPush=null; C.fromConfig=true; C.handleIssue=null;
+  }
+})();
+const cloudTarget=()=>C.target==='test'?'test':'live';
 /* the built in project wins unless someone has deliberately typed their own */
 if(cloudReady() && (!C.url || C.fromConfig)){
-  C.url=CLOUD_CONFIG.url; C.key=CLOUD_CONFIG.key; C.fromConfig=true;
+  const pr=cloudTarget()==='test'? CLOUD_PROJECTS.test : CLOUD_CONFIG;
+  C.url=pr.url; C.key=pr.key; C.fromConfig=true;
   try{ localStorage.setItem(CLOUD_KEY,JSON.stringify(C)); }catch(e){}
 }
 function saveCloud(){ try{ localStorage.setItem(CLOUD_KEY,JSON.stringify(C)); }catch(e){} }
 const configured=()=>!!(C.url&&C.key);
 const signedIn=()=>!!(C.session&&C.session.access_token&&C.session.user_id);
+/* An anonymous account keeps its own data and nothing else: the database
+   keeps it out of profiles, posts, follows and tries until an email is added. */
+const isAnon=()=>!!(signedIn()&&C.session.anon);
+const claimed=()=>signedIn()&&!C.session.anon;
 const myId=()=>signedIn()? C.session.user_id : null;
 const base=()=>C.url.replace(/\/+$/,'');
 const authHeaders=()=>({apikey:C.key,Authorization:'Bearer '+((C.session&&C.session.access_token)||C.key),'Content-Type':'application/json'});
 
+/* ---------- consent ----------
+   Health data is a special category under GDPR, so it needs explicit consent,
+   given separately from agreeing to how the app works, before any of it
+   reaches the server. The database refuses settings or saved state from
+   anyone who has not recorded both. */
+const TERMS_VERSION='2026-10-b52';
+const hasConsent=()=>{ const c=S.profile&&S.profile.consent; return !!(c&&c.health&&c.terms&&c.version); };
+function recordConsent(){
+  const now=new Date().toISOString();
+  S.profile.consent={health:now,terms:now,version:TERMS_VERSION};
+  save();
+}
+
 /* ---------- auth ---------- */
-async function sendMagicLink(email){
+const validEmail=e=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(e||'').trim());
+function authReason(status,d){
+  const code=String((d&&(d.error_code||d.code||d.error))||''), msg=String((d&&(d.msg||d.message||d.error_description))||'');
+  if(code==='email_exists'||code==='user_already_exists'||/already (been )?registered|already exists/i.test(msg))
+    return {reason:'That email already has a Gauntlet account. Sign in with it instead.',exists:true};
+  if(status===429||/rate_limit/.test(code)) return {reason:'Too many codes asked for. Wait a minute, then try again.'};
+  if(code==='otp_expired'||code==='otp_disabled'||(status===403&&/token|otp|expired|invalid/i.test(code+msg)))
+    return {reason:'That code is wrong or has run out. Ask for a new one.'};
+  if(code==='anonymous_provider_disabled') return {reason:'Accounts without an email are not switched on for this project yet.'};
+  if(code==='email_address_invalid'||status===422) return {reason:'That email was refused. Check it is spelled right.'};
+  return {reason:'Supabase said '+status+'.'};
+}
+async function authCall(path,body,method,withToken){
   if(!configured()) return {ok:false,reason:'Set the project URL and key first.'};
   try{
-    const res=await fetch(base()+'/auth/v1/otp',{method:'POST',
-      headers:{apikey:C.key,'Content-Type':'application/json'},
-      body:JSON.stringify({email,create_user:true,options:{email_redirect_to:location.href.split('#')[0]}})});
-    if(!res.ok) return {ok:false,reason:res.status===422?'That email was refused. Check it is spelled right.':'Supabase said '+res.status+'.'};
-    return {ok:true};
-  }catch(e){ return {ok:false,reason:'No connection.'}; }
+    const res=await fetch(base()+'/auth/v1/'+path,{method:method||'POST',
+      headers:withToken? authHeaders() : {apikey:C.key,'Content-Type':'application/json'},
+      body:JSON.stringify(body||{})});
+    let d=null; try{ d=await res.json(); }catch(e){}
+    if(!res.ok) return Object.assign({ok:false,status:res.status},authReason(res.status,d));
+    return {ok:true,status:res.status,data:d};
+  }catch(e){ return {ok:false,reason:'No connection. Try again when you have signal.'}; }
 }
+/* any answer carrying tokens: a verified code, a new anonymous account, a refresh */
+function takeSession(d){
+  if(!d||!d.access_token) return false;
+  const u=d.user||{};
+  C.session={access_token:d.access_token, refresh_token:d.refresh_token||null,
+    expires_at:Date.now()+((+d.expires_in||3600)*1000),
+    user_id:u.id||(C.session&&C.session.user_id)||null, email:u.email||null, anon:!!u.is_anonymous};
+  saveCloud(); return true;
+}
+/* First open, once consent is given (build 53 calls this silently). Same user
+   id for life, so adding an email later copies nothing. */
+async function signInAnonymously(){
+  if(signedIn()) return {ok:true,already:true};
+  if(!hasConsent()) return {ok:false,reason:'consent'};
+  const r=await authCall('signup',{data:{}});
+  if(!r.ok) return r;
+  return takeSession(r.data)? {ok:true} : {ok:false,reason:'Supabase sent no session back.'};
+}
+/* Email a code. An anonymous account adds the email to itself (the claim);
+   anyone else gets a sign-in code, which also makes the account if it is new. */
+async function sendCode(email){
+  email=String(email||'').trim().toLowerCase();
+  if(!validEmail(email)) return {ok:false,reason:'That does not look like an email address.'};
+  if(isAnon()){
+    await ensureSession();
+    const r=await authCall('user',{email},'PUT',true);
+    return r.ok? {ok:true,mode:'email_change',email} : Object.assign(r,{mode:'email_change'});
+  }
+  const r=await authCall('otp',{email,create_user:true,options:{email_redirect_to:location.href.split('#')[0].split('?')[0]}});
+  return r.ok? {ok:true,mode:'email',email} : Object.assign(r,{mode:'email'});
+}
+async function verifyCode(email,code,mode){
+  email=String(email||'').trim().toLowerCase();
+  code=String(code||'').replace(/\D/g,'');
+  if(!/^\d{6,10}$/.test(code)) return {ok:false,reason:'Type the code from the email. It is 6 digits.'};
+  const r=await authCall('verify',{type:mode==='email_change'?'email_change':'email',email,token:code},'POST',mode==='email_change');
+  if(!r.ok) return r;
+  if(!takeSession(r.data)){
+    /* some versions confirm an email change without new tokens: same session, now with an email */
+    const u=await fetchUser(); if(!u) return {ok:false,reason:'Signed in, but the account could not be read back. Try again.'};
+  }
+  if(C.session){ C.session.anon=false; if(!C.session.email) C.session.email=email; saveCloud(); }
+  return {ok:true};
+}
+/* A link from an older email still works on a computer, where it opens in the same browser. */
 function readAuthHash(){
   const h=(location.hash||'').replace(/^#/,'');
   if(!h||h.indexOf('access_token=')<0) return false;
   const q={}; h.split('&').forEach(kv=>{ const [k,v]=kv.split('='); q[k]=decodeURIComponent(v||''); });
   if(!q.access_token) return false;
   C.session={access_token:q.access_token, refresh_token:q.refresh_token||null,
-    expires_at: Date.now()+((+q.expires_in||3600)*1000), user_id:null, email:null};
+    expires_at: Date.now()+((+q.expires_in||3600)*1000), user_id:null, email:null, anon:false};
   saveCloud();
   try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
   return true;
@@ -64,7 +156,7 @@ async function fetchUser(){
     const res=await fetch(base()+'/auth/v1/user',{headers:authHeaders()});
     if(!res.ok) return null;
     const u=await res.json();
-    C.session.user_id=u.id; C.session.email=u.email; saveCloud();
+    C.session.user_id=u.id; C.session.email=u.email||null; C.session.anon=!!u.is_anonymous; saveCloud();
     return u;
   }catch(e){ return null; }
 }
@@ -78,6 +170,7 @@ async function refreshSession(){
     const d=await res.json();
     C.session=Object.assign({},C.session,{access_token:d.access_token,refresh_token:d.refresh_token,
       expires_at:Date.now()+((d.expires_in||3600)*1000)});
+    if(d.user){ C.session.email=d.user.email||C.session.email||null; C.session.anon=!!d.user.is_anonymous; }
     saveCloud(); return true;
   }catch(e){ return false; }
 }
@@ -86,7 +179,7 @@ async function ensureSession(){
   if(C.session&&C.session.expires_at&&C.session.expires_at-Date.now()<120000) await refreshSession();
   return signedIn();
 }
-function signOut(){ C.session=null; saveCloud(); renderAll(); toast('Signed out. Your week stays on this device.'); }
+function signOut(){ C.session=null; C.handleIssue=null; saveCloud(); renderAll(); toast('Signed out. Your week stays on this device.'); }
 
 /* ---------- rest helpers ---------- */
 async function api(path,opts){
@@ -107,9 +200,51 @@ const upsert=(table,body,conflict)=>api(table+(conflict?'?on_conflict='+conflict
   {method:'POST',headers:Object.assign(authHeaders(),{Prefer:'resolution=merge-duplicates,return=representation'}),
    body:JSON.stringify(body)});
 
+/* ---------- your settings ----------
+   One private row: the profile (body details, aim, kit, style, split), goal,
+   targets, year of birth and the two consents. The whole saved state still
+   travels as well until phase 2 moves it into tables; this row is what other
+   devices and, later, friends' features read without opening everything. */
+const validBirthYear=y=>{ const n=+y, now=new Date().getFullYear(); return Number.isInteger(n)&&n>=now-110&&n<=now; };
+function settingsRow(){
+  const c=S.profile.consent||{};
+  return {user_id:myId(),
+    body:{profile:S.profile, goal:S.goal||null, target:S.target||null, targets:S.targets||null},
+    birth_year: validBirthYear(S.profile.birthYear)? +S.profile.birthYear : null,
+    health_consent_at:c.health||null, terms_version:c.version||null, terms_accepted_at:c.terms||null,
+    rev:S.rev||0, updated_at:new Date().toISOString()};
+}
+async function pushSettings(){
+  if(!signedIn()) return {ok:false,reason:'not signed in'};
+  if(!hasConsent()) return {ok:false,reason:'consent'};
+  const r=await upsert('settings',settingsRow(),'user_id');
+  /* a project without the settings table yet (before migration 0002) is not an error */
+  if(!r.ok&&r.status===404) return {ok:true,skipped:true};
+  return r;
+}
+async function pullSettings(){
+  if(!signedIn()) return {ok:false,reason:'not signed in'};
+  const r=await api('settings?user_id=eq.'+myId()+'&select=body,rev,birth_year,health_consent_at,terms_version,terms_accepted_at');
+  if(!r.ok) return r.status===404? {ok:true,applied:false,reason:'no settings table'} : r;
+  const row=r.data&&r.data[0];
+  if(!row||!row.body||!row.body.profile) return {ok:true,applied:false,reason:'nothing up there yet'};
+  if((row.rev||0)<=(S.rev||0)) return {ok:true,applied:false,reason:'this device is the newer one'};
+  const b=row.body;
+  S.profile=Object.assign({},S.profile,b.profile);
+  if(b.goal) S.goal=Object.assign({},S.goal,b.goal);
+  if(b.target!==undefined) S.target=b.target;
+  if(b.targets) S.targets=b.targets;
+  if(validBirthYear(row.birth_year)) S.profile.birthYear=row.birth_year;
+  S.rev=row.rev; _save(); renderAll();
+  return {ok:true,applied:true};
+}
+
 /* ---------- your private state ---------- */
 async function pushState(){
   if(!signedIn()) return {ok:false,reason:'not signed in'};
+  if(!hasConsent()){ C.pending=false; C.error=null; saveCloud(); return {ok:false,reason:'consent'}; }
+  const st=await pushSettings();
+  if(!st.ok){ C.pending=true; C.error=st.reason; saveCloud(); return st; }
   const r=await upsert('state',{user_id:myId(),rev:S.rev||0,payload:S,updated_at:new Date().toISOString()},'user_id');
   if(r.ok){ C.pending=false; C.error=null; C.lastPush=Date.now(); }
   else { C.pending=true; C.error=r.reason; }
@@ -130,7 +265,7 @@ async function pullState(){
 }
 let pushTimer=null;
 function queuePush(){
-  if(!signedIn()||!C.auto) return;
+  if(!signedIn()||!C.auto||!hasConsent()) return;
   clearTimeout(pushTimer);
   pushTimer=setTimeout(()=>{ pushState().then(renderCloudPanel); },4000);
 }
@@ -141,12 +276,22 @@ window.addEventListener('online',()=>{ if(C.pending) pushState().then(renderClou
 /* ---------- the shared side ---------- */
 let REMOTE={profiles:{},posts:[],follows:[],loaded:false};
 const colorFor=h=>['#1e3a6e','#6e1f2e','#a8552a','#1b4a3c','#2f5d6e','#5c6b2f','#8a6a2f','#161618'][(h||'x').charCodeAt(0)%8];
+/* Handles follow the database's rules (migration 0002): 3 to 20 lowercase
+   letters, numbers or underscores, unique, not on the blocklist, changed at
+   most once a month. A handle from before the rules is kept on this device,
+   and the panel says why it is not up there yet. */
+const HANDLE_RE=/^[a-z0-9_]{3,20}$/;
 async function ensureProfile(){
-  if(!signedIn()||!S.profile.handle) return null;
-  return upsert('profiles',{user_id:myId(),handle:S.profile.handle,aim:S.profile.aim},'user_id');
+  if(!claimed()||!S.profile.handle) return null;
+  const h=String(S.profile.handle).toLowerCase();
+  if(!HANDLE_RE.test(h)){ C.handleIssue='format'; saveCloud(); return {ok:false,reason:'handle'}; }
+  const r=await upsert('profiles',{user_id:myId(),handle:h,aim:S.profile.aim},'user_id');
+  C.handleIssue = r.ok? null : (r.status===409? 'taken' : (r.status===400? 'refused' : C.handleIssue||null));
+  saveCloud();
+  return r;
 }
 async function loadRemote(){
-  if(!signedIn()) return {ok:false};
+  if(!claimed()) return {ok:false};
   const [pr,po,fo]=await Promise.all([
     api('profiles?select=user_id,handle,aim'),
     api('posts?select=id,user_id,kind,title,unit,chips,caption,session,origin_post,try_count,created_at&order=created_at.desc&limit=60'),
@@ -165,7 +310,7 @@ async function loadRemote(){
   return {ok:true,posts:REMOTE.posts.length,people:Object.keys(REMOTE.profiles).length};
 }
 async function publishPost(post){
-  if(!signedIn()) return {ok:false,reason:'not signed in'};
+  if(!claimed()) return {ok:false,reason:'not signed in'};
   await ensureProfile();
   const body={user_id:myId(),kind:post.kind,title:post.title,unit:post.unit,
     chips:post.chips||[],caption:post.cap||'',session:post.session||null};
@@ -175,12 +320,12 @@ async function publishPost(post){
   return r;
 }
 async function recordTry(remoteId){
-  if(!signedIn()||!remoteId) return {ok:false};
+  if(!claimed()||!remoteId) return {ok:false};
   await api('tries',{method:'POST',headers:authHeaders(),body:JSON.stringify({user_id:myId(),post_id:remoteId})});
   return api('rpc/increment_try',{method:'POST',headers:authHeaders(),body:JSON.stringify({p_post:remoteId})});
 }
 async function toggleRemoteFollow(userId){
-  if(!signedIn()) return {ok:false};
+  if(!claimed()) return {ok:false};
   const on=REMOTE.follows.includes(userId);
   const r = on
     ? await api('follows?follower=eq.'+myId()+'&followee=eq.'+userId,{method:'DELETE',headers:authHeaders()})
@@ -191,14 +336,14 @@ async function toggleRemoteFollow(userId){
 /* the feed, the people list and the try button all switch to the real thing once signed in */
 const _renderFeed=renderFeed;
 renderFeed=function(){
-  if(!signedIn()||!REMOTE.loaded) return _renderFeed();
+  if(!claimed()||!REMOTE.loaded) return _renderFeed();
   const visible=REMOTE.posts.filter(p=>p.mine||REMOTE.follows.includes(p.by));
   document.getElementById('feed').innerHTML = visible.length? visible.map(cardHTML).join('')
     : `<div class="empty">Nobody you follow has posted yet. Tap the person icon up top to find the others.</div>`;
 };
 const _renderPeople=renderPeople;
 renderPeople=function(){
-  if(!signedIn()||!REMOTE.loaded) return _renderPeople();
+  if(!claimed()||!REMOTE.loaded) return _renderPeople();
   const rows=Object.values(REMOTE.profiles).filter(p=>p.id!==myId());
   document.getElementById('people').innerHTML = rows.length? rows.map(p=>`<div class="prow">${av(p)}
     <div class="txt"><div class="n">${p.n}</div><div class="s">${p.s}</div></div>
@@ -215,7 +360,7 @@ document.addEventListener('click',async e=>{
 const _logSession=logSession;
 logSession=function(sess){
   const res=_logSession(sess);
-  if(signedIn()&&res&&res.post){
+  if(claimed()&&res&&res.post){
     const src=sess.fromPost? REMOTE.posts.find(p=>p.id===sess.fromPost) : null;
     if(src) res.post.origin=Object.assign({},res.post.origin,{remoteId:src.remoteId});
     publishPost(res.post);
@@ -313,9 +458,9 @@ function downloadData(){
   }catch(err){ toast('Could not save the file here'); }
 }
 /* Everything this person put in the database, not just some of it. The app
-   writes to four tables: state (their saved data), profiles (handle and aim),
-   posts (the feed) and follows (both directions). The first version only
-   cleared two of them.
+   writes to five tables: state (their saved data), settings (profile and
+   consents, from build 52), profiles (handle and aim), posts (the feed) and
+   follows (both directions). The first version only cleared two of them.
    Two rules make this honest:
    1. A delete the database's rules refuse still answers 204 with nothing
       removed, so every table is checked afterwards rather than trusted.
@@ -327,7 +472,8 @@ const ERASE_TABLES=[
   ['who you follow','follows','follower'],
   ['who follows you','follows','followee'],
   ['your profile','profiles','user_id'],
-  ['your saved data','state','user_id']];
+  ['your saved data','state','user_id'],
+  ['your settings','settings','user_id']];
 async function eraseRemote(){
   if(!signedIn()) return {done:true,left:[]};
   const me=encodeURIComponent(myId()), left=[];
@@ -336,6 +482,8 @@ async function eraseRemote(){
     try{
       await fetch(base()+'/rest/v1/'+q,{method:'DELETE',headers:authHeaders()});
       const chk=await fetch(base()+'/rest/v1/'+q+'&select='+col+'&limit=1',{headers:authHeaders()});
+      /* a table this project does not have yet holds nothing of theirs */
+      if(chk.status===404) continue;
       const rows=chk.ok? await chk.json() : null;
       if(!Array.isArray(rows)) left.push(label+' (could not be checked)');
       else if(rows.length) left.push(label);
@@ -353,6 +501,29 @@ async function eraseRemote(){
   }
   return {done:!left.length,left};
 }
+/* Withdrawing health data consent: the saved data and settings come off the
+   server, each checked, and this device stops backing up and signs out. What
+   is on this device stays. If anything is left up there, consent is kept on
+   record, because the data it covers is still held. */
+async function withdrawConsent(){
+  if(!signedIn()){ if(S.profile.consent){ delete S.profile.consent; save(); } return {ok:true,left:[]}; }
+  const me=encodeURIComponent(myId()), left=[];
+  for(const [label,table] of [['your saved data','state'],['your settings','settings']]){
+    const q=table+'?user_id=eq.'+me;
+    try{
+      await fetch(base()+'/rest/v1/'+q,{method:'DELETE',headers:authHeaders()});
+      const chk=await fetch(base()+'/rest/v1/'+q+'&select=user_id&limit=1',{headers:authHeaders()});
+      if(chk.status===404) continue;
+      const rows=chk.ok? await chk.json() : null;
+      if(!Array.isArray(rows)) left.push(label+' (could not be checked)');
+      else if(rows.length) left.push(label);
+    }catch(e){ left.push(label+' (no connection)'); }
+  }
+  if(left.length) return {ok:false,left};
+  delete S.profile.consent; _save();
+  C.session=null; C.pending=false; C.error=null; C.lastPush=null; saveCloud();
+  return {ok:true,left:[]};
+}
 function eraseLocal(){
   try{ localStorage.removeItem(STORE_KEY); localStorage.removeItem(CLOUD_KEY);
     ['gauntlet.v3','gauntlet.v2','gauntlet.v1',NUDGE_KEY].forEach(k=>localStorage.removeItem(k)); }catch(e){}
@@ -363,16 +534,27 @@ async function eraseEverything(){
   eraseLocal();
   return {ok:true,left:[]};
 }
+/* One account of what is held, used here and next to the consent boxes. */
+function heldText(signed){
+  return 'Your week, your weigh ins, your food, your lifts and your check ins live in this browser\'s own storage on this device.'
+    +(signed
+      ? ' Because you are signed in, a copy is also kept in the project database, on Supabase\'s servers in Ireland (EU), so it reaches your other devices. That copy is readable only by you, which the database enforces, not this page.'
+        +(claimed()? ' Your handle, your aim and anything you post to the feed are different: other people using the app can see those, because that is what the feed is.' : ' Until you add an email, nobody else can see anything of yours, not even your handle.')
+      : ' Nothing leaves this device unless you agree to it being backed up.');
+}
 function openData(){
   const signed=signedIn();
   document.getElementById('cloudBody').innerHTML=`
-    <div class="method"><b>What is held, and where</b><span>Your week, your weigh ins, your food, your lifts and your check ins live in this browser's own storage on this device.${signed? ' Because you are signed in, a copy is also kept in the project database so it reaches your other devices. That copy is readable only by you, which the database enforces, not this page. Your handle, your aim and anything you post to the feed are different: other people using the app can see those, because that is what the feed is.' : ' Nothing leaves this device unless you make an account.'}</span></div>
+    <div class="method"><b>What is held, and where</b><span>${heldText(signed)}</span></div>
     <div class="method"><b>What is never held</b><span>No advertising identifiers, no third party analytics, no location. The only thing that leaves this device on its own is the request that fetches the typeface.</span></div>
     <div class="method"><b>Take it with you</b><span>One file, plain JSON, everything in it. Readable in any text editor and not locked to this app.</span></div>
     <button class="sheetcta" id="dlData">Download everything</button>
     <button class="sheetcta" id="restoreBtn" style="background:var(--grey-btn);color:var(--ink);margin-top:8px">Restore from a download</button>
     <input type="file" id="restoreFile" accept="application/json,.json" style="display:none" aria-label="Choose a Gauntlet download">
     <div class="note" id="restoreNote">${(()=>{ try{ return localStorage.getItem(RESTORE_BACKUP)? 'This phone was restored from a download. <button class="inlinebtn" id="restoreUndo">Undo the restore</button>' : 'For a new phone, or to go back to an earlier copy. It shows what is in the file before replacing anything.'; }catch(e){ return ''; } })()}</div>
+    ${signed&&hasConsent()?`<div class="method" style="margin-top:14px"><b>Stop backing up</b><span>Withdraws your consent to Gauntlet holding your health information. Your saved data and settings are deleted from the server and checked, then this device signs out. Everything on this device stays.</span></div>
+    <button class="sheetcta" id="withdrawBtn" style="background:var(--grey-btn);color:var(--ink)">Withdraw consent</button>
+    <div class="note" id="withdrawNote"></div>`:''}
     <div class="method" style="margin-top:14px"><b>Delete it all</b><span>${signed
       ? 'Deletes your saved data, profile, feed posts and follows from the database, checks each one is really gone, then wipes this device and starts you again from the first screen. Last, it removes your sign-in account itself. If the database refuses any of it, nothing is wiped here, so you can try again.'
       : 'Wipes this device and starts you again from the first screen.'} It cannot be undone, so take the download first if you want a copy.</span></div>
@@ -383,6 +565,15 @@ function openData(){
 document.addEventListener('click',async e=>{
   if(e.target.closest('#dataBtn')) openData();
   if(e.target.closest('#dlData')) downloadData();
+  if(e.target.closest('#withdrawBtn')){
+    const b=e.target.closest('#withdrawBtn'), note=document.getElementById('withdrawNote');
+    if(b.dataset.armed!=='1'){ b.dataset.armed='1'; b.textContent='Tap again to withdraw'; if(note) note.textContent='Your saved data comes off the server. This device keeps everything.'; return; }
+    b.disabled=true; if(note) note.textContent='Removing...';
+    const r=await withdrawConsent();
+    if(r.ok){ closeSheets(); renderAll(); toast('Consent withdrawn. Nothing of yours is on the server now.'); }
+    else { b.disabled=false; b.dataset.armed=''; b.textContent='Try again';
+      if(note) note.textContent='Still on the server: '+r.left.join(', ')+'. Your consent stays on record until it is gone, so you can try again.'; }
+  }
   if(e.target.closest('#wipeLocalOnly')){ eraseLocal(); location.reload(); return; }
   if(e.target.closest('#wipeData')){
     const b=e.target.closest('#wipeData'), note=document.getElementById('wipeNote');
@@ -409,22 +600,34 @@ document.addEventListener('click',async e=>{
 });
 
 /* ---------- the account panel ---------- */
+const HANDLE_ISSUES={
+  format:h=>'Your handle @'+h+' is kept on this device but not shared yet: handles are now 3 to 20 letters, numbers or underscores. You can pick a new one in the next update.',
+  taken:h=>'Someone else already has @'+h+', so it is not shared yet. You can pick another in the next update.',
+  refused:h=>'@'+h+' was refused, either because it is not allowed or because a handle can only change once a month.'
+};
 function cloudStatus(){
   if(!configured()) return 'No account needed. Everything stays on this device.';
-  if(!signedIn()) return 'No account yet. Make one and your week is backed up, works on a second device, and you can see the others.';
-  if(C.pending) return 'Signed in. Waiting for a connection to back up.';
+  if(!signedIn()) return 'No account yet. Back up and your week is safe, works on a second device, and you can see the others.';
+  if(!hasConsent()) return 'Signed in, but nothing is backed up until you agree to it.';
+  if(C.pending) return (isAnon()?'Backed up without an email.':'Signed in.')+' Waiting for a connection to back up.';
   if(C.error) return C.error;
+  if(isAnon()) return 'Backed up'+(C.lastPush?' '+ago(C.lastPush):'')+', but without an email. Add one so you can get it back on a new phone, and to see the others.';
   return 'Signed in as '+(C.session.email||'you')+(C.lastPush?', backed up '+ago(C.lastPush)+'.':'.');
 }
 function renderCloudPanel(){
   const el=document.getElementById('cloudPanel'); if(!el) return;
-  el.innerHTML=`<div class="ph"><h3>Account and sharing</h3>${signedIn()?`<button id="cloudSync">Sync now</button>`:''}</div>
-    <div class="note" style="margin:0 0 10px">${cloudStatus()}</div>
+  const h=String(S.profile.handle||'');
+  el.innerHTML=`<div class="ph"><h3>Account and sharing</h3>${signedIn()&&hasConsent()?`<button id="cloudSync">Sync now</button>`:''}</div>
+    <div class="note" style="margin:0 0 10px">${escHabit(cloudStatus())}</div>
+    ${claimed()&&C.handleIssue&&HANDLE_ISSUES[C.handleIssue]?`<div class="note" style="margin:-4px 0 10px">${escHabit(HANDLE_ISSUES[C.handleIssue](h))}</div>`:''}
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      ${!signedIn()&&configured()?`<button class="mini go" id="cloudSignIn">Create an account or sign in</button>`:''}
-      ${signedIn()?`<button class="mini quiet" id="cloudOut">Sign out</button>`:''}
+      ${!signedIn()&&configured()?`<button class="mini go" id="cloudSignIn">Back up or sign in</button>`:''}
+      ${signedIn()&&!hasConsent()?`<button class="mini go" id="cloudSignIn">Agree and back up</button>`:''}
+      ${isAnon()&&hasConsent()?`<button class="mini go" id="cloudSignIn">Add your email</button>`:''}
+      ${claimed()?`<button class="mini quiet" id="cloudOut">Sign out</button>`:''}
       <button class="mini" id="dataBtn">Your data</button>
       ${cloudReady()?'':`<button class="mini" id="cloudSetup">${configured()?'Connection':'Connect a project'}</button>`}</div>
+    ${cloudTarget()==='test'?`<div class="note">Connected to the test project. Open the app with ?cloud=live to go back to the real one.</div>`:''}
     ${!configured()?`<div class="note">This copy of the app has no project behind it, so there is nothing to sign in to. Everything stays on this device.</div>`:''}`;
 }
 function openCloudSetup(){
@@ -437,18 +640,115 @@ function openCloudSetup(){
     <button class="sheetcta" id="cSave">Save</button>`;
   openSheet('cloudSheet');
 }
-function openSignIn(){
-  document.getElementById('cloudBody').innerHTML=`
+
+/* ---------- consent and the code ----------
+   Two separate boxes, because GDPR wants health data consent given on its
+   own, not folded into agreeing to everything else. Neither is ticked for
+   the person. */
+const CONSENT_HEALTH='Back up my health information: weight and body measurements, food, sleep, training, check ins, pain notes and cycle if I track it. It is kept on Supabase\'s servers in Ireland, readable only by me, and I can withdraw this at any time in Your data, which deletes it from the server.';
+const CONSENT_TERMS='I have read what Gauntlet holds and where, and agree to it being used only to run the app for me. No advertising, no selling, no third party analytics.';
+function consentHTML(pre,on){
+  return `<label class="consent"><input type="checkbox" id="${pre}Health" ${on&&on.health?'checked':''}><span>${CONSENT_HEALTH}</span></label>
+    <label class="consent"><input type="checkbox" id="${pre}Terms" ${on&&on.terms?'checked':''}><span>${CONSENT_TERMS}</span></label>
+    <details class="consentmore"><summary>What Gauntlet holds, and where</summary><p>${heldText(true)}</p></details>`;
+}
+const consentTicked=pre=>{ const a=document.getElementById(pre+'Health'), b=document.getElementById(pre+'Terms'); return !!(a&&a.checked&&b&&b.checked); };
+const codeInputHTML=id=>`<input id="${id}" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456" aria-label="The code from the email" style="font-family:Archivo;font-size:22px;font-weight:700;letter-spacing:.3em;text-align:center">`;
+
+/* The sign-in sheet: a small state machine, so every screen it can show is
+   one of these and the tests can walk them all. */
+let SIGN={step:'email',email:'',mode:'email',fromOnb:false,agree:{health:false,terms:false}};
+function drawSignIn(){
+  const body=document.getElementById('cloudBody'); if(!body) return;
+  const needConsent=!hasConsent();
+  if(SIGN.step==='consent'){
+    body.innerHTML=`<div class="note" style="padding-top:0">Nothing has been backed up yet. Agree to it below and your week goes up straight away.</div>
+      ${consentHTML('sg',SIGN.agree)}
+      <button class="sheetcta" id="sgAgree" ${SIGN.agree.health&&SIGN.agree.terms?'':'disabled'}>Agree and back up</button>
+      <div class="note" id="sgResult" role="status"></div>`;
+    return;
+  }
+  if(SIGN.step==='code'){
+    body.innerHTML=`<div class="note" style="padding-top:0">We emailed a code to <b>${escHabit(SIGN.email)}</b>. Type it here. It runs out after a while, so a new one is a tap away.</div>
+      <div class="nf" style="margin-bottom:10px"><label>Code</label>${codeInputHTML('sgCode')}</div>
+      <button class="sheetcta" id="sgVerify">${SIGN.mode==='email_change'?'Add this email':'Sign in'}</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+        <button class="inlinebtn" id="sgResend">Send a new code</button>
+        <button class="inlinebtn" id="sgOther">Use a different email</button></div>
+      <div class="note" id="sgResult" role="status"></div>`;
+    return;
+  }
+  const claiming=isAnon();
+  body.innerHTML=`<div class="note" style="padding-top:0">${claiming
+      ? 'Add your email and this account becomes yours to keep: same account, nothing copied, and you can sign in on a new phone. We email you a code to type in here.'
+      : 'Type your email and we send you a 6-digit code to type in here. It makes the account if you are new, and signs you in if you are not. No password to set or forget.'}</div>
     <div class="nf" style="margin-bottom:10px"><label>Email</label>
-      <input id="cEmail" type="email" inputmode="email" placeholder="you@example.com" style="font-family:Archivo;font-size:15px;font-weight:600"></div>
-    <div class="note">Type your email and tap the link that arrives. That makes the account and signs you in, on this device and any other. There is no password to set and none to forget.</div>
-    <button class="sheetcta" id="cLink">Send me a link</button>
-    <div class="note" id="cResult" style="padding:0 0 8px"></div>`;
+      <input id="sgEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" value="${escHabit(SIGN.email)}" style="font-family:Archivo;font-size:15px;font-weight:600"></div>
+    ${needConsent? consentHTML('sg',SIGN.agree) : ''}
+    <button class="sheetcta" id="sgSend" ${(validEmail(SIGN.email)&&(!needConsent||(SIGN.agree.health&&SIGN.agree.terms)))?'':'disabled'}>Send me a code</button>
+    <div class="note" id="sgResult" role="status"></div>`;
+}
+function openSignIn(opts){
+  const o=opts||{};
+  SIGN={step: signedIn()&&!hasConsent()? 'consent' : 'email', email:'', mode:'email', fromOnb:!!o.fromOnb,
+    agree:{health:false,terms:false}};
+  drawSignIn();
   openSheet('cloudSheet');
+}
+function signNote(t){ const n=document.getElementById('sgResult'); if(n) n.textContent=t; }
+/* After a code is accepted or consent is given: consent first, then settings
+   and state up, then whatever is newer comes down. */
+async function afterSignIn(agree){
+  const ag=agree||SIGN.agree||{};
+  if(ag.health&&ag.terms&&!hasConsent()) recordConsent();
+  if(claimed()) await ensureProfile();
+  const pulled=await pullState();
+  let applied=!!(pulled&&pulled.applied);
+  if(!applied){ const ps=await pullSettings(); applied=!!(ps&&ps.applied); }
+  if(hasConsent()) await pushState();
+  if(claimed()) await loadRemote();
+  return applied;
+}
+async function finishSignIn(){
+  const applied=await afterSignIn();
+  const fromOnb=SIGN.fromOnb;
+  closeSheets();
+  if(fromOnb&&S.profile.onboarded){
+    const onb=document.getElementById('onb'); if(onb) onb.classList.remove('on');
+    go('today');
+  }
+  renderAll();
+  toast(applied? 'Signed in. Your week came down from the cloud.' : (hasConsent()? 'Signed in and backed up' : 'Signed in'));
+}
+document.addEventListener('input',e=>{
+  if(!document.getElementById('cloudSheet')||!e.target.closest('#cloudBody')) return;
+  if(e.target.id==='sgEmail'){ SIGN.email=e.target.value.trim(); }
+  if(e.target.id==='sgCode'){ const v=e.target.value.replace(/\D/g,''); if(v!==e.target.value) e.target.value=v; }
+  const send=document.getElementById('sgSend'); if(send) send.disabled=!(validEmail(SIGN.email)&&(hasConsent()||consentTicked('sg')));
+});
+document.addEventListener('change',e=>{
+  if(e.target.id!=='sgHealth'&&e.target.id!=='sgTerms') return;
+  SIGN.agree={health:!!(document.getElementById('sgHealth')||{}).checked, terms:!!(document.getElementById('sgTerms')||{}).checked};
+  const send=document.getElementById('sgSend'); if(send) send.disabled=!(validEmail(SIGN.email)&&consentTicked('sg'));
+  const agree=document.getElementById('sgAgree'); if(agree) agree.disabled=!consentTicked('sg');
+});
+async function sendFromSheet(){
+  signNote('Sending...');
+  const r=await sendCode(SIGN.email);
+  if(r.ok){ SIGN.mode=r.mode; SIGN.email=r.email; SIGN.step='code'; drawSignIn();
+    const c=document.getElementById('sgCode'); if(c) try{ c.focus(); }catch(e){}
+    return r; }
+  signNote(r.reason||'That did not work.');
+  if(r.exists&&r.mode==='email_change'){
+    const n=document.getElementById('sgResult');
+    if(n) n.insertAdjacentHTML('beforeend',' <button class="inlinebtn" id="sgUseExisting">Sign in to that account</button>');
+  }
+  return r;
 }
 document.addEventListener('click',async e=>{
   if(e.target.closest('#cloudSetup')) openCloudSetup();
   if(e.target.closest('#cloudSignIn')) openSignIn();
+  if(e.target.closest('#onbSignIn')) openSignIn({fromOnb:true});
   if(e.target.closest('#cloudOut')) signOut();
   if(e.target.closest('#cloudSync')){ const r=await pushState(); await loadRemote(); renderCloudPanel(); toast(r.ok?'Backed up':(r.reason||'Could not back up')); }
   if(e.target.closest('#cSave')){
@@ -456,11 +756,31 @@ document.addEventListener('click',async e=>{
     C.key=document.getElementById('cKey').value.trim();
     saveCloud(); closeSheets(); renderCloudPanel(); toast('Project saved. Sign in next.');
   }
-  if(e.target.closest('#cLink')){
-    const out=document.getElementById('cResult');
-    out.textContent='Sending...';
-    const r=await sendMagicLink(document.getElementById('cEmail').value.trim());
-    out.textContent = r.ok? 'Check your email and tap the link on this device.' : r.reason;
+  if(e.target.closest('#sgSend')){ if(!e.target.closest('#sgSend').disabled) await sendFromSheet(); return; }
+  if(e.target.closest('#sgResend')){ SIGN.step='email'; drawSignIn(); await sendFromSheet(); return; }
+  if(e.target.closest('#sgOther')){ SIGN.step='email'; drawSignIn(); return; }
+  if(e.target.closest('#sgUseExisting')){
+    /* This phone's account without an email is removed from the server, so no
+       health data is left behind that nobody can reach. What is on the phone
+       is kept, and the newer copy wins when the other account's week comes down. */
+    signNote('Tidying up this phone\'s old account...');
+    const er=await eraseRemote();
+    if(!er.done){ signNote('This phone\'s old account could not be removed yet ('+er.left.join(', ')+'). Try again when you have signal.'); return; }
+    C.session=null; saveCloud(); SIGN.mode='email'; await sendFromSheet(); return;
+  }
+  if(e.target.closest('#sgVerify')){
+    const b=e.target.closest('#sgVerify'); if(b.disabled) return;
+    b.disabled=true; signNote('Checking...');
+    const r=await verifyCode(SIGN.email,(document.getElementById('sgCode')||{}).value,SIGN.mode);
+    if(!r.ok){ b.disabled=false; signNote(r.reason); return; }
+    await finishSignIn(); return;
+  }
+  if(e.target.closest('#sgAgree')){
+    const b=e.target.closest('#sgAgree'); if(b.disabled) return;
+    recordConsent(); b.disabled=true; signNote('Backing up...');
+    const r=await pushState();
+    if(claimed()) await ensureProfile();
+    closeSheets(); renderAll(); toast(r.ok?'Backed up':(r.reason||'Could not back up yet. It will try again.'));
   }
 });
 const _renderProgressCloud=renderProgress;
@@ -479,9 +799,13 @@ renderProgress=function(){
   if(onb&&onb.classList.contains('on')&&typeof onbRender==='function') onbRender();
   if(readAuthHash()){ await fetchUser(); }
   if(signedIn()){
-    await ensureSession(); await ensureProfile();
-    const p=await pullState(); if(p&&p.applied) toast('Pulled your week down');
-    await loadRemote(); renderAll();
+    await ensureSession();
+    if(claimed()) await ensureProfile();
+    const p=await pullState();
+    const ps=(p&&p.applied)? null : await pullSettings();
+    if((p&&p.applied)||(ps&&ps.applied)) toast('Pulled your week down');
+    if(claimed()) await loadRemote();
+    renderAll();
   }
 })();
 Object.assign(window.__G,{renderFeed,renderPeople,logSession,renderProgress,exportPayload,downloadData,eraseEverything,eraseRemote,eraseLocal,ERASE_TABLES,openData,stateFromExport,restoreSummary,applyRestore,undoRestore,RESTORE_BACKUP,cardHTML:typeof cardHTML==='function'?cardHTML:undefined});
@@ -492,7 +816,10 @@ Object.assign(window.__G,{renderFeed,renderPeople,logSession,renderProgress,expo
 function setBuildConfig(url,key){ CLOUD_CONFIG.url=url; CLOUD_CONFIG.key=key;
   C.url=url; C.key=key; C.fromConfig=true; saveCloud(); renderCloudPanel(); }
 window.__CLOUD={get C(){return C},set C(v){C=v}, CLOUD_CONFIG, cloudReady, setBuildConfig,get REMOTE(){return REMOTE},set REMOTE(v){REMOTE=v},
-  loadCloud,saveCloud,configured,signedIn,myId,base,authHeaders,sendMagicLink,readAuthHash,fetchUser,
+  loadCloud,saveCloud,configured,signedIn,isAnon,claimed,myId,base,authHeaders,readAuthHash,fetchUser,
+  CLOUD_PROJECTS,cloudTarget,cloudTargetFromUrl,TERMS_VERSION,hasConsent,recordConsent,validEmail,authReason,authCall,takeSession,
+  signInAnonymously,sendCode,verifyCode,settingsRow,pushSettings,pullSettings,validBirthYear,HANDLE_RE,withdrawConsent,
+  openSignIn,drawSignIn,afterSignIn,get SIGN(){return SIGN},set SIGN(v){SIGN=v},consentHTML,CONSENT_HEALTH,CONSENT_TERMS,heldText,
   refreshSession,ensureSession,signOut,api,upsert,pushState,pullState,loadRemote,publishPost,recordTry,
   toggleRemoteFollow,ensureProfile,cloudStatus,renderCloudPanel,personFor,CLOUD_KEY,
   exportPayload,downloadData,eraseEverything,eraseRemote,eraseLocal,ERASE_TABLES,openData,stateFromExport,restoreSummary,applyRestore,undoRestore,RESTORE_BACKUP};

@@ -11,9 +11,11 @@ function onbRender(){
   if(step===0){
     b.innerHTML=`<h2>Pick a handle.</h2><p class="lead">That is the whole sign up. No email, no password, nothing to verify.</p>
       <div class="handle"><span>@</span><input id="handleIn" value="${onbDraft.handle}" placeholder="yourname" autocomplete="off" spellcheck="false"></div>
-      <p class="lead" style="margin-top:14px">Two characters or more. It is the name that gets the credit when someone tries your session.</p>`;
+      <p class="lead" style="margin-top:14px">3 to 20 letters, numbers or underscores. It is the name that gets the credit when someone tries your session.</p>
+      ${cloudAvailable()?`<button class="inlinebtn" id="onbSignIn" style="margin-top:6px">Already use Gauntlet on another phone? Sign in</button>`:''}`;
     const inp=$('handleIn');
-    inp.addEventListener('input',()=>{ onbDraft.handle=inp.value.replace(/[^a-z0-9._]/gi,'').toLowerCase(); inp.value=onbDraft.handle; onbCta(); });
+    /* the same rule the database enforces (migration 0002): a dot or a space becomes an underscore */
+    inp.addEventListener('input',()=>{ onbDraft.handle=inp.value.replace(/[.\s]/g,'_').replace(/[^a-z0-9_]/gi,'').toLowerCase().slice(0,20); inp.value=onbDraft.handle; onbCta(); });
   }
   if(step===1){
     const d=AIM_DEFAULTS[onbDraft.aim]||AIM_DEFAULTS.lose;
@@ -191,21 +193,44 @@ function onbRender(){
     return;
   }
   if(step===5){
-    b.innerHTML=`<h2>Keep it safe?</h2><p class="lead">An account backs your week up, puts it on any device you sign in on, and lets you see what the others are doing. No password: you get a link by email.</p>
-      <div class="nf" style="margin-bottom:10px"><label>Email</label>
-        <input id="onbEmail" type="email" inputmode="email" placeholder="you@example.com" value="${onbDraft.email||''}" style="font-family:Archivo;font-size:15px;font-weight:600"></div>
-      <div class="note" id="onbEmailNote">You can skip this and do it later from Progress. Nothing is lost either way.</div>`;
-    const inp=$('onbEmail');
-    if(inp) inp.addEventListener('input',()=>{ onbDraft.email=inp.value.trim(); onbCta(); });
+    const CL=window.__CLOUD;
+    if(!onbDraft.agree) onbDraft.agree={health:false,terms:false};
+    if(CL&&CL.signedIn()&&CL.hasConsent()){
+      b.innerHTML=`<h2>Already backed up.</h2><p class="lead">You signed in earlier, so everything you set up here is backed up already.</p>`;
+      onbDraft.email=''; onbDraft.codeSent=false;
+    } else if(onbDraft.codeSent){
+      b.innerHTML=`<h2>Type the code.</h2><p class="lead">We emailed a 6-digit code to <b>${escHabit(onbDraft.email)}</b>. Type it here and you are signed in on this phone.</p>
+        <div class="nf" style="margin-bottom:10px"><label>Code</label><input id="onbCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="10" placeholder="123456" value="${escHabit(onbDraft.code||'')}" aria-label="The code from the email" style="font-family:Archivo;font-size:22px;font-weight:700;letter-spacing:.3em;text-align:center"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="inlinebtn" id="onbResend">Send a new code</button><button class="inlinebtn" id="onbOtherEmail">Use a different email</button></div>
+        <div class="note" id="onbEmailNote" role="status">It runs out after a while. You can also skip this and do it later from Progress.</div>`;
+      const ci=$('onbCode');
+      if(ci) ci.addEventListener('input',()=>{ onbDraft.code=ci.value.replace(/\D/g,''); ci.value=onbDraft.code; onbCta(); });
+    } else {
+      b.innerHTML=`<h2>Keep it safe?</h2><p class="lead">Back your week up and it is safe if you lose this phone, it works on any phone you sign in on, and you can see what the others are doing. No password: we email you a code to type in.</p>
+        <div class="nf" style="margin-bottom:10px"><label>Email</label>
+          <input id="onbEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" value="${escHabit(onbDraft.email||'')}" style="font-family:Archivo;font-size:15px;font-weight:600"></div>
+        ${CL&&CL.consentHTML? CL.consentHTML('onb',onbDraft.agree) : ''}
+        <div class="note" id="onbEmailNote" role="status">You can skip this and do it later from Progress. Nothing is lost either way.</div>`;
+      const inp=$('onbEmail');
+      if(inp) inp.addEventListener('input',()=>{ onbDraft.email=inp.value.trim(); onbCta(); });
+      b.querySelectorAll('#onbHealth,#onbTerms').forEach(x=>x.addEventListener('change',()=>{
+        onbDraft.agree={health:!!($('onbHealth')||{}).checked,terms:!!($('onbTerms')||{}).checked}; onbCta(); }));
+    }
   }
   $('onbNext').textContent = step===stepCount()-1
-    ? (step===5? (onbDraft.email? 'Send me a link' : 'Skip for now') : 'Build my week')
+    ? (step===5? onbAccountLabel() : 'Build my week')
     : (step===0? 'Claim it' : (step===3? 'Looks good' : 'Next'));
   onbCta();
 }
+const onbAccountLabel=()=>onbDraft.codeSent? 'Check code' : (onbDraft.email? 'Send me a code' : 'Skip for now');
 function onbCta(){
-  $('onbNext').disabled = (step===0 && onbDraft.handle.length<2) || tooYoung(onbDraft.age);
-  if(step===5) $('onbNext').textContent = onbDraft.email? 'Send me a link' : 'Skip for now';
+  $('onbNext').disabled = (step===0 && onbDraft.handle.length<3) || tooYoung(onbDraft.age);
+  if(step===5&&canHaveAccount({age:onbDraft.age})){
+    $('onbNext').textContent = onbAccountLabel();
+    const CL=window.__CLOUD, ag=onbDraft.agree||{};
+    if(onbDraft.codeSent) $('onbNext').disabled = !/^\d{6,10}$/.test(onbDraft.code||'');
+    else if(onbDraft.email) $('onbNext').disabled = !(CL&&CL.validEmail(onbDraft.email)&&ag.health&&ag.terms);
+  }
   if(step===2) $('onbNext').disabled = (!onbDraft.sex&&!isTeen({age:onbDraft.age})) || tooYoung(onbDraft.age) || (!isTeen({age:onbDraft.age})&&!onbDraft.age);
   if(step===1) $('onbNext').disabled = (onbDraft.liftDays+onbDraft.cardioDays)>6
     || !(onbDraft.kit&&onbDraft.kit.length);
@@ -700,24 +725,41 @@ document.addEventListener('click',e=>{
   const oe=e.target.closest('[data-onbedit]');
   if(oe){ openTplEdit(oe.dataset.onbedit); }
   if(e.target.closest('#tempoHelp')) openTempoHelp();
+  if(e.target.closest('#onbOtherEmail')){ onbDraft.codeSent=false; onbDraft.code=''; onbRender(); }
+  if(e.target.closest('#onbResend')&&window.__CLOUD){
+    const note=$('onbEmailNote'); if(note) note.textContent='Sending...';
+    window.__CLOUD.sendCode(onbDraft.email).then(r=>{ const n=$('onbEmailNote'); if(n) n.textContent=r.ok? 'A new code is on its way.' : r.reason; });
+  }
 });
 $('onbNext').addEventListener('click',async()=>{
   if($('onbNext').disabled) return;
   if(step===4&&cloudAvailable()){ finishOnboarding(true); step=5; $('onb').classList.add('on'); onbRender(); return; }
   if(step<stepCount()-1){ step++; onbRender(); return; }
   if(step===5){
-    if(onbDraft.email&&window.__CLOUD){
-      const note=$('onbEmailNote'); if(note) note.textContent='Sending...';
-      const r=await window.__CLOUD.sendMagicLink(onbDraft.email);
-      if(note) note.textContent = r.ok? 'Check your email and tap the link on this device. You can start training in the meantime.' : r.reason;
-      if(r.ok){ setTimeout(()=>{ $('onb').classList.remove('on'); go('today'); },1400); return; }
+    const CL=window.__CLOUD, note=$('onbEmailNote');
+    if(onbDraft.email&&CL&&canHaveAccount({age:onbDraft.age})){
+      $('onbNext').disabled=true;
+      if(!onbDraft.codeSent){
+        if(note) note.textContent='Sending...';
+        const r=await CL.sendCode(onbDraft.email);
+        if(r.ok){ onbDraft.codeSent=true; onbDraft.mode=r.mode; onbDraft.code=''; onbRender(); return; }
+        if(note) note.textContent=r.reason; onbCta(); return;
+      }
+      if(note) note.textContent='Checking...';
+      const r=await CL.verifyCode(onbDraft.email,onbDraft.code,onbDraft.mode);
+      if(!r.ok){ if(note) note.textContent=r.reason; onbCta(); return; }
+      await CL.afterSignIn(onbDraft.agree);
+      $('onb').classList.remove('on'); go('today'); renderAll();
+      toast(CL.hasConsent()? 'Signed in and backed up' : 'Signed in');
       return;
     }
     $('onb').classList.remove('on'); go('today'); return;
   }
   finishOnboarding();
 });
-$('onbBack').addEventListener('click',()=>{ if(step>0){ step--; onbRender(); } });
+$('onbBack').addEventListener('click',()=>{
+  if(step===5&&onbDraft.codeSent){ onbDraft.codeSent=false; onbDraft.code=''; onbRender(); return; }
+  if(step>0){ step--; onbRender(); } });
 function finishOnboarding(keepOpen){
   if(isTeen({age:onbDraft.age})){ if(onbDraft.aim==='lose') onbDraft.aim='hold'; onbDraft.goal=null; onbDraft.bf=null; }
   S.profile=Object.assign({},S.profile,{style:onbDraft.style||'gym',hyroxDays:onbDraft.style==='hybrid'? hyroxMixDraft() : null,split:onbDraft.split||'auto',handle:onbDraft.handle,aim:onbDraft.aim,checkinDay:onbDraft.checkinDay,

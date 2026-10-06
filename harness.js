@@ -14,7 +14,7 @@ function boot(opts) {
   const dom = new JSDOM(html, {
     runScripts: 'dangerously',
     pretendToBeVisual: true,
-    url: 'https://example.test/',
+    url: o.url || 'https://example.test/',
     beforeParse(w) {
       w.fetch = o.fetch || (() => Promise.reject(new Error('offline in test')));
       w.navigator.vibrate = () => {};

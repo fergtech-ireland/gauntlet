@@ -546,17 +546,16 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .ctarow .cta{flex:1}
 .weeksect .whylist{display:flex;flex-direction:column;gap:6px;margin-top:8px}
 .weeksect .whylist .note{margin:0}
-.daycards{padding:0 14px}
-.daycard{border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:var(--surface);overflow:hidden}
-.daycard.today{border-color:var(--ink)}
-.dch{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px;min-height:56px}
-.dcd{width:40px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);flex:0 0 auto}
-.daycard.today .dcd{color:var(--ink)}
+.daycards{margin:0 12px;padding:0;border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.daycard{margin-bottom:8px;border:0;border-radius:0;margin:0;background:transparent;overflow:visible}
+.daycard.today{border-color:var(--line)}
+.dch{width:100%;flex:1;min-width:0;display:flex;align-items:center;gap:10px;text-align:left;padding:12px 4px 12px 14px;min-height:60px}
+.dcd{flex:0 0 auto;width:36px;font-size:13px;font-weight:800;letter-spacing:0;text-transform:none;color:var(--mute)}
+.daycard.today .dcd{color:var(--amber-text)}
 .dct{flex:1;min-width:0;display:flex;flex-direction:column}
-.dct b{font-size:14.5px}
-.dct>span{font-size:12px;color:var(--mute);margin-top:2px}
-.dcv{width:28px;height:28px;border-radius:8px;background:var(--track);display:grid;place-items:center;font-weight:700;color:var(--mute);flex:0 0 auto}
-.dcb{padding:0 12px 12px}
+.dct b{font-size:15px;font-weight:700}
+.dct>span{margin-top:2px;font-size:12.5px;color:var(--mute)}
+.dcb{padding:2px 14px 14px}
 .dmoves{margin-bottom:8px}
 .dmove{display:flex;align-items:center;gap:10px;padding:4px 0;border-top:1px solid var(--line);font-size:13.5px}
 .dmn{flex:1;font-weight:600;min-width:0}
@@ -728,18 +727,17 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .setrow{display:flex;gap:6px;margin-top:8px}
 .setrow input{flex:1;border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-weight:700;font-size:13.5px;outline:none;min-width:0}
 .gym.on{display:flex}
-.gym{position:fixed;inset:0;z-index:75;background:var(--surface);max-width:460px;margin:0 auto;display:none;flex-direction:column}
-.gymbar{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
-.gymbar .t{flex:1;min-width:0}
-.gymbar .t .n{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gymbar .t .s{font-size:11.5px;color:var(--mute);margin-top:1px}
-.gymbar .fin{height:32px;padding:0 14px;border-radius:8px;background:var(--cta);color:var(--cta-ink);font-weight:700;font-size:12.5px}
+.gym{position:fixed;inset:0;z-index:75;max-width:460px;margin:0 auto;display:none;flex-direction:column;background:var(--bg)}
+.gymbar{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:8px;padding:8px 12px 0}
+.gymbar .t{min-width:0;text-align:center}
+.gymbar .t .n{font-weight:700;font-size:13px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gymbar .fin{height:36px;padding:0 14px;border-radius:8px;background:var(--cta);color:var(--cta-ink);font-weight:800;font-size:14px}
 .rest{display:none;align-items:center;gap:10px;padding:10px 14px;background:var(--ink);color:var(--on-ink)}
 .rest.on{display:flex}
 .rest .n{font-family:var(--font-num);font-weight:700;font-size:20px;letter-spacing:0;min-width:56px}
 .rest .l{flex:1;font-size:12.5px;opacity:.75}
 .rest button{height:28px;padding:0 10px;border-radius:6px;background:color-mix(in srgb,var(--on-ink) 16%,transparent);font-weight:700;font-size:12px}
-.gymbody{flex:1;overflow:auto;padding-bottom:12px}
+.gymbody{flex:1;overflow:auto;padding-bottom:12px;padding-top:10px}
 .exc{border-bottom:1px solid var(--line);padding:12px 14px}
 .exh{display:flex;align-items:center;gap:8px}
 .exh .n{font-weight:700;font-size:15px;flex:1}
@@ -747,7 +745,7 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .exc .cue{font-size:11.5px;color:var(--mute);margin-top:2px}
 .exc .note{font-size:12px;color:var(--amber-text);margin-top:6px}
 .sethead,.setline{display:grid;grid-template-columns:34px 1fr 62px 62px 34px;gap:6px;align-items:center}
-.sethead{margin-top:10px;font-size:10px;font-weight:700;color:var(--mute);letter-spacing:.1em;text-transform:uppercase}
+.sethead{margin-top:10px;font-size:10px;font-weight:700;color:var(--mute);letter-spacing:.1em;text-transform:uppercase;grid-template-columns:24px 1fr 1fr 52px;gap:8px}
 
 .setline .sn.warm{color:var(--amber-text)}
 .setline .prev{font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1059,7 +1057,7 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
    the header title) so the screens still to come keep their look until their
    own build. */
 header.top .pagetitle{display:none;flex-direction:column;justify-content:center;min-width:0}
-body[data-screen="today"] header.top .pagetitle{display:flex}
+body[data-screen="today"] header.top .pagetitle.on-today-block{display:flex}
 body[data-screen="today"] header.top .brand{display:none}
 body[data-screen="today"] header.top{border-bottom:0;height:62px}
 .pagetitle .pd{font-size:12.5px;font-weight:600;color:var(--mute);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1241,6 +1239,122 @@ button.emac .en:after{content:" ›"}
 .esaved .slab{display:block}
 .efoot{display:flex;justify-content:center;margin-top:8px}
 .efoot .inlinebtn{font-size:12.5px;min-height:44px}
+
+/* ---------- build 58: Plan, You and the session player ----------
+   design/redesign/Final-Plan, Final-You and Final-Train. */
+body[data-screen="plan"] header.top .plantitle,body[data-screen="progress"] header.top .youtitle{display:flex}
+body[data-screen="plan"] header.top .on-plan,body[data-screen="progress"] header.top .on-progress{display:grid}
+body[data-screen="plan"] header.top .brand,body[data-screen="progress"] header.top .brand{display:none}
+body[data-screen="plan"] header.top,body[data-screen="progress"] header.top{border-bottom:0;height:62px}
+header.top .on-plan,header.top .on-progress{display:none}
+.toplink{min-height:44px;padding:0 4px;font-weight:700;font-size:14px;color:var(--green-text);place-items:center;white-space:nowrap}
+/* Plan */
+#planView .sect{padding:0 14px}
+#planView .weeksect{border-bottom:0;padding-top:4px;padding-bottom:8px}
+#planView .weeksect h2{margin:0;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+#planView .wsum{margin:2px 0 0;font-size:13.5px;color:var(--sub)}
+#planView .weeksect.weekwhy{padding-top:10px}
+#planView .weeksect.weekwhy .note{margin:6px 0 0}
+.daycard+.daycard{border-top:1px solid var(--line)}
+.daycard.today .dcrow{background:var(--amber-tint)}
+.dcrow{display:flex;align-items:center;gap:6px;padding-right:12px}
+.daycard.today .dct>span{color:var(--sub)}
+.dct>span.flag{color:var(--amber-text);font-weight:600}
+.dchg{flex:0 0 auto;height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:12px;color:var(--ink);position:relative}
+.dchg:after{content:"";position:absolute;left:-4px;right:-4px;top:-6px;bottom:-6px}
+.dtick{flex:0 0 auto;width:24px;height:24px;border-radius:999px;background:var(--green);color:var(--cta-ink);display:grid;place-items:center;margin:0 4px}
+.daycard.today .dcb{background:var(--amber-tint)}
+.daycard.today .dcb .dact{background:var(--surface)}
+.ptiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 12px 4px}
+.ptile{display:flex;flex-direction:column;gap:2px;text-align:left;padding:12px;border-radius:12px;background:var(--surface);border:1px solid var(--line);min-height:44px}
+.ptile b{font-size:14px}
+.ptile span{font-size:12px;color:var(--mute)}
+#planView .psettings{margin:8px 12px 0;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+#planView .psettings .dlweek{border-top:1px solid var(--line);margin-top:10px}
+#planView .psettings .note{margin:8px 0 0}
+/* You */
+body[data-screen="progress"] #profHandle{display:none}
+#dash #yTop{display:flex;flex-direction:column;gap:10px;margin:0 12px 10px}
+.ycard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+#dash>.ycard{margin:10px 12px}
+.ych{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.ych b{font-size:16px;font-weight:700}
+.ych>span{font-size:12.5px;color:var(--mute);text-align:right}
+.ylink{font-weight:700;font-size:13px;color:var(--green-text);min-height:44px;margin:-14px 0}
+.ybig{margin-top:2px;font-size:15px;font-weight:600;color:var(--mute)}
+.ybig .num{font-family:var(--font-num);font-weight:700;font-size:36px;line-height:1.05;color:var(--ink)}
+.ybar{height:10px;border-radius:5px;background:var(--track);margin-top:8px;overflow:hidden}
+.ybar i{display:block;height:100%;border-radius:5px;background:var(--green)}
+.yends{display:flex;justify-content:space-between;font-size:12px;color:var(--mute);margin-top:5px}
+.ynote{margin:10px 0 0;font-size:12.5px;color:var(--mute);line-height:1.45}
+#yWeight .mini{margin-top:10px}
+.ygrid{display:grid;grid-template-columns:44px repeat(7,minmax(0,1fr));gap:6px;align-items:center;margin-top:12px;font-size:12px}
+.ygrid .yd{text-align:center;color:var(--mute);font-weight:700}
+.ygrid .yd.now{color:var(--ink);font-weight:800}
+.ygrid .yl{font-weight:700;color:var(--mute)}
+.yc{display:block;height:22px;border-radius:4px;background:var(--track)}
+.yc.now{outline:2px solid var(--ink);outline-offset:1px}
+.yc.r-better{background:var(--green)}.yc.r-usual{background:var(--usual)}.yc.r-lower{background:var(--amber)}
+.yc.f-ok{background:var(--green)}.yc.f-some{background:var(--green-tint);border:1.5px solid var(--green)}
+.yc.f-over{background:var(--amber)}.yc.f-past{background:var(--coral)}
+.yc.t-done{background:var(--ink)}.yc.t-due{background:transparent;border:1.5px dashed var(--mute)}
+.ykey{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:10px;font-size:11.5px;color:var(--mute);font-weight:600}
+.ykey span{display:inline-flex;align-items:center;gap:5px}
+.ykey .yc{width:12px;height:12px;border-radius:3px}
+.ybars{display:flex;gap:3px;align-items:flex-end;height:56px;margin-top:10px}
+.ybars i{flex:1;border-radius:2px;background:var(--track);height:8%}
+.ybars i.b-better{height:90%;background:var(--green)}
+.ybars i.b-usual{height:58%;background:var(--usual)}
+.ybars i.b-lower{height:28%;background:var(--amber)}
+.ythemes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.ytheme{padding:8px;border-radius:10px;border:1px solid var(--line);text-align:center;min-height:44px}
+.ytheme.on{border:2px solid var(--green);padding:7px}
+.ytheme b{display:block;font-size:13px;margin-top:6px}
+.ytheme .sw{display:block;height:40px;border-radius:6px;position:relative;overflow:hidden}
+.ytheme .sw i{position:absolute;left:8px;top:7px;width:14px;height:14px;border-radius:50%;box-sizing:border-box}
+.ytheme .sw-day{background:#F6F5F1;border:1px solid #E6E4DE}.ytheme .sw-day i{border:3px solid #17844F}
+.ytheme .sw-night{background:#0F1211;border:1px solid #262B29}.ytheme .sw-night i{border:3px solid #3DD68C}
+.ytheme .sw-auto{background:linear-gradient(90deg,#F6F5F1 50%,#0F1211 50%);border:1px solid #E6E4DE}.ytheme .sw-auto i{display:none}
+/* Session player */
+.gymtop{background:var(--surface);border-bottom:1px solid var(--line);padding-bottom:8px}
+.gymbar .t .s{font-family:var(--font-num);font-weight:700;font-size:22px;line-height:1;color:var(--ink);margin-top:2px}
+.gymsegs{display:grid;gap:2px;margin:8px 14px 0}
+.gymsegs:empty{display:none}
+.gymsegs i{height:4px;border-radius:2px;background:var(--line)}
+.gymsegs i.done{background:var(--green)}
+.gymsegs i.now{background:var(--ink)}
+.gymbody>.exc{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin:0 12px 10px}
+.gymbody>.focusnote,.gymbody>.deloadbanner,.gymbody>.dlbanner,.gymbody>.grouphead,.gymbody>.runcard{margin-left:12px;margin-right:12px}
+.setline.now{background:var(--green-tint);border-radius:10px;margin-left:-6px;margin-right:-6px;padding-left:6px;padding-right:6px}
+.gnow{margin:0 12px 10px;padding:12px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.ghead{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center}
+.gthumb{position:relative;height:68px;border-radius:10px;background:var(--hero);display:grid;place-items:center}
+.gplay{width:36px;height:36px;border-radius:50%;background:var(--mint);color:var(--mint-ink);display:grid;place-items:center}
+.gsm{position:absolute;right:6px;bottom:3px;font-size:10px;font-weight:700;color:var(--hero-sub)}
+.gk{font-size:12px;font-weight:800;color:var(--mute);letter-spacing:.02em}
+.gn{font-weight:800;font-size:19px;line-height:1.15}
+.grx{font-size:12px;color:var(--mute);font-weight:600;margin-top:3px}
+.grx.up{color:var(--green-text)}
+.gsteps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.gstep{border:1px solid var(--line);border-radius:12px;padding:8px 8px 6px;background:var(--bg)}
+.gl{font-size:11px;font-weight:800;color:var(--mute)}
+.gsrow{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;align-items:center}
+.gsb{width:44px;height:44px;border-radius:50%;background:var(--track);font-size:22px;font-weight:700;color:var(--ink)}
+.gsrow input{width:100%;min-width:0;text-align:center;font-family:var(--font-num);font-weight:700;font-size:36px;line-height:1;background:transparent;border:0;outline:none;padding:0;-moz-appearance:textfield}
+.gsrow input::-webkit-outer-spin-button,.gsrow input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+@media (max-width:350px){ .gsrow{grid-template-columns:36px minmax(0,1fr) 36px} .gsb{width:36px;height:36px} .gsrow input{font-size:30px} .ghead{grid-template-columns:72px 1fr} }
+.gnow .cta{width:100%;margin-top:8px;height:52px;font-size:16px;font-weight:800}
+.gnow.grun .gbig,.gnow .gbig{font-family:var(--font-num);font-weight:700;font-size:44px;line-height:1.05;margin-top:4px}
+.gnow.alldone .gn{margin-top:2px}
+.afternote{margin:4px 12px 12px;padding:10px 14px;border-radius:12px;background:var(--green-tint);font-size:13px;color:var(--ink)}
+.addex{margin:0 12px}
+#restBar{background:var(--hero);color:var(--hero-ink);padding:10px 14px;gap:12px}
+#restBar .rb{flex:1;min-width:0}
+#restBar .l{font-size:11px;font-weight:800;color:var(--hero-sub);opacity:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#restBar .rtrack{height:5px;border-radius:3px;background:var(--hero-chip);margin-top:5px;overflow:hidden}
+#restBar .rtrack i{display:block;height:100%;width:100%;background:var(--mint);border-radius:3px;transition:width 1s linear}
+#restBar .n{font-size:24px;min-width:0;color:var(--hero-ink)}
+#restBar button{height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--hero-chip);background:none;color:var(--hero-ink);font-size:13px}
 </style>
 </head>
 <body data-screen="today">
@@ -1257,15 +1371,19 @@ button.emac .en:after{content:" ›"}
     <div class="pagetitle on-today-block"><div class="pd" id="todayDate"></div><h1>Today</h1></div>
     <!-- Build 57: Eat has the same kind of title, with the day it is showing. -->
     <div class="pagetitle eattitle"><div class="pd" id="eatDate"></div><h1>Eat</h1></div>
+    <!-- Build 58: Plan and You get the same kind of title. -->
+    <div class="pagetitle plantitle"><div class="pd" id="planDate"></div><h1>Plan</h1></div>
+    <div class="pagetitle youtitle"><div class="pd" id="youHandle"></div><h1>You</h1></div>
     <div class="spacer"></div>
     <!-- Build 55: on Today the header carries the sun and moon (Day or Night) and
          Friends, which moved out of the bottom nav. Find people stays on Friends. -->
-    <button class="iconbtn on-today on-eat" id="themeBtn" aria-label="Switch to night">
+    <button class="iconbtn on-today on-eat on-plan" id="themeBtn" aria-label="Switch to night">
       <svg class="moon" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
       <svg class="sun" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button>
     <button class="iconbtn on-today ring" id="friendsBtn" data-go="feed" aria-label="Friends">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="9" cy="9" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 6.5a3 3 0 1 1 0 5.5M17 14a5 5 0 0 1 4 6"/></svg></button>
     <button class="iconbtn on-today" id="avatarBtn" data-go="progress" aria-label="You: your profile and settings"><span class="av" id="avatarLetter">Y</span></button>
+    <button class="toplink on-progress" data-ytab="plan">Goals and numbers</button>
     <button class="iconbtn on-feed" id="findBtn" aria-label="Find people">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="8" r="4"/><path d="M3 20a7 7 0 0 1 12-4.9"/><path d="M17 15v6M14 18h6"/></svg></button>
   </header>
@@ -1451,15 +1569,22 @@ button.emac .en:after{content:" ›"}
 </div>
 
 <div class="gym" id="gym">
-  <div class="gymbar">
-    <button class="iconbtn" id="gymClose" aria-label="Pause and close">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-    <div class="t"><div class="n" id="gymName">Workout</div><div class="s" id="gymSub">0:00</div></div>
-    <button class="fin" id="gymFinish">Finish</button>
+  <!-- Build 58 (Final-Train): minimise, the session name over a live clock,
+       Finish; a thin bar with a segment for every set and run; the rest clock
+       pinned at the bottom with Skip. -->
+  <div class="gymtop">
+    <div class="gymbar">
+      <button class="iconbtn" id="gymClose" aria-label="Pause and close">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="t"><div class="n" id="gymName">Workout</div><div class="s" id="gymSub">0:00</div></div>
+      <button class="fin" id="gymFinish">Finish</button>
+    </div>
+    <div class="gymsegs" id="gymSegs" aria-hidden="true"></div>
   </div>
-  <div class="rest" id="restBar"><div class="n" id="restNum">0:00</div><div class="l" id="restLbl">Rest</div>
-    <button id="restPlus">+15s</button><button id="restSkip">Skip</button></div>
   <div class="gymbody" id="gymBody"></div>
+  <div class="rest" id="restBar"><div class="rb"><div class="l" id="restLbl">Rest</div><div class="rtrack"><i id="restFill"></i></div></div>
+    <div class="n" id="restNum">0:00</div>
+    <button id="restPlus">+15s</button><button id="restSkip">Skip</button></div>
   <div class="gymfoot" id="gymFoot"></div>
 </div>
 
@@ -1526,7 +1651,7 @@ button.emac .en:after{content:" ›"}
 const HUE={run:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},workout:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},
   fast:{deep:'var(--amber-text)',tint:'var(--amber-tint)'},meal:{deep:'var(--coral-text)',tint:'var(--coral-tint)'},any:{deep:'var(--ink)',tint:'var(--track)'},
   walk:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},rest:{deep:'var(--mute)',tint:'var(--track)'},checkin:{deep:'var(--green-text)',tint:'var(--green-tint)'}};
-const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='57';
+const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='58';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -3446,8 +3571,11 @@ function openSleep(){
    weeks: never a universal score, and never a single number pretending to be
    more precise than it is. Better, about usual, or lower, with what is driving
    it. */
-function readiness(){
-  const k=todayKey(), y=addDays(k,-1);
+function readiness(at){
+  /* at: a day key, for the history on You (build 58); none means today. The
+     baseline is always the 28 days before that day, so a past day is judged
+     against its own usual at the time, not today's. */
+  const k=at||todayKey(), y=addDays(k,-1);
   const hist=(get,skip)=>{ const out=[]; for(let i=1;i<=28;i++){ const kk=addDays(k,-i); if(skip&&skip===kk) continue;
     const v=get(S.days[kk]); if(typeof v==='number') out.push(v); } return out; };
   const stat=a=>{ const m=a.reduce((x,v)=>x+v,0)/a.length; return {m,sd:Math.sqrt(a.reduce((x,v)=>x+(v-m)*(v-m),0)/a.length)}; };
@@ -4249,14 +4377,35 @@ function dayActionsHTML(n,d){
       <button class="dact" data-swap="${n}">Change day</button>
       ${startable? `<button class="dact" data-restday="${n}">Cannot do it</button>`:''}</div>`;
 }
+/* Build 58: the week as day cards (Final-Plan). Each day is a row in one
+   card: the day, what it is, and on the right a done tick or Change, which
+   opens the same Change this day sheet as before. Tapping the row still opens
+   the day in place with the whole workout and every action (Start, Edit,
+   Change day, Cannot do it), so nothing moved further away. Today sits on the
+   amber tint, and a day with something left out says so in amber. */
 function dayCard(n,d,isToday,open){
-  return `<div class="daycard ${isToday?'today':''} ${open?'open':''}">
+  const done=dayDone(n)&&!!d.type, flag=!!(d.exclude&&d.exclude.length);
+  const sub=[isToday? 'Today' : '', daySub(d),
+    flag? 'minus '+d.exclude.length+' movement'+(d.exclude.length>1?'s':'') : '',
+    d.deload? 'easy week' : (d.setDelta? 'one set lighter' : '')].filter(Boolean).join(' · ');
+  return `<div class="daycard ${isToday?'today':''} ${open?'open':''} ${done?'done':''}">
+    <div class="dcrow">
     <button class="dch" data-planopen="${n}" aria-expanded="${open?'true':'false'}">
       <span class="dcd">${DAYS[n]}</span>
-      <span class="dct"><b>${dayLabel(d)}${isToday?' <span class="cichip">today</span>':''}${d.checkin?' <span class="cichip">check in</span>':''}</b>
-        <span>${daySub(d)}${d.exclude&&d.exclude.length?' · minus '+d.exclude.length+' movement'+(d.exclude.length>1?'s':''):''}${d.deload?' · easy week':''}</span></span>
-      <span class="dcv" aria-hidden="true">${open?'−':'+'}</span></button>
+      <span class="dct"><b>${dayLabel(d)||'Rest'}${d.checkin?' <span class="cichip">check in</span>':''}</b>
+        <span class="${flag?'flag':''}">${sub}</span></span>
+    </button>
+    ${done? `<span class="dtick" role="img" aria-label="Done"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5 5 9l5-6"/></svg></span>`
+      : `<button class="dchg" data-swap="${n}" aria-label="Change ${DAYS[n]}">Change</button>`}
+    </div>
     ${open? `<div class="dcb">${dayMovesHTML(d)}${dayActionsHTML(n,d)}</div>`:''}</div>`;
+}
+/* "5 to 11 October", or "29 September to 5 October" across a month */
+function weekRangeText(){
+  const M=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const a=dateOf(mondayKey()), b=dateOf(addDays(mondayKey(),6));
+  return a.getMonth()===b.getMonth()? a.getDate()+' to '+b.getDate()+' '+M[b.getMonth()]
+    : a.getDate()+' '+M[a.getMonth()]+' to '+b.getDate()+' '+M[b.getMonth()];
 }
 document.addEventListener('click',e=>{
   const po=e.target.closest('[data-planopen]');
@@ -4269,28 +4418,31 @@ document.addEventListener('click',e=>{
     const b=document.querySelector('.daycard.open .dch'); if(b&&b.focus) b.focus(); return; }
 });
 function renderPlan(){
-  const plan=ensurePlan(), i=dowIdx(), aim=aimOf(S.profile.aim);
+  const plan=ensurePlan(), i=dowIdx(), aim=aimOf(S.profile.aim), wc=weekCounts();
+  const st=(typeof STYLES!=='undefined'&&typeof styleOf==='function')? STYLES[styleOf()] : null;
+  const pd=$('planDate'); if(pd) pd.textContent=weekRangeText();
   $('planView').innerHTML=`
-  <div class="h1">Your week</div>
-  <div class="sect" style="border-bottom:0;padding-bottom:6px">
+  <div class="sect weeksect">
+    <h2>This week</h2>
+    <p class="wsum">${[st? st.t : '', wc.planned? wc.planned+' session'+(wc.planned===1?'':'s') : 'nothing planned', wc.planned? wc.done+' of '+wc.planned+' done' : ''].filter(Boolean).join(' · ')}</p>
+  </div>
+  <div class="daycards">${plan.days.map((d,n)=>dayCard(n,d,n===i,n===planOpenIndex())).join('')}</div>
+  <div class="sect weeksect weekwhy">
+    <div class="whylist">${plan.why.map(w=>`<div class="note">${w}</div>`).join('')}</div>
+    <div class="note">Tap a day to see the whole session and start, edit or change it.</div>
+  </div>
+  <div class="ptiles">
+    <button class="ptile" data-tplopen="1"><b>Templates and runs</b><span>All workouts, including ones not in this week</span></button>
+    <button class="ptile" data-setting="style"><b>Training style</b><span>${st? escHabit(st.t) : 'Gym'}${styleOf()==='hybrid'? ' · '+hyroxDaysOf(sessionsWanted())+' HYROX, '+(sessionsWanted()-hyroxDaysOf(sessionsWanted()))+' CrossFit' : ''}${styleOf()==='gym'&&typeof splitOf==='function'&&splitOf()? ', '+escHabit(SPLITS[splitOf()].t.toLowerCase()) : ''}, your kit</span></button>
+  </div>
+  <div class="sect psettings">
     <div class="numline"><div>Aim <b>${aim.t}</b></div><div>Training days <b>${plan.days.filter(d=>d.type&&d.slot!=='walk').length}</b></div></div>
     ${(()=>{ const due=deloadDue(), nx=nextDeload();
-      return `<button class="dlweek" id="planDeload" style="border-top:0;padding-bottom:0">
+      return `<button class="dlweek" id="planDeload">
         <div class="d"><b>${due? 'This is an easy week' : (nx? 'Next easy week: '+prettyDate(nx) : 'No easy weeks scheduled')}</b>
         <span>${due? DELOAD_TIERS[deloadTier().id].band+' less work, about 10% lighter. Tap to change.' : 'Tap to see the next ten weeks, or add one.'}</span></div>
         <span class="tag ${due?'on':''}">${due?'Easy':'Change'}</span></button>`; })()}
-  </div>
-  <div class="sect weeksect">
-    <h2>This week</h2>
-    <div class="whylist">${plan.why.map(w=>`<div class="note">${w}</div>`).join('')}</div>
-    <div class="note" style="margin:10px 0 0">Tap a day to see it. Start, edit or change it from there.</div>
-  </div>
-  <div class="daycards">${plan.days.map((d,n)=>dayCard(n,d,n===i,n===planOpenIndex())).join('')}</div>
-  <button class="logrow" data-tplopen="1" style="margin:4px 0 0">
-    <div class="txt"><div class="t">All workouts and templates</div><div class="s">Including ones not in this week</div></div>
-    <span class="chev">›</span></button>
-  <div class="sect" style="border-bottom:0">
-    <div class="note" style="margin:0">Every lifting day comes from one of these. Change the sets, the rep range, the rest or the movements themselves and the plan follows.</div>
+    <div class="note">Every lifting day comes from a template. Change the sets, the rep range, the rest or the movements themselves and the plan follows.</div>
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
       <button class="mini" id="changeAim">Change aim</button>
       <button class="mini" id="rebuild">Rebuild the week</button></div>
@@ -8000,6 +8152,79 @@ document.addEventListener('change',e=>{
   if(e.target.id!=='mealAt') return;
   if(setMealAt(foodKey(),foodSlot,e.target.value)){ renderAll(); toast(MEALS.find(m=>m[0]===foodSlot)[1]+' set to '+e.target.value); }
 });
+/* ---------- the set in hand (build 58, Final-Train) ----------
+   The order the session is actually done in: an exercise's sets in turn, a
+   superset or giant set round by round, an HIFB run after its block, buy-in
+   first and buy-out last. The first thing not yet done is "now": it gets the
+   big reps and weight steppers and the Done button at the top, and every row
+   below stays editable exactly as before. The same order draws the thin bar
+   under the header, one segment per set and run. */
+function gymSeq(){
+  const G=GYM; if(!G) return [];
+  const GI=groupInfo(G.ex), runs=gymRuns(), out=[];
+  const runSeg=k=>{ const x=runs.find(y=>y.key===k); if(x) out.push({run:x}); };
+  runSeg('in');
+  let i=0, block=0;
+  while(i<G.ex.length){
+    const gi=GI[i], a=i, b=gi? gi.end : i; block++;
+    const max=Math.max(...G.ex.slice(a,b+1).map(x=>x.sets.length));
+    for(let r=0;r<max;r++) for(let k=a;k<=b;k++) if(G.ex[k].sets[r]) out.push({i:k,j:r,block});
+    for(let k=a;k<=b;k++) runSeg(String(k));
+    i=b+1;
+  }
+  runSeg('out');
+  out.blocks=block;
+  return out;
+}
+const seqDone=x=>x.run? !!x.run.r.ms : !!(GYM.ex[x.i]&&GYM.ex[x.i].sets[x.j]&&GYM.ex[x.i].sets[x.j].done);
+function gymNow(seq){
+  seq=seq||gymSeq();
+  const live=seq.find(x=>x.run&&x.run.r.startAt&&!x.run.r.ms);
+  if(live) return live;
+  /* whatever comes after the last thing done, so a run or set someone chose
+     to skip does not hold the top of the screen; then anything left */
+  let last=-1; seq.forEach((x,n)=>{ if(seqDone(x)) last=n; });
+  return seq.slice(last+1).find(x=>!seqDone(x))||seq.find(x=>!seqDone(x))||null;
+}
+function drawSegs(seq,now){
+  const el=$('gymSegs'); if(!el) return;
+  el.style.gridTemplateColumns=`repeat(${Math.max(1,seq.length)},minmax(0,1fr))`;
+  el.innerHTML=seq.map(x=>`<i class="${seqDone(x)?'done':(x===now?'now':'')}${x.run?' run':''}"></i>`).join('');
+}
+function focusCard(seq,now){
+  if(!GYM||!GYM.ex.length&&!seq.length) return '';
+  if(!now) return `<section class="gnow alldone"><div class="gk">EVERY SET DONE</div>
+    <div class="gn">That is the session.</div><button class="cta" data-ffinish="1">Finish</button></section>`;
+  if(now.run){
+    const r=now.run.r, live=r.startAt&&!r.ms;
+    return `<section class="gnow grun"><div class="gk">${escHabit(now.run.label.toUpperCase())} · ${r.m} M</div>
+      <div class="gn">${live? 'Running' : 'Run next'}${r.pace? ', '+escHabit(r.pace.toLowerCase())+' pace' : ''}</div>
+      ${live? `<div class="gbig" data-runlive="${now.run.key}">${fmtSplit(Date.now()-r.startAt)}</div>
+        <button class="cta" data-runstop="${now.run.key}">Finish run</button>`
+        : `<button class="cta" data-runbegin="${now.run.key}">Start run</button>`}</section>`;
+  }
+  const e=GYM.ex[now.i], s=e.sets[now.j], x=exOf(e.exId), warm=s.warm;
+  const work=e.sets.filter(z=>!z.warm).length, wi=workingIndex(e,now.j);
+  const where= GYM.hifb||now.block>1||seq.blocks>1? (GYM.hifb? 'BLOCK ' : 'EXERCISE ')+now.block+' OF '+seq.blocks+' · ' : '';
+  const kick= where+(warm? 'WARM UP' : 'SET '+wi+' OF '+work);
+  const rx=e.rx, rxLine= rx&&rx.why? `<div class="grx ${rx.kind==='load'?'up':''}">${rx.kind==='load'? 'Up to '+(rx.kg!==null&&rx.kg!==undefined? num(rx.kg)+' kg' : 'a heavier weight')+': ' : ''}${rx.why}</div>` : '';
+  const inc=incrementFor(e.exId), key=now.i+':'+now.j;
+  const box=(k,label,d,less,more)=>`<div class="gstep"><div class="gl">${label}</div><div class="gsrow">
+      <button class="gsb" data-fstep="${key}:${k}:-${d}" aria-label="${less}">−</button>
+      <input type="number" inputmode="${k==='kg'?'decimal':'numeric'}" value="${s[k]}" data-fset="${key}:${k}" placeholder="${k==='kg'?'kg':e.reps}" aria-label="${k==='kg'?'Weight':'Reps'}, set in hand">
+      <button class="gsb" data-fstep="${key}:${k}:${d}" aria-label="${more}">+</button></div></div>`;
+  return `<section class="gnow">
+    <div class="ghead">
+      <button class="gthumb" data-showmove="${e.exId}" aria-label="Show me how ${escHabit(x.n)} moves"><span class="gplay"><svg width="12" height="14" viewBox="0 0 20 22" aria-hidden="true"><path d="M4 2l14 9-14 9z" fill="currentColor"/></svg></span><span class="gsm">show me</span></button>
+      <div class="gtx"><div class="gk">${kick}</div><div class="gn">${escHabit(x.n)}</div>${rxLine}</div></div>
+    <div class="gsteps">${box('reps','REPS',1,'Fewer reps','More reps')}${box('kg',isBodyweight(e.exId)?'ADDED KG':'KG',inc,'Less weight','More weight')}</div>
+    <button class="cta gdone" data-fdone="${key}">${warm? 'Done, warm up' : 'Done, set '+wi}</button></section>`;
+}
+function afterNote(){
+  if(!GYM||!GYM.ex.length) return '';
+  const per=(typeof perMealProtein==='function')? perMealProtein() : null;
+  return `<div class="afternote"><b>After this:</b> ${per? 'about '+per+'g' : '20 to 40g'} of protein at your next meal or snack. The day's total matters more than the exact timing.</div>`;
+}
 function drawGym(){
   if(!GYM) return;
   $('gymName').textContent=GYM.name;
@@ -8009,7 +8234,8 @@ function drawGym(){
   const backBanner= away>=14? `<div class="deloadbanner"><b>Welcome back.</b> ${weeksText(away)} since your last session. Anything you have not done in a while starts a little lighter today; the weights climb back quickly.</div>` : '';
   const RUNS=gymRuns(), runAt=k=>{ const x=RUNS.find(y=>y.key===k); return x? runCard(x) : ''; };
   const hifbHead=GYM.hifb? `<div class="focusnote gymfocus"><b>HIFB: run, lift, run</b><span>Rest about ${HIFB.rest} seconds between sets. After the last set of each block, go straight into the run: it starts timing itself when you tick that set. Type a time instead if you use a watch.${GYM.hifb.why? ' '+escHabit(GYM.hifb.why) : ''}</span></div>` : '';
-  $('gymBody').innerHTML=backBanner+deloadBanner()+hifbHead+runAt('in')+GYM.ex.map((e,i)=>{
+  const SEQ=gymSeq(), NOW=gymNow(SEQ); drawSegs(SEQ,NOW);
+  $('gymBody').innerHTML=focusCard(SEQ,NOW)+backBanner+deloadBanner()+hifbHead+runAt('in')+GYM.ex.map((e,i)=>{
     const x=exOf(e.exId), prev=lastSets(e.exId), pre=GYM.pre? GYM.pre[e.exId] : null, gi=GI[i];
     const range=repRangeFor({reps:e.reps,repMin:e.repMin});
     return `${i===0? `<div class="focusnote gymfocus"><b>${LIFT_FOCUS[liftFocus()].t}</b><span>${LIFT_FOCUS[liftFocus()].effort}</span></div>` : ''}${gi&&gi.first? groupHead(GYM.ex,gi) : ''}<div class="exc ${gi?'ingroup':''} ${gi&&gi.last?'grouplast':''}" data-ex="${i}">
@@ -8020,9 +8246,9 @@ function drawGym(){
         ${e.rx.lastTonnage? `<span class="tonn">Last time you moved ${num(Math.round(e.rx.lastTonnage))}kg on this. Today so far: ${num(Math.round(tonnageOf(e.sets)))}kg.</span>`:''}</div>`:''}
       ${e.tempo&&showTempo()&&tempoMatters(e.tempo)?`<div class="tempo">${tempoWords(e.tempo)}</div>`:''}
       ${e.note?`<div class="note">${e.note}</div>`:''}
-      <div class="sethead"><div>Set</div><div>Previous</div><div>${isBodyweight(e.exId)?'+kg':'kg'}</div><div>Reps</div><div></div></div>
+      <div class="sethead"><div>Set</div><div>${isBodyweight(e.exId)?'+kg':'kg'}</div><div>Reps</div><div></div></div>
       ${(()=>{ const pi=prIndex(e); return e.sets.map((s,j)=>{ const pr=j===pi; const short=!pr&&setShort(e,s); const inc=incrementFor(e.exId);
-        return `<div class="setline ${s.done?'done':''} ${pr?'ispr':''} ${short?'short':''} ${s.warm?'warm':''}">
+        return `<div class="setline ${s.done?'done':''} ${pr?'ispr':''} ${short?'short':''} ${s.warm?'warm':''} ${NOW&&!NOW.run&&NOW.i===i&&NOW.j===j?'now':''}">
         <div class="sn">${s.warm?'W':workingIndex(e,j)}</div>
         <div class="stepper">
           <button class="step" data-step="${i}:${j}:kg:-${inc}" aria-label="Less weight">−</button>
@@ -8045,7 +8271,7 @@ function drawGym(){
         ${e.sets.length>1?`<button data-delset="${i}">Remove set</button>`:''}${GYM.hifb&&!e.run?`<button data-addrun="${i}">+ Run after</button>`:''}</div>
     </div>${runAt(String(i))}`;
   }).join('')+runAt('out')
-  + (GYM.ex.length? '' : `<div class="empty">Nothing in here yet.<br>Add your first movement and the sets appear.</div>`)
+  + (GYM.ex.length? afterNote() : `<div class="empty">Nothing in here yet.<br>Add your first movement and the sets appear.</div>`)
   + `<div class="addex"><button id="addExBtn">+ Add exercise</button></div>`;
   $('gymFoot').innerHTML=`<div>Volume <b>${num(Math.round(gymVolume()))} kg</b></div>
     <div>Sets <b>${gymSets()}</b></div>${RUNS.length? `<div>Runs <b>${runsDone()} of ${RUNS.length}</b></div>` : `<div class="hint">Tap the tick to start the rest clock</div>`}`;
@@ -8067,7 +8293,7 @@ document.addEventListener('change',e=>{
   r.ms=ms; r.manual=true; r.endAt=r.endAt||Date.now(); drawGym();
 });
 function startRest(sec,label){
-  rest={left:sec,label};
+  rest={left:sec,label,total:sec};
   if(!sec){ $('restBar').classList.remove('on'); return; }
   $('restBar').classList.add('on');
   paintRest();
@@ -8081,11 +8307,12 @@ function startRest(sec,label){
 function paintRest(){
   $('restNum').textContent=Math.floor(rest.left/60)+':'+String(rest.left%60).padStart(2,'0');
   $('restLbl').textContent='Rest · '+rest.label;
+  const f=$('restFill'); if(f) f.style.width=Math.max(0,Math.min(100,100*rest.left/Math.max(1,rest.total||rest.left)))+'%';
 }
 document.addEventListener('click',e=>{
   if(!GYM) return;
-  const d=e.target.closest('[data-done]');
-  if(d){ const [i,j]=d.dataset.done.split(':').map(Number);
+  const d=e.target.closest('[data-done]')||e.target.closest('[data-fdone]');
+  if(d){ const [i,j]=(d.dataset.done||d.dataset.fdone).split(':').map(Number);
     const st=GYM.ex[i].sets[j]; st.done=!st.done;
     if(st.done){
       if(st.reps==='') st.reps=GYM.ex[i].reps;
@@ -8109,12 +8336,13 @@ document.addEventListener('click',e=>{
     drawGym(); }
   const w=e.target.closest('[data-warm]');
   if(w){ const [i,j]=w.dataset.warm.split(':').map(Number); GYM.ex[i].sets[j].warm=!GYM.ex[i].sets[j].warm; drawGym(); }
-  const st=e.target.closest('[data-step]');
+  if(e.target.closest('[data-ffinish]')){ const f=$('gymFinish'); if(f) f.click(); return; }
+  const st=e.target.closest('[data-step]')||e.target.closest('[data-fstep]');
   if(st&&GYM){
     /* Update the number in place rather than redrawing the list. Tapping plus
        five times in a row should not be racing a re render, and nothing should
        flicker while you are mid set. */
-    const [i,j,k,d]=st.dataset.step.split(':');
+    const [i,j,k,d]=(st.dataset.step||st.dataset.fstep).split(':');
     const set=GYM.ex[+i].sets[+j];
     const cur=+set[k]|| (k==='reps'? (+GYM.ex[+i].reps||0) : 0);
     const next=Math.max(0,+(cur+ +d).toFixed(2));
@@ -8122,6 +8350,7 @@ document.addEventListener('click',e=>{
     set.touched=true;
     const box=document.querySelector(`[data-set="${i}:${j}:${k}"]`);
     if(box){ box.value=next; fitNumbers(box.closest('.stepper')); }
+    const big=document.querySelector(`[data-fset="${i}:${j}:${k}"]`); if(big) big.value=next;
     if(navigator.vibrate) navigator.vibrate(10);
     return;
   }
@@ -8148,14 +8377,17 @@ document.addEventListener('click',e=>{
   if(m) openExMenu(+m.dataset.exmenu);
 });
 document.addEventListener('input',e=>{
-  const f=e.target.closest('[data-set]');
+  const f=e.target.closest('[data-set]')||e.target.closest('[data-fset]');
   if(!f||!GYM) return;
-  const [i,j,k]=f.dataset.set.split(':');
+  const [i,j,k]=(f.dataset.set||f.dataset.fset).split(':');
+  /* the set in hand and its row are the same set: keep the other box in step */
+  const twin=document.querySelector(f.dataset.set? `[data-fset="${i}:${j}:${k}"]` : `[data-set="${i}:${j}:${k}"]`);
+  if(twin) twin.value=f.value;
   GYM.ex[+i].sets[+j][k]= f.value===''? '' : +f.value;
   GYM.ex[+i].sets[+j].touched=true;
   $('gymFoot').querySelector('b').textContent=num(Math.round(gymVolume()))+' kg';
 });
-$('restPlus').addEventListener('click',()=>{ rest.left+=15; paintRest(); });
+$('restPlus').addEventListener('click',()=>{ rest.left+=15; rest.total=Math.max(rest.total||0,rest.left); paintRest(); });
 $('restSkip').addEventListener('click',()=>{ clearInterval(restTick); $('restBar').classList.remove('on'); });
 $('gymClose').addEventListener('click',()=>{
   const work=GYM&&!GYM.done&&(GYM.mode==='circuit'? circuitDone()>0 : gymSets()>0);
@@ -8885,6 +9117,7 @@ function circSubText(){
 }
 const fmtSplit=ms=>{ const s=Math.round(ms/1000); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
 function drawCircuit(){
+  { const sg=$('gymSegs'); if(sg) sg.innerHTML=''; }
   const c=circuitOf(GYM.circuitId)||{};
   $('gymName').textContent=GYM.name;
   $('gymSub').textContent=circSubText();
@@ -12639,6 +12872,130 @@ Object.assign(window.__G||{},{STYLES,circStyle,HIFB,HIFB_ORDER,HIFB_DAYS,hifbPat
   hifbSummary,hifbDetail,openSwap,drawSwapRows,swapSuggest,tplPreview,FIBRE,FIBRE_ROUGH,fibreOf,fibreInfo,openFibre,fibreSheetHtml,hifbProgressPanel,openHifbWhy,tplEntries,drawTplRows,tplFamily,TPL_FILTERS,startWorkout,finishWorkout,loggedTraining,plannedTraining,maintenance,openStyleSheet});
 try{ Object.defineProperty(window.__G,'swapView',{get:()=>swapView,set:v=>{swapView=v},configurable:true}); }catch(e){}
 try{ Object.defineProperty(window.__G,'tplView',{get:()=>tplView,set:v=>{tplView=v},configurable:true}); }catch(e){}
+</script>
+
+<script>
+/* ---------- You, build 58 (design/redesign/Final-You.dc.html) ----------
+   The top of You answers "how am I doing" before any chart: the weight goal
+   as a bar, this week as a grid of readiness, food and training by day, and
+   readiness over the last 30 days as counts of better, usual and lower. Every
+   panel that was here before stays underneath, unchanged, and Appearance (Day,
+   Night, Match phone) sits at the end. Nothing here is a new calculation:
+   readiness is readiness() for each day, food is what the Food ring uses, and
+   training is what was logged. */
+
+/* A day's readiness, worked against that day's own last four weeks. */
+function readinessOn(k){ try{ return readiness(k).level; }catch(e){ return 'building'; } }
+
+/* What happened with food on a day, in the Food ring's own colours: under
+   target green, over target but under maintenance amber, past maintenance
+   coral. Teens: meals logged, never calories. */
+function foodStateOn(k){
+  const items=dayFood(k);
+  if(!items.length) return 'none';
+  if(isTeen()){ const meals=new Set(items.map(x=>x.meal||'s')).size; return meals>=3? 'ok' : 'some'; }
+  const t=S.targets||{}, eaten=Math.round(foodTotals(k).kcal||0), target=+t.kcal||0, maint=+t.maintenance||0;
+  if(!target||eaten<=target) return 'ok';
+  return (!maint||eaten>maint)? 'past' : 'over';
+}
+/* Anything logged as training that day: a lifting session, or a run or
+   circuit from the timed player. */
+function trainedOn(k){
+  return (S.workouts||[]).some(w=>w.d===k)
+    || (S.mine||[]).some(p=>p.d===k&&['run','circuit','workout','hifb'].indexOf(p.kind)>=0);
+}
+const READY_WORD={better:'better',usual:'about usual',lower:'lower',building:'not enough logged'};
+const FOOD_WORD={ok:'on target',over:'over target, under maintenance',past:'over maintenance',none:'nothing logged',some:'some meals logged'};
+
+function weightGoalCard(){
+  if(isTeen()) return '';
+  const imp=S.profile.units==='imperial', ws=S.weights||[];
+  if(!ws.length) return `<section class="ycard" id="yWeight"><div class="ych"><b>Weight</b></div>
+    <p class="ynote">Nothing logged yet. Once a week is plenty.</p>
+    <button class="mini go" data-weigh="1">Weigh in</button></section>`;
+  const now=currentKg(), first=ws[0], tg=S.target&&S.target.kind==='weight'? S.target : null;
+  const big=showW(now,imp).split(' ');
+  const change=+(now-first.kg).toFixed(1), weeks=Math.round(gapDaysBetween(first.d,todayKey())/7);
+  const moved= ws.length<2||Math.abs(change)<0.1? (ws.length<2? 'one weigh in so far' : 'level so far')
+    : (change<0? 'down ' : 'up ')+showW(Math.abs(change),imp).split(' ')[0]+(weeks>=1? ' in '+weeks+' week'+(weeks===1?'':'s') : ' so far');
+  let right='', bar='';
+  if(tg&&tg.hit){
+    right=`Goal met ${prettyDateSafe(tg.hit)}`;
+    bar=`<div class="ybar"><i style="width:100%"></i></div>`;
+  } else if(tg){
+    const from=+(tg.from||first.kg), goal=+tg.value, span=from-goal;
+    const f= Math.abs(span)<0.05? 1 : Math.max(0,Math.min(1,(from-now)/span));
+    right=`${showW(Math.abs(now-goal),imp)} to go`;
+    bar=`<div class="ybar" role="img" aria-label="${Math.round(f*100)}% of the way from ${showW(from,imp)} to ${showW(goal,imp)}"><i style="width:${Math.round(f*100)}%"></i></div>
+      <div class="yends"><span>Start ${showW(from,imp).split(' ')[0]}</span><span>Goal ${showW(goal,imp).split(' ')[0]}</span></div>`;
+  }
+  return `<section class="ycard" id="yWeight">
+    <div class="ych"><b>Weight</b>${right? `<span>${right}</span>` : `<button class="ylink" data-setting="goal">Set a goal</button>`}</div>
+    <div class="ybig"><span class="num">${big[0]}</span> <span>${big[1]}, ${moved}</span></div>
+    ${bar}</section>`;
+}
+function gapDaysBetween(a,b){ return Math.round((dateOf(b)-dateOf(a))/864e5); }
+
+function weekGridCard(){
+  const k0=todayKey(), keys=[]; for(let i=6;i>=0;i--) keys.push(addDays(k0,-i));
+  const L=['M','T','W','T','F','S','S'], dowOf=k=>(dateOf(k).getDay()+6)%7;
+  const teen=isTeen(), plan=ensurePlan();
+  const cell=(cls,label,today)=>`<span class="yc ${cls}${today?' now':''}" role="img" aria-label="${label}"></span>`;
+  const head=keys.map(k=>`<span class="yd${k===k0?' now':''}" aria-hidden="true">${L[dowOf(k)]}</span>`).join('');
+  const ready=keys.map(k=>{ const l=readinessOn(k); return cell('r-'+l,DAYS[dowOf(k)]+': readiness '+READY_WORD[l],k===k0); }).join('');
+  const food=keys.map(k=>{ const f=foodStateOn(k); return cell('f-'+f,DAYS[dowOf(k)]+': food '+FOOD_WORD[f],false); }).join('');
+  const train=keys.map(k=>{ const did=trainedOn(k), pd=k===k0? plan.days[dowIdx()] : null;
+    const due=!did&&pd&&pd.type&&pd.slot!=='walk'&&pd.slot!=='rest';
+    return cell(did? 't-done' : (due? 't-due' : 't-none'),DAYS[dowOf(k)]+': '+(did? 'trained' : (due? 'session still to do' : 'no session logged')),false); }).join('');
+  const fs=keys.map(foodStateOn), logged=fs.filter(x=>x!=='none').length;
+  const overDays=keys.filter((k,i)=>fs[i]==='over'||fs[i]==='past').map(k=>DAYS[dowOf(k)]);
+  const foodLine= !logged? 'No food logged in the last seven days.'
+    : teen? `Meals logged on ${logged} of the last 7 days.`
+    : `Food on target ${fs.filter(x=>x==='ok').length} of ${logged} day${logged===1?'':'s'} logged.${overDays.length? ' Over on '+overDays.join(', ')+'.' : ''}`;
+  return `<section class="ycard" id="yWeek">
+    <div class="ych"><b>This week</b><span>readiness, food, training</span></div>
+    <div class="ygrid"><span></span>${head}
+      <span class="yl">Ready</span>${ready}
+      <span class="yl">Food</span>${food}
+      <span class="yl">Train</span>${train}</div>
+    <div class="ykey"><span><i class="yc r-better"></i>Better</span><span><i class="yc r-usual"></i>Usual</span><span><i class="yc r-lower"></i>Lower</span>${teen? '' : `<span><i class="yc f-past"></i>Over</span>`}<span><i class="yc t-done"></i>Trained</span></div>
+    <p class="ynote">${foodLine}</p></section>`;
+}
+
+/* Readiness is a word, never a number: the bars are only pictures of the
+   word, at the same heights the Ready ring uses. */
+function readinessHistoryCard(){
+  const k0=todayKey(), levels=[]; for(let i=29;i>=0;i--) levels.push(readinessOn(addDays(k0,-i)));
+  const c={better:0,usual:0,lower:0,building:0}; levels.forEach(l=>c[l]++);
+  const known=30-c.building;
+  const text= !known? 'Building your baseline: it needs about a week of sleep and how your days went before any day can be compared.'
+    : `Last 30 days: ${c.better} better, ${c.usual} usual, ${c.lower} lower.${c.building? ' '+c.building+' day'+(c.building===1?'':'s')+' without enough logged to compare.' : ''}`;
+  return `<section class="ycard" id="yReady">
+    <div class="ych"><b>Readiness against your usual</b></div>
+    <div class="ybars" role="img" aria-label="${text}">${levels.map(l=>`<i class="b-${l}"></i>`).join('')}</div>
+    <p class="ynote">${text}</p></section>`;
+}
+
+function appearanceCard(){
+  const cur=themeOf();
+  const opt=(id,label)=>`<button class="ytheme ${cur===id?'on':''}" data-themepick="${id}" aria-pressed="${cur===id}">
+    <span class="sw sw-${id}" aria-hidden="true"><i></i></span><b>${label}</b></button>`;
+  return `<section class="ycard" id="yLook"><div class="ych"><b>Appearance</b></div>
+    <div class="ythemes">${opt('day','Day')}${opt('night','Night')}${opt('auto','Match phone')}</div>
+    <p class="ynote">Match phone is the default: light by day, dark at night, whatever your phone is set to.</p></section>`;
+}
+
+const _renderProgressTop=renderProgress;
+renderProgress=function(){
+  _renderProgressTop();
+  const dash=document.getElementById('dash'); if(!dash) return;
+  const h=document.getElementById('youHandle'); if(h) h.textContent=S.profile&&S.profile.onboarded&&S.profile.handle? '@'+S.profile.handle : '';
+  ['yTop','yLook'].forEach(id=>{ const old=document.getElementById(id); if(old) old.remove(); });
+  dash.insertAdjacentHTML('afterbegin',`<div id="yTop">${weightGoalCard()}${weekGridCard()}${readinessHistoryCard()}</div>`);
+  dash.insertAdjacentHTML('beforeend',appearanceCard());
+};
+try{ Object.assign(window.__G,{readinessOn,foodStateOn,trainedOn,weightGoalCard,weekGridCard,readinessHistoryCard,appearanceCard}); }catch(e){}
+renderProgress();
 </script>
 
 <script>

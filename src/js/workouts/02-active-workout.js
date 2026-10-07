@@ -173,6 +173,79 @@ document.addEventListener('change',e=>{
   if(e.target.id!=='mealAt') return;
   if(setMealAt(foodKey(),foodSlot,e.target.value)){ renderAll(); toast(MEALS.find(m=>m[0]===foodSlot)[1]+' set to '+e.target.value); }
 });
+/* ---------- the set in hand (build 58, Final-Train) ----------
+   The order the session is actually done in: an exercise's sets in turn, a
+   superset or giant set round by round, an HIFB run after its block, buy-in
+   first and buy-out last. The first thing not yet done is "now": it gets the
+   big reps and weight steppers and the Done button at the top, and every row
+   below stays editable exactly as before. The same order draws the thin bar
+   under the header, one segment per set and run. */
+function gymSeq(){
+  const G=GYM; if(!G) return [];
+  const GI=groupInfo(G.ex), runs=gymRuns(), out=[];
+  const runSeg=k=>{ const x=runs.find(y=>y.key===k); if(x) out.push({run:x}); };
+  runSeg('in');
+  let i=0, block=0;
+  while(i<G.ex.length){
+    const gi=GI[i], a=i, b=gi? gi.end : i; block++;
+    const max=Math.max(...G.ex.slice(a,b+1).map(x=>x.sets.length));
+    for(let r=0;r<max;r++) for(let k=a;k<=b;k++) if(G.ex[k].sets[r]) out.push({i:k,j:r,block});
+    for(let k=a;k<=b;k++) runSeg(String(k));
+    i=b+1;
+  }
+  runSeg('out');
+  out.blocks=block;
+  return out;
+}
+const seqDone=x=>x.run? !!x.run.r.ms : !!(GYM.ex[x.i]&&GYM.ex[x.i].sets[x.j]&&GYM.ex[x.i].sets[x.j].done);
+function gymNow(seq){
+  seq=seq||gymSeq();
+  const live=seq.find(x=>x.run&&x.run.r.startAt&&!x.run.r.ms);
+  if(live) return live;
+  /* whatever comes after the last thing done, so a run or set someone chose
+     to skip does not hold the top of the screen; then anything left */
+  let last=-1; seq.forEach((x,n)=>{ if(seqDone(x)) last=n; });
+  return seq.slice(last+1).find(x=>!seqDone(x))||seq.find(x=>!seqDone(x))||null;
+}
+function drawSegs(seq,now){
+  const el=$('gymSegs'); if(!el) return;
+  el.style.gridTemplateColumns=`repeat(${Math.max(1,seq.length)},minmax(0,1fr))`;
+  el.innerHTML=seq.map(x=>`<i class="${seqDone(x)?'done':(x===now?'now':'')}${x.run?' run':''}"></i>`).join('');
+}
+function focusCard(seq,now){
+  if(!GYM||!GYM.ex.length&&!seq.length) return '';
+  if(!now) return `<section class="gnow alldone"><div class="gk">EVERY SET DONE</div>
+    <div class="gn">That is the session.</div><button class="cta" data-ffinish="1">Finish</button></section>`;
+  if(now.run){
+    const r=now.run.r, live=r.startAt&&!r.ms;
+    return `<section class="gnow grun"><div class="gk">${escHabit(now.run.label.toUpperCase())} · ${r.m} M</div>
+      <div class="gn">${live? 'Running' : 'Run next'}${r.pace? ', '+escHabit(r.pace.toLowerCase())+' pace' : ''}</div>
+      ${live? `<div class="gbig" data-runlive="${now.run.key}">${fmtSplit(Date.now()-r.startAt)}</div>
+        <button class="cta" data-runstop="${now.run.key}">Finish run</button>`
+        : `<button class="cta" data-runbegin="${now.run.key}">Start run</button>`}</section>`;
+  }
+  const e=GYM.ex[now.i], s=e.sets[now.j], x=exOf(e.exId), warm=s.warm;
+  const work=e.sets.filter(z=>!z.warm).length, wi=workingIndex(e,now.j);
+  const where= GYM.hifb||now.block>1||seq.blocks>1? (GYM.hifb? 'BLOCK ' : 'EXERCISE ')+now.block+' OF '+seq.blocks+' · ' : '';
+  const kick= where+(warm? 'WARM UP' : 'SET '+wi+' OF '+work);
+  const rx=e.rx, rxLine= rx&&rx.why? `<div class="grx ${rx.kind==='load'?'up':''}">${rx.kind==='load'? 'Up to '+(rx.kg!==null&&rx.kg!==undefined? num(rx.kg)+' kg' : 'a heavier weight')+': ' : ''}${rx.why}</div>` : '';
+  const inc=incrementFor(e.exId), key=now.i+':'+now.j;
+  const box=(k,label,d,less,more)=>`<div class="gstep"><div class="gl">${label}</div><div class="gsrow">
+      <button class="gsb" data-fstep="${key}:${k}:-${d}" aria-label="${less}">−</button>
+      <input type="number" inputmode="${k==='kg'?'decimal':'numeric'}" value="${s[k]}" data-fset="${key}:${k}" placeholder="${k==='kg'?'kg':e.reps}" aria-label="${k==='kg'?'Weight':'Reps'}, set in hand">
+      <button class="gsb" data-fstep="${key}:${k}:${d}" aria-label="${more}">+</button></div></div>`;
+  return `<section class="gnow">
+    <div class="ghead">
+      <button class="gthumb" data-showmove="${e.exId}" aria-label="Show me how ${escHabit(x.n)} moves"><span class="gplay"><svg width="12" height="14" viewBox="0 0 20 22" aria-hidden="true"><path d="M4 2l14 9-14 9z" fill="currentColor"/></svg></span><span class="gsm">show me</span></button>
+      <div class="gtx"><div class="gk">${kick}</div><div class="gn">${escHabit(x.n)}</div>${rxLine}</div></div>
+    <div class="gsteps">${box('reps','REPS',1,'Fewer reps','More reps')}${box('kg',isBodyweight(e.exId)?'ADDED KG':'KG',inc,'Less weight','More weight')}</div>
+    <button class="cta gdone" data-fdone="${key}">${warm? 'Done, warm up' : 'Done, set '+wi}</button></section>`;
+}
+function afterNote(){
+  if(!GYM||!GYM.ex.length) return '';
+  const per=(typeof perMealProtein==='function')? perMealProtein() : null;
+  return `<div class="afternote"><b>After this:</b> ${per? 'about '+per+'g' : '20 to 40g'} of protein at your next meal or snack. The day's total matters more than the exact timing.</div>`;
+}
 function drawGym(){
   if(!GYM) return;
   $('gymName').textContent=GYM.name;
@@ -182,7 +255,8 @@ function drawGym(){
   const backBanner= away>=14? `<div class="deloadbanner"><b>Welcome back.</b> ${weeksText(away)} since your last session. Anything you have not done in a while starts a little lighter today; the weights climb back quickly.</div>` : '';
   const RUNS=gymRuns(), runAt=k=>{ const x=RUNS.find(y=>y.key===k); return x? runCard(x) : ''; };
   const hifbHead=GYM.hifb? `<div class="focusnote gymfocus"><b>HIFB: run, lift, run</b><span>Rest about ${HIFB.rest} seconds between sets. After the last set of each block, go straight into the run: it starts timing itself when you tick that set. Type a time instead if you use a watch.${GYM.hifb.why? ' '+escHabit(GYM.hifb.why) : ''}</span></div>` : '';
-  $('gymBody').innerHTML=backBanner+deloadBanner()+hifbHead+runAt('in')+GYM.ex.map((e,i)=>{
+  const SEQ=gymSeq(), NOW=gymNow(SEQ); drawSegs(SEQ,NOW);
+  $('gymBody').innerHTML=focusCard(SEQ,NOW)+backBanner+deloadBanner()+hifbHead+runAt('in')+GYM.ex.map((e,i)=>{
     const x=exOf(e.exId), prev=lastSets(e.exId), pre=GYM.pre? GYM.pre[e.exId] : null, gi=GI[i];
     const range=repRangeFor({reps:e.reps,repMin:e.repMin});
     return `${i===0? `<div class="focusnote gymfocus"><b>${LIFT_FOCUS[liftFocus()].t}</b><span>${LIFT_FOCUS[liftFocus()].effort}</span></div>` : ''}${gi&&gi.first? groupHead(GYM.ex,gi) : ''}<div class="exc ${gi?'ingroup':''} ${gi&&gi.last?'grouplast':''}" data-ex="${i}">
@@ -193,9 +267,9 @@ function drawGym(){
         ${e.rx.lastTonnage? `<span class="tonn">Last time you moved ${num(Math.round(e.rx.lastTonnage))}kg on this. Today so far: ${num(Math.round(tonnageOf(e.sets)))}kg.</span>`:''}</div>`:''}
       ${e.tempo&&showTempo()&&tempoMatters(e.tempo)?`<div class="tempo">${tempoWords(e.tempo)}</div>`:''}
       ${e.note?`<div class="note">${e.note}</div>`:''}
-      <div class="sethead"><div>Set</div><div>Previous</div><div>${isBodyweight(e.exId)?'+kg':'kg'}</div><div>Reps</div><div></div></div>
+      <div class="sethead"><div>Set</div><div>${isBodyweight(e.exId)?'+kg':'kg'}</div><div>Reps</div><div></div></div>
       ${(()=>{ const pi=prIndex(e); return e.sets.map((s,j)=>{ const pr=j===pi; const short=!pr&&setShort(e,s); const inc=incrementFor(e.exId);
-        return `<div class="setline ${s.done?'done':''} ${pr?'ispr':''} ${short?'short':''} ${s.warm?'warm':''}">
+        return `<div class="setline ${s.done?'done':''} ${pr?'ispr':''} ${short?'short':''} ${s.warm?'warm':''} ${NOW&&!NOW.run&&NOW.i===i&&NOW.j===j?'now':''}">
         <div class="sn">${s.warm?'W':workingIndex(e,j)}</div>
         <div class="stepper">
           <button class="step" data-step="${i}:${j}:kg:-${inc}" aria-label="Less weight">−</button>
@@ -218,7 +292,7 @@ function drawGym(){
         ${e.sets.length>1?`<button data-delset="${i}">Remove set</button>`:''}${GYM.hifb&&!e.run?`<button data-addrun="${i}">+ Run after</button>`:''}</div>
     </div>${runAt(String(i))}`;
   }).join('')+runAt('out')
-  + (GYM.ex.length? '' : `<div class="empty">Nothing in here yet.<br>Add your first movement and the sets appear.</div>`)
+  + (GYM.ex.length? afterNote() : `<div class="empty">Nothing in here yet.<br>Add your first movement and the sets appear.</div>`)
   + `<div class="addex"><button id="addExBtn">+ Add exercise</button></div>`;
   $('gymFoot').innerHTML=`<div>Volume <b>${num(Math.round(gymVolume()))} kg</b></div>
     <div>Sets <b>${gymSets()}</b></div>${RUNS.length? `<div>Runs <b>${runsDone()} of ${RUNS.length}</b></div>` : `<div class="hint">Tap the tick to start the rest clock</div>`}`;
@@ -240,7 +314,7 @@ document.addEventListener('change',e=>{
   r.ms=ms; r.manual=true; r.endAt=r.endAt||Date.now(); drawGym();
 });
 function startRest(sec,label){
-  rest={left:sec,label};
+  rest={left:sec,label,total:sec};
   if(!sec){ $('restBar').classList.remove('on'); return; }
   $('restBar').classList.add('on');
   paintRest();
@@ -254,11 +328,12 @@ function startRest(sec,label){
 function paintRest(){
   $('restNum').textContent=Math.floor(rest.left/60)+':'+String(rest.left%60).padStart(2,'0');
   $('restLbl').textContent='Rest · '+rest.label;
+  const f=$('restFill'); if(f) f.style.width=Math.max(0,Math.min(100,100*rest.left/Math.max(1,rest.total||rest.left)))+'%';
 }
 document.addEventListener('click',e=>{
   if(!GYM) return;
-  const d=e.target.closest('[data-done]');
-  if(d){ const [i,j]=d.dataset.done.split(':').map(Number);
+  const d=e.target.closest('[data-done]')||e.target.closest('[data-fdone]');
+  if(d){ const [i,j]=(d.dataset.done||d.dataset.fdone).split(':').map(Number);
     const st=GYM.ex[i].sets[j]; st.done=!st.done;
     if(st.done){
       if(st.reps==='') st.reps=GYM.ex[i].reps;
@@ -282,12 +357,13 @@ document.addEventListener('click',e=>{
     drawGym(); }
   const w=e.target.closest('[data-warm]');
   if(w){ const [i,j]=w.dataset.warm.split(':').map(Number); GYM.ex[i].sets[j].warm=!GYM.ex[i].sets[j].warm; drawGym(); }
-  const st=e.target.closest('[data-step]');
+  if(e.target.closest('[data-ffinish]')){ const f=$('gymFinish'); if(f) f.click(); return; }
+  const st=e.target.closest('[data-step]')||e.target.closest('[data-fstep]');
   if(st&&GYM){
     /* Update the number in place rather than redrawing the list. Tapping plus
        five times in a row should not be racing a re render, and nothing should
        flicker while you are mid set. */
-    const [i,j,k,d]=st.dataset.step.split(':');
+    const [i,j,k,d]=(st.dataset.step||st.dataset.fstep).split(':');
     const set=GYM.ex[+i].sets[+j];
     const cur=+set[k]|| (k==='reps'? (+GYM.ex[+i].reps||0) : 0);
     const next=Math.max(0,+(cur+ +d).toFixed(2));
@@ -295,6 +371,7 @@ document.addEventListener('click',e=>{
     set.touched=true;
     const box=document.querySelector(`[data-set="${i}:${j}:${k}"]`);
     if(box){ box.value=next; fitNumbers(box.closest('.stepper')); }
+    const big=document.querySelector(`[data-fset="${i}:${j}:${k}"]`); if(big) big.value=next;
     if(navigator.vibrate) navigator.vibrate(10);
     return;
   }
@@ -321,14 +398,17 @@ document.addEventListener('click',e=>{
   if(m) openExMenu(+m.dataset.exmenu);
 });
 document.addEventListener('input',e=>{
-  const f=e.target.closest('[data-set]');
+  const f=e.target.closest('[data-set]')||e.target.closest('[data-fset]');
   if(!f||!GYM) return;
-  const [i,j,k]=f.dataset.set.split(':');
+  const [i,j,k]=(f.dataset.set||f.dataset.fset).split(':');
+  /* the set in hand and its row are the same set: keep the other box in step */
+  const twin=document.querySelector(f.dataset.set? `[data-fset="${i}:${j}:${k}"]` : `[data-set="${i}:${j}:${k}"]`);
+  if(twin) twin.value=f.value;
   GYM.ex[+i].sets[+j][k]= f.value===''? '' : +f.value;
   GYM.ex[+i].sets[+j].touched=true;
   $('gymFoot').querySelector('b').textContent=num(Math.round(gymVolume()))+' kg';
 });
-$('restPlus').addEventListener('click',()=>{ rest.left+=15; paintRest(); });
+$('restPlus').addEventListener('click',()=>{ rest.left+=15; rest.total=Math.max(rest.total||0,rest.left); paintRest(); });
 $('restSkip').addEventListener('click',()=>{ clearInterval(restTick); $('restBar').classList.remove('on'); });
 $('gymClose').addEventListener('click',()=>{
   const work=GYM&&!GYM.done&&(GYM.mode==='circuit'? circuitDone()>0 : gymSets()>0);

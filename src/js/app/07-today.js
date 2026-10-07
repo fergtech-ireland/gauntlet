@@ -170,8 +170,11 @@ function openSleep(){
    weeks: never a universal score, and never a single number pretending to be
    more precise than it is. Better, about usual, or lower, with what is driving
    it. */
-function readiness(){
-  const k=todayKey(), y=addDays(k,-1);
+function readiness(at){
+  /* at: a day key, for the history on You (build 58); none means today. The
+     baseline is always the 28 days before that day, so a past day is judged
+     against its own usual at the time, not today's. */
+  const k=at||todayKey(), y=addDays(k,-1);
   const hist=(get,skip)=>{ const out=[]; for(let i=1;i<=28;i++){ const kk=addDays(k,-i); if(skip&&skip===kk) continue;
     const v=get(S.days[kk]); if(typeof v==='number') out.push(v); } return out; };
   const stat=a=>{ const m=a.reduce((x,v)=>x+v,0)/a.length; return {m,sd:Math.sqrt(a.reduce((x,v)=>x+(v-m)*(v-m),0)/a.length)}; };

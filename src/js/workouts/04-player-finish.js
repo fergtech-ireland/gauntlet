@@ -38,6 +38,7 @@ function circSubText(){
 }
 const fmtSplit=ms=>{ const s=Math.round(ms/1000); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
 function drawCircuit(){
+  { const sg=$('gymSegs'); if(sg) sg.innerHTML=''; }
   const c=circuitOf(GYM.circuitId)||{};
   $('gymName').textContent=GYM.name;
   $('gymSub').textContent=circSubText();

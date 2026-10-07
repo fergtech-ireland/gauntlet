@@ -45,15 +45,19 @@ var m=document.getElementById('themeColor');if(m)m.setAttribute('content',t==='n
     <div class="pagetitle on-today-block"><div class="pd" id="todayDate"></div><h1>Today</h1></div>
     <!-- Build 57: Eat has the same kind of title, with the day it is showing. -->
     <div class="pagetitle eattitle"><div class="pd" id="eatDate"></div><h1>Eat</h1></div>
+    <!-- Build 58: Plan and You get the same kind of title. -->
+    <div class="pagetitle plantitle"><div class="pd" id="planDate"></div><h1>Plan</h1></div>
+    <div class="pagetitle youtitle"><div class="pd" id="youHandle"></div><h1>You</h1></div>
     <div class="spacer"></div>
     <!-- Build 55: on Today the header carries the sun and moon (Day or Night) and
          Friends, which moved out of the bottom nav. Find people stays on Friends. -->
-    <button class="iconbtn on-today on-eat" id="themeBtn" aria-label="Switch to night">
+    <button class="iconbtn on-today on-eat on-plan" id="themeBtn" aria-label="Switch to night">
       <svg class="moon" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
       <svg class="sun" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button>
     <button class="iconbtn on-today ring" id="friendsBtn" data-go="feed" aria-label="Friends">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="9" cy="9" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 6.5a3 3 0 1 1 0 5.5M17 14a5 5 0 0 1 4 6"/></svg></button>
     <button class="iconbtn on-today" id="avatarBtn" data-go="progress" aria-label="You: your profile and settings"><span class="av" id="avatarLetter">Y</span></button>
+    <button class="toplink on-progress" data-ytab="plan">Goals and numbers</button>
     <button class="iconbtn on-feed" id="findBtn" aria-label="Find people">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="8" r="4"/><path d="M3 20a7 7 0 0 1 12-4.9"/><path d="M17 15v6M14 18h6"/></svg></button>
   </header>
@@ -239,15 +243,22 @@ var m=document.getElementById('themeColor');if(m)m.setAttribute('content',t==='n
 </div>
 
 <div class="gym" id="gym">
-  <div class="gymbar">
-    <button class="iconbtn" id="gymClose" aria-label="Pause and close">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-    <div class="t"><div class="n" id="gymName">Workout</div><div class="s" id="gymSub">0:00</div></div>
-    <button class="fin" id="gymFinish">Finish</button>
+  <!-- Build 58 (Final-Train): minimise, the session name over a live clock,
+       Finish; a thin bar with a segment for every set and run; the rest clock
+       pinned at the bottom with Skip. -->
+  <div class="gymtop">
+    <div class="gymbar">
+      <button class="iconbtn" id="gymClose" aria-label="Pause and close">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="t"><div class="n" id="gymName">Workout</div><div class="s" id="gymSub">0:00</div></div>
+      <button class="fin" id="gymFinish">Finish</button>
+    </div>
+    <div class="gymsegs" id="gymSegs" aria-hidden="true"></div>
   </div>
-  <div class="rest" id="restBar"><div class="n" id="restNum">0:00</div><div class="l" id="restLbl">Rest</div>
-    <button id="restPlus">+15s</button><button id="restSkip">Skip</button></div>
   <div class="gymbody" id="gymBody"></div>
+  <div class="rest" id="restBar"><div class="rb"><div class="l" id="restLbl">Rest</div><div class="rtrack"><i id="restFill"></i></div></div>
+    <div class="n" id="restNum">0:00</div>
+    <button id="restPlus">+15s</button><button id="restSkip">Skip</button></div>
   <div class="gymfoot" id="gymFoot"></div>
 </div>
 
@@ -355,6 +366,10 @@ var m=document.getElementById('themeColor');if(m)m.setAttribute('content',t==='n
 
 <script>
 <!-- include: js/settings.js -->
+</script>
+
+<script>
+<!-- include: js/you.js -->
 </script>
 
 <script>

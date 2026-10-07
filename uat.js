@@ -1533,7 +1533,11 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('25 · every day is a card', cards().length === 7);
     const ti = G.dowIdx();
     t('25 · today\'s card is open by itself, and only today\'s', cards()[ti].classList.contains('open') && cards().filter(c => c.classList.contains('open')).length === 1);
-    t('25 · closed cards carry no buttons of their own', cards().filter(c => !c.classList.contains('open')).every(c => c.querySelectorAll('button').length === 1));
+    /* Build 58 (Final-Plan) puts Change on every day, as the design asks; a
+       closed card still carries nothing else: no Start, Edit or Cannot do it. */
+    t('25 · closed cards carry only Change of their own', cards().filter(c => !c.classList.contains('open')).every(c =>
+      [...c.querySelectorAll('button')].filter(b => !b.hasAttribute('data-planopen')).every(b => b.hasAttribute('data-swap'))
+      && !c.querySelector('[data-startday],[data-tpledit],[data-restday],[data-circedit]')));
     t('25 · open and closed are announced', cards()[ti].querySelector('.dch').getAttribute('aria-expanded') === 'true');
     /* The splits in build 47 mean a three-day lifter gets full body, so on some
        weekdays the plan has no Push day apart from today. This journey is about
@@ -4708,6 +4712,168 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('61 · no quick add numbers', !eat.querySelector('[data-eatquick]'));
     eat.querySelector('[data-eatskip="d"]').click();
     t('61 · skipping a meal gets the growing note', /regular meals really help/.test(txt(d.getElementById('toast'))));
+  }
+
+  /* ---------------------------------------------------------- 62 */
+  journey(62, 'Build 58: Plan as day cards: Change on every day, a tick when done, everything still one tap into the day');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G, { liftDays: 3, cardioDays: 2 });
+    const S = G.S, txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    d.querySelector('.tab[data-go="plan"]').click();
+    const pv = d.getElementById('planView'), cards = () => [...pv.querySelectorAll('.daycard')], ti = G.dowIdx();
+    t('62 · the header says Plan and the week\'s dates', d.body.dataset.screen === 'plan' && / to /.test(txt(d.getElementById('planDate'))) && w.getComputedStyle(d.querySelector('.plantitle')).display !== 'none');
+    t('62 · and the sun and moon is there', w.getComputedStyle(d.getElementById('themeBtn')).display !== 'none');
+    t('62 · a summary line says how many sessions and how many are done', /\d+ sessions? · 0 of \d+ done/.test(txt(pv.querySelector('.wsum'))), txt(pv.querySelector('.wsum')));
+    t('62 · every day not done has Change', cards().every((c, n) => !!c.querySelector('[data-swap="' + n + '"]')));
+    t('62 · today is marked', cards()[ti].classList.contains('today') && /Today/.test(txt(cards()[ti].querySelector('.dct'))));
+    const other = (ti + 1) % 7;
+    pv.querySelector('.dchg[data-swap="' + other + '"]').click();
+    t('62 · Change on a row opens Change this day for that day', d.getElementById('swapSheet').classList.contains('on') && txt(d.getElementById('swapTitle')) === 'Change ' + G.DAYS[other]);
+    G.closeSheets();
+    const lift = S.plan.days.findIndex(x => x.templateId);
+    S.plan.days[ti] = Object.assign({}, S.plan.days[lift], { dow: ti });
+    S.week[ti].done = ['x']; G.save(); G.renderPlan();
+    t('62 · a done day shows a tick instead of Change', !!cards()[ti].querySelector('.dtick') && !cards()[ti].querySelector('.dchg'));
+    t('62 · and the summary counts it', /1 of \d+ done/.test(txt(pv.querySelector('.wsum'))));
+    t('62 · opening a done day still offers Change day and Do it again', !!cards()[ti].querySelector('.dcb [data-swap]') && /Do it again/.test(txt(cards()[ti].querySelector('.dcb'))));
+    S.plan.days[other] = Object.assign({}, S.plan.days[lift], { dow: other, exclude: ['Bench press'] }); G.renderPlan();
+    t('62 · a day with something left out says so in amber', !!cards()[other].querySelector('.dct .flag') && /minus 1 movement/.test(txt(cards()[other])));
+    t('62 · the why, templates and training style sit below the days', !!pv.querySelector('.weekwhy .whylist') && !!pv.querySelector('.ptile[data-tplopen]') && !!pv.querySelector('.ptile[data-setting="style"]'));
+    pv.querySelector('.ptile[data-setting="style"]').click();
+    t('62 · Training style opens its sheet', !!d.querySelector('.sheet.on'));
+    G.closeSheets();
+    t('62 · aim, easy weeks, Change aim and Rebuild are all still here', !!d.getElementById('planDeload') && !!d.getElementById('changeAim') && !!d.getElementById('rebuild') && /Aim/.test(txt(pv.querySelector('.psettings'))));
+  }
+
+  /* ---------------------------------------------------------- 63 */
+  journey(63, 'Build 58: You leads with the weight goal, this week as a grid, readiness over 30 days, and Appearance');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S, txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '', k = G.todayKey();
+    /* four weeks of check-ins to compare against, then three days off the usual */
+    for (let i = 30; i >= 1; i--) S.days[G.addDays(k, -i)] = { sleep: 7.5 + (i % 3) * 0.1, stress: 3 + (i % 2), wb: 7 };
+    S.days[G.addDays(k, -2)] = { sleep: 5, stress: 8, wb: 3 };
+    S.days[k] = { sleep: 9, stress: 1, wb: 10 };
+    S.weights = [{ d: G.addDays(k, -42), kg: 92 }, { d: G.addDays(k, -21), kg: 91 }, { d: k, kg: 90 }];
+    S.target = { kind: 'weight', value: 86, from: 92, set: G.addDays(k, -42), hit: null };
+    G.addFood('chicken', 1, 'l');
+    S.workouts = [{ id: 'wx', d: G.addDays(k, -1), name: 'Push', ex: [], kind: 'lift' }];
+    G.save(); G.renderAll();
+    d.querySelector('.tab[data-go="progress"]').click();
+    const top = d.getElementById('yTop');
+    t('63 · the header says You, with the handle and Goals and numbers', w.getComputedStyle(d.querySelector('.youtitle')).display !== 'none' && txt(d.getElementById('youHandle')) === '@ferg' && !!d.querySelector('header .toplink[data-ytab="plan"]'));
+    d.querySelector('header .toplink[data-ytab="plan"]').click();
+    t('63 · Goals and numbers opens Your plan', !d.getElementById('ypanel-plan').hidden);
+    G.showYTab('progress');
+    t('63 · the three cards come first, above the forecast', !!top && d.getElementById('dash').firstElementChild === top && top.querySelectorAll('.ycard').length === 3);
+    const wc = d.getElementById('yWeight');
+    t('63 · weight shows the trend figure and what is left to the goal', /to go/.test(txt(wc)) && /kg, down/.test(txt(wc)), txt(wc));
+    const bar = wc.querySelector('.ybar i'), pctv = parseFloat(bar.style.width);
+    const want = Math.round(100 * (92 - G.currentKg()) / (92 - 86));
+    t('63 · the bar is how far from start to the goal, on the trend weight', pctv > 0 && Math.abs(pctv - want) <= 1, bar.style.width + ' against ' + want + '%');
+    t('63 · with the start and the goal under it', /Start 92/.test(txt(wc)) && /Goal 86/.test(txt(wc)));
+    const grid = d.getElementById('yWeek');
+    t('63 · the week grid has Ready, Food and Train for seven days', grid.querySelectorAll('.ygrid .yc').length === 21 && /Ready.*Food.*Train/.test(txt(grid.querySelector('.ygrid'))));
+    const cells = [...grid.querySelectorAll('.ygrid .yc')];
+    t('63 · today is better than usual, and says so to a screen reader', cells[6].classList.contains('r-better') && /readiness better/.test(cells[6].getAttribute('aria-label')));
+    t('63 · two days ago was lower', cells[4].classList.contains('r-lower'));
+    t('63 · today\'s food is on target', cells[13].classList.contains('f-ok'));
+    t('63 · yesterday shows the session', cells[19].classList.contains('t-done'));
+    const ready = d.getElementById('yReady');
+    t('63 · readiness history is 30 bars and counts, no numbers on a scale', ready.querySelectorAll('.ybars i').length === 30 && /Last 30 days: \d+ better, \d+ usual, \d+ lower/.test(txt(ready)) && !/\/10|score/i.test(txt(ready)));
+    t('63 · the counts match readiness() day by day', (() => { const c = { better: 0, usual: 0, lower: 0 }; for (let i = 0; i < 30; i++) { const l = G.readiness(G.addDays(k, -i)).level; if (c[l] !== undefined) c[l]++; }
+      return new RegExp(c.better + ' better, ' + c.usual + ' usual, ' + c.lower + ' lower').test(txt(ready)); })());
+    t('63 · today\'s readiness is unchanged by the history', G.readiness().level === G.readiness(k).level);
+    S.target = { kind: 'weight', value: 86, from: 92, set: k, hit: G.addDays(k, -1) }; G.renderAll();
+    t('63 · a goal met says so with a full bar', /Goal met/.test(txt(d.getElementById('yWeight'))) && d.querySelector('#yWeight .ybar i').style.width === '100%');
+    S.target = null; G.renderAll();
+    t('63 · with no goal, Set a goal opens the goal sheet', !!d.querySelector('#yWeight [data-setting="goal"]'));
+    d.querySelector('#yWeight [data-setting="goal"]').click();
+    t('63 · which it does', !!d.querySelector('.sheet.on'));
+    G.closeSheets();
+    t('63 · the panels from before are still all here', !!d.querySelector('#dash [data-weigh]') && /Consistency/.test(txt(d.getElementById('dash'))) && /Your steer/.test(txt(d.getElementById('dash'))));
+    const look = d.getElementById('yLook');
+    t('63 · Appearance comes last, with Day, Night and Match phone', d.getElementById('dash').lastElementChild === look && look.querySelectorAll('[data-themepick]').length === 3 && look.querySelector('[data-themepick="auto"]').getAttribute('aria-pressed') === 'true');
+    look.querySelector('[data-themepick="night"]').click();
+    t('63 · choosing Night switches the page and marks it', d.documentElement.getAttribute('data-theme') === 'night' && S.profile.theme === 'night' && d.querySelector('#yLook [data-themepick="night"]').getAttribute('aria-pressed') === 'true');
+    d.querySelector('#yLook [data-themepick="auto"]').click();
+    t('63 · and Match phone goes back to following the phone', S.profile.theme === 'auto');
+  }
+  {
+    /* the teen You: no weight card, food by meals */
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    const type = (id, v) => { const el = d.getElementById(id); el.value = String(v); el.dispatchEvent(new w.Event('input', { bubbles: true })); };
+    G.startOnboarding(); G.onbDraft.aim = 'lose'; G.onbDraft.liftDays = 3; G.step = 2; G.onbRender();
+    type('onbBorn', new w.Date().getFullYear() - 15); G.onbRender();
+    Object.assign(G.onbDraft, { handle: 'teen', cardioDays: 2, checkinDay: 6, kit: G.ALL_KIT.slice() });
+    G.finishOnboarding();
+    G.addFood('chicken', 1, 'l'); G.addFood('oats', 1, 'b'); G.addFood('apple', 1, 'd');
+    G.S.days[G.addDays(G.todayKey(), -1)] = { food: [{ id: 'pizza', meal: 'd', q: 4, kcal: 900, p: 30, c: 90, f: 40 }] };
+    G.go('progress'); G.renderAll();
+    const top = d.getElementById('yTop'), txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    t('63 · teen: no weight card', !d.getElementById('yWeight'));
+    t('63 · teen: food counts meals, never calories', d.querySelectorAll('#yWeek .ygrid .yc')[13].classList.contains('f-ok')
+      && d.querySelectorAll('#yWeek .ygrid .yc')[12].classList.contains('f-some') && !/kcal|calorie|target/i.test(txt(d.getElementById('yWeek'))) && ![...top.querySelectorAll('[aria-label]')].some(x => /kcal|calorie|over/i.test(x.getAttribute('aria-label'))));
+  }
+
+  /* ---------------------------------------------------------- 64 */
+  journey(64, 'Build 58: the session player: the set in hand at the top, a bar of every set, the rest clock pinned at the bottom');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S, txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const tpl = S.templates.find(x => x.id === 't_push') || S.templates.find(x => !/hifb/.test(x.id));
+    G.startWorkout(tpl.id);
+    const now = () => d.querySelector('#gymBody .gnow');
+    const segs = () => [...d.querySelectorAll('#gymSegs i')];
+    const sets = G.GYM.ex.reduce((a, e) => a + e.sets.length, 0);
+    t('64 · the header is the name over a live clock, with Finish', txt(d.getElementById('gymName')) === G.GYM.name && /^\d+:\d\d$/.test(txt(d.getElementById('gymSub'))) && !!d.getElementById('gymFinish'));
+    t('64 · one segment per set, the first one now', segs().length === sets && segs()[0].classList.contains('now'));
+    const first = G.exOf(G.GYM.ex[0].exId).n;
+    t('64 · the set in hand is the first movement, set 1', /SET 1 OF/.test(txt(now())) && txt(now().querySelector('.gn')) === first && /Done, set 1/.test(txt(now().querySelector('[data-fdone]'))));
+    t('64 · its row is highlighted below', d.querySelector('.exc[data-ex="0"] .setline').classList.contains('now'));
+    t('64 · show me opens the movement demo', !!now().querySelector('[data-showmove="' + G.GYM.ex[0].exId + '"]'));
+    now().querySelector('[data-showmove]').click();
+    t('64 · which it does, above the workout', d.getElementById('altSheet').classList.contains('on') && txt(d.getElementById('altTitle')) === first && +d.getElementById('altSheet').style.zIndex > 75);
+    G.closeSheets();
+    const reps0 = +G.GYM.ex[0].sets[0].reps || +G.GYM.ex[0].reps;
+    now().querySelector('[data-fstep="0:0:reps:1"]').click();
+    t('64 · the big + changes the same set, and its row', +G.GYM.ex[0].sets[0].reps === reps0 + 1 && +d.querySelector('[data-set="0:0:reps"]').value === reps0 + 1);
+    const big = now().querySelector('[data-fset="0:0:kg"]'); big.value = '42.5'; big.dispatchEvent(new w.Event('input', { bubbles: true }));
+    t('64 · typing a weight in the big box sets it, and its row', G.GYM.ex[0].sets[0].kg === 42.5 && d.querySelector('[data-set="0:0:kg"]').value === '42.5');
+    const row = d.querySelector('[data-set="0:0:reps"]'); row.value = '7'; row.dispatchEvent(new w.Event('input', { bubbles: true }));
+    t('64 · and typing in the row keeps the big box in step', now().querySelector('[data-fset="0:0:reps"]').value === '7');
+    now().querySelector('[data-fdone="0:0"]').click();
+    t('64 · Done ticks that set, as the row tick does', G.GYM.ex[0].sets[0].done && d.querySelector('.exc[data-ex="0"] .setline').classList.contains('done'));
+    t('64 · and starts the rest clock at the bottom', d.getElementById('restBar').classList.contains('on') && d.getElementById('restBar').nextElementSibling === d.getElementById('gymFoot') && parseFloat(d.getElementById('restFill').style.width) === 100);
+    t('64 · the bar fills, and the next set is in hand', segs()[0].classList.contains('done') && segs()[1].classList.contains('now') && /Done, set 2/.test(txt(now())));
+    d.getElementById('restPlus').click();
+    t('64 · +15s still adds time', +txt(d.getElementById('restNum')).split(':')[1] + 60 * +txt(d.getElementById('restNum')).split(':')[0] === G.GYM.ex[0].rest + 15);
+    d.getElementById('restSkip').click();
+    t('64 · Skip still ends the rest', !d.getElementById('restBar').classList.contains('on'));
+    /* skipping past a set does not pin the top of the screen to it */
+    d.querySelector('[data-done="0:2"]').click();
+    const after = G.GYM.ex[0].sets.length > 3 ? '0:3' : '1:0';
+    t('64 · ticking a later set moves the set in hand past the one skipped', !!now().querySelector('[data-fdone="' + after + '"]'), txt(now().querySelector('.gk')));
+    G.GYM.ex.forEach(e => e.sets.forEach(x => { x.done = true; })); G.drawGym();
+    t('64 · with every set done, the top says so and offers Finish', /EVERY SET DONE/.test(txt(now())) && !!now().querySelector('[data-ffinish]'));
+    t('64 · the protein note sits after the last block', /After this:/.test(txt(d.querySelector('#gymBody .afternote'))) && /protein/.test(txt(d.querySelector('#gymBody .afternote'))));
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+
+    /* HIFB: runs are in the bar and in hand when live */
+    S.profile.style = 'hifb';
+    G.startWorkout('t_hifb_chest');
+    t('64 · HIFB: the bar has every set and all six runs', segs().length === G.GYM.ex.reduce((a, e) => a + e.sets.length, 0) + 6 && segs().filter(x => x.classList.contains('run')).length === 6);
+    t('64 · HIFB: the buy-in comes first, with Start run', /BUY-IN RUN · 800 M/.test(txt(now())) && !!now().querySelector('[data-runbegin="in"]'));
+    now().querySelector('[data-runbegin="in"]').click();
+    t('64 · HIFB: a live run takes the top, with its clock and Finish run', !!now().querySelector('[data-runlive="in"]') && !!now().querySelector('[data-runstop="in"]'));
+    G.GYM.hifb.buyIn.startAt -= 180000;
+    now().querySelector('[data-runstop="in"]').click();
+    t('64 · HIFB: finishing it records it and moves to block 1', !!G.GYM.hifb.buyIn.ms && /BLOCK 1 OF 4 · SET 1 OF 4/.test(txt(now())));
+    for (let j = 0; j < 4; j++) d.querySelector('[data-fdone="0:' + j + '"]').click();
+    t('64 · HIFB: the last set of a block puts its run in hand, already timing', !!G.GYM.ex[0].run.startAt && !!now().querySelector('[data-runlive="0"]'));
   }
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);

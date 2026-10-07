@@ -42,14 +42,35 @@ function dayActionsHTML(n,d){
       <button class="dact" data-swap="${n}">Change day</button>
       ${startable? `<button class="dact" data-restday="${n}">Cannot do it</button>`:''}</div>`;
 }
+/* Build 58: the week as day cards (Final-Plan). Each day is a row in one
+   card: the day, what it is, and on the right a done tick or Change, which
+   opens the same Change this day sheet as before. Tapping the row still opens
+   the day in place with the whole workout and every action (Start, Edit,
+   Change day, Cannot do it), so nothing moved further away. Today sits on the
+   amber tint, and a day with something left out says so in amber. */
 function dayCard(n,d,isToday,open){
-  return `<div class="daycard ${isToday?'today':''} ${open?'open':''}">
+  const done=dayDone(n)&&!!d.type, flag=!!(d.exclude&&d.exclude.length);
+  const sub=[isToday? 'Today' : '', daySub(d),
+    flag? 'minus '+d.exclude.length+' movement'+(d.exclude.length>1?'s':'') : '',
+    d.deload? 'easy week' : (d.setDelta? 'one set lighter' : '')].filter(Boolean).join(' · ');
+  return `<div class="daycard ${isToday?'today':''} ${open?'open':''} ${done?'done':''}">
+    <div class="dcrow">
     <button class="dch" data-planopen="${n}" aria-expanded="${open?'true':'false'}">
       <span class="dcd">${DAYS[n]}</span>
-      <span class="dct"><b>${dayLabel(d)}${isToday?' <span class="cichip">today</span>':''}${d.checkin?' <span class="cichip">check in</span>':''}</b>
-        <span>${daySub(d)}${d.exclude&&d.exclude.length?' · minus '+d.exclude.length+' movement'+(d.exclude.length>1?'s':''):''}${d.deload?' · easy week':''}</span></span>
-      <span class="dcv" aria-hidden="true">${open?'−':'+'}</span></button>
+      <span class="dct"><b>${dayLabel(d)||'Rest'}${d.checkin?' <span class="cichip">check in</span>':''}</b>
+        <span class="${flag?'flag':''}">${sub}</span></span>
+    </button>
+    ${done? `<span class="dtick" role="img" aria-label="Done"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.5 5 9l5-6"/></svg></span>`
+      : `<button class="dchg" data-swap="${n}" aria-label="Change ${DAYS[n]}">Change</button>`}
+    </div>
     ${open? `<div class="dcb">${dayMovesHTML(d)}${dayActionsHTML(n,d)}</div>`:''}</div>`;
+}
+/* "5 to 11 October", or "29 September to 5 October" across a month */
+function weekRangeText(){
+  const M=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const a=dateOf(mondayKey()), b=dateOf(addDays(mondayKey(),6));
+  return a.getMonth()===b.getMonth()? a.getDate()+' to '+b.getDate()+' '+M[b.getMonth()]
+    : a.getDate()+' '+M[a.getMonth()]+' to '+b.getDate()+' '+M[b.getMonth()];
 }
 document.addEventListener('click',e=>{
   const po=e.target.closest('[data-planopen]');
@@ -62,28 +83,31 @@ document.addEventListener('click',e=>{
     const b=document.querySelector('.daycard.open .dch'); if(b&&b.focus) b.focus(); return; }
 });
 function renderPlan(){
-  const plan=ensurePlan(), i=dowIdx(), aim=aimOf(S.profile.aim);
+  const plan=ensurePlan(), i=dowIdx(), aim=aimOf(S.profile.aim), wc=weekCounts();
+  const st=(typeof STYLES!=='undefined'&&typeof styleOf==='function')? STYLES[styleOf()] : null;
+  const pd=$('planDate'); if(pd) pd.textContent=weekRangeText();
   $('planView').innerHTML=`
-  <div class="h1">Your week</div>
-  <div class="sect" style="border-bottom:0;padding-bottom:6px">
+  <div class="sect weeksect">
+    <h2>This week</h2>
+    <p class="wsum">${[st? st.t : '', wc.planned? wc.planned+' session'+(wc.planned===1?'':'s') : 'nothing planned', wc.planned? wc.done+' of '+wc.planned+' done' : ''].filter(Boolean).join(' · ')}</p>
+  </div>
+  <div class="daycards">${plan.days.map((d,n)=>dayCard(n,d,n===i,n===planOpenIndex())).join('')}</div>
+  <div class="sect weeksect weekwhy">
+    <div class="whylist">${plan.why.map(w=>`<div class="note">${w}</div>`).join('')}</div>
+    <div class="note">Tap a day to see the whole session and start, edit or change it.</div>
+  </div>
+  <div class="ptiles">
+    <button class="ptile" data-tplopen="1"><b>Templates and runs</b><span>All workouts, including ones not in this week</span></button>
+    <button class="ptile" data-setting="style"><b>Training style</b><span>${st? escHabit(st.t) : 'Gym'}${styleOf()==='hybrid'? ' · '+hyroxDaysOf(sessionsWanted())+' HYROX, '+(sessionsWanted()-hyroxDaysOf(sessionsWanted()))+' CrossFit' : ''}${styleOf()==='gym'&&typeof splitOf==='function'&&splitOf()? ', '+escHabit(SPLITS[splitOf()].t.toLowerCase()) : ''}, your kit</span></button>
+  </div>
+  <div class="sect psettings">
     <div class="numline"><div>Aim <b>${aim.t}</b></div><div>Training days <b>${plan.days.filter(d=>d.type&&d.slot!=='walk').length}</b></div></div>
     ${(()=>{ const due=deloadDue(), nx=nextDeload();
-      return `<button class="dlweek" id="planDeload" style="border-top:0;padding-bottom:0">
+      return `<button class="dlweek" id="planDeload">
         <div class="d"><b>${due? 'This is an easy week' : (nx? 'Next easy week: '+prettyDate(nx) : 'No easy weeks scheduled')}</b>
         <span>${due? DELOAD_TIERS[deloadTier().id].band+' less work, about 10% lighter. Tap to change.' : 'Tap to see the next ten weeks, or add one.'}</span></div>
         <span class="tag ${due?'on':''}">${due?'Easy':'Change'}</span></button>`; })()}
-  </div>
-  <div class="sect weeksect">
-    <h2>This week</h2>
-    <div class="whylist">${plan.why.map(w=>`<div class="note">${w}</div>`).join('')}</div>
-    <div class="note" style="margin:10px 0 0">Tap a day to see it. Start, edit or change it from there.</div>
-  </div>
-  <div class="daycards">${plan.days.map((d,n)=>dayCard(n,d,n===i,n===planOpenIndex())).join('')}</div>
-  <button class="logrow" data-tplopen="1" style="margin:4px 0 0">
-    <div class="txt"><div class="t">All workouts and templates</div><div class="s">Including ones not in this week</div></div>
-    <span class="chev">›</span></button>
-  <div class="sect" style="border-bottom:0">
-    <div class="note" style="margin:0">Every lifting day comes from one of these. Change the sets, the rep range, the rest or the movements themselves and the plan follows.</div>
+    <div class="note">Every lifting day comes from a template. Change the sets, the rep range, the rest or the movements themselves and the plan follows.</div>
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
       <button class="mini" id="changeAim">Change aim</button>
       <button class="mini" id="rebuild">Rebuild the week</button></div>

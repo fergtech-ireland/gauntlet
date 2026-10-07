@@ -234,10 +234,11 @@ Each build is shippable on its own and passes the full suite.
   - All existing rows restyled.
   - + Log inline check-in sliders.
 - **Build 57: Eat tab.** Done 7 Oct 2026, see HANDOVER. Full diary on the existing food functions, plus earlier days through the date switcher. Barcode button not built (decision first).
-- **Build 58: player and You.**
+- **Build 58: player and You.** Done 7 Oct 2026, see HANDOVER.
   - Player restyle.
   - You tab layout: weight goal, week grid, readiness history, Appearance.
   - Plan day cards.
+  - Not built from the design: the strength list on You (it sits beside the recovery map, so it goes with build 59), and the form video (the thumb opens the existing pose demo).
 - **Build 59 (optional):** muscle map and recovery map (mapping data, SVG, method sheet entry).
 - **Later:** barcode (decision first).
 

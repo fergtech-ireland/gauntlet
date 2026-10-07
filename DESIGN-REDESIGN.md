@@ -233,7 +233,7 @@ Each build is shippable on its own and passes the full suite.
   - Dark hero card (without the muscle map), Meals list, quick tiles.
   - All existing rows restyled.
   - + Log inline check-in sliders.
-- **Build 57: Eat tab.** Full diary on the existing food functions.
+- **Build 57: Eat tab.** Done 7 Oct 2026, see HANDOVER. Full diary on the existing food functions, plus earlier days through the date switcher. Barcode button not built (decision first).
 - **Build 58: player and You.**
   - Player restyle.
   - You tab layout: weight goal, week grid, readiness history, Appearance.

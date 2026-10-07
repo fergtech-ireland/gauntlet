@@ -43,10 +43,12 @@ var m=document.getElementById('themeColor');if(m)m.setAttribute('content',t==='n
     <!-- Build 56: on Today the brand gives way to the date and the page title,
          as in the design, and an avatar opens You. -->
     <div class="pagetitle on-today-block"><div class="pd" id="todayDate"></div><h1>Today</h1></div>
+    <!-- Build 57: Eat has the same kind of title, with the day it is showing. -->
+    <div class="pagetitle eattitle"><div class="pd" id="eatDate"></div><h1>Eat</h1></div>
     <div class="spacer"></div>
     <!-- Build 55: on Today the header carries the sun and moon (Day or Night) and
          Friends, which moved out of the bottom nav. Find people stays on Friends. -->
-    <button class="iconbtn on-today" id="themeBtn" aria-label="Switch to night">
+    <button class="iconbtn on-today on-eat" id="themeBtn" aria-label="Switch to night">
       <svg class="moon" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
       <svg class="sun" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button>
     <button class="iconbtn on-today ring" id="friendsBtn" data-go="feed" aria-label="Friends">
@@ -89,6 +91,7 @@ var m=document.getElementById('themeColor');if(m)m.setAttribute('content',t==='n
     </div>
   </section>
   <section class="screen" id="s-feed" tabindex="-1"><div id="feed"></div></section>
+  <section class="screen" id="s-eat" tabindex="-1"><div id="eatView"></div></section>
 </div>
 
 <nav class="tabs" role="tablist" aria-label="Sections">
@@ -325,6 +328,7 @@ var m=document.getElementById('themeColor');if(m)m.setAttribute('content',t==='n
 <!-- include: js/workouts/03-food.js -->
 <!-- include: js/workouts/04-player-finish.js -->
 <!-- include: js/workouts/05-templates-editors.js -->
+<!-- include: js/eat.js -->
 </script>
 <script>
 <!-- include: js/boot.js -->

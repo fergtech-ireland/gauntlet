@@ -171,7 +171,7 @@ function fitNumbers(root){
 document.addEventListener('input',e=>{ if(e.target.closest&&e.target.closest('.stepper')) fitNumbers(e.target.closest('.stepper')); });
 document.addEventListener('change',e=>{
   if(e.target.id!=='mealAt') return;
-  if(setMealAt(todayKey(),foodSlot,e.target.value)){ renderAll(); toast(MEALS.find(m=>m[0]===foodSlot)[1]+' set to '+e.target.value); }
+  if(setMealAt(foodKey(),foodSlot,e.target.value)){ renderAll(); toast(MEALS.find(m=>m[0]===foodSlot)[1]+' set to '+e.target.value); }
 });
 function drawGym(){
   if(!GYM) return;

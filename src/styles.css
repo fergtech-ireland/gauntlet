@@ -1148,3 +1148,66 @@ body[data-screen="today"] header.top{border-bottom:0;height:62px}
 #logSheet{background:var(--bg)}
 #logBody{padding:0 14px 16px}
 #todayView .hero.restday > .skipbtn{margin:8px auto 0}
+/* ---------- Eat, build 57 (design/redesign/Final-Eat.dc.html) ---------- */
+body[data-screen="eat"] header.top .on-eat{display:grid}
+body[data-screen="eat"] header.top .eattitle{display:flex}
+body[data-screen="eat"] header.top .brand{display:none}
+body[data-screen="eat"] header.top{border-bottom:0;height:62px}
+#eatView{padding:0 12px 12px}
+.eatdate{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:4px;margin:2px 0 8px}
+.eatdate .edbtn{width:44px;height:44px;border-radius:999px;display:grid;place-items:center;color:var(--ink)}
+.eatdate .edbtn:disabled{color:var(--line);cursor:default}
+.eatdate .edl{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;text-align:center}
+.eatdate .edl b{font-size:15px;font-weight:800}
+.eatsearch{display:flex;align-items:center;gap:8px;width:100%;height:44px;padding:0 12px;border-radius:10px;background:var(--surface);border:1px solid var(--line);color:var(--mute);font-size:15px;text-align:left}
+.eatcard{margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.eatsum{padding:14px}
+.eattop{display:grid;grid-template-columns:100px minmax(0,1fr);gap:14px;align-items:center}
+.eatring{position:relative;width:100px;height:100px;--tone:var(--coral)}
+.eatring svg{display:block;width:100%;height:100%}
+.eatring .rt{fill:none;stroke:var(--track);stroke-width:9}
+.eatring .ra{fill:none;stroke:var(--tone);stroke-width:9;stroke-linecap:round}
+.eatring .ev{position:absolute;left:0;right:0;top:30px;text-align:center;font-family:var(--font-num);font-weight:700;line-height:1;color:var(--ink)}
+.eatring .ec{position:absolute;left:0;right:0;top:62px;text-align:center;font-size:11px;font-weight:600;color:var(--mute)}
+.eatnums{display:grid;gap:7px;font-size:13px;min-width:0}
+.eatnums .enrow{display:flex;justify-content:space-between;gap:8px}
+.eatnums .enrow span{color:var(--mute)}
+.eatnums .enote{font-size:12px;color:var(--mute);line-height:1.4}
+.emacs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.emac{display:block;min-width:0;text-align:left}
+button.emac{min-height:44px}
+.emac .en{display:block;font-size:11px;font-weight:700;color:var(--mute)}
+.emac .evv b{font-weight:800;font-size:15px}
+.emac .evv small{font-size:11px;color:var(--mute)}
+.emac .ebar{display:block;height:4px;border-radius:2px;background:var(--track);margin-top:5px;overflow:hidden}
+.emac .ebar i{display:block;height:100%;border-radius:2px}
+button.emac .en:after{content:" ›"}
+.eatmeal .ehead{display:grid;grid-template-columns:minmax(0,1fr) auto 44px;gap:8px;align-items:center;padding:8px 6px 6px 14px}
+.eatmeal .eht{min-width:0;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.eatmeal .eht b{font-size:16px;font-weight:800}
+.eatmeal .ewhen{font-size:12px;font-weight:600;color:var(--mute)}
+.eatmeal .ek{font-size:13px;font-weight:700;color:var(--mute)}
+.eatmeal .eadd{width:44px;height:44px;border-radius:999px;display:grid;place-items:center;font-size:20px;font-weight:600;color:var(--ink);
+  border:5px solid transparent;background-clip:padding-box;box-shadow:inset 0 0 0 1px var(--line)}
+.eatmeal.next{border:1.5px solid var(--green)}
+.eatmeal.next .eadd{background-color:var(--cta);color:var(--cta-ink);box-shadow:none}
+.eatmeal.flash{box-shadow:0 0 0 2px var(--green)}
+.eitem{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:48px;padding:8px 14px;border-top:1px solid var(--line);text-align:left;font-size:14px}
+.eitem .eit{min-width:0;display:flex;flex-direction:column}
+.eitem .ein{font-weight:600}
+.eitem .eiq{color:var(--mute);font-weight:700}
+.eitem .eis{font-size:12px;color:var(--mute)}
+.eitem .eik{color:var(--mute);font-weight:600;flex:0 0 auto}
+.eempty{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 14px 8px;font-size:13px;color:var(--mute)}
+.eempty .inlinebtn{min-height:36px}
+.eatmeal.skipped .eht b{color:var(--mute)}
+.epr{padding:6px 14px 10px;border-top:1px solid var(--line);font-size:12px;color:var(--mute)}
+.epr.hit{color:var(--green-text);font-weight:700}
+.etiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+.etiles .etile:only-child{grid-column:span 2}
+.etile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;text-align:left;min-height:60px}
+.etile b{display:block;font-size:14px}
+.etile span{color:var(--mute)}
+.esaved .slab{display:block}
+.efoot{display:flex;justify-content:center;margin-top:8px}
+.efoot .inlinebtn{font-size:12.5px;min-height:44px}

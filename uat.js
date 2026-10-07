@@ -2028,10 +2028,10 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
       !!home().querySelector('#startToday, [data-go="plan"], #todayViewEdit'));
     t('31 · today\'s numbers are right there, as three rings', d.querySelectorAll('.rings .ring').length === 3
       && [...d.querySelectorAll('.rings .ring')].map(r => r.dataset.ring).join() === 'ready,food,train');
-    t('31 · calories are on the first screen, because that is what people stop logging, and one tap logs them',
-      d.querySelector('.rings [data-ring="food"]').dataset.glance === 'food');
+    t('31 · calories are on the first screen, because that is what people stop logging, and one tap opens the food diary',
+      d.querySelector('.rings [data-ring="food"]').dataset.go === 'eat');
     t('31 · and they show what is left, not just what is eaten', /kcal left/.test(txt(d.querySelector('.rings'))));
-    t('31 · each one can be logged in one tap', ['food','protein'].every(k => !!d.querySelector('[data-glance="' + k + '"]')) && !!d.querySelector('.driver [data-glance="sleep"], .driver [data-glance="steps"]'));
+    t('31 · each one can be logged in one tap', !!d.querySelector('.rings [data-go="eat"]') && !!d.querySelector('[data-glance="protein"]') && !!d.querySelector('.driver [data-glance="sleep"], .driver [data-glance="steps"]'));
     t('31 · with a row for the two things worth logging', d.querySelectorAll('.quicks .quick').length === 2);
 
     /* the week, once, not twice */
@@ -2052,7 +2052,10 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
 
     /* logging from the home screen */
     const tap = id => { G.go('today'); G.renderAll(); const b = d.querySelector('[data-glance="' + id + '"]'); if (b) b.click(); return !!b; };
-    t('31 · tapping calories opens the food sheet', tap('food') && d.getElementById('foodSheet').classList.contains('on'));
+    /* build 57: calories open Eat, and Add there opens the food sheet */
+    t('31 · tapping calories opens Eat, and its Add the food sheet', (() => { G.go('today'); G.renderAll();
+      d.querySelector('.rings [data-ring="food"]').click(); if (d.body.dataset.screen !== 'eat') return false;
+      d.querySelector('#eatView [data-eatadd]').click(); return d.getElementById('foodSheet').classList.contains('on'); })());
     G.closeSheets();
     t('31 · tapping weigh in opens the weigh in', tap('weigh') && d.getElementById('weighSheet').classList.contains('on'));
     G.closeSheets();
@@ -2147,8 +2150,11 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
       && !!d.getElementById('quickFull'));
     G.closeSheets();
     G.go('today'); G.renderAll();
-    d.querySelector('[data-glance="food"]').click();
-    t('32 · the food tile still opens the food list, which is the right place for it',
+    /* build 57: the Food ring opens Eat, and Eat's Add opens the food list */
+    d.querySelector('.rings [data-ring="food"]').click();
+    t('32 · the Food ring opens Eat', d.body.dataset.screen === 'eat' && d.getElementById('s-eat').classList.contains('on'));
+    d.querySelector('#eatView [data-eatadd]').click();
+    t('32 · and Add there opens the food list, which is the right place for it',
       d.getElementById('foodSheet').classList.contains('on'));
     G.closeSheets();
 
@@ -2652,10 +2658,13 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
       /meals at \d+g protein so far/.test(txt(d.querySelector('.mealsnote'))) && /the day's total, above, matters most/.test(txt(d.querySelector('.mealsnote')))
       && !/of \d+g protein today/.test(txt(d.querySelector('.mealsnote'))));
     d.querySelector('.mealscard [data-mealslot="d"]').click();
-    t('39 · tapping a meal opens the food list on that meal',
+    t('39 · tapping a meal opens that meal in Eat', d.body.dataset.screen === 'eat'
+      && d.querySelector('#eatView [data-eatmeal="d"]').classList.contains('flash'));
+    d.querySelector('#eatView [data-eatmeal="d"] [data-eatadd]').click();
+    t('39 · and its Add opens the food list on that meal',
       d.getElementById('foodSheet').classList.contains('on')
       && txt([...d.querySelectorAll('#foodSheet [data-foodslot]')].find(b => b.classList.contains('on')).querySelector('span')) === 'Dinner');
-    G.closeSheets();
+    G.closeSheets(); G.go('today');
 
     /* the week, with no extra input asked for */
     for (let i = 1; i <= 3; i++) {
@@ -4423,11 +4432,13 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     /* ---- Eat: the same food sheet, the same day record ---- */
     const before = G.dayFood().length, kcal0 = G.foodTotals().kcal;
     d.querySelector('.tab[data-go="eat"]').click();
-    t('57 · Eat opens the food sheet and leaves you on your screen', d.getElementById('foodSheet').classList.contains('on') && d.getElementById('s-today').classList.contains('on'));
+    t('57 · Eat is its own screen now (build 57), with its tab selected', d.getElementById('s-eat').classList.contains('on') && !d.getElementById('s-today').classList.contains('on')
+      && d.querySelector('.tab[data-go="eat"]').classList.contains('on'));
+    d.querySelector('#eatView [data-eatsearch]').click();
     const add = d.querySelector('#foodSheet .fadd[data-foodadd]:not(.half)');
     add.click();
     t('57 · adding from Eat lands in today\'s record, as from + Log', G.dayFood().length === before + 1 && G.foodTotals().kcal > kcal0);
-    G.closeSheets();
+    G.closeSheets(); G.go('today');
     d.getElementById('logBtn').click();
     t('57 · + Log still opens the log sheet', d.getElementById('logSheet') ? d.getElementById('logSheet').classList.contains('on') : !!d.querySelector('.sheet.on'));
     G.closeSheets();
@@ -4466,7 +4477,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     ring('train').click();
     t('58 · and opens the day', d.getElementById('daySheet').classList.contains('on'));
     G.closeSheets();
-    t('58 · the Food ring is calories left, in one tap to the food list', /kcal left/.test(txt(ring('food'))) && ring('food').dataset.glance === 'food');
+    t('58 · the Food ring is calories left, in one tap to Eat', /kcal left/.test(txt(ring('food'))) && ring('food').dataset.go === 'eat');
 
     /* ---- the progression line: reps move the weight, readiness never does ---- */
     const tpl = S.templates.find(x => x.id === S.plan.days[i].templateId), ex = tpl.ex.find(r => !G.isBodyweight(r.exId));
@@ -4502,9 +4513,11 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     S.profile.trainTime = '18:00'; S.profile.bedtime = '23:00'; S.profile.wakeTime = '07:00'; G.renderAll();
     t('58 · dinner after training says so', /Dinner, after training/.test(txt(meal('d'))), txt(meal('d')));
     meal('b').click();
-    t('58 · tapping a meal opens the food list on that meal', d.getElementById('foodSheet').classList.contains('on')
+    t('58 · tapping a meal opens that meal in Eat', d.body.dataset.screen === 'eat' && d.querySelector('#eatView [data-eatmeal="b"]').classList.contains('flash'));
+    d.querySelector('#eatView [data-eatmeal="b"] [data-eatadd]').click();
+    t('58 · and its Add opens the food list on that meal', d.getElementById('foodSheet').classList.contains('on')
       && txt([...d.querySelectorAll('#foodSheet [data-foodslot]')].find(b => b.classList.contains('on')).querySelector('span')) === 'Breakfast');
-    G.closeSheets();
+    G.closeSheets(); G.go('today'); G.renderAll();
 
     /* ---- the header ---- */
     t('58 · the header shows the date and Today, with an avatar to You', /Today/.test(txt(d.querySelector('header.top .pagetitle'))) && txt(d.getElementById('todayDate')).length > 5
@@ -4566,6 +4579,135 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const st = d.querySelector('[data-cirange="stress"]'); st.value = '8'; st.dispatchEvent(new w.Event('input', { bubbles: true }));
     t('59 · a stressful day in the quick check-in shows Childline', /1800 66 66 66/.test(txt(d.getElementById('ciCard'))));
     G.closeSheets();
+  }
+
+  /* ---------------------------------------------------------- 60 */
+  journey(60, 'Build 57: Eat as a tab: the day\'s diary, adds through the same food sheet, earlier days, teens without calories');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S, k = G.todayKey(), y = G.addDays(k, -1), y2 = G.addDays(k, -2);
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const eat = () => d.getElementById('eatView');
+    const sec = m => eat().querySelector('[data-eatmeal="' + m + '"]');
+    const n = s2 => +String(s2).replace(/,/g, '');
+    G.addFood('oats', 1, 'b'); G.addFood('chicken', 1, 'l'); G.addFood('rice', 1, 'l');
+    d.querySelector('.tab[data-go="eat"]').click();
+    t('60 · Eat is a screen of its own, tab selected', d.body.dataset.screen === 'eat' && d.getElementById('s-eat').classList.contains('on')
+      && d.querySelector('.tab[data-go="eat"]').getAttribute('aria-selected') === 'true');
+    t('60 · titled Eat, with the date', txt(d.querySelector('header.top .eattitle h1')) === 'Eat'
+      && txt(d.getElementById('eatDate')) === G.dateOf(k).toLocaleDateString('en-IE', { weekday: 'long', day: 'numeric', month: 'long' }));
+    t('60 · the sun and moon is there too', d.getElementById('themeBtn').classList.contains('on-eat'));
+
+    /* ---- the summary ---- */
+    const tg = S.targets, tot = G.foodTotals();
+    t('60 · calories left is target minus eaten, the same sum as the Food ring', tg.kcal > 0
+      && n(txt(eat().querySelector('.eatsum .ev'))) === tg.kcal - Math.round(tot.kcal) && /kcal left/.test(txt(eat().querySelector('.eatsum .ec'))));
+    t('60 · eaten and target both shown', new RegExp('Target ' + G.num(tg.kcal)).test(txt(eat().querySelector('.eatnums')))
+      && new RegExp('Eaten ' + G.num(Math.round(tot.kcal))).test(txt(eat().querySelector('.eatnums'))));
+    const macs = [...eat().querySelectorAll('.emac')].map(txt);
+    t('60 · bars for protein, carbs, fat and fibre against their targets', macs.length === 4
+      && macs[0] === 'Protein ' + Math.round(tot.protein) + '/' + tg.protein + 'g' && macs[1] === 'Carbs ' + Math.round(tot.carbs) + '/' + tg.carbs + 'g'
+      && macs[2] === 'Fat ' + Math.round(tot.fat) + '/' + tg.fat + 'g' && /^Fibre \d+\/30g/.test(macs[3]), macs.join(' | '));
+    eat().querySelector('[data-fibrewhy]').click();
+    t('60 · fibre opens where it came from, and why 30g', d.getElementById('altSheet').classList.contains('on') && /Why 30g/.test(txt(d.getElementById('altBody'))));
+    G.closeSheets();
+
+    /* ---- meals ---- */
+    t('60 · breakfast, lunch, snacks and dinner as sections', [...eat().querySelectorAll('[data-eatmeal]')].map(x => x.dataset.eatmeal).join('') === 'blsd');
+    const lk = Math.round(G.dayFood().filter(x => x.meal === 'l').reduce((a, x) => a + x.kcal * x.q, 0));
+    t('60 · each with its items and calories', sec('l').querySelectorAll('.eitem').length === 2 && n(txt(sec('l').querySelector('.ek'))) === lk
+      && /Chicken/.test(txt(sec('l'))) && !!sec('l').querySelector('.ewhen'));
+    t('60 · an empty main meal can be marked skipped, snacks cannot', !!sec('d').querySelector('[data-eatskip="d"]') && !sec('s').querySelector('[data-eatskip]'));
+
+    sec('s').querySelector('[data-eatadd]').click();
+    t('60 · a meal\'s + opens the food sheet on that meal', d.getElementById('foodSheet').classList.contains('on')
+      && txt([...d.querySelectorAll('#foodSheet [data-foodslot]')].find(b => b.classList.contains('on')).querySelector('span')) === 'Snacks'
+      && txt(d.querySelector('#foodSheet h3')) === 'Food today');
+    const before = G.dayFood().length;
+    d.querySelector('#foodSheet [data-foodadd="banana:1"]').click();
+    t('60 · adding lands in today\'s record', G.dayFood().length === before + 1 && G.dayFood().some(x => x.id === 'banana' && x.meal === 's'));
+    t('60 · and shows on Eat straight away, behind the sheet', /Banana/.test(txt(sec('s'))));
+    G.closeSheets();
+    sec('l').querySelector('[data-eatitem="l"]').click();
+    t('60 · tapping an item opens its meal, with the counter', d.getElementById('foodSheet').classList.contains('on')
+      && txt([...d.querySelectorAll('#foodSheet [data-foodslot]')].find(b => b.classList.contains('on')).querySelector('span')) === 'Lunch');
+    d.querySelector('#foodSheet [data-foodstep="chicken|l|1"]').click();
+    t('60 · one more is one tap, and Eat says × 2', G.dayFood().find(x => x.id === 'chicken').q === 2 && /Chicken[^×]*× 2/.test(txt(sec('l'))));
+    G.closeSheets();
+
+    sec('d').querySelector('[data-eatskip="d"]').click();
+    t('60 · skipping dinner is saved on the day', (S.days[k].skipped || []).indexOf('d') >= 0 && /Skipped/.test(txt(sec('d'))));
+    sec('d').querySelector('[data-eatunskip="d"]').click();
+    t('60 · and Undo takes it back', (S.days[k].skipped || []).indexOf('d') < 0);
+
+    /* ---- earlier days ---- */
+    const next = () => eat().querySelector('[data-eatday="1"]');
+    t('60 · no going forward from today', next().disabled);
+    S.days[y2] = { food: [{ id: 'egg', n: 'Egg', u: 'egg', q: 2, meal: 'b', kcal: 75, p: 6.5, c: 0.5, f: 5, at: G.dateOf(y2).getTime() + 8 * 3600e3 }] };
+    eat().querySelector('[data-eatday="-1"]').click();
+    t('60 · back a day says Yesterday, with a way back', /Yesterday/.test(txt(eat().querySelector('.eatdate'))) && !!eat().querySelector('[data-eatday="today"]') && !next().disabled
+      && txt(d.getElementById('eatDate')) === G.dateOf(y).toLocaleDateString('en-IE', { weekday: 'long', day: 'numeric', month: 'long' }));
+    const todayBefore = JSON.stringify(G.dayFood(k));
+    sec('d').querySelector('[data-eatadd]').click();
+    t('60 · adding to yesterday opens the sheet on yesterday', G.foodDay === y && /^Food, /.test(txt(d.querySelector('#foodSheet h3'))));
+    d.querySelector('#foodSheet [data-foodadd="chicken:1"]').click();
+    t('60 · and it lands on yesterday, not today', G.dayFood(y).some(x => x.id === 'chicken' && x.meal === 'd') && JSON.stringify(G.dayFood(k)) === todayBefore);
+    t('60 · with yesterday\'s totals kept in step', (S.days[y] || {}).kcal === Math.round(G.foodTotals(y).kcal) && (S.days[y] || {}).kcal > 0);
+    t('60 · eaten at its meal\'s time on that day, not now', (() => { const x = G.dayFood(y).find(f => f.id === 'chicken'); return !!x && x.at >= G.dateOf(y).getTime() && x.at < G.dateOf(k).getTime(); })());
+    G.closeSheets();
+    t('60 · closing the sheet puts it back to today', G.foodDay === null);
+    G.addFood('apple', 1, 's');
+    t('60 · so anything added afterwards lands on today', G.dayFood(k).some(x => x.id === 'apple') && !G.dayFood(y).some(x => x.id === 'apple'));
+    G.renderEat();
+    eat().querySelector('[data-eatsame]').click();
+    t('60 · Same as the day before copies into the day on screen', G.dayFood(y).some(x => x.id === 'egg' && x.q === 2) && !G.dayFood(k).some(x => x.id === 'egg'));
+    eat().querySelector('[data-eatday="1"]').click();
+    t('60 · forward again is today', /Today/.test(txt(eat().querySelector('.eatdate'))) && next().disabled);
+    G.openFood(false, { day: G.addDays(k, 3) });
+    t('60 · a future day is never added to', G.foodDay === null && txt(d.querySelector('#foodSheet h3')) === 'Food today');
+    G.closeSheets();
+    G.eatDay = y; G.go('eat');
+    t('60 · coming back to Eat starts on today', /Today/.test(txt(eat().querySelector('.eatdate'))));
+
+    /* ---- shortcuts ---- */
+    eat().querySelector('[data-eatquick]').click();
+    t('60 · Quick add numbers opens the sheet ready to type', d.getElementById('foodSheet').classList.contains('on') && !!d.getElementById('qaKcal'));
+    G.closeSheets();
+    G.saveMealAs('My lunch', 'l'); G.renderEat();
+    const ln = G.dayFood().filter(x => x.meal === 'l').length, cq = G.dayFood().find(x => x.id === 'chicken').q;
+    eat().querySelector('[data-eatsaved]').click();
+    t('60 · a saved meal adds in one tap', G.dayFood().find(x => x.id === 'chicken').q === cq * 2 && G.dayFood().filter(x => x.meal === 'l').length === ln);
+
+    /* ---- from Today ---- */
+    G.go('today'); G.renderAll();
+    d.querySelector('.rings [data-ring="food"]').click();
+    t('60 · the Food ring opens Eat', d.body.dataset.screen === 'eat');
+    G.go('today'); G.renderAll();
+    d.querySelector('.mealscard [data-mealslot="l"]').click();
+    t('60 · a meal row opens that meal in Eat', d.body.dataset.screen === 'eat' && sec('l').classList.contains('flash'));
+  }
+
+  /* ---------------------------------------------------------- 61 */
+  journey(61, 'Build 57: the teen Eat has meals, never calories or macros');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    const type = (id, v) => { const el = d.getElementById(id); el.value = String(v); el.dispatchEvent(new w.Event('input', { bubbles: true })); };
+    G.startOnboarding(); G.onbDraft.aim = 'lose'; G.onbDraft.liftDays = 3; G.step = 2; G.onbRender();
+    type('onbBorn', new w.Date().getFullYear() - 15); G.onbRender();
+    Object.assign(G.onbDraft, { handle: 'teen', cardioDays: 2, checkinDay: 6, kit: G.ALL_KIT.slice() });
+    G.finishOnboarding();
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    G.addFood('chicken', 1, 'l'); G.addFood('oats', 1, 'b');
+    d.querySelector('.tab[data-go="eat"]').click();
+    const eat = d.getElementById('eatView');
+    t('61 · the ring counts meals', txt(eat.querySelector('.eatsum .ev')) === '2' && /meals logged/.test(txt(eat.querySelector('.eatsum'))));
+    t('61 · no calories anywhere on Eat', !/kcal|calorie/i.test(txt(eat)) && ![...eat.querySelectorAll('[aria-label]')].some(x => /kcal|calorie/i.test(x.getAttribute('aria-label'))));
+    t('61 · no macro bars', !eat.querySelector('.emacs') && !/Carbs|Fat\b/.test(txt(eat)));
+    t('61 · items still listed, by what they are', /Chicken/.test(txt(eat.querySelector('[data-eatmeal="l"]'))) && !eat.querySelector('.eik') && !eat.querySelector('.ek'));
+    t('61 · no quick add numbers', !eat.querySelector('[data-eatquick]'));
+    eat.querySelector('[data-eatskip="d"]').click();
+    t('61 · skipping a meal gets the growing note', /regular meals really help/.test(txt(d.getElementById('toast'))));
   }
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);

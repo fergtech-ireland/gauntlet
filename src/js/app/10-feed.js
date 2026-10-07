@@ -34,5 +34,6 @@ function renderPeople(){
     : 'Make an account and anyone else using your copy of Gauntlet shows up here.'}</div>`;
 }
 function renderAll(){ renderToday(); renderPlan(); renderFeed(); renderPeople(); renderProgress();
+  if(typeof renderEat==='function') renderEat();
   if(typeof mountColophons==='function') mountColophons(); }
 

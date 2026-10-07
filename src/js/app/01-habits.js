@@ -9,7 +9,7 @@
 const HUE={run:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},workout:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},
   fast:{deep:'var(--amber-text)',tint:'var(--amber-tint)'},meal:{deep:'var(--coral-text)',tint:'var(--coral-tint)'},any:{deep:'var(--ink)',tint:'var(--track)'},
   walk:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},rest:{deep:'var(--mute)',tint:'var(--track)'},checkin:{deep:'var(--green-text)',tint:'var(--green-tint)'}};
-const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='56';
+const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='57';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 

@@ -251,11 +251,18 @@ function fibreInfo(k){
   return {g:Math.round(g*10)/10, unknown, rough, n:items.length};
 }
 const foodOf=id=>allFoods().find(f=>f.id===id)||null;
+/* Which day the food sheet is adding to (build 57). Null means today, which is
+   every way in except the Eat tab's date switcher: going back a day there and
+   adding opens the sheet on that day, so a forgotten snack lands where it was
+   eaten. Closing any sheet puts it back to today, so nothing added from
+   anywhere else can land on an old day. Never a future day. */
+let foodDay=null;
+const foodKey=()=>(foodDay&&foodDay<todayKey())? foodDay : todayKey();
 function addCustomFood(f){
   S.customFoods=customFoods().concat([f]); save(); return f;
 }
 function saveMealAs(name,slot){
-  const items=dayFood(todayKey()).filter(x=>(x.meal||'s')===slot);
+  const items=dayFood(foodKey()).filter(x=>(x.meal||'s')===slot);
   if(!items.length) return null;
   const m={id:'sm'+Date.now(),name,slot,items:items.map(x=>({id:x.id,q:x.q}))};
   S.savedMeals=savedMeals().concat([m]); save(); return m;
@@ -268,7 +275,7 @@ function addSavedMeal(id){
 /* The single highest value thing in food logging: most days look like the day
    before, and re-tapping fifteen items is why people stop. */
 function repeatYesterday(){
-  const y=dayFood(addDays(todayKey(),-1));
+  const y=dayFood(addDays(foodKey(),-1));
   if(!y.length) return 0;
   y.forEach(x=>addFood(x.id,x.q,x.meal||'s'));
   return y.length;
@@ -285,7 +292,7 @@ function foodTotals(k){
    way. The time of the first one is kept, which is when the meal started. */
 function addFood(id,q,meal){
   const f=foodOf(id); if(!f) return null;
-  const k=todayKey(), m=meal||foodSlot||'s', n=+q||1;
+  const k=foodKey(), m=meal||foodSlot||'s', n=+q||1;
   S.days[k]=S.days[k]||{};
   const list=(S.days[k].food||[]).slice();
   const same=list.find(x=>x.id===f.id&&(x.meal||'s')===m);
@@ -348,7 +355,7 @@ function skipMeal(k,m,on){
 }
 /* Set how many of one food are in one meal. Zero takes it off. */
 function setFoodQty(id,meal,q){
-  const k=todayKey(), list=dayFood(k);
+  const k=foodKey(), list=dayFood(k);
   const i=list.findIndex(x=>x.id===id&&(x.meal||'s')===meal);
   if(i<0) return null;
   if(q<=0) list.splice(i,1); else list[i].q=+(+q).toFixed(2);
@@ -374,16 +381,17 @@ function mergeDayFood(k){
 /* Just the numbers, for the restaurant meal or the thing off a label with no
    time to add it properly. Each one is its own entry. */
 function quickAddFood(kcal,protein,meal){
-  const k=todayKey(), kc=Math.max(0,Math.round(+kcal||0)), pr=Math.max(0,+(+protein||0).toFixed(1));
+  const k=foodKey(), kc=Math.max(0,Math.round(+kcal||0)), pr=Math.max(0,+(+protein||0).toFixed(1));
   if(!kc) return null;
+  const m=meal||foodSlot||'s';
   S.days[k]=S.days[k]||{};
   S.days[k].food=(S.days[k].food||[]).concat([{id:'quick:'+Date.now(),n:'Quick add',u:'entry',q:1,
-    meal:meal||foodSlot||'s',kcal:kc,p:pr,c:0,f:0,at:Date.now(),quick:true}]);
+    meal:m,kcal:kc,p:pr,c:0,f:0,at:k===todayKey()? Date.now() : mealAtMs(k,m),quick:true}]);
   applyFoodTotals(k); save();
   return S.days[k].food;
 }
 function removeFood(i){
-  const k=todayKey(); if(!S.days[k]||!S.days[k].food) return;
+  const k=foodKey(); if(!S.days[k]||!S.days[k].food) return;
   S.days[k].food.splice(i,1); applyFoodTotals(k); save();
 }
 function applyFoodTotals(k){
@@ -413,10 +421,18 @@ function slotNow(){
   return h<11? 'b' : (h<15? 'l' : (h<21? 'd' : 's'));
 }
 let foodQuery='', foodCameFromLog=false, foodSlot=slotNow(), foodAdding=false;
-function openFood(fromLog){
-  foodQuery=''; foodCat=''; foodSlot=slotNow(); foodAdding=false; foodQuick=false;
+/* opts (build 57, from the Eat tab): day, a past day to add to; slot, the
+   meal to open on; search, put the cursor in the search box. */
+function openFood(fromLog,opts){
+  opts=opts||{};
+  foodQuery=''; foodCat=''; foodSlot=opts.slot||slotNow(); foodAdding=false; foodQuick=false;
   foodCameFromLog=!!fromLog || document.getElementById('dayCheck').classList.contains('on');
-  closeSheets(); drawFood(); openSheet('foodSheet');
+  closeSheets();
+  foodDay=(opts.day&&opts.day<todayKey())? opts.day : null;
+  const h=document.querySelector('#foodSheet h3');
+  if(h) h.textContent=foodDay? 'Food, '+dateOf(foodDay).toLocaleDateString('en-IE',{weekday:'long',day:'numeric',month:'long'}) : 'Food today';
+  drawFood(); openSheet('foodSheet');
+  if(opts.search) setTimeout(()=>{ const el=document.getElementById('foodSearch'); if(el) try{ el.focus({preventScroll:true}); }catch(e){} },60);
 }
 function closeFood(){
   closeSheets();
@@ -447,7 +463,7 @@ function foodListHTML(){
   if(!list.length) return `<div class="note">Nothing matching.</div>
     <button class="logrow" id="foodNew"><div class="txt"><div class="t">Add "${foodQuery.trim()}" yourself</div>
       <div class="s">Once, and it is in your list from now on</div></div></button>`;
-  const onPlate=id=>dayFood(todayKey()).find(x=>x.id===id&&(x.meal||'s')===foodSlot);
+  const onPlate=id=>dayFood(foodKey()).find(x=>x.id===id&&(x.meal||'s')===foodSlot);
   return list.map(f=>{ const p=onPlate(f.id);
     return `<div class="frow ${p?'onplate':''}">
       <div class="txt"><div class="t">${escHabit(f.n)}${f.mine?' <span class="cichip">yours</span>':''}</div>
@@ -488,7 +504,7 @@ function foodStepper(x){
    row. */
 let foodQuick=false;
 function drawFood(){
-  const k=todayKey();
+  const k=foodKey(), dayWord=k===todayKey()? 'today' : 'that day';
   mergeDayFood(k);
   const logged=dayFood(k), t=foodTotals(k), tg=S.targets||{};
   const inMeal=m=>logged.filter(x=>(x.meal||'s')===m);
@@ -498,8 +514,8 @@ function drawFood(){
   const left=tg.kcal? tg.kcal-Math.round(t.kcal) : null;
   const yTotal=dayFood(addDays(k,-1)).length;
   $('foodBody').innerHTML=`
-    ${isTeen()? `<div class="fhead"><div><b>${logged.length}</b> ${logged.length===1?'thing':'things'} logged today</div><div>regular meals, plenty of variety</div></div>` : `<div class="fhead">
-      <div><b>${left===null? num(Math.round(t.kcal)) : num(Math.abs(left))}</b> kcal ${left===null? 'today' : (left>=0? 'left' : 'over')}</div>
+    ${isTeen()? `<div class="fhead"><div><b>${logged.length}</b> ${logged.length===1?'thing':'things'} logged ${dayWord}</div><div>regular meals, plenty of variety</div></div>` : `<div class="fhead">
+      <div><b>${left===null? num(Math.round(t.kcal)) : num(Math.abs(left))}</b> kcal ${left===null? dayWord : (left>=0? 'left' : 'over')}</div>
       <div><b>${Math.round(t.protein)}</b>${tg.protein? '/'+tg.protein:''}g protein</div>
       <div><button class="fibtn" id="fibreWhy" aria-label="Fibre today, and why it matters"><b>${Math.round(t.fibre)}</b>${tg.fibre? '/'+tg.fibre:''}g fibre</button></div>
     </div>`}
@@ -559,13 +575,16 @@ function fibreSheetHtml(k){
     <div class="note">30g a day is the UK recommendation (SACN, 2015); Europe's food safety authority sets 25g. A review of 185 studies and 58 trials found people eating 25 to 29g a day had 15 to 30% lower rates of death, heart disease, stroke, type 2 diabetes and bowel cancer than those eating least (Reynolds and colleagues, Lancet, 2019). Most of that evidence is observational: a strong association, not proof. Go up gradually and drink with it, or your gut will let you know.</div>
   </div>`;
 }
-function openFibre(){
+function openFibre(k){
+  k=k||foodKey();
   document.getElementById('altTitle').textContent='Fibre';
-  document.getElementById('altSub').textContent='Counted from what you logged.';
-  document.getElementById('altBody').innerHTML=fibreSheetHtml(todayKey());
+  document.getElementById('altSub').textContent=k===todayKey()? 'Counted from what you logged.' : 'Counted from what you logged on '+prettyDate(k)+'.';
+  document.getElementById('altBody').innerHTML=fibreSheetHtml(k);
   openSheet('altSheet');
 }
 document.addEventListener('click',e=>{ if(e.target.closest('#fibreWhy')) openFibre(); });
+/* the Eat tab's fibre bar opens the same sheet for the day it is showing */
+document.addEventListener('click',e=>{ const fw=e.target.closest('[data-fibrewhy]'); if(fw) openFibre(fw.dataset.fibrewhy); });
 function drawFoodNew(){
   foodAdding=true;
   $('foodBody').innerHTML=`
@@ -596,10 +615,10 @@ document.addEventListener('click',e=>{
   if(e.target.closest('#foodYesterday')){
     const n=repeatYesterday();
     drawFood(); renderAll();
-    toast(n? n+' things copied from yesterday' : 'Nothing logged yesterday'); }
+    toast(n? n+' things copied from '+(foodDay? 'the day before' : 'yesterday') : 'Nothing logged '+(foodDay? 'the day before' : 'yesterday')); }
   if(e.target.closest('#foodSaveMeal')){
     const label=MEALS.find(m=>m[0]===foodSlot)[1];
-    const m=saveMealAs(label+' '+prettyDate(todayKey()),foodSlot);
+    const m=saveMealAs(label+' '+prettyDate(foodKey()),foodSlot);
     drawFood(); toast(m? 'Saved as "'+m.name+'"' : 'Nothing in that meal yet'); }
   const sm=e.target.closest('[data-savedmeal]');
   if(sm){ const n=addSavedMeal(sm.dataset.savedmeal); drawFood(); renderAll();
@@ -621,20 +640,21 @@ document.addEventListener('click',e=>{
   const fst=e.target.closest('[data-foodstep]');
   if(fst){
     const parts=fst.dataset.foodstep.split('|'), d=+parts.pop(), meal=parts.pop(), id=parts.join('|');
-    const cur=dayFood(todayKey()).find(x=>x.id===id&&(x.meal||'s')===meal); if(!cur) return;
+    const cur=dayFood(foodKey()).find(x=>x.id===id&&(x.meal||'s')===meal); if(!cur) return;
     const before=JSON.parse(JSON.stringify(cur));
     const next= d<-1? 0 : (cur.q<1&&d>0? 1 : (cur.q<=1&&d<0? 0 : cur.q+d));
     setFoodQty(id,meal,next);
     drawFood(); renderAll();
+    const dk=foodKey();
     if(next<=0) toast(before.n+' taken off','Undo',()=>{
-      const k=todayKey(); S.days[k]=S.days[k]||{}; S.days[k].food=(S.days[k].food||[]).concat([before]);
+      const k=dk; S.days[k]=S.days[k]||{}; S.days[k].food=(S.days[k].food||[]).concat([before]);
       applyFoodTotals(k); save(); drawFood(); renderAll(); });
     return; }
   const sk=e.target.closest('[data-skipmeal]');
-  if(sk){ skipMeal(todayKey(),sk.dataset.skipmeal,true); drawFood(); renderAll();
+  if(sk){ skipMeal(foodKey(),sk.dataset.skipmeal,true); drawFood(); renderAll();
     toast(isTeen()? 'Noted. While you are growing, regular meals really help, so try not to make it a habit.' : 'Noted as skipped'); return; }
   const us=e.target.closest('[data-unskip]');
-  if(us){ skipMeal(todayKey(),us.dataset.unskip,false); drawFood(); renderAll(); return; }
+  if(us){ skipMeal(foodKey(),us.dataset.unskip,false); drawFood(); renderAll(); return; }
   if(e.target.closest('#foodQuickBtn')){ foodQuick=!foodQuick; drawFood();
     if(foodQuick){ const el=document.getElementById('qaKcal'); if(el) el.focus(); } return; }
   if(e.target.closest('#qaSave')){
@@ -643,10 +663,10 @@ document.addEventListener('click',e=>{
     quickAddFood(kc,pr,foodSlot); foodQuick=false; drawFood(); renderAll();
     toast(kc+' kcal added to '+MEALS.find(m=>m[0]===foodSlot)[1].toLowerCase()); return; }
   const fr=e.target.closest('[data-foodrm]');
-  if(fr){ const i=+fr.dataset.foodrm, gone=dayFood(todayKey())[i];
+  if(fr){ const i=+fr.dataset.foodrm, dk=foodKey(), gone=dayFood(dk)[i];
     removeFood(i); drawFood();
     if(gone) toast(gone.n+' removed','Undo',()=>{
-      const k=todayKey(); S.days[k]=S.days[k]||{};
+      const k=dk; S.days[k]=S.days[k]||{};
       const list=(S.days[k].food||[]).slice(); list.splice(i,0,gone); S.days[k].food=list;
       applyFoodTotals(k); save(); drawFood(); renderAll(); }); }
 });

@@ -35,6 +35,8 @@ function closeSheets(){
     try{ sheetReturn.focus({preventScroll:true}); }catch(e){}
   }
   sheetReturn=null;
+  /* build 57: the food sheet adds to today again once it is closed */
+  if(typeof foodDay!=='undefined') foodDay=null;
 }
 document.addEventListener('keydown',e=>{
   const open=document.querySelector('.sheet.on');
@@ -129,9 +131,9 @@ function notYet(what){
   toast((what? what+'. ':'')+line);
 }
 function go(name){
-  /* Build 55: Eat has its own tab, but until the Eat screen arrives (build 57)
-     it opens the food sheet over whatever screen you are on. */
-  if(name==='eat'){ openFood(false); return; }
+  /* Build 57: Eat is a screen of its own. Coming to it from anywhere starts
+     on today; the date switcher on the screen goes back from there. */
+  if(name==='eat'&&typeof eatDay!=='undefined') eatDay=null;
   const target=$('s-'+name);
   if(!target){ console.warn('no screen called '+name); return; }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
@@ -149,6 +151,7 @@ function go(name){
   if(name==='plan') renderPlan();
   if(name==='progress'){ S.pickups.forEach(k=>k.seen=true); save(); renderProgress(); }
   if(name==='feed') renderFeed();
+  if(name==='eat'&&typeof renderEat==='function') renderEat();
 }
 function toggleFollow(id){ S.follows[id]=!S.follows[id]; save(); renderPeople(); renderFeed(); }
 function startSessionFromPost(post){

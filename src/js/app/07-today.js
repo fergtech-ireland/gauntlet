@@ -554,7 +554,8 @@ document.addEventListener('click',e=>{
   if(wy){ const box=document.getElementById('whyToday'); if(box){ const open=box.hidden; box.hidden=!open; wy.setAttribute('aria-expanded',String(open)); } return; }
   if(e.target.closest('[data-opensleep]')){ openSleep(); return; }
   const ms=e.target.closest('[data-mealslot]');
-  if(ms){ openFood(false); foodSlot=ms.dataset.mealslot; drawFood(); return; }
+  /* build 57: a meal row opens that meal in Eat, where Add is one more tap */
+  if(ms){ goEatMeal(ms.dataset.mealslot); return; }
   if(e.target.closest('#eatTimes')) openEatTimes();
   if(e.target.closest('#eatBack')) openEating();
 });
@@ -603,20 +604,20 @@ function foodRing(){
        glance tile it replaces */
     const meals=new Set(dayFood(k).map(x=>x.meal||'s')).size;
     return ringHtml('food',Math.min(1,meals/3),'coral',String(meals),'FOOD',meals===1?'meal logged':'meals logged',
-      `${meals} ${meals===1?'meal':'meals'} logged today. Tap to log food.`,'data-glance="food"');
+      `${meals} ${meals===1?'meal':'meals'} logged today. Tap to open Eat.`,'data-go="eat"');
   }
   const t=S.targets||{}, eaten=Math.round(foodTotals(k).kcal||0), target=+t.kcal||0, maint=+t.maintenance||0;
-  if(!target) return ringHtml('food',0,'coral',num(eaten),'FOOD','kcal in, no target yet',`${num(eaten)} kcal eaten, no target yet. Tap to log food.`,'data-glance="food"');
+  if(!target) return ringHtml('food',0,'coral',num(eaten),'FOOD','kcal in, no target yet',`${num(eaten)} kcal eaten, no target yet. Tap to open Eat.`,'data-go="eat"');
   if(eaten<=target) return ringHtml('food',eaten/target,'coral',num(target-eaten),'FOOD','kcal left',
-    `${num(target-eaten)} kcal left of ${num(target)}. Tap to log food.`,'data-glance="food"');
+    `${num(target-eaten)} kcal left of ${num(target)}. Tap to open Eat.`,'data-go="eat"');
   /* Over target is not bang on target: it says how far over, and where that
      sits against maintenance, as the tile it replaces did. */
   /* over target but under maintenance is still a deficit, just a smaller
      one: caution amber. Past maintenance is coral. */
   const over=eaten-target, past=!maint||eaten>maint;
   const sub= maint? (eaten<=maint? 'maintenance '+num(maint)+', still '+num(maint-eaten)+' under' : 'maintenance '+num(maint)+', '+num(eaten-maint)+' over') : num(eaten)+' of '+num(target);
-  return ringHtml('food',1,past?'coral':'amber',num(over),'FOOD','kcal over target · '+sub,`${num(over)} kcal over target, ${sub}. Tap to log food.`,
-    'data-glance="food"',past? 'over past' : 'over');
+  return ringHtml('food',1,past?'coral':'amber',num(over),'FOOD','kcal over target · '+sub,`${num(over)} kcal over target, ${sub}. Tap to open Eat.`,
+    'data-go="eat"',past? 'over past' : 'over');
 }
 function trainRing(){
   const d=todayPlan(), i=dowIdx(), wc=weekCounts();
@@ -719,7 +720,7 @@ function heroCard(plan,d,i){
 }
 /* ---------- the day's meals, as a list ----------
    Breakfast, lunch, snacks and dinner, with a tick, what went in and the
-   calories; tapping any row opens that meal in the food list. Built from the
+   calories; tapping any row opens that meal in Eat (build 57). Built from the
    same day's food as everything else, and from mealSlots() for the planned
    time and for when dinner is the meal after training. Under 18s see ticks,
    never calories. */

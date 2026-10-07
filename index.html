@@ -1178,6 +1178,69 @@ body[data-screen="today"] header.top{border-bottom:0;height:62px}
 #logSheet{background:var(--bg)}
 #logBody{padding:0 14px 16px}
 #todayView .hero.restday > .skipbtn{margin:8px auto 0}
+/* ---------- Eat, build 57 (design/redesign/Final-Eat.dc.html) ---------- */
+body[data-screen="eat"] header.top .on-eat{display:grid}
+body[data-screen="eat"] header.top .eattitle{display:flex}
+body[data-screen="eat"] header.top .brand{display:none}
+body[data-screen="eat"] header.top{border-bottom:0;height:62px}
+#eatView{padding:0 12px 12px}
+.eatdate{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:4px;margin:2px 0 8px}
+.eatdate .edbtn{width:44px;height:44px;border-radius:999px;display:grid;place-items:center;color:var(--ink)}
+.eatdate .edbtn:disabled{color:var(--line);cursor:default}
+.eatdate .edl{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:44px;text-align:center}
+.eatdate .edl b{font-size:15px;font-weight:800}
+.eatsearch{display:flex;align-items:center;gap:8px;width:100%;height:44px;padding:0 12px;border-radius:10px;background:var(--surface);border:1px solid var(--line);color:var(--mute);font-size:15px;text-align:left}
+.eatcard{margin-top:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.eatsum{padding:14px}
+.eattop{display:grid;grid-template-columns:100px minmax(0,1fr);gap:14px;align-items:center}
+.eatring{position:relative;width:100px;height:100px;--tone:var(--coral)}
+.eatring svg{display:block;width:100%;height:100%}
+.eatring .rt{fill:none;stroke:var(--track);stroke-width:9}
+.eatring .ra{fill:none;stroke:var(--tone);stroke-width:9;stroke-linecap:round}
+.eatring .ev{position:absolute;left:0;right:0;top:30px;text-align:center;font-family:var(--font-num);font-weight:700;line-height:1;color:var(--ink)}
+.eatring .ec{position:absolute;left:0;right:0;top:62px;text-align:center;font-size:11px;font-weight:600;color:var(--mute)}
+.eatnums{display:grid;gap:7px;font-size:13px;min-width:0}
+.eatnums .enrow{display:flex;justify-content:space-between;gap:8px}
+.eatnums .enrow span{color:var(--mute)}
+.eatnums .enote{font-size:12px;color:var(--mute);line-height:1.4}
+.emacs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.emac{display:block;min-width:0;text-align:left}
+button.emac{min-height:44px}
+.emac .en{display:block;font-size:11px;font-weight:700;color:var(--mute)}
+.emac .evv b{font-weight:800;font-size:15px}
+.emac .evv small{font-size:11px;color:var(--mute)}
+.emac .ebar{display:block;height:4px;border-radius:2px;background:var(--track);margin-top:5px;overflow:hidden}
+.emac .ebar i{display:block;height:100%;border-radius:2px}
+button.emac .en:after{content:" ›"}
+.eatmeal .ehead{display:grid;grid-template-columns:minmax(0,1fr) auto 44px;gap:8px;align-items:center;padding:8px 6px 6px 14px}
+.eatmeal .eht{min-width:0;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.eatmeal .eht b{font-size:16px;font-weight:800}
+.eatmeal .ewhen{font-size:12px;font-weight:600;color:var(--mute)}
+.eatmeal .ek{font-size:13px;font-weight:700;color:var(--mute)}
+.eatmeal .eadd{width:44px;height:44px;border-radius:999px;display:grid;place-items:center;font-size:20px;font-weight:600;color:var(--ink);
+  border:5px solid transparent;background-clip:padding-box;box-shadow:inset 0 0 0 1px var(--line)}
+.eatmeal.next{border:1.5px solid var(--green)}
+.eatmeal.next .eadd{background-color:var(--cta);color:var(--cta-ink);box-shadow:none}
+.eatmeal.flash{box-shadow:0 0 0 2px var(--green)}
+.eitem{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;min-height:48px;padding:8px 14px;border-top:1px solid var(--line);text-align:left;font-size:14px}
+.eitem .eit{min-width:0;display:flex;flex-direction:column}
+.eitem .ein{font-weight:600}
+.eitem .eiq{color:var(--mute);font-weight:700}
+.eitem .eis{font-size:12px;color:var(--mute)}
+.eitem .eik{color:var(--mute);font-weight:600;flex:0 0 auto}
+.eempty{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:4px 14px 8px;font-size:13px;color:var(--mute)}
+.eempty .inlinebtn{min-height:36px}
+.eatmeal.skipped .eht b{color:var(--mute)}
+.epr{padding:6px 14px 10px;border-top:1px solid var(--line);font-size:12px;color:var(--mute)}
+.epr.hit{color:var(--green-text);font-weight:700}
+.etiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+.etiles .etile:only-child{grid-column:span 2}
+.etile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;text-align:left;min-height:60px}
+.etile b{display:block;font-size:14px}
+.etile span{color:var(--mute)}
+.esaved .slab{display:block}
+.efoot{display:flex;justify-content:center;margin-top:8px}
+.efoot .inlinebtn{font-size:12.5px;min-height:44px}
 </style>
 </head>
 <body data-screen="today">
@@ -1192,10 +1255,12 @@ body[data-screen="today"] header.top{border-bottom:0;height:62px}
     <!-- Build 56: on Today the brand gives way to the date and the page title,
          as in the design, and an avatar opens You. -->
     <div class="pagetitle on-today-block"><div class="pd" id="todayDate"></div><h1>Today</h1></div>
+    <!-- Build 57: Eat has the same kind of title, with the day it is showing. -->
+    <div class="pagetitle eattitle"><div class="pd" id="eatDate"></div><h1>Eat</h1></div>
     <div class="spacer"></div>
     <!-- Build 55: on Today the header carries the sun and moon (Day or Night) and
          Friends, which moved out of the bottom nav. Find people stays on Friends. -->
-    <button class="iconbtn on-today" id="themeBtn" aria-label="Switch to night">
+    <button class="iconbtn on-today on-eat" id="themeBtn" aria-label="Switch to night">
       <svg class="moon" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
       <svg class="sun" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button>
     <button class="iconbtn on-today ring" id="friendsBtn" data-go="feed" aria-label="Friends">
@@ -1238,6 +1303,7 @@ body[data-screen="today"] header.top{border-bottom:0;height:62px}
     </div>
   </section>
   <section class="screen" id="s-feed" tabindex="-1"><div id="feed"></div></section>
+  <section class="screen" id="s-eat" tabindex="-1"><div id="eatView"></div></section>
 </div>
 
 <nav class="tabs" role="tablist" aria-label="Sections">
@@ -1460,7 +1526,7 @@ body[data-screen="today"] header.top{border-bottom:0;height:62px}
 const HUE={run:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},workout:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},
   fast:{deep:'var(--amber-text)',tint:'var(--amber-tint)'},meal:{deep:'var(--coral-text)',tint:'var(--coral-tint)'},any:{deep:'var(--ink)',tint:'var(--track)'},
   walk:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},rest:{deep:'var(--mute)',tint:'var(--track)'},checkin:{deep:'var(--green-text)',tint:'var(--green-tint)'}};
-const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='56';
+const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='57';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -3764,7 +3830,8 @@ document.addEventListener('click',e=>{
   if(wy){ const box=document.getElementById('whyToday'); if(box){ const open=box.hidden; box.hidden=!open; wy.setAttribute('aria-expanded',String(open)); } return; }
   if(e.target.closest('[data-opensleep]')){ openSleep(); return; }
   const ms=e.target.closest('[data-mealslot]');
-  if(ms){ openFood(false); foodSlot=ms.dataset.mealslot; drawFood(); return; }
+  /* build 57: a meal row opens that meal in Eat, where Add is one more tap */
+  if(ms){ goEatMeal(ms.dataset.mealslot); return; }
   if(e.target.closest('#eatTimes')) openEatTimes();
   if(e.target.closest('#eatBack')) openEating();
 });
@@ -3813,20 +3880,20 @@ function foodRing(){
        glance tile it replaces */
     const meals=new Set(dayFood(k).map(x=>x.meal||'s')).size;
     return ringHtml('food',Math.min(1,meals/3),'coral',String(meals),'FOOD',meals===1?'meal logged':'meals logged',
-      `${meals} ${meals===1?'meal':'meals'} logged today. Tap to log food.`,'data-glance="food"');
+      `${meals} ${meals===1?'meal':'meals'} logged today. Tap to open Eat.`,'data-go="eat"');
   }
   const t=S.targets||{}, eaten=Math.round(foodTotals(k).kcal||0), target=+t.kcal||0, maint=+t.maintenance||0;
-  if(!target) return ringHtml('food',0,'coral',num(eaten),'FOOD','kcal in, no target yet',`${num(eaten)} kcal eaten, no target yet. Tap to log food.`,'data-glance="food"');
+  if(!target) return ringHtml('food',0,'coral',num(eaten),'FOOD','kcal in, no target yet',`${num(eaten)} kcal eaten, no target yet. Tap to open Eat.`,'data-go="eat"');
   if(eaten<=target) return ringHtml('food',eaten/target,'coral',num(target-eaten),'FOOD','kcal left',
-    `${num(target-eaten)} kcal left of ${num(target)}. Tap to log food.`,'data-glance="food"');
+    `${num(target-eaten)} kcal left of ${num(target)}. Tap to open Eat.`,'data-go="eat"');
   /* Over target is not bang on target: it says how far over, and where that
      sits against maintenance, as the tile it replaces did. */
   /* over target but under maintenance is still a deficit, just a smaller
      one: caution amber. Past maintenance is coral. */
   const over=eaten-target, past=!maint||eaten>maint;
   const sub= maint? (eaten<=maint? 'maintenance '+num(maint)+', still '+num(maint-eaten)+' under' : 'maintenance '+num(maint)+', '+num(eaten-maint)+' over') : num(eaten)+' of '+num(target);
-  return ringHtml('food',1,past?'coral':'amber',num(over),'FOOD','kcal over target · '+sub,`${num(over)} kcal over target, ${sub}. Tap to log food.`,
-    'data-glance="food"',past? 'over past' : 'over');
+  return ringHtml('food',1,past?'coral':'amber',num(over),'FOOD','kcal over target · '+sub,`${num(over)} kcal over target, ${sub}. Tap to open Eat.`,
+    'data-go="eat"',past? 'over past' : 'over');
 }
 function trainRing(){
   const d=todayPlan(), i=dowIdx(), wc=weekCounts();
@@ -3929,7 +3996,7 @@ function heroCard(plan,d,i){
 }
 /* ---------- the day's meals, as a list ----------
    Breakfast, lunch, snacks and dinner, with a tick, what went in and the
-   calories; tapping any row opens that meal in the food list. Built from the
+   calories; tapping any row opens that meal in Eat (build 57). Built from the
    same day's food as everything else, and from mealSlots() for the planned
    time and for when dinner is the meal after training. Under 18s see ticks,
    never calories. */
@@ -4462,6 +4529,7 @@ function renderPeople(){
     : 'Make an account and anyone else using your copy of Gauntlet shows up here.'}</div>`;
 }
 function renderAll(){ renderToday(); renderPlan(); renderFeed(); renderPeople(); renderProgress();
+  if(typeof renderEat==='function') renderEat();
   if(typeof mountColophons==='function') mountColophons(); }
 
 /* ===================== chrome and actions ===================== */
@@ -4501,6 +4569,8 @@ function closeSheets(){
     try{ sheetReturn.focus({preventScroll:true}); }catch(e){}
   }
   sheetReturn=null;
+  /* build 57: the food sheet adds to today again once it is closed */
+  if(typeof foodDay!=='undefined') foodDay=null;
 }
 document.addEventListener('keydown',e=>{
   const open=document.querySelector('.sheet.on');
@@ -4595,9 +4665,9 @@ function notYet(what){
   toast((what? what+'. ':'')+line);
 }
 function go(name){
-  /* Build 55: Eat has its own tab, but until the Eat screen arrives (build 57)
-     it opens the food sheet over whatever screen you are on. */
-  if(name==='eat'){ openFood(false); return; }
+  /* Build 57: Eat is a screen of its own. Coming to it from anywhere starts
+     on today; the date switcher on the screen goes back from there. */
+  if(name==='eat'&&typeof eatDay!=='undefined') eatDay=null;
   const target=$('s-'+name);
   if(!target){ console.warn('no screen called '+name); return; }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
@@ -4615,6 +4685,7 @@ function go(name){
   if(name==='plan') renderPlan();
   if(name==='progress'){ S.pickups.forEach(k=>k.seen=true); save(); renderProgress(); }
   if(name==='feed') renderFeed();
+  if(name==='eat'&&typeof renderEat==='function') renderEat();
 }
 function toggleFollow(id){ S.follows[id]=!S.follows[id]; save(); renderPeople(); renderFeed(); }
 function startSessionFromPost(post){
@@ -7927,7 +7998,7 @@ function fitNumbers(root){
 document.addEventListener('input',e=>{ if(e.target.closest&&e.target.closest('.stepper')) fitNumbers(e.target.closest('.stepper')); });
 document.addEventListener('change',e=>{
   if(e.target.id!=='mealAt') return;
-  if(setMealAt(todayKey(),foodSlot,e.target.value)){ renderAll(); toast(MEALS.find(m=>m[0]===foodSlot)[1]+' set to '+e.target.value); }
+  if(setMealAt(foodKey(),foodSlot,e.target.value)){ renderAll(); toast(MEALS.find(m=>m[0]===foodSlot)[1]+' set to '+e.target.value); }
 });
 function drawGym(){
   if(!GYM) return;
@@ -8347,11 +8418,18 @@ function fibreInfo(k){
   return {g:Math.round(g*10)/10, unknown, rough, n:items.length};
 }
 const foodOf=id=>allFoods().find(f=>f.id===id)||null;
+/* Which day the food sheet is adding to (build 57). Null means today, which is
+   every way in except the Eat tab's date switcher: going back a day there and
+   adding opens the sheet on that day, so a forgotten snack lands where it was
+   eaten. Closing any sheet puts it back to today, so nothing added from
+   anywhere else can land on an old day. Never a future day. */
+let foodDay=null;
+const foodKey=()=>(foodDay&&foodDay<todayKey())? foodDay : todayKey();
 function addCustomFood(f){
   S.customFoods=customFoods().concat([f]); save(); return f;
 }
 function saveMealAs(name,slot){
-  const items=dayFood(todayKey()).filter(x=>(x.meal||'s')===slot);
+  const items=dayFood(foodKey()).filter(x=>(x.meal||'s')===slot);
   if(!items.length) return null;
   const m={id:'sm'+Date.now(),name,slot,items:items.map(x=>({id:x.id,q:x.q}))};
   S.savedMeals=savedMeals().concat([m]); save(); return m;
@@ -8364,7 +8442,7 @@ function addSavedMeal(id){
 /* The single highest value thing in food logging: most days look like the day
    before, and re-tapping fifteen items is why people stop. */
 function repeatYesterday(){
-  const y=dayFood(addDays(todayKey(),-1));
+  const y=dayFood(addDays(foodKey(),-1));
   if(!y.length) return 0;
   y.forEach(x=>addFood(x.id,x.q,x.meal||'s'));
   return y.length;
@@ -8381,7 +8459,7 @@ function foodTotals(k){
    way. The time of the first one is kept, which is when the meal started. */
 function addFood(id,q,meal){
   const f=foodOf(id); if(!f) return null;
-  const k=todayKey(), m=meal||foodSlot||'s', n=+q||1;
+  const k=foodKey(), m=meal||foodSlot||'s', n=+q||1;
   S.days[k]=S.days[k]||{};
   const list=(S.days[k].food||[]).slice();
   const same=list.find(x=>x.id===f.id&&(x.meal||'s')===m);
@@ -8444,7 +8522,7 @@ function skipMeal(k,m,on){
 }
 /* Set how many of one food are in one meal. Zero takes it off. */
 function setFoodQty(id,meal,q){
-  const k=todayKey(), list=dayFood(k);
+  const k=foodKey(), list=dayFood(k);
   const i=list.findIndex(x=>x.id===id&&(x.meal||'s')===meal);
   if(i<0) return null;
   if(q<=0) list.splice(i,1); else list[i].q=+(+q).toFixed(2);
@@ -8470,16 +8548,17 @@ function mergeDayFood(k){
 /* Just the numbers, for the restaurant meal or the thing off a label with no
    time to add it properly. Each one is its own entry. */
 function quickAddFood(kcal,protein,meal){
-  const k=todayKey(), kc=Math.max(0,Math.round(+kcal||0)), pr=Math.max(0,+(+protein||0).toFixed(1));
+  const k=foodKey(), kc=Math.max(0,Math.round(+kcal||0)), pr=Math.max(0,+(+protein||0).toFixed(1));
   if(!kc) return null;
+  const m=meal||foodSlot||'s';
   S.days[k]=S.days[k]||{};
   S.days[k].food=(S.days[k].food||[]).concat([{id:'quick:'+Date.now(),n:'Quick add',u:'entry',q:1,
-    meal:meal||foodSlot||'s',kcal:kc,p:pr,c:0,f:0,at:Date.now(),quick:true}]);
+    meal:m,kcal:kc,p:pr,c:0,f:0,at:k===todayKey()? Date.now() : mealAtMs(k,m),quick:true}]);
   applyFoodTotals(k); save();
   return S.days[k].food;
 }
 function removeFood(i){
-  const k=todayKey(); if(!S.days[k]||!S.days[k].food) return;
+  const k=foodKey(); if(!S.days[k]||!S.days[k].food) return;
   S.days[k].food.splice(i,1); applyFoodTotals(k); save();
 }
 function applyFoodTotals(k){
@@ -8509,10 +8588,18 @@ function slotNow(){
   return h<11? 'b' : (h<15? 'l' : (h<21? 'd' : 's'));
 }
 let foodQuery='', foodCameFromLog=false, foodSlot=slotNow(), foodAdding=false;
-function openFood(fromLog){
-  foodQuery=''; foodCat=''; foodSlot=slotNow(); foodAdding=false; foodQuick=false;
+/* opts (build 57, from the Eat tab): day, a past day to add to; slot, the
+   meal to open on; search, put the cursor in the search box. */
+function openFood(fromLog,opts){
+  opts=opts||{};
+  foodQuery=''; foodCat=''; foodSlot=opts.slot||slotNow(); foodAdding=false; foodQuick=false;
   foodCameFromLog=!!fromLog || document.getElementById('dayCheck').classList.contains('on');
-  closeSheets(); drawFood(); openSheet('foodSheet');
+  closeSheets();
+  foodDay=(opts.day&&opts.day<todayKey())? opts.day : null;
+  const h=document.querySelector('#foodSheet h3');
+  if(h) h.textContent=foodDay? 'Food, '+dateOf(foodDay).toLocaleDateString('en-IE',{weekday:'long',day:'numeric',month:'long'}) : 'Food today';
+  drawFood(); openSheet('foodSheet');
+  if(opts.search) setTimeout(()=>{ const el=document.getElementById('foodSearch'); if(el) try{ el.focus({preventScroll:true}); }catch(e){} },60);
 }
 function closeFood(){
   closeSheets();
@@ -8543,7 +8630,7 @@ function foodListHTML(){
   if(!list.length) return `<div class="note">Nothing matching.</div>
     <button class="logrow" id="foodNew"><div class="txt"><div class="t">Add "${foodQuery.trim()}" yourself</div>
       <div class="s">Once, and it is in your list from now on</div></div></button>`;
-  const onPlate=id=>dayFood(todayKey()).find(x=>x.id===id&&(x.meal||'s')===foodSlot);
+  const onPlate=id=>dayFood(foodKey()).find(x=>x.id===id&&(x.meal||'s')===foodSlot);
   return list.map(f=>{ const p=onPlate(f.id);
     return `<div class="frow ${p?'onplate':''}">
       <div class="txt"><div class="t">${escHabit(f.n)}${f.mine?' <span class="cichip">yours</span>':''}</div>
@@ -8584,7 +8671,7 @@ function foodStepper(x){
    row. */
 let foodQuick=false;
 function drawFood(){
-  const k=todayKey();
+  const k=foodKey(), dayWord=k===todayKey()? 'today' : 'that day';
   mergeDayFood(k);
   const logged=dayFood(k), t=foodTotals(k), tg=S.targets||{};
   const inMeal=m=>logged.filter(x=>(x.meal||'s')===m);
@@ -8594,8 +8681,8 @@ function drawFood(){
   const left=tg.kcal? tg.kcal-Math.round(t.kcal) : null;
   const yTotal=dayFood(addDays(k,-1)).length;
   $('foodBody').innerHTML=`
-    ${isTeen()? `<div class="fhead"><div><b>${logged.length}</b> ${logged.length===1?'thing':'things'} logged today</div><div>regular meals, plenty of variety</div></div>` : `<div class="fhead">
-      <div><b>${left===null? num(Math.round(t.kcal)) : num(Math.abs(left))}</b> kcal ${left===null? 'today' : (left>=0? 'left' : 'over')}</div>
+    ${isTeen()? `<div class="fhead"><div><b>${logged.length}</b> ${logged.length===1?'thing':'things'} logged ${dayWord}</div><div>regular meals, plenty of variety</div></div>` : `<div class="fhead">
+      <div><b>${left===null? num(Math.round(t.kcal)) : num(Math.abs(left))}</b> kcal ${left===null? dayWord : (left>=0? 'left' : 'over')}</div>
       <div><b>${Math.round(t.protein)}</b>${tg.protein? '/'+tg.protein:''}g protein</div>
       <div><button class="fibtn" id="fibreWhy" aria-label="Fibre today, and why it matters"><b>${Math.round(t.fibre)}</b>${tg.fibre? '/'+tg.fibre:''}g fibre</button></div>
     </div>`}
@@ -8655,13 +8742,16 @@ function fibreSheetHtml(k){
     <div class="note">30g a day is the UK recommendation (SACN, 2015); Europe's food safety authority sets 25g. A review of 185 studies and 58 trials found people eating 25 to 29g a day had 15 to 30% lower rates of death, heart disease, stroke, type 2 diabetes and bowel cancer than those eating least (Reynolds and colleagues, Lancet, 2019). Most of that evidence is observational: a strong association, not proof. Go up gradually and drink with it, or your gut will let you know.</div>
   </div>`;
 }
-function openFibre(){
+function openFibre(k){
+  k=k||foodKey();
   document.getElementById('altTitle').textContent='Fibre';
-  document.getElementById('altSub').textContent='Counted from what you logged.';
-  document.getElementById('altBody').innerHTML=fibreSheetHtml(todayKey());
+  document.getElementById('altSub').textContent=k===todayKey()? 'Counted from what you logged.' : 'Counted from what you logged on '+prettyDate(k)+'.';
+  document.getElementById('altBody').innerHTML=fibreSheetHtml(k);
   openSheet('altSheet');
 }
 document.addEventListener('click',e=>{ if(e.target.closest('#fibreWhy')) openFibre(); });
+/* the Eat tab's fibre bar opens the same sheet for the day it is showing */
+document.addEventListener('click',e=>{ const fw=e.target.closest('[data-fibrewhy]'); if(fw) openFibre(fw.dataset.fibrewhy); });
 function drawFoodNew(){
   foodAdding=true;
   $('foodBody').innerHTML=`
@@ -8692,10 +8782,10 @@ document.addEventListener('click',e=>{
   if(e.target.closest('#foodYesterday')){
     const n=repeatYesterday();
     drawFood(); renderAll();
-    toast(n? n+' things copied from yesterday' : 'Nothing logged yesterday'); }
+    toast(n? n+' things copied from '+(foodDay? 'the day before' : 'yesterday') : 'Nothing logged '+(foodDay? 'the day before' : 'yesterday')); }
   if(e.target.closest('#foodSaveMeal')){
     const label=MEALS.find(m=>m[0]===foodSlot)[1];
-    const m=saveMealAs(label+' '+prettyDate(todayKey()),foodSlot);
+    const m=saveMealAs(label+' '+prettyDate(foodKey()),foodSlot);
     drawFood(); toast(m? 'Saved as "'+m.name+'"' : 'Nothing in that meal yet'); }
   const sm=e.target.closest('[data-savedmeal]');
   if(sm){ const n=addSavedMeal(sm.dataset.savedmeal); drawFood(); renderAll();
@@ -8717,20 +8807,21 @@ document.addEventListener('click',e=>{
   const fst=e.target.closest('[data-foodstep]');
   if(fst){
     const parts=fst.dataset.foodstep.split('|'), d=+parts.pop(), meal=parts.pop(), id=parts.join('|');
-    const cur=dayFood(todayKey()).find(x=>x.id===id&&(x.meal||'s')===meal); if(!cur) return;
+    const cur=dayFood(foodKey()).find(x=>x.id===id&&(x.meal||'s')===meal); if(!cur) return;
     const before=JSON.parse(JSON.stringify(cur));
     const next= d<-1? 0 : (cur.q<1&&d>0? 1 : (cur.q<=1&&d<0? 0 : cur.q+d));
     setFoodQty(id,meal,next);
     drawFood(); renderAll();
+    const dk=foodKey();
     if(next<=0) toast(before.n+' taken off','Undo',()=>{
-      const k=todayKey(); S.days[k]=S.days[k]||{}; S.days[k].food=(S.days[k].food||[]).concat([before]);
+      const k=dk; S.days[k]=S.days[k]||{}; S.days[k].food=(S.days[k].food||[]).concat([before]);
       applyFoodTotals(k); save(); drawFood(); renderAll(); });
     return; }
   const sk=e.target.closest('[data-skipmeal]');
-  if(sk){ skipMeal(todayKey(),sk.dataset.skipmeal,true); drawFood(); renderAll();
+  if(sk){ skipMeal(foodKey(),sk.dataset.skipmeal,true); drawFood(); renderAll();
     toast(isTeen()? 'Noted. While you are growing, regular meals really help, so try not to make it a habit.' : 'Noted as skipped'); return; }
   const us=e.target.closest('[data-unskip]');
-  if(us){ skipMeal(todayKey(),us.dataset.unskip,false); drawFood(); renderAll(); return; }
+  if(us){ skipMeal(foodKey(),us.dataset.unskip,false); drawFood(); renderAll(); return; }
   if(e.target.closest('#foodQuickBtn')){ foodQuick=!foodQuick; drawFood();
     if(foodQuick){ const el=document.getElementById('qaKcal'); if(el) el.focus(); } return; }
   if(e.target.closest('#qaSave')){
@@ -8739,10 +8830,10 @@ document.addEventListener('click',e=>{
     quickAddFood(kc,pr,foodSlot); foodQuick=false; drawFood(); renderAll();
     toast(kc+' kcal added to '+MEALS.find(m=>m[0]===foodSlot)[1].toLowerCase()); return; }
   const fr=e.target.closest('[data-foodrm]');
-  if(fr){ const i=+fr.dataset.foodrm, gone=dayFood(todayKey())[i];
+  if(fr){ const i=+fr.dataset.foodrm, dk=foodKey(), gone=dayFood(dk)[i];
     removeFood(i); drawFood();
     if(gone) toast(gone.n+' removed','Undo',()=>{
-      const k=todayKey(); S.days[k]=S.days[k]||{};
+      const k=dk; S.days[k]=S.days[k]||{};
       const list=(S.days[k].food||[]).slice(); list.splice(i,0,gone); S.days[k].food=list;
       applyFoodTotals(k); save(); drawFood(); renderAll(); }); }
 });
@@ -9749,6 +9840,205 @@ Object.defineProperties(window.__G,{
   circDraft:{get:()=>circDraft,set:v=>{circDraft=v},configurable:true},
   rest:{get:()=>rest,configurable:true}
 });
+/* ===================== Eat (build 57) =====================
+   The food diary as a tab of its own, built on the food functions in
+   workouts/03-food.js rather than beside them: every add, step, skip, time and
+   undo still goes through addFood, setFoodQty, skipMeal, setMealAt and the
+   food sheet, which stays as the add and search step. Top to bottom:
+     a date switcher (today and earlier days, never a future one)
+     search, which opens the food sheet with the cursor in the box
+     calories left against the target, eaten and the target, and bars for
+     protein, carbs, fat and fibre against theirs
+     breakfast, lunch, snacks and dinner as sections, each with its items,
+     calories, time eaten and an Add; empty main meals can be marked skipped
+     same as yesterday, quick add numbers and your saved meals
+   Under 18s: no calories and no macros anywhere, as in the food sheet. The
+   card counts meals instead, and items show what they are, not their energy. */
+let eatDay=null;
+const eatKey=()=>(eatDay&&eatDay<todayKey())? eatDay : todayKey();
+const EAT_SECTIONS=[['b','Breakfast'],['l','Lunch'],['s','Snacks'],['d','Dinner']];
+const longDate=k=>dateOf(k).toLocaleDateString('en-IE',{weekday:'long',day:'numeric',month:'long'});
+function eatDayLabel(k){
+  const t=todayKey();
+  if(k===t) return 'Today';
+  if(k===addDays(t,-1)) return 'Yesterday';
+  return dateOf(k).toLocaleDateString('en-IE',{weekday:'short',day:'numeric',month:'short'});
+}
+/* Run something from the food code against the day on screen, then hand the
+   food code back to today. */
+function onEatDay(fn){
+  const k=eatKey(), was=foodDay;
+  foodDay= k===todayKey()? null : k;
+  try{ return fn(k); } finally { foodDay=was; }
+}
+function eatRing(frac,tone,value,caption,aria){
+  const len=Math.max(0,Math.min(1,frac||0))*RING_C, vs=String(value);
+  const fs= vs.length>=6? 22 : (vs.length>=5? 25 : 30);
+  return `<div class="eatring" role="img" aria-label="${aria}" style="--tone:var(--${tone})">
+    <svg viewBox="0 0 104 104" aria-hidden="true"><circle class="rt" cx="52" cy="52" r="44"/>
+      ${len>0? `<circle class="ra" cx="52" cy="52" r="44" stroke-dasharray="${len.toFixed(1)} ${RING_C.toFixed(1)}" transform="rotate(-90 52 52)"/>` : ''}</svg>
+    <span class="ev" style="font-size:${fs}px">${value}</span><span class="ec">${caption}</span></div>`;
+}
+function eatSummary(k){
+  const food=dayFood(k), t=foodTotals(k), tg=S.targets||{}, isToday=k===todayKey();
+  if(isTeen()){
+    const meals=new Set(food.map(x=>x.meal||'s')).size;
+    return `<section class="eatcard eatsum teen">
+      <div class="eattop">${eatRing(meals/3,'coral',String(meals),meals===1?'meal logged':'meals logged',`${meals} ${meals===1?'meal':'meals'} logged ${isToday?'today':'that day'}`)}
+        <div class="eatnums"><div class="enrow"><span>Things logged</span> <b>${food.length}</b></div>
+          <div class="enote">Regular meals and plenty of variety matter most while you are growing. No counting needed.</div></div></div>
+    </section>`;
+  }
+  const eaten=Math.round(t.kcal), target=+tg.kcal||0, maint=+tg.maintenance||0;
+  let ring, note;
+  if(!target){
+    ring=eatRing(0,'coral',num(eaten),'kcal eaten',`${num(eaten)} kcal eaten, no target yet`);
+    note='No target yet. Add your height, weight and goal in You and the app works one out.';
+  } else if(eaten<=target){
+    ring=eatRing(eaten/target,'coral',num(target-eaten),'kcal left',`${num(target-eaten)} kcal left of ${num(target)}`);
+    note= !maint||maint===target? 'No weight goal set, so this is about what you burn.' : `Set for your goal. About ${num(maint)} keeps your weight where it is.`;
+  } else {
+    /* over target: how far, and where that sits against maintenance, the same
+       as the Food ring on Today */
+    const past=!maint||eaten>maint;
+    ring=eatRing(1,past?'coral':'amber',num(eaten-target),'kcal over',`${num(eaten-target)} kcal over target`);
+    note= maint? (eaten<=maint? `Over target but still ${num(maint-eaten)} under maintenance (${num(maint)}), so still a small deficit.` : `${num(eaten-maint)} over maintenance (${num(maint)}).`) : '';
+  }
+  const fi=fibreInfo(k);
+  const macro=(n,v,of,tone,attr)=>{
+    const pct=of? Math.min(100,Math.round(v/of*100)) : 0;
+    const tag=attr? 'button' : 'div';
+    return `<${tag} class="emac" ${attr||''}><span class="en">${n}</span> <span class="evv"><b>${Math.round(v)}</b><small>${of? '/'+of+'g' : 'g'}</small></span> <span class="ebar"><i style="width:${pct}%;background:var(--${tone})"></i></span></${tag}>`;
+  };
+  return `<section class="eatcard eatsum">
+    <div class="eattop">${ring}
+      <div class="eatnums">
+        <div class="enrow"><span>Target</span> <b>${target? num(target) : 'not set'}</b></div>
+        <div class="enrow"><span>Eaten</span> <b>${num(eaten)}</b></div>
+        ${note? `<div class="enote">${note}</div>` : ''}</div></div>
+    <div class="emacs">
+      ${macro('Protein',t.protein,tg.protein,'coral')}
+      ${macro('Carbs',t.carbs,tg.carbs,'carbs')}
+      ${macro('Fat',t.fat,tg.fat,'fat')}
+      ${macro('Fibre',fi.g,tg.fibre||30,'fibre',`data-fibrewhy="${k}" aria-label="Fibre ${Math.round(fi.g)} of ${tg.fibre||30} grams. Where it came from, and why it matters"`)}
+    </div>
+  </section>`;
+}
+function eatSections(k){
+  const food=dayFood(k), teen=isTeen(), isToday=k===todayKey(), skipped=((S.days[k]||{}).skipped)||[];
+  /* planned times and the meal after training come from today's plan, so
+     they are shown for today only */
+  let slots=[]; if(isToday){ try{ slots=mealSlots(k).slots; }catch(e){} }
+  const per=teen? null : perMealProtein();
+  const now=new Date().getHours()*60+new Date().getMinutes();
+  const secs=EAT_SECTIONS.map(([m,label])=>{
+    const items=food.filter(f=>(f.meal||'s')===m), sl=m==='s'? null : slots.find(x=>x.role===m);
+    if(m==='d'&&sl&&sl.tag==='post') label='Dinner, after training';
+    if(m==='d'&&sl&&sl.tag==='pre') label='Dinner, before training';
+    if(m==='b'&&sl&&sl.tag==='post') label='Breakfast, after training';
+    const kcal=Math.round(items.reduce((a,f)=>a+(+f.kcal||0)*(+f.q||1),0));
+    const p=Math.round(items.reduce((a,f)=>a+(+f.p||0)*(+f.q||1),0));
+    return {m,label,items,sl,kcal,p,skipped:skipped.indexOf(m)>=0};
+  });
+  const next= isToday? secs.find(r=>r.m!=='s'&&!r.items.length&&!r.skipped&&(!r.sl||r.sl.min>=now-90)) : null;
+  return secs.map(r=>{
+    const lower=r.label.split(',')[0].toLowerCase();
+    const when= r.items.length? (r.m==='s'? '' : mealAtValue(k,r.m)) : (r.sl&&!r.skipped? 'around '+r.sl.time : '');
+    const hit=per&&r.m!=='s'&&r.p>=per;
+    const head=`<div class="ehead"><div class="eht"><b>${r.label}</b>${when? `<span class="ewhen">${when}</span>` : ''}</div>
+      ${!teen&&r.items.length? `<span class="ek">${num(r.kcal)}</span>` : ''}
+      <button class="eadd" data-eatadd="${r.m}" aria-label="Add to ${lower}">+</button></div>`;
+    const rows=r.items.map(x=>`<button class="eitem" data-eatitem="${r.m}" aria-label="${escHabit(x.n)}, ${qtyText(x.q)}${teen? '' : ', '+Math.round(x.kcal*x.q)+' kcal'}. Tap to change how much.">
+        <span class="eit"><span class="ein">${escHabit(x.n)}${x.q!==1? ` <span class="eiq">× ${qtyText(x.q)}</span>` : ''}</span>
+          <span class="eis">${x.quick? 'your numbers' : escHabit(x.u)}${teen? '' : ' · '+Math.round(x.p*x.q)+'g protein · '+foodSource(x)}</span></span>
+        ${teen? '' : `<span class="eik">${Math.round(x.kcal*x.q)}</span>`}</button>`).join('');
+    let empty='';
+    if(!r.items.length){
+      if(r.skipped) empty=`<div class="eempty"><span>Skipped</span><button class="inlinebtn" data-eatunskip="${r.m}">Undo</button></div>`;
+      else empty=`<div class="eempty"><span>${r.m==='s'? 'None yet' : 'Nothing logged yet'}</span>${r.m!=='s'? `<button class="inlinebtn" data-eatskip="${r.m}">I skipped ${lower}</button>` : ''}</div>`;
+    }
+    const pr= per&&r.items.length&&r.m!=='s'? `<div class="epr ${hit?'hit':''}">${r.p}g protein${hit? ', at the '+per+'g mark' : ' of about '+per+'g a meal'}</div>` : '';
+    return `<section class="eatcard eatmeal ${r===next?'next':''} ${r.skipped?'skipped':''}" data-eatmeal="${r.m}">${head}${rows}${empty}${pr}</section>`;
+  }).join('');
+}
+function eatShortcuts(k){
+  const prev=dayFood(addDays(k,-1)).length, teen=isTeen(), saved=savedMeals();
+  const tiles=[];
+  if(prev) tiles.push(`<button class="etile" data-eatsame><b>Same as ${k===todayKey()? 'yesterday' : 'the day before'}</b><span>All ${prev} ${prev===1?'thing':'things'}, one tap</span></button>`);
+  if(!teen) tiles.push(`<button class="etile" data-eatquick><b>Quick add numbers</b><span>Calories and protein, nothing else</span></button>`);
+  return `${tiles.length? `<div class="etiles">${tiles.join('')}</div>` : ''}
+    ${saved.length? `<div class="esaved"><span class="slab">Your meals</span><div class="shortcuts">${saved.map(m=>`<button class="mini" data-eatsaved="${m.id}">${escHabit(m.name)}</button>`).join('')}</div></div>` : ''}`;
+}
+function renderEat(){
+  const el=$('eatView'); if(!el) return;
+  const k=eatKey(), t=todayKey();
+  if(typeof mergeDayFood==='function') mergeDayFood(k);
+  const dl=$('eatDate'); if(dl) dl.textContent=longDate(k);
+  el.innerHTML=`
+    <div class="eatdate" role="group" aria-label="Which day">
+      <button class="edbtn" data-eatday="-1" aria-label="The day before"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="edl"><b>${eatDayLabel(k)}</b>${k!==t? `<button class="inlinebtn" data-eatday="today">Back to today</button>` : ''}</div>
+      <button class="edbtn" data-eatday="1" aria-label="The day after" ${k>=t? 'disabled' : ''}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+    <button class="eatsearch" data-eatsearch><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>Search food or meals</span></button>
+    ${eatSummary(k)}
+    ${eatSections(k)}
+    ${eatShortcuts(k)}
+    ${k===t? `<div class="efoot"><button class="inlinebtn" data-eattimes>Why these meal times</button></div>` : ''}`;
+}
+/* the meal to open the food sheet on when nothing says which */
+function eatSlot(){ return eatKey()===todayKey()? slotNow() : 'd'; }
+function openEatFood(slot,extra){ openFood(false,Object.assign({day:eatKey(),slot:slot||eatSlot()},extra||{})); }
+/* Today's Meals rows land here, on the meal that was tapped */
+function goEatMeal(m){
+  eatDay=null; go('eat');
+  const sec=[...document.querySelectorAll('#eatView [data-eatmeal]')].find(x=>x.dataset.eatmeal===m);
+  if(sec){ try{ sec.scrollIntoView({block:'center'}); }catch(e){}
+    sec.classList.add('flash'); setTimeout(()=>sec.classList.remove('flash'),1200); }
+}
+document.addEventListener('click',e=>{
+  const dd=e.target.closest('[data-eatday]');
+  if(dd){ const v=dd.dataset.eatday, t=todayKey();
+    if(v==='today') eatDay=null;
+    else { const n=addDays(eatKey(),+v); eatDay= n>=t? null : n; }
+    renderEat(); return; }
+  if(e.target.closest('[data-eatsearch]')){ openEatFood(null,{search:true}); return; }
+  const ad=e.target.closest('[data-eatadd]'); if(ad){ openEatFood(ad.dataset.eatadd); return; }
+  const it=e.target.closest('[data-eatitem]'); if(it){ openEatFood(it.dataset.eatitem); return; }
+  const sk=e.target.closest('[data-eatskip]');
+  if(sk){ skipMeal(eatKey(),sk.dataset.eatskip,true); renderAll();
+    toast(isTeen()? 'Noted. While you are growing, regular meals really help, so try not to make it a habit.' : 'Noted as skipped'); return; }
+  const us=e.target.closest('[data-eatunskip]'); if(us){ skipMeal(eatKey(),us.dataset.eatunskip,false); renderAll(); return; }
+  if(e.target.closest('[data-eatsame]')){
+    const k=eatKey(), n=onEatDay(()=>repeatYesterday()); renderAll();
+    toast(n? n+' things copied from '+(k===todayKey()? 'yesterday' : 'the day before') : 'Nothing logged the day before'); return; }
+  if(e.target.closest('[data-eatquick]')){
+    openEatFood(null); foodQuick=true; drawFood();
+    setTimeout(()=>{ const q=document.getElementById('qaKcal'); if(q) try{ q.focus({preventScroll:true}); }catch(e2){} },60); return; }
+  const sv=e.target.closest('[data-eatsaved]');
+  if(sv){ const n=onEatDay(()=>addSavedMeal(sv.dataset.eatsaved)); renderAll(); toast(n+' things added'); return; }
+  if(e.target.closest('[data-eattimes]')&&typeof openEating==='function'){ openEating(); return; }
+});
+/* Anything changed in the food sheet shows on Eat straight away. The food
+   code redraws its own sheet as it handles the tap, which takes the tapped
+   button out of the page, so where the tap was is noted on the way in
+   (capture) and Eat is redrawn on the way out, after the food code. */
+let eatTapInSheet=false;
+document.addEventListener('click',e=>{ eatTapInSheet=!!(e.target.closest&&e.target.closest('#foodSheet,#altSheet')); },true);
+document.addEventListener('click',()=>{
+  if(eatTapInSheet&&document.body.dataset.screen==='eat') renderEat();
+  eatTapInSheet=false;
+});
+document.addEventListener('change',e=>{
+  if(e.target.id==='mealAt'&&document.body.dataset.screen==='eat') renderEat();
+});
+if(window.__G){
+  Object.assign(window.__G,{renderEat,goEatMeal,eatSections,eatSummary,eatDayLabel,openEatFood});
+  Object.defineProperties(window.__G,{
+    eatDay:{get:()=>eatDay,set:v=>{eatDay=v},configurable:true},
+    foodDay:{get:()=>foodDay,configurable:true}
+  });
+}
 </script>
 <script>
 /* boot, once everything is defined */

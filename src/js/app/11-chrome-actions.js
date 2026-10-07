@@ -375,24 +375,31 @@ function openLog(){
     <span class="ic">${logIcon(id)}</span>
     <span class="t">${title}</span><span class="s">${sub}</span></button>`;
   const left=t.kcal? Math.max(0,Math.round(t.kcal-eaten.kcal)) : null;
+  /* Build 56: the same items in the same order, with today's check-in as
+     three sliders in place (saved through the same code as the full sheet;
+     More opens that sheet). */
   $('logBody').innerHTML=`
-    <button class="logtile wide" data-log="food" style="--tone:var(--amber-text)">
+    <button class="logtile wide" data-log="food" style="--tone:var(--coral-text)">
       <span class="ic">${logIcon('food')}</span>
       <span class="t">Log food</span>
       <span class="s">${dayFood(k).length
-        ? num(Math.round(eaten.kcal))+' kcal so far'+(left!==null? ', '+num(left)+' left today' : '')+' · '+Math.round(eaten.protein)+'g protein'
-        : (t.kcal? num(t.kcal)+' kcal and '+t.protein+'g protein to aim at today' : 'Tap what you ate from a list')}</span>
-      ${t.kcal? `<span class="bar"><i style="width:${Math.min(100,Math.round(eaten.kcal/t.kcal*100))}%"></i></span>`:''}
+        ? (isTeen()? dayFood(k).length+(dayFood(k).length===1?' thing':' things')+' logged today'
+          : num(Math.round(eaten.kcal))+' kcal so far'+(left!==null? ', '+num(left)+' left today' : '')+' · '+Math.round(eaten.protein)+'g protein')
+        : (t.kcal&&!isTeen()? num(t.kcal)+' kcal and '+t.protein+'g protein to aim at today' : 'Tap what you ate from a list')}</span>
+      ${t.kcal&&!isTeen()? `<span class="bar"><i style="width:${Math.min(100,Math.round(eaten.kcal/t.kcal*100))}%"></i></span>`:''}
     </button>
     <div class="logtiles">
-      ${d&&d.type&&d.slot!=='walk'? tile('today',(dayDone(dowIdx())?'Do it again':'Start '+dayLabel(d)),daySub(d),(HUE[d.kind]||HUE.any).deep,dayDone(dowIdx())):''}
+      ${d&&d.type&&d.slot!=='walk'? tile('today',(dayDone(dowIdx())?'Do it again':'Start '+dayLabel(d)),daySub(d),'var(--cyan-text)',dayDone(dowIdx())):''}
       ${isTeen()? '' : tile('weigh',weighed?'Weigh in again':'Weigh in',weighed? S.weights[S.weights.length-1].kg+' kg today':'Five seconds','var(--green-text)',weighed)}
-      ${tile('day',"Today's Check-in",logged&&logged.checkedIn? 'Done for today' : 'Twenty seconds','var(--green-text)',!!(logged&&logged.checkedIn))}
+    </div>
+    ${inlineCheckinHtml()}
+    <div class="logtiles">
       ${!isTeen()&&typeof stepsToday==='function'&&!healthOn()? tile('steps','Steps',(()=>{ const v=(S.days[todayKey()]||{}).steps; return typeof v==='number'? num(v)+' today' : 'What your phone says'; })(),'var(--amber-text)',typeof (S.days[todayKey()]||{}).steps==='number') : ''}
-      ${tile('week','Weekly check in',checkinDone()?'Done for this week':'Next week is built from it','var(--amber)',checkinDone())}
-      ${tile('templates','Something else','Any template, circuit or run','var(--ink)')}
-      ${tile('coach','Ask about your record','Everything the app knows','var(--cta)')}
+      ${tile('week','Weekly check in',checkinDone()?'Done for this week':'Next week is built from it','var(--amber-text)',checkinDone())}
+      ${tile('templates','Something else','Any template, circuit or run','var(--sub)')}
+      ${tile('coach','Ask about your record','Everything the app knows','var(--green-text)')}
     </div>`;
+  ciTeenNote();
   openSheet('logSheet');
 }
 document.addEventListener('click',e=>{

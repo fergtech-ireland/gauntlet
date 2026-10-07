@@ -2026,11 +2026,12 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
 
     t('31 · the first thing is today, with something to press', !!home().querySelector('.hero') &&
       !!home().querySelector('#startToday, [data-go="plan"], #todayViewEdit'));
-    t('31 · today\'s numbers are right there', d.querySelectorAll('.glances .glance').length === 3);
-    t('31 · calories come first, because that is what people stop logging',
-      d.querySelector('.glances .glance').dataset.glance === 'food');
-    t('31 · and they show what is left, not just what is eaten', /kcal left/.test(txt(d.querySelector('.glances'))));
-    t('31 · each one can be logged in one tap', ['food','protein'].every(k => !!d.querySelector('[data-glance="' + k + '"]')) && !!d.querySelector('.glances [data-glance="sleep"], .glances [data-glance="steps"]'));
+    t('31 · today\'s numbers are right there, as three rings', d.querySelectorAll('.rings .ring').length === 3
+      && [...d.querySelectorAll('.rings .ring')].map(r => r.dataset.ring).join() === 'ready,food,train');
+    t('31 · calories are on the first screen, because that is what people stop logging, and one tap logs them',
+      d.querySelector('.rings [data-ring="food"]').dataset.glance === 'food');
+    t('31 · and they show what is left, not just what is eaten', /kcal left/.test(txt(d.querySelector('.rings'))));
+    t('31 · each one can be logged in one tap', ['food','protein'].every(k => !!d.querySelector('[data-glance="' + k + '"]')) && !!d.querySelector('.driver [data-glance="sleep"], .driver [data-glance="steps"]'));
     t('31 · with a row for the two things worth logging', d.querySelectorAll('.quicks .quick').length === 2);
 
     /* the week, once, not twice */
@@ -2058,11 +2059,11 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('31 · the rating widget has been removed from Home, by request', !tap('day'));
     G.closeSheets(); G.go('today'); G.renderAll();
     G.addFood('chicken', 1, 'l'); G.renderAll();
-    t('31 · logging updates the numbers straight away', /1 in/.test(txt(d.querySelector('.quicks'))));
+    t('31 · logging updates the numbers straight away', /Chicken/.test(txt(d.querySelector('.mealscard [data-mealslot="l"]'))) && d.querySelector('.mealscard [data-mealslot="l"]').classList.contains('done'));
     t('31 · and what is left comes down', (() => {
-      const before = +txt(d.querySelector('.glances .glance .gv')).replace(/,/g, '');
+      const before = +txt(d.querySelector('.rings [data-ring="food"] .rv')).replace(/,/g, '');
       G.addFood('rice', 1, 'l'); G.renderAll();
-      const after = +txt(d.querySelector('.glances .glance .gv')).replace(/,/g, '');
+      const after = +txt(d.querySelector('.rings [data-ring="food"] .rv')).replace(/,/g, '');
       return after < before; })());
 
     /* nothing invented to keep people coming back */
@@ -2133,7 +2134,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('32 · there is no rating widget on Home any more, by request', !d.querySelector('[data-glance="day"]'));
     G.go('today'); G.renderAll();
     /* with no tracker the third tile shows sleep (UAT P118); typed steps live in the + menu */
-    t('32 · with no tracker, the third tile is sleep, not a blank steps tile', !!d.querySelector('.glances [data-glance="sleep"]') && !d.querySelector('.glances [data-glance="steps"]'));
+    t('32 · with no tracker, Today shows sleep, not a blank steps count', !!d.querySelector('.driver [data-glance="sleep"]') && !d.querySelector('#todayView [data-glance="steps"]'));
     G.openLog(); d.querySelector('#logBody [data-log="steps"]').click();
     t('32 · steps can still be typed in from the + menu', /Steps today/.test(txt(d.getElementById('quickTitle'))));
     d.querySelector('[data-quickstep="1000"]').click();
@@ -2355,7 +2356,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     S.days = {}; S.weights = []; G.go('today'); G.renderAll();
     t('35 · nothing logged says nothing, rather than "not today" three times',
       !/not today/.test(txt(d.querySelector('.quicks'))) && !/one slider/.test(txt(d.querySelector('.quicks'))));
-    t('35 · both buttons are still there, food and weigh in', d.querySelectorAll('.quicks .quick').length === 2);
+    t('35 · both buttons are still there, weigh in and the check-in', d.querySelectorAll('.quicks .quick').length === 2
+      && !!d.querySelector('.quicks [data-glance="weigh"]') && !!d.querySelector('.quicks [data-glance="checkin"]'));
     S.weights.push({ d: G.todayKey(), kg: 91.4 }); G.renderAll();
     t('35 · once done, it shows what it was', /91\.4/.test(txt(d.querySelector('.quicks'))));
 
@@ -2399,7 +2401,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     S.profile.trainTime = '18:00'; S.profile.wakeTime = '07:00';
     G.go('today'); G.renderAll();
     t('35 · it sits on the home screen as the day\'s meals, with the reasoning a tap away',
-      !!d.querySelector('.mealstrip .meal') && /Why these times/.test(txt(d.getElementById('eatBtn'))));
+      !!d.querySelector('.mealscard .mrow') && /Why these times/.test(txt(d.getElementById('eatBtn'))));
     d.getElementById('eatBtn').click();
     const body = txt(d.getElementById('altBody'));
     t('35 · the sheet lays the day out', /Last big meal|last big one/.test(body) && /Last coffee/.test(body));
@@ -2459,7 +2461,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const { d, G, errs } = await boot(); allErrs.push(...errs);
     onboard(G);
     const S = G.S;
-    const tile = () => { G.go('today'); G.renderAll(); return d.querySelector('.glances .glance'); };
+    const tile = () => { G.go('today'); G.renderAll(); return d.querySelector('.rings [data-ring="food"]'); };
     const txt = el => el.textContent.replace(/\s+/g, ' ').trim();
     const target = S.targets.kcal, maint = S.targets.maintenance;
     t('37 · there is a gap between target and maintenance to test in', maint > target, target + ' / ' + maint);
@@ -2468,11 +2470,11 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
 
     eat(target - 400);
     t('37 · under target it shows what is left', /kcal left/.test(txt(tile())));
-    t('37 · and the amount is right', +txt(tile().querySelector('.gv')).replace(/,/g, '') === 400);
+    t('37 · and the amount is right', +txt(tile().querySelector('.rv')).replace(/,/g, '') === 400);
 
     eat(target + 300);
     t('37 · over target it no longer says 0 left', !/kcal left/.test(txt(tile())) && /kcal over target/.test(txt(tile())));
-    t('37 · it shows how far over', +txt(tile().querySelector('.gv')).replace(/,/g, '') === 300);
+    t('37 · it shows how far over', +txt(tile().querySelector('.rv')).replace(/,/g, '') === 300);
     t('37 · it shows maintenance', txt(tile()).indexOf('maintenance ' + maint.toLocaleString('en-GB')) >= 0, txt(tile()));
     t('37 · and that this is still under it', new RegExp('still ' + (maint - target - 300).toLocaleString('en-GB') + ' under').test(txt(tile())), txt(tile()));
     t('37 · in a caution colour, not alarm', tile().classList.contains('over') && !tile().classList.contains('past'));
@@ -2480,10 +2482,10 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     eat(maint + 150);
     t('37 · past maintenance too, it says so', /150 over/.test(txt(tile())), txt(tile()));
     t('37 · and switches to the alarm colour', tile().classList.contains('past'));
-    t('37 · the overage is still the headline number', +txt(tile().querySelector('.gv')).replace(/,/g, '') === maint + 150 - target);
+    t('37 · the overage is still the headline number', +txt(tile().querySelector('.rv')).replace(/,/g, '') === maint + 150 - target);
 
     eat(target);
-    t('37 · exactly on target reads as nothing left, not over', /kcal left/.test(txt(tile())) && +txt(tile().querySelector('.gv')).replace(/,/g, '') === 0);
+    t('37 · exactly on target reads as nothing left, not over', /kcal left/.test(txt(tile())) && +txt(tile().querySelector('.rv')).replace(/,/g, '') === 0);
   }
 
   /* ---------------------------------------------------------- 38 */
@@ -2527,7 +2529,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t("38 · the daily sheet is called Today's Check-in", /Today's Check-in/.test(d.getElementById('dayCheck').textContent));
     t('38 · and no rating is filled in for you', /not rated/.test(txt(d.getElementById('outwb'))));
     G.closeSheets();
-    const tileDone = () => { G.openLog(); const b = d.querySelector('#logBody [data-log="day"]'); const r = b.classList.contains('done'); G.closeSheets(); return r; };
+    const tileDone = () => { G.go('today'); G.renderAll(); const b = d.querySelector('.quicks [data-glance="checkin"]'); const r = b.classList.contains('done');
+      G.openLog(); const r2 = /saved today/.test(txt(d.getElementById('ciCard'))); G.closeSheets(); return r && r2; };
     G.addFood('chicken', 1, 'l'); S.weights.push({ d: G.todayKey(), kg: 91 }); G.save();
     t('38 · logging food and weighing in do not count as checking in', !tileDone());
     G.openDay(); d.getElementById('saveDay').click();
@@ -2625,9 +2628,9 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const S = G.S;
     const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
     G.go('today'); G.renderAll();
-    const order = [...d.querySelectorAll('#todayView > *')].map(e => e.classList.contains('mealstrip') ? 'meals'
-      : e.classList.contains('glances') ? 'numbers' : e.classList.contains('quicks') ? 'quick' : e.classList.contains('weekstrip') ? 'week' : '').filter(Boolean);
-    t('39 · meals sit right under the numbers they feed, above the week', order.join(',') === 'numbers,quick,meals,week', order.join(','));
+    const order = [...d.querySelectorAll('#todayView > *')].map(e => e.classList.contains('mealscard') ? 'meals'
+      : e.classList.contains('rings') ? 'numbers' : e.classList.contains('quicks') ? 'quick' : e.classList.contains('weekstrip') ? 'week' : '').filter(Boolean);
+    t('39 · meals sit under the numbers they feed, with the quick tiles, above the week', order.join(',') === 'numbers,meals,quick,week', order.join(','));
     t('39 · the per meal mark is 0.4 g per kg of the protein bodyweight basis',
       G.perMealProtein() === Math.round(0.4 * G.proteinBasis(S.profile).kg));
     const keepBody = { h: S.profile.height, w: S.profile.weight };
@@ -2643,12 +2646,12 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('39 · snacks go to a snack slot, never breakfast, lunch or dinner, whatever time they are logged',
       slots.filter(s => !G.slotLetter(s).match(/^[bld]$/)).some(s => s.p === G.foodOf('proteinbar').p) && slots.filter(s => /^[bld]$/.test(G.slotLetter(s))).every(s => s.p !== G.foodOf('proteinbar').p));
     G.renderAll();
-    const lunch = d.querySelector('.mealstrip [data-mealslot="l"]');
-    t('39 · a meal that reaches the mark is marked done', lunch.classList.contains('done'));
+    const lunch = d.querySelector('.mealscard [data-mealslot="l"]');
+    t('39 · a meal that reaches the mark is marked done', lunch.classList.contains('hit') && /at the mark/.test(txt(lunch)));
     t('39 · the line under it counts meals, and says the day\'s total matters most without repeating it',
-      /meals at \d+g protein so far/.test(txt(d.querySelector('.mealstrip').nextElementSibling)) && /the day's total, above, matters most/.test(txt(d.querySelector('.mealstrip').nextElementSibling))
-      && !/of \d+g protein today/.test(txt(d.querySelector('.mealstrip').nextElementSibling)));
-    d.querySelector('.mealstrip [data-mealslot="d"]').click();
+      /meals at \d+g protein so far/.test(txt(d.querySelector('.mealsnote'))) && /the day's total, above, matters most/.test(txt(d.querySelector('.mealsnote')))
+      && !/of \d+g protein today/.test(txt(d.querySelector('.mealsnote'))));
+    d.querySelector('.mealscard [data-mealslot="d"]').click();
     t('39 · tapping a meal opens the food list on that meal',
       d.getElementById('foodSheet').classList.contains('on')
       && txt([...d.querySelectorAll('#foodSheet [data-foodslot]')].find(b => b.classList.contains('on')).querySelector('span')) === 'Dinner');
@@ -3325,9 +3328,9 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
       const p = home().querySelector('.prio.p-protein, .prio.p-proteinok, .prio.p-food'); return !p || !p.querySelector('.conf'); })());
     t('P117 · sleep advice still does', (() => { for (let n = 0; n < 7; n++) S.days[G.addDays(G.todayKey(), -n)] = Object.assign({}, S.days[G.addDays(G.todayKey(), -n)], { sleep: 5.8 });
       G.renderAll(); const p = home().querySelector('.prio.p-sleep'); return !!p && !!p.querySelector('.conf'); })());
-    t('P118 · with no tracker the third tile is sleep, never a blank steps tile', !!home().querySelector('.glances [data-glance="sleep"]') && !/no tracker/.test(txt(home().querySelector('.glances'))));
+    t('P118 · with no tracker Today shows sleep, never a blank steps count', !!home().querySelector('.driver [data-glance="sleep"]') && !home().querySelector('[data-glance="steps"]') && !/no tracker/.test(txt(home().querySelector('.driver'))));
     t('P118 · it shows last night, with the aim', /5\.8h/.test(txt(home().querySelector('[data-glance="sleep"]'))) && /aim 7h or more/.test(txt(home().querySelector('[data-glance="sleep"]'))));
-    home().querySelector('.glances [data-glance="sleep"]').click();
+    home().querySelector('.driver [data-glance="sleep"]').click();
     t('P118 · and opens the sleep view', /Sleep/.test(txt(d.getElementById('altTitle'))));
     G.closeSheets(); G.go('today'); G.renderAll();
     t('P119 · the why paragraph is one tappable line, closed', !!home().querySelector('[data-whytoday]') && d.getElementById('whyToday').hidden);
@@ -3419,7 +3422,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     skipBtn.click();
     t('meals · marking it saves the skip', (S.days[k].skipped || []).indexOf('l') >= 0);
     G.closeSheets(); G.go('today'); G.renderAll();
-    const lunchChip = [...d.querySelectorAll('.mealstrip .meal')].find(m => m.dataset.mealslot === 'l');
+    const lunchChip = [...d.querySelectorAll('.mealscard .mrow')].find(m => m.dataset.mealslot === 'l');
     t('meals · the meals row shows lunch as skipped, not missed', !!lunchChip && lunchChip.classList.contains('skipped') && /skipped/i.test(lunchChip.getAttribute('aria-label')));
     t('meals · a skipped meal is not counted against the protein mark', (() => { const { slots } = G.mealSlots(); const sk = slots.find(sl => G.slotLetter(sl) === 'l'); return sk && sk.skipped; })());
     G.skipMeal(k, 'l', false);
@@ -4427,6 +4430,141 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     G.closeSheets();
     d.getElementById('logBtn').click();
     t('57 · + Log still opens the log sheet', d.getElementById('logSheet') ? d.getElementById('logSheet').classList.contains('on') : !!d.querySelector('.sheet.on'));
+    G.closeSheets();
+  }
+
+  /* ---------------------------------------------------------- 58 */
+  journey(58, 'Build 56: Today as rings, a driver line, priorities that move above the session, meals as a list, and a check-in inside + Log');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S, k = G.todayKey(), i = G.dowIdx();
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const home = () => d.getElementById('todayView');
+    const day = n => G.addDays(k, -n);
+    const lift = S.plan.days.find(x => x.templateId);
+    S.plan.days[i] = Object.assign({}, lift, { dow: i }); S.week[i] = { done: [] }; S.checkins = [{ weekOf: G.mondayKey() }];
+    G.go('today'); G.renderAll();
+
+    /* ---- rings ---- */
+    const ring = id => home().querySelector('.rings [data-ring="' + id + '"]');
+    t('58 · three rings: Ready, Food, Train', ['ready', 'food', 'train'].every(id => !!ring(id)));
+    t('58 · with no history, readiness is a word, never a number', /Building/.test(txt(ring('ready'))) && !/\d/.test(txt(ring('ready').querySelector('.rv'))));
+    t('58 · and its ring stays empty while it builds', !ring('ready').querySelector('.ra'));
+    for (let n = 1; n <= 14; n++) S.days[day(n)] = { sleep: 7.5 + (n % 3) * 0.2, stress: 4 + (n % 2), wb: 7 };
+    S.days[day(0)] = { sleep: 8.8 }; S.days[day(1)] = Object.assign({}, S.days[day(1)], { stress: 2, wb: 9 });
+    G.renderAll();
+    t('58 · a better day reads Better, against your usual', txt(ring('ready').querySelector('.rv')) === 'Better' && /than your usual/.test(txt(ring('ready'))));
+    t('58 · the driver line says what is moving it, with how much it rests on', /Driven by more sleep than usual \(8\.8h/.test(txt(home().querySelector('.driver')))
+      && !!home().querySelector('.driver .conf'));
+    t('58 · last night\'s sleep is on Today and opens the sleep view', /Slept 8\.8h · aim 7h or more/.test(txt(home().querySelector('.driver [data-glance="sleep"]'))));
+    ring('ready').click();
+    t('58 · tapping Ready explains it, and says it never moves the weights', d.getElementById('altSheet').classList.contains('on')
+      && /Readiness/.test(txt(d.getElementById('altTitle'))) && /Not the weights/.test(txt(d.getElementById('altBody'))));
+    G.closeSheets();
+    t('58 · the Train ring shows the session time and the week', /^\d\d:\d\d$/.test(txt(ring('train').querySelector('.rv'))) && /0 of \d+ this week/.test(txt(ring('train'))));
+    ring('train').click();
+    t('58 · and opens the day', d.getElementById('daySheet').classList.contains('on'));
+    G.closeSheets();
+    t('58 · the Food ring is calories left, in one tap to the food list', /kcal left/.test(txt(ring('food'))) && ring('food').dataset.glance === 'food');
+
+    /* ---- the progression line: reps move the weight, readiness never does ---- */
+    const tpl = S.templates.find(x => x.id === S.plan.days[i].templateId), ex = tpl.ex.find(r => !G.isBodyweight(r.exId));
+    const top = G.repRangeFor(ex).top;
+    S.lifts[ex.exId] = [{ d: day(7), sets: [{ kg: 30, reps: top }, { kg: 30, reps: top }, { kg: 30, reps: top }] }];
+    G.renderAll();
+    const next = G.nextPrescription(ex.exId, ex).kg;
+    const prog = () => txt(home().querySelector('.hero .prog'));
+    t('58 · the session card says what goes up, and why', new RegExp(G.exOf(ex.exId).n + ' goes up to ' + next + ' kg: you hit every rep last week').test(prog()), prog());
+    S.days[day(0)] = { sleep: 5.2 }; S.days[day(1)] = Object.assign({}, S.days[day(1)], { stress: 8, wb: 4 });
+    G.renderAll();
+    t('58 · on a lower day it offers holding steady or stopping a set early', /was due to go up/.test(prog()) && /keep 30 kg or stop a set early/.test(prog()), prog());
+    t('58 · and the prescription itself is unchanged by readiness', G.nextPrescription(ex.exId, ex).kg === next);
+
+    /* ---- priorities move above the session at 70 or more ---- */
+    const order = () => [...home().children].map(e => e.classList.contains('hero') ? 'hero' : e.classList.contains('prios') ? 'prios' : '').filter(Boolean).join(',');
+    t('58 · lower readiness (75) puts the priorities above the session', G.priorities()[0].score >= 70 && order() === 'prios,hero', order());
+    S.days[day(0)] = { sleep: 8.8 }; S.days[day(1)] = Object.assign({}, S.days[day(1)], { stress: 2, wb: 9 });
+    G.addFood('chicken', 1, 'l'); G.renderAll();
+    const top2 = G.priorities()[0];
+    t('58 · on a good day the session comes first', (!top2 || top2.score < 70) && (order() === 'hero,prios' || order() === 'hero'), order() + ' ' + (top2 && top2.score));
+    t('58 · each kind of priority keeps its colour', (() => { S.days[day(1)].stress = 8; G.renderAll();
+      const p = home().querySelector('.prio.p-stress .pn'); return !!p && /amber-tint/.test(p.getAttribute('style')); })());
+    S.days[day(1)].stress = 2;
+
+    /* ---- meals ---- */
+    G.renderAll();
+    const meal = m => home().querySelector('.mealscard [data-mealslot="' + m + '"]');
+    t('58 · four meals: breakfast, lunch, snacks and dinner', [...home().querySelectorAll('.mealscard .mrow')].map(r => r.dataset.mealslot).join('') === 'blsd');
+    t('58 · a logged meal has a tick, what went in and its calories', meal('l').classList.contains('done') && /Chicken/.test(txt(meal('l'))) && /\d/.test(txt(meal('l').querySelector('.mk'))));
+    t('58 · protein and fibre sit in the Meals header, one tap to set protein', /Protein \d+\/\d+ g · fibre \d+\/\d+ g/.test(txt(home().querySelector('.mealscard [data-glance="protein"]'))));
+    t('58 · an empty meal offers Add', /Add/.test(txt(meal('b'))) || /Add/.test(txt(meal('d'))));
+    S.profile.trainTime = '18:00'; S.profile.bedtime = '23:00'; S.profile.wakeTime = '07:00'; G.renderAll();
+    t('58 · dinner after training says so', /Dinner, after training/.test(txt(meal('d'))), txt(meal('d')));
+    meal('b').click();
+    t('58 · tapping a meal opens the food list on that meal', d.getElementById('foodSheet').classList.contains('on')
+      && txt([...d.querySelectorAll('#foodSheet [data-foodslot]')].find(b => b.classList.contains('on')).querySelector('span')) === 'Breakfast');
+    G.closeSheets();
+
+    /* ---- the header ---- */
+    t('58 · the header shows the date and Today, with an avatar to You', /Today/.test(txt(d.querySelector('header.top .pagetitle'))) && txt(d.getElementById('todayDate')).length > 5
+      && d.getElementById('avatarBtn').dataset.go === 'progress');
+
+    /* ---- the check-in inside + Log ---- */
+    S.days[k] = Object.assign({}, S.days[k], { skipped: ['b'], mealAt: { l: '13:15' }, steps: 4200 }); delete S.days[k].sleep;
+    G.save(); G.openLog();
+    const card = d.getElementById('ciCard');
+    t('58 · + Log has today\'s check-in as three sliders', !!card && card.querySelectorAll('input[type=range][data-cirange]').length === 3);
+    t('58 · it is in the same order as before: after weigh in, before steps', (() => {
+      const kids = [...d.getElementById('logBody').querySelectorAll('[data-log], #ciCard')].map(e => e.id === 'ciCard' ? 'checkin' : e.dataset.log);
+      return kids.indexOf('weigh') < kids.indexOf('checkin') && kids.indexOf('checkin') < kids.indexOf('week'); })());
+    t('58 · nothing is filled in for you, so Save waits', d.getElementById('ciSave').disabled && /not answered/.test(txt(card)));
+    const slide = (key, v) => { const el = d.querySelector('[data-cirange="' + key + '"]'); el.value = String(v); el.dispatchEvent(new w.Event('input', { bubbles: true })); };
+    slide('sleep', 6.5); slide('stress', 3);
+    t('58 · moving a slider shows its value and allows saving', !d.getElementById('ciSave').disabled && /6\.5h/.test(txt(card)) && /3\/10/.test(txt(card)));
+    d.getElementById('ciSave').click();
+    const rec = S.days[k];
+    t('58 · it saves what was moved, and only that', rec.sleep === 6.5 && rec.stress === 3 && rec.wb === undefined && !!rec.checkedIn);
+    t('58 · it does not tick off a session nobody has done yet', rec.training === undefined && !G.dayDone(i));
+    t('58 · and keeps everything else the day held', JSON.stringify(rec.skipped) === '["b"]' && rec.mealAt.l === '13:15' && rec.steps === 4200 && G.dayFood(k).length >= 1);
+    t('58 · Today shows the check-in as done', d.querySelector('.quicks [data-glance="checkin"]').classList.contains('done'));
+    G.openLog(); d.getElementById('ciMore').click();
+    t('58 · More opens the full check-in, with the saved values', d.getElementById('dayCheck').classList.contains('on') && /6\.5 h/.test(txt(d.getElementById('outsleep'))));
+    d.getElementById('saveDay').click();
+    t('58 · saving the full check-in no longer wipes a skipped meal, meal times or typed steps',
+      JSON.stringify(S.days[k].skipped) === '["b"]' && S.days[k].mealAt.l === '13:15' && S.days[k].steps === 4200, JSON.stringify(S.days[k]));
+    G.closeSheets();
+
+    /* ---- the rest day card ---- */
+    S.plan.days[i] = Object.assign(G.slotFor('rest'), { dow: i }); G.go('today'); G.renderAll();
+    const hero = home().querySelector('.hero');
+    t('58 · a rest day is the same card, shorter, with Walk and Change this day', /Rest/.test(txt(hero)) && !!hero.querySelector('[data-swapto="' + i + ':walk"]')
+      && !!hero.querySelector('[data-swap="' + i + '"]') && !d.getElementById('startToday'));
+    t('58 · and it is visible (the player\'s rest bar class is not reused)', !hero.classList.contains('rest'));
+    hero.querySelector('[data-swapto="' + i + ':walk"]').click();
+    t('58 · Walk makes today a walk', S.plan.days[i].slot === 'walk');
+  }
+
+  /* ---------------------------------------------------------- 59 */
+  journey(59, 'Build 56: the teen Today has meals, never calories');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    const type = (id, v) => { const el = d.getElementById(id); el.value = String(v); el.dispatchEvent(new w.Event('input', { bubbles: true })); };
+    G.startOnboarding(); G.onbDraft.aim = 'lose'; G.onbDraft.liftDays = 3; G.step = 2; G.onbRender();
+    type('onbBorn', new w.Date().getFullYear() - 15); G.onbRender();
+    Object.assign(G.onbDraft, { handle: 'teen', cardioDays: 2, checkinDay: 6, kit: G.ALL_KIT.slice() });
+    G.finishOnboarding();
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    G.addFood('chicken', 1, 'l'); G.addFood('oats', 1, 'b'); G.go('today'); G.renderAll();
+    const home = d.getElementById('todayView'), food = home.querySelector('.rings [data-ring="food"]');
+    t('59 · the Food ring counts meals', txt(food.querySelector('.rv')) === '2' && /meals logged/.test(txt(food)));
+    t('59 · no calories anywhere on Today', !/kcal|calorie/i.test(txt(home)) && !/kcal|calorie/i.test(food.getAttribute('aria-label')));
+    t('59 · meals are ticks, with no calorie numbers', home.querySelector('.mealscard [data-mealslot="l"]').classList.contains('done') && !home.querySelector('.mealscard .mk'));
+    t('59 · no Weigh in tile', !home.querySelector('[data-glance="weigh"]'));
+    G.openLog();
+    t('59 · + Log has no calories either', !/kcal/i.test(txt(d.getElementById('logBody'))));
+    const st = d.querySelector('[data-cirange="stress"]'); st.value = '8'; st.dispatchEvent(new w.Event('input', { bubbles: true }));
+    t('59 · a stressful day in the quick check-in shows Childline', /1800 66 66 66/.test(txt(d.getElementById('ciCard'))));
     G.closeSheets();
   }
   const r = s.report(allErrs);

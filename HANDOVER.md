@@ -1,10 +1,10 @@
 # Gauntlet: handover for a new chat
 
-## Start here (6 Oct 2026)
+## Start here (7 Oct 2026)
 
 **Opening prompt for a new chat:** "Continue Gauntlet from HANDOVER.md in the repo." Claude attaches github.com/fergtech-ireland/gauntlet with push access, clones it, reads this file, and carries on. No uploads needed.
 
-**Current focus (from 6 Oct 2026, evening): the UI redesign, builds 55 onward.** Read `DESIGN-REDESIGN.md` first: it has the agreed final design (Rings plus Daybook, Day and Night themes), the canvas link, the tokens, every screen, the must-keep list and the build order. **Build 55 (foundations) is done; next is build 56 (Today).** The design screens are in `design/redesign/` (reference only, not built). Accounts work below is paused, not dropped: its open Feargal items still stand.
+**Current focus (from 6 Oct 2026, evening): the UI redesign, builds 55 onward.** Read `DESIGN-REDESIGN.md` first: it has the agreed final design (Rings plus Daybook, Day and Night themes), the canvas link, the tokens, every screen, the must-keep list and the build order. **Builds 55 (foundations) and 56 (Today) are done; next is build 57 (Eat tab).** The design screens are in `design/redesign/` (reference only, not built). Accounts work below is paused, not dropped: its open Feargal items still stand.
 
 **Previous focus:** turning Gauntlet from a local-only app into a real application with accounts, proper data tables, friends and challenges. The full plan, agreed by Feargal on 6 Oct 2026, is the doc "Gauntlet: from local app to real application": https://claude.ai/code/artifact/c2a1c0da-9821-4a96-8763-bd99dd1b1a58 (read it before starting any phase).
 
@@ -55,10 +55,10 @@
 
 **Working notes:** Supabase connector writes to gauntlet-test worked on 6 Oct (apply_migration); if they get cancelled again, Feargal pastes the migration into the SQL editor. Run `get_advisors` after every migration. A single UAT journey can be run from a scratch copy of uat.js (header plus that journey) to iterate quickly. Run the full suite in the background (`nohup node test.js > out.txt &`, then check) because it takes about 4 minutes and single commands time out at 5. Commits are authored as Claude (`git config user.email noreply@anthropic.com`). `package-lock.json` is gitignored.
 
-**Current build:** 55. Live: https://fergtech-ireland.github.io/gauntlet/ · Repo: github.com/fergtech-ireland/gauntlet (main)
+**Current build:** 56. Live: https://fergtech-ireland.github.io/gauntlet/ · Repo: github.com/fergtech-ireland/gauntlet (main)
 **Deploys:** Claude now has push access to the repo and the Supabase connector, so builds are committed and pushed directly (pushing to main publishes the live site). Build 49 pushed 6 Oct 2026; the repo was on build 47 before that.
 **Supabase:** delete policies in place. 6 Oct 2026: `increment_try` restricted to signed-in users (see `supabase-increment-try.sql`). Still open: switch on leaked password protection in the dashboard (Authentication, password settings).
-**Tests:** `npm install && npm test` = 1,663 checks, 0 failures (build 12, regression 152, cta 59, uat 1,363 with 56 journeys, sw 24, rls 53). Journeys 55 and 56 run the account flows against a fake Supabase that keeps the 0002 rules (including `handle_available`). Making a change: edit `src/`, `node build.js`, `npm test`, commit, push.
+**Tests:** `npm install && npm test` = 1,726 checks, 0 failures (build 12, regression 154, cta 59, uat 1,424 with 59 journeys, sw 24, rls 53). Journeys 55 and 56 run the account flows against a fake Supabase that keeps the 0002 rules (including `handle_available`). Making a change: edit `src/`, `node build.js`, `npm test`, commit, push.
 
 ## How we work
 - PWA served from `index.html`, which is built from `src/` by `node build.js` (never edit `index.html` by hand). Tests run in jsdom; layout is checked in real Chrome (Playwright, phone widths 320 to 430px).
@@ -77,7 +77,19 @@
   - Nav: Today, Plan, round + Log, Eat, You. Eat opens the existing food sheet (`go('eat')`) until build 57. Friends (`#friendsBtn`, `data-go="feed"`) and the sun and moon (`#themeBtn`) sit in the header on Today only; Find people shows on Friends only (`body[data-screen]`).
   - Contrast: a Playwright sweep of every visible text element on every screen and main sheet, Day and Night, 320/390/430px: all AA. Found and fixed: faded optional/skipped meal cards (now dashed, not faded) and the footer accent.
   - Tests: theme checks rewritten for Day/Night/Match phone (same things proven); journey 57 (Match phone follows the phone, head script, sun and moon, saved Night, pre-55 Dark, nav, Friends, Eat adds to the same day). The suite caught one real bug: Delete everything left the new theme key behind.
-- [ ] Build 56: Today (rings, driver line, priorities rule, dark hero, meals list, quick tiles, + Log inline check-in).
+- [x] **Build 56 (7 Oct): Today.** All in `src/js/app/07-today.js` unless said.
+  - Header on Today: date line and "Today" replace the brand; avatar (`#avatarBtn`, `data-go="progress"`) beside the sun and moon and Friends.
+  - Rings (`ringsRow`, `.rings .ring[data-ring=ready|food|train]`), replacing `glanceRow`/`teenGlanceRow`. Ready is the `readiness()` word (fill about 90/58/28%, empty while Building); tap opens `openReadiness()` (readiness panel, how it works, that it never moves the weights). Food is kcal left, or kcal over target with the maintenance line; caution amber under maintenance (`.over`), coral past it (`.over.past`), as the old tile did; `data-glance="food"`. Teen Food ring counts meals, no kcal. Train is the usual train time (or Rest, Walk, Done) with "N of M this week"; tap opens the day.
+  - Driver line (`driverLine`): what drives readiness plus its confidence chip, and pills for last night's sleep (`data-glance="sleep"`, "Slept 6.5h · aim 7h or more") and steps when a tracker is on.
+  - Priorities: same `priorities()`; rows with a tinted number by kind (`PRIO_TONE`); above the session when any scores 70 or more, below it otherwise.
+  - Session card (`heroCard`, still `.hero`), dark in both themes: kicker (TONIGHT, 18:00 · HIFB), name, chips, progression line (`heroProgress`: first lift whose `nextPrescription` is a load increase; on a lower readiness day "was due to go up... keep X kg or stop a set early"; the prescription itself never changes), Start session / See or edit, Why today, Not today, Change this day, Leaving out. Rest day: Walk instead (`data-swapto=i:walk`), Change this day, See the week. Muscle map not built (build 59).
+  - Meals (`mealsList`, `.mealscard .mrow[data-mealslot=b|l|s|d]`), replacing the meal strip: tick, items, kcal (none for teens), planned time when empty, Add (green on the next one), Dinner after training, skipped. Per-meal protein shown on main meals, `.hit` at the 0.4 g/kg mark. Header: protein and fibre (`data-glance="protein"`). Footer: the spread note and Why these times.
+  - Quick tiles (`quickTiles`): Weigh in and Today's Check-in (teens: Log food and Check-in). Goal line (`targetLine`) moved under them; habits, check-in row, pain review and Next up are rounded cards.
+  - + Log (`11-chrome-actions.js`, `daily.js`): same items and order, on the page colour, food card with a coral bar, and Today's check-in as three sliders (`inlineCheckinHtml`, `data-cirange`) between Weigh in and Steps. Nothing pre-filled; Save waits for a moved slider; saves through `saveDayRecord` (shared with the full sheet) but never ticks the planned session; More opens `openDay`. Teen stress 7+ shows Childline.
+  - Bug fixed on the way: saving the check-in rebuilt the day from the form alone, wiping a skipped meal, meal times and typed steps. `saveDayRecord` now replaces only the fields the form owns (`DAY_FIELDS`).
+  - Class clash to remember: `.rest` is the player's rest bar (display:none). The rest-day card is `.hero.restday` and rest dots are `.dot.off`.
+  - Tests: journeys 31, 32, 35, 37, 38, 39, P116 to P119 and meals moved to the new markup keeping what each proves; journey 58 (rings, driver line, progression line, priorities rule, meals, header, inline check-in, the wipe fix, rest card) and 59 (teen: meals not calories, Childline in the quick check-in). Broken on purpose: the 70 rule, the inline save ticking training, the wipe fix and the teen ring each fail a named check. Playwright sweep (good, low, teen, rest and over-target days; Today and + Log; Day and Night; 320, 390, 430px): all AA, no sideways scroll, no page errors.
+- [ ] Build 57: Eat tab (full diary on the existing food functions; the Food ring and Meals rows should then open Eat rather than the food sheet).
 - Note: this workspace cannot reach Google Fonts, so local screenshots use a fallback face; check the fonts on the live site.
 
 ## Builds 44 to 52 in brief

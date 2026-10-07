@@ -328,16 +328,23 @@ document.addEventListener('change',e=>{
     const k=r.dataset.dayrange; dayDraft[k]=+r.value; r.classList.remove('unset');
     const o=$('out'+k); if(o) o.textContent = k==='sleep'? dayDraft.sleep+' h' : dayDraft[k]+' / 10'; }
 });
-$('saveDay').addEventListener('click',()=>{
+/* Saving the day, shared by the full sheet and the quick check-in in + Log.
+   The record used to be rebuilt from the form's fields alone, so saving the
+   check-in quietly wiped anything else the day held: a skipped meal, the
+   times meals were eaten, steps typed in by hand. Only the fields the form
+   owns are replaced now; everything else on the day is kept. */
+const DAY_FIELDS=['training','sleep','wb','stress','w','kcal','protein','carbs','fat','fibre','note'];
+function saveDayRecord(draft){
   const k=todayKey(), d={};
-  ['training','sleep','wb','stress','w','kcal','protein','carbs','fat','fibre'].forEach(f=>{
-    if(dayDraft[f]!==undefined&&dayDraft[f]!==null&&!Number.isNaN(dayDraft[f])) d[f]=dayDraft[f];
+  DAY_FIELDS.filter(f=>f!=='note').forEach(f=>{
+    if(draft[f]!==undefined&&draft[f]!==null&&!Number.isNaN(draft[f])) d[f]=draft[f];
   });
-  if(dayDraft.note&&String(dayDraft.note).trim()) d.note=String(dayDraft.note).trim();
+  if(draft.note&&String(draft.note).trim()) d.note=String(draft.note).trim();
   /* done means they actually saved the check-in, not that some number exists */
   d.checkedIn=Date.now();
-  if(S.days[k]&&Array.isArray(S.days[k].food)) d.food=S.days[k].food;
-  S.days[k]=Object.assign({}, S.days[k]&&S.days[k].auto? {auto:S.days[k].auto}:{}, d);
+  const kept=Object.assign({},S.days[k]);
+  DAY_FIELDS.forEach(f=>{ delete kept[f]; });
+  S.days[k]=Object.assign(kept,d);
   if(typeof d.w==='number'){
     const last=S.weights[S.weights.length-1];
     if(last&&last.d===k) last.kg=d.w; else S.weights.push({d:k,kg:d.w});
@@ -349,12 +356,76 @@ $('saveDay').addEventListener('click',()=>{
     didList.forEach(x=>{ const kind=x==='cardio'?'run':'workout';
       if(day&&!day.done.includes(kind)) day.done.push(kind); });
   }
-  save(); closeSheets(); renderAll();
+  save();
+  return didList;
+}
+$('saveDay').addEventListener('click',()=>{
+  const didList=saveDayRecord(dayDraft);
+  closeSheets(); renderAll();
   const planned=typeof todayPlan==='function'? todayPlan() : null;
   if(!didList.length && planned && planned.type && planned.slot!=='walk' && !dayDone(todayIdx())){
     toast('Today saved');
     setTimeout(()=>openRestChoice(dowIdx()),300);
   } else toast('Today saved');
+});
+
+/* ---------- the check-in inside + Log (build 56) ----------
+   Sleep, how the day went and stress, as three sliders in the Log sheet, saved
+   through saveDayRecord like the full sheet. Nothing starts filled in: a slider
+   counts only once it has been moved, the same rule as the full sheet (Review
+   P0 01). It never touches what was trained: the full sheet ticks the planned
+   session as done, which is right when someone is looking at the chips and
+   wrong in a twenty second check-in that may be done before the session. */
+let ciDraft=null;
+function inlineCheckinHtml(){
+  const prev=today()||{}, auto=autoOf(todayKey());
+  ciDraft={};
+  const val=(k,v)=> v===null||v===undefined? (k==='sleep'?'not answered':'not rated') : (k==='sleep'? v+'h' : v+'/10');
+  const row=(k,label,min,max,step,def)=>`<label for="ci_${k}">${label}</label>
+    <input id="ci_${k}" type="range" min="${min}" max="${max}" step="${step}" value="${typeof prev[k]==='number'? prev[k] : def}" data-cirange="${k}" class="${typeof prev[k]==='number'?'':'unset'}" aria-label="${label}">
+    <b id="ciout_${k}">${val(k,prev[k])}</b>`;
+  const done=!!prev.checkedIn;
+  return `<div class="cicard" id="ciCard">
+    <div class="cih"><b>Today's check-in</b><span>${done? 'saved today, change anything' : 'twenty seconds'}</span></div>
+    <div class="cigrid">
+      ${auto? `<span class="cil">Sleep</span><span class="ciauto">${auto.sleep}h from ${sourceName()}</span><b></b>` : row('sleep','Sleep',3,11,0.25,7)}
+      ${row('wb','How today went',1,10,1,6)}
+      ${row('stress','Stress',1,10,1,5)}
+    </div>
+    <div id="ciTeen"></div>
+    <button class="cta" id="ciSave" disabled>Save check-in</button>
+    <button class="skipbtn" id="ciMore">More: notes, training, food and weight</button>
+  </div>`;
+}
+function ciTeenNote(){
+  const box=$('ciTeen'); if(!box) return;
+  const st=(ciDraft&&typeof ciDraft.stress==='number')? ciDraft.stress : (today()||{}).stress;
+  box.innerHTML= isTeen()&&st>=7? `<div class="teencard"><b>That sounds like a hard day.</b><span>Childline is free and there all day and night: 1800 66 66 66, or text 50101. Text About It: text HELLO to 50808.</span></div>` : '';
+}
+function saveInlineCheckin(){
+  if(!ciDraft||!Object.keys(ciDraft).length) return;
+  const prev=today()||{};
+  const draft=Object.assign({sleep:null,wb:null,stress:null,note:''},prev,ciDraft);
+  if(prev.training===undefined) delete draft.training;
+  saveDayRecord(draft);
+  ciDraft=null; closeSheets(); renderAll(); toast('Check-in saved');
+}
+document.addEventListener('input',e=>{
+  const r=e.target.closest&&e.target.closest('[data-cirange]');
+  if(!r||!ciDraft) return;
+  const k=r.dataset.cirange; ciDraft[k]=+r.value; r.classList.remove('unset');
+  const o=$('ciout_'+k); if(o) o.textContent= k==='sleep'? ciDraft[k]+'h' : ciDraft[k]+'/10';
+  const b=$('ciSave'); if(b) b.disabled=false;
+  if(k==='stress') ciTeenNote();
+});
+/* tapping a slider without dragging it fires change but not input */
+document.addEventListener('change',e=>{
+  const r=e.target.closest&&e.target.closest('[data-cirange]');
+  if(r&&ciDraft&&ciDraft[r.dataset.cirange]===undefined) r.dispatchEvent(new Event('input',{bubbles:true}));
+});
+document.addEventListener('click',e=>{
+  if(e.target.closest('#ciSave')){ saveInlineCheckin(); return; }
+  if(e.target.closest('#ciMore')){ ciDraft=null; closeSheets(); openDay(); }
 });
 
 /* ---------- weekly check in: mostly already answered ---------- */
@@ -470,7 +541,7 @@ function copyBrief(){
 
 renderProgress();
 Object.assign(window.__G,{TRAIN_DAYS,DEFAULT_TARGETS,ownTargets,allMovements,drawWeekStep,
-  lastNDays,avg,steers,coachBrief,slotLetter,splitFit,STYLES,styleOf,hyroxDaysOf,openStyleSheet,HYROX_ORDER,weekIndex,MOVES,moveOf,kitOK,itemText,fitItem,niceAmt,hyroxSession,hyroxWeek,crossfitSession,crossfitWeek,ensureStyleWeek,sessionsWanted,CF_BENCH,HYROX_RACE,HYROX_ORDER,weekIndex,proteinPaceText,readiness,readinessPanel,painAdvice,painMorningDue,painPattern,PAIN_FLAGS,priorities,prioritiesRow,confidence,sleepStats,sleepTarget,openSleep,lightsOut,realSleep,isTeen,tooYoung,canHaveAccount,SUPPORT_TEEN,TEEN_MIN,PACE,paceOf,openPaceSheet,isMinorAge,ADULT_AGE,eatingPlan,nextEating,openEating,openEatTimes,eatingRow,perMealProtein,mealSlots,timingStats,MEAL_NAMES,proteinBasis,hhmmToMin,minToHhmm,todayTrains,activeHabits,habitCount,habitRoom,HABIT_MAX,slotForNew,habitSlotOf,trainingList,trainingText,plannedTraining,loggedTraining,TRAIN_DAYS,plannedCardioKcalPerDay,openDay,openWeek,
+  lastNDays,avg,steers,coachBrief,slotLetter,splitFit,STYLES,styleOf,hyroxDaysOf,openStyleSheet,HYROX_ORDER,weekIndex,MOVES,moveOf,kitOK,itemText,fitItem,niceAmt,hyroxSession,hyroxWeek,crossfitSession,crossfitWeek,ensureStyleWeek,sessionsWanted,CF_BENCH,HYROX_RACE,HYROX_ORDER,weekIndex,proteinPaceText,readiness,readinessPanel,painAdvice,painMorningDue,painPattern,PAIN_FLAGS,priorities,prioritiesRow,confidence,sleepStats,sleepTarget,openSleep,lightsOut,realSleep,isTeen,tooYoung,canHaveAccount,SUPPORT_TEEN,TEEN_MIN,PACE,paceOf,openPaceSheet,isMinorAge,ADULT_AGE,eatingPlan,nextEating,openEating,openEatTimes,dayDone,mealsList,ringsRow,driverLine,quickTiles,heroProgress,openReadiness,saveDayRecord,saveInlineCheckin,perMealProtein,mealSlots,timingStats,MEAL_NAMES,proteinBasis,hhmmToMin,minToHhmm,todayTrains,activeHabits,habitCount,habitRoom,HABIT_MAX,slotForNew,habitSlotOf,trainingList,trainingText,plannedTraining,loggedTraining,TRAIN_DAYS,plannedCardioKcalPerDay,openDay,openWeek,
   HABITS,habitOf,currentHabit,startHabit,retireHabit,toggleHabitDay,habitWeek,habitStreak,habitRate,suggestHabit,openHabitSheet,habitRow,habitRowFor,habitApplies,habitSlots,addOwnHabit,ownHabits,escHabit,OWN_MAX,colophonText,
   TARGET_KINDS,setTarget,clearTarget,targetNow,targetProgress,openTargetSheet,targetLine,
   nudgeState,nextNudgeAt,scheduleNudge,enableNudges,disableNudges,fireNudge,nudgeHelp,onIOS,installed,NUDGE_KEY,

@@ -40,6 +40,9 @@ var m=document.getElementById('themeColor');if(m)m.setAttribute('content',t==='n
         <circle cx="79.6" cy="37.7" r="4.6" fill="var(--amber)"/></svg>
       <div class="wordmark">GAUNTLET</div>
     </div>
+    <!-- Build 56: on Today the brand gives way to the date and the page title,
+         as in the design, and an avatar opens You. -->
+    <div class="pagetitle on-today-block"><div class="pd" id="todayDate"></div><h1>Today</h1></div>
     <div class="spacer"></div>
     <!-- Build 55: on Today the header carries the sun and moon (Day or Night) and
          Friends, which moved out of the bottom nav. Find people stays on Friends. -->
@@ -48,6 +51,7 @@ var m=document.getElementById('themeColor');if(m)m.setAttribute('content',t==='n
       <svg class="sun" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg></button>
     <button class="iconbtn on-today ring" id="friendsBtn" data-go="feed" aria-label="Friends">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="9" cy="9" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0M16 6.5a3 3 0 1 1 0 5.5M17 14a5 5 0 0 1 4 6"/></svg></button>
+    <button class="iconbtn on-today" id="avatarBtn" data-go="progress" aria-label="You: your profile and settings"><span class="av" id="avatarLetter">Y</span></button>
     <button class="iconbtn on-feed" id="findBtn" aria-label="Find people">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="8" r="4"/><path d="M3 20a7 7 0 0 1 12-4.9"/><path d="M17 15v6M14 18h6"/></svg></button>
   </header>

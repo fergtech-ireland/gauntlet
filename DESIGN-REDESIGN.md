@@ -219,7 +219,7 @@ All logging, PRs, run splits and RPE stay as they are.
 
 Each build is shippable on its own and passes the full suite.
 
-- **Build 55: foundations.**
+- **Build 55: foundations.** Done 6 Oct 2026.
   - Tokens for both themes.
   - `data-theme` set at boot plus `prefers-color-scheme`.
   - Appearance setting.
@@ -228,7 +228,7 @@ Each build is shippable on its own and passes the full suite.
   - New nav (Today / Plan / + Log / Eat / You, with Eat temporarily opening the existing food sheet), Friends in the Today header.
 
   Check every screen in both themes for contrast.
-- **Build 56: Today.**
+- **Build 56: Today.** Done 7 Oct 2026, see HANDOVER.
   - Rings (with the teen variant), driver line, priorities placement rule.
   - Dark hero card (without the muscle map), Meals list, quick tiles.
   - All existing rows restyled.

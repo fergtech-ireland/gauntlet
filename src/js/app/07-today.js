@@ -80,22 +80,6 @@ function habitRow(){
    only nudges are the ones that make the advice better: a weigh in, what you
    ate, how the day went. */
 
-/* Today's numbers, as a row you can tap to log. Calories first, because food
-   is the thing people stop logging first and the thing the whole forecast
-   rests on. */
-/* A teenager's home screen: meals, sleep and steps, never calories. */
-function teenGlanceRow(){
-  const k=todayKey(), meals=new Set(dayFood(k).map(x=>x.meal||'s')).size;
-  const last=S.days[addDays(k,-1)]||{}, tonight=S.days[k]||{};
-  const sleep=tonight.sleep||last.sleep||null;
-  const st=(typeof stepsToday==='function')? stepsToday() : null;
-  const cell=(id,top,label,sub)=>`<button class="glance" data-glance="${id}"><div class="gv">${top}</div><div class="gl">${label}</div><div class="gs">${sub}</div></button>`;
-  return `<div class="glances">
-    ${cell('food', String(meals), meals===1?'meal logged':'meals logged', 'eat regularly, and plenty of variety')}
-    ${cell('checkin', sleep? sleep+'h':'–', 'sleep', '8 to 10 hours is right at your age')}
-    ${cell('steps', st===null?'–':num(st), 'steps', st===null?'no tracker':'of '+num(stepTarget()))}
-  </div>`;
-}
 /* ---------- how much each piece of advice has to go on (Review P1-12) ----------
    The forecast already says when it is estimating and when it knows. Every
    other kind of advice now does the same, in the same words: nothing yet,
@@ -281,73 +265,18 @@ function proteinPaceText(pr,expected,target){
   if(expected>=target*0.95) return ['Protein is short today',`${pr}g of ${target}g so far. A protein-rich last meal or snack closes some of the gap, and the week matters more than one day.`];
   return ['Get protein into the next meal',`${pr}g so far; around ${expected}g would be on pace for ${target}g today.`];
 }
-function prioritiesRow(){
-  const list=priorities();
+/* Each kind of prompt keeps one colour, so the eye learns them: sleep cyan,
+   readiness and stress amber, food and pain coral, check-ins green. */
+const PRIO_TONE={sleep:'cyan',readiness:'amber',stress:'amber',protein:'coral',food:'coral',pain:'coral',
+  checkin:'green',proteinok:'green',weigh:'green',steps:'amber'};
+function prioritiesRow(list){
+  list=list||priorities();
   if(!list.length) return '';
   return `<div class="sechead"><h2>What matters today</h2></div>
-    <div class="prios">${list.map((x,i)=>`<div class="prio p-${x.id}">
-      <div class="pn">${i+1}</div>
-      <div class="pt"><b>${x.t}</b><span>${x.why}</span>${x.conf? confChip(x.conf) : ''}</div>
-      ${x.action? `<div class="pa">${x.action}</div>` : ''}</div>`).join('')}</div>`;
-}
-function glanceRow(){
-  if(isTeen()) return teenGlanceRow();
-  const k=todayKey(), t=S.targets||{}, day=S.days[k]||{};
-  const food=foodTotals(k);
-  const eaten=Math.round(food.kcal||0), target=+t.kcal||0;
-  const left=target? target-eaten : null;
-  const protein=Math.round(food.protein||0);
-  const st=(typeof stepsToday==='function')? stepsToday() : null;
-  const cell=(id,top,label,sub,pct,tone,cls)=>`<button class="glance ${cls||''}" data-glance="${id}">
-    <div class="gv">${top}</div><div class="gl">${label}</div>
-    ${pct!==null? `<div class="gbar"><i style="width:${Math.max(2,Math.min(100,pct))}%;background:${tone}"></i></div>`:''}
-    <div class="gs">${sub}</div></button>`;
-  /* Over target used to read "0 kcal left", which looks like bang on target.
-     It now says how far over, and puts maintenance beside it: over target but
-     under maintenance is still a deficit, just a smaller one, and that is a
-     very different day from eating past what you burn. */
-  const maint=+t.maintenance||0;
-  const over=target&&eaten>target? eaten-target : 0;
-  let top, label, sub, tone, cls='';
-  if(!target){ top=num(eaten); label='kcal in'; sub='no target yet'; tone='var(--cta)'; }
-  else if(!over){ top=num(left); label='kcal left'; sub=num(eaten)+' of '+num(target); tone='var(--cta)'; }
-  else {
-    top=num(over); label='kcal over target';
-    if(maint&&eaten<=maint){ sub='maintenance '+num(maint)+', still '+num(maint-eaten)+' under'; tone='var(--amber-text)'; cls='over'; }
-    else if(maint){ sub='maintenance '+num(maint)+', '+num(eaten-maint)+' over'; tone='var(--coral-text)'; cls='over past'; }
-    else { sub=num(eaten)+' of '+num(target); tone='var(--coral-text)'; cls='over past'; }
-  }
-  return `<div class="glances">
-    ${cell('food', top, label, sub, target? Math.round(eaten/target*100) : null, tone, cls)}
-    ${cell('protein', protein+'g', 'protein', t.protein? 'of '+t.protein+'g':'today',
-      t.protein? Math.round(protein/t.protein*100) : null, 'var(--cta)')}
-    ${st===null? (()=>{ const sl=realSleep(S.days[todayKey()]), tg=sleepTarget();
-        return cell('sleep', sl===null? '–' : sl+'h', 'sleep', sl===null? 'tap to log last night' : 'aim '+tg.lo+'h or more',
-          sl===null? null : Math.round(sl/tg.lo*100), 'var(--cta)'); })()
-      : cell('steps', num(st), 'steps', 'of '+num(stepTarget()), Math.round(st/stepTarget()*100), 'var(--amber-text)')}
-  </div>`;
-}
-/* One tap each, and each one says where it stands rather than nagging. */
-function logRow(){
-  if(isTeen()){
-    const k=todayKey(), meals=dayFood(k).length, done=!!(S.days[k]&&S.days[k].checkedIn);
-    return `<div class="quicks">
-      <button class="quick ${meals?'done':''}" data-glance="food"><span class="ql">Log food</span><span class="qs">${meals? meals+' logged':''}</span></button>
-      <button class="quick ${done?'done':''}" data-glance="checkin"><span class="ql">Today's Check-in</span><span class="qs">${done?'done':''}</span></button></div>`;
-  }
-  const k=todayKey(), logged=S.days[k]||{};
-  const weighed=S.weights.length&&S.weights[S.weights.length-1].d===k;
-  const meals=dayFood(k).length;
-  /* The state line used to read "not today" under every unfinished one, which
-     spent three lines of a phone screen saying nothing. Done shows a tick and
-     what it was; not done shows the label alone. */
-  const btn=(id,label,state,done)=>`<button class="quick ${done?'done':''}" data-glance="${id}">
-    <span class="ql">${label}</span>${done&&state? `<span class="qs">${state}</span>`:''}</button>`;
-  return `<div class="quicks">
-    ${btn('food','Log food', meals? meals+' in':'', meals>0)}
-    ${btn('weigh','Weigh in', weighed? showW(S.weights[S.weights.length-1].kg,S.profile.units==='imperial') : '', weighed)}
-
-  </div>`;
+    <div class="prios">${list.map((x,i)=>{ const tone=PRIO_TONE[x.id]||'green';
+      return `<div class="prio p-${x.id}">
+      <div class="pn" style="background:var(--${tone}-tint);color:var(--${tone}-text)">${i+1}</div>
+      <div class="pt"><b>${x.t}</b><span>${x.why}</span>${x.conf? confChip(x.conf) : ''}${x.action? `<div class="pa">${x.action}</div>` : ''}</div></div>`; }).join('')}</div>`;
 }
 /* How the week is actually going, in one honest sentence. */
 function weekLine(){
@@ -561,30 +490,6 @@ function mealSlots(k){
   });
   return {slots,per:perMealProtein()};
 }
-function eatingRow(){
-  if(!(S.targets&&S.targets.protein)) return '';
-  const {slots,per}=mealSlots();
-  if(!slots.length) return '';
-  const now=new Date().getHours()*60+new Date().getMinutes();
-  const nextI=slots.findIndex(s=>s.min>=now&&!s.n);
-  const eaten=Math.round(foodTotals(todayKey()).protein||0), target=+S.targets.protein||0;
-  const counted=slots.filter(s=>!s.optional&&!s.skipped);
-  const hit=counted.filter(s=>per&&s.p>=per).length;
-  const chip=(s,i)=>{
-    const pct=per? Math.min(100,Math.round(s.p/per*100)) : 0;
-    const done=per&&s.p>=per, some=s.n>0;
-    if(s.skipped) return `<button class="meal skipped" data-mealslot="${slotLetter(s)}" aria-label="${mealName(s.tag)}: skipped. Tap to change.">
-      <span class="mt">${s.time}</span><span class="mn">${mealName(s.tag)}</span><span class="mp" style="font-size:13px">Skipped</span></button>`;
-    return `<button class="meal ${done?'done':''} ${some&&!done?'some':''} ${i===nextI?'next':''} ${s.optional?'opt':''}"
-      data-mealslot="${slotLetter(s)}" aria-label="${mealName(s.tag)} at ${s.time}: ${Math.round(s.p)} of ${per} grams protein. Tap to log.">
-      <span class="mt">${s.time}</span><span class="mn">${mealName(s.tag)}</span>
-      <span class="mp">${some? Math.round(s.p)+'g' : (s.optional?'if hungry':'–')}<small>/${per}g</small></span>
-      <i class="mbar"><b style="width:${pct}%"></b></i></button>`;
-  };
-  return `<div class="sechead"><h2>Today's meals</h2><button id="eatBtn">Why these times</button></div>
-    <div class="mealstrip">${slots.map(chip).join('')}</div>
-    <div class="note" style="margin:0 14px 12px">${hit} of ${counted.length} meals at ${per}g protein so far. Spreading it helps; the day's total, above, matters most.</div>`;
-}
 /* The week, for the check in and the coach: how many meals reached the mark,
    and how long before bed the last food came. */
 function timingStats(days){
@@ -664,54 +569,247 @@ function inFirstWeek(){
   const f=S.profile&&S.profile.firstWeek; if(!f) return true;
   return gapDays(f)<14;
 }
-function renderToday(){
-  const plan=ensurePlan(), d=todayPlan(), i=dowIdx(), logged=S.days[todayKey()];
-  const weighedToday=S.weights.length && S.weights[S.weights.length-1].d===todayKey();
-  const st=stepsToday(), done=dayDone(i), hue=HUE[d.kind]||HUE.any;
-  const isWalk=d.slot==='walk';
+/* ---------- Today, build 56 (DESIGN-REDESIGN.md) ----------
+   Three rings (Ready, Food, Train), a line on what is moving readiness, the
+   priorities, the session as a dark card, the day's meals as a list, and two
+   quick tiles. Every number and prompt from build 55 is still here: the rings
+   replace the three glance tiles, protein and fibre sit in the Meals header,
+   sleep or steps sit in the driver line, and Log food is the Food ring, the
+   Meals Add and the first thing in + Log. */
+const RING_C=2*Math.PI*44;
+function ringHtml(id,frac,tone,value,label,caption,aria,extra,cls){
+  const len=Math.max(0,Math.min(1,frac||0))*RING_C;
+  const vs=String(value), word=/^[A-Za-z]+$/.test(vs), fs=word? (vs.length>=7? 19 : 22) : (vs.length>=7? 18 : (vs.length>=6? 21 : (vs.length>=5? 24 : 28)));
+  return `<button class="ring ${cls||''}" data-ring="${id}" ${extra||''} aria-label="${aria}" style="--tone:var(--${tone})">
+    <span class="rwrap"><svg viewBox="0 0 104 104" aria-hidden="true"><circle class="rt" cx="52" cy="52" r="44"/>
+      ${len>0? `<circle class="ra" cx="52" cy="52" r="44" stroke-dasharray="${len.toFixed(1)} ${RING_C.toFixed(1)}" transform="rotate(-90 52 52)"/>` : ''}</svg>
+      <span class="rv" style="font-size:${fs}px">${value}</span></span>
+    <span class="rk" style="color:var(--${tone}-text)">${label}</span><span class="rs">${caption}</span></button>`;
+}
+/* Readiness is a word against the person's own usual, never a number; the
+   ring's fill is only a picture of that word. */
+const READY_RING={better:{f:0.9,tone:'green',v:'Better',c:'than your usual'},usual:{f:0.58,tone:'green',v:'Usual',c:'about your usual'},
+  lower:{f:0.28,tone:'amber',v:'Lower',c:'than your usual'},building:{f:0,tone:'green',v:'Building',c:'your baseline'}};
+function weekCounts(){
+  const plan=ensurePlan(), i=dowIdx();
+  const planned=plan.days.filter(d=>d.type&&d.slot!=='walk').length;
+  let done=0; for(let n=0;n<=i;n++) if(dayDone(n)) done++;
+  return {planned,done};
+}
+function foodRing(){
+  const k=todayKey();
+  if(isTeen()){
+    /* no calories anywhere for under 18s: the ring counts meals, like the teen
+       glance tile it replaces */
+    const meals=new Set(dayFood(k).map(x=>x.meal||'s')).size;
+    return ringHtml('food',Math.min(1,meals/3),'coral',String(meals),'FOOD',meals===1?'meal logged':'meals logged',
+      `${meals} ${meals===1?'meal':'meals'} logged today. Tap to log food.`,'data-glance="food"');
+  }
+  const t=S.targets||{}, eaten=Math.round(foodTotals(k).kcal||0), target=+t.kcal||0, maint=+t.maintenance||0;
+  if(!target) return ringHtml('food',0,'coral',num(eaten),'FOOD','kcal in, no target yet',`${num(eaten)} kcal eaten, no target yet. Tap to log food.`,'data-glance="food"');
+  if(eaten<=target) return ringHtml('food',eaten/target,'coral',num(target-eaten),'FOOD','kcal left',
+    `${num(target-eaten)} kcal left of ${num(target)}. Tap to log food.`,'data-glance="food"');
+  /* Over target is not bang on target: it says how far over, and where that
+     sits against maintenance, as the tile it replaces did. */
+  /* over target but under maintenance is still a deficit, just a smaller
+     one: caution amber. Past maintenance is coral. */
+  const over=eaten-target, past=!maint||eaten>maint;
+  const sub= maint? (eaten<=maint? 'maintenance '+num(maint)+', still '+num(maint-eaten)+' under' : 'maintenance '+num(maint)+', '+num(eaten-maint)+' over') : num(eaten)+' of '+num(target);
+  return ringHtml('food',1,past?'coral':'amber',num(over),'FOOD','kcal over target · '+sub,`${num(over)} kcal over target, ${sub}. Tap to log food.`,
+    'data-glance="food"',past? 'over past' : 'over');
+}
+function trainRing(){
+  const d=todayPlan(), i=dowIdx(), wc=weekCounts();
+  const frac=wc.planned? wc.done/wc.planned : 0;
+  const cap=wc.planned? `${wc.done} of ${wc.planned} this week` : 'nothing planned';
+  let v, aria;
+  if(dayDone(i)&&d.type){ v='Done'; aria='Today\'s session done. '+cap+'.'; }
+  else if(d.slot==='walk'){ const st=stepsToday(); v=st===null? 'Walk' : num(st); aria='A walking day. '+cap+'.'; }
+  else if(!d.type||d.slot==='rest'){ v='Rest'; aria='A rest day. '+cap+'.'; }
+  else { v=minToHhmm(clockOf('train')); aria=`${dayLabel(d)} today, usually around ${v}. ${cap}.`; }
+  return ringHtml('train',frac,'cyan',v,'TRAIN',cap,aria+' Tap to see the day.');
+}
+function readyRing(){
+  const r=readiness(), x=READY_RING[r.level]||READY_RING.building;
+  return ringHtml('ready',x.f,x.tone,x.v,'READY',x.c,
+    r.level==='building'? 'Readiness: building your baseline. Tap for what it needs.' : `Readiness: ${r.text.toLowerCase()}. Tap for why.`);
+}
+function ringsRow(){ return `<div class="rings">${readyRing()}${foodRing()}${trainRing()}</div>`; }
+/* What is moving readiness, how much that rests on, and last night's sleep or
+   today's steps, one tap from logging. */
+function driverLine(){
+  const r=readiness();
+  const text= r.level==='building'? r.text : (r.drivers.length? 'Driven by '+r.drivers.join('; ')+'.' : 'Nothing well away from your usual.');
+  const conf= r.level==='building'? '' : confChip({level: r.baseDays>=14?'good':(r.baseDays>=7?'fair':'building'), text:'based on '+r.baseDays+' of the last 28 days'});
+  const st=(typeof stepsToday==='function')? stepsToday() : null, sl=realSleep(S.days[todayKey()]), tg=sleepTarget();
+  const sleepPill=`<button class="pill" data-glance="sleep">${sl===null? 'Sleep: log last night' : 'Slept '+sl+'h · aim '+(isTeen()? tg.t : tg.lo+'h or more')}</button>`;
+  const stepPill= st===null? '' : `<button class="pill" data-glance="steps">${num(st)} steps of ${num(stepTarget())}</button>`;
+  return `<div class="driver"><p>${text} ${conf}</p><div class="pills">${sleepPill}${stepPill}</div></div>`;
+}
+function openReadiness(){
+  const r=readiness();
+  document.getElementById('altTitle').textContent='Readiness';
+  document.getElementById('altSub').textContent= r.level==='building'? 'Building your baseline' : r.text;
+  document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 10px">
+    ${readinessPanel()}
+    <div class="method"><b>How it works</b><span>Last night's sleep, yesterday's stress and how your day went, each against your own last four weeks. It is a word, not a score: better, about usual or lower, with what is driving it. How you say you are tracks your response to training more closely than heart rate or blood markers in a review of 56 studies (Saw and colleagues, 2016), though those studies were in athletes.</span></div>
+    <div class="method"><b>What it changes</b><span>Not the weights. They go up because of what you lifted last week. On a lower day the advice is to hold steady or stop a set early, and how you feel once warmed up is the better guide.</span></div>
+    <button class="sheetcta" data-glance="checkin" style="width:100%">Log sleep and how today went</button>
+  </div>`;
+  openSheet('altSheet');
+}
+/* The progression line on the session card. Weight goes up because of last
+   week's reps, never because of readiness; on a lower day the card says to
+   hold steady or stop a set early instead. */
+function heroProgress(d){
+  if(!d||!d.templateId||typeof nextPrescription!=='function') return '';
+  const tpl=(S.templates||[]).find(t=>t.id===d.templateId); if(!tpl) return '';
+  let hit=null;
+  for(const row of tpl.ex){ let p=null; try{ p=nextPrescription(row.exId,row); }catch(e){}
+    if(p&&p.kind==='load'&&p.kg){ hit={n:exOf(row.exId).n,kg:p.kg,from:+(p.kg-p.inc).toFixed(2)}; break; } }
+  if(!hit) return '';
+  if(readiness().level==='lower')
+    return `${hit.n} was due to go up to ${hit.kg} kg. On a lower day, keep ${hit.from} kg or stop a set early; how you feel once warmed up is the better guide.`;
+  return `${hit.n} goes up to ${hit.kg} kg: you hit every rep last week.`;
+}
+function heroKicker(d,done){
+  const style= d.templateId&&/^t_hifb/.test(d.templateId)? 'HIFB' : (d.runId? 'RUN' : (d.circuitId? 'CIRCUIT' : (d.templateId? 'STRENGTH' : (d.label||'').toUpperCase())));
+  if(done) return 'DONE TODAY · '+style;
+  const m=clockOf('train'), t=minToHhmm(m), when= m>=17*60? 'TONIGHT' : (m<12*60? 'THIS MORNING' : 'TODAY');
+  return `${when}, ${t} · ${style}`;
+}
+function heroCard(plan,d,i){
+  const st=stepsToday(), done=dayDone(i), isWalk=d.slot==='walk', rest=!d.type||d.slot==='rest';
   const walkPct=st!==null? Math.min(100,Math.round(st/stepTarget()*100)) : 0;
-  $('todayView').innerHTML=`
-  <div class="hero">
-    <div class="kicker" style="color:${hue.deep}">${DAYS[i]}</div>
+  const why=plan.why[0]? `<button class="whyline" data-whytoday="1" aria-expanded="false">Why today looks like this <span aria-hidden="true">›</span></button>
+      <div class="why" id="whyToday" hidden>${plan.why[0]}</div>` : '';
+  if(rest) return `<div class="hero restday">
+    <div class="kicker">${DAYS[i].toUpperCase()} · REST</div>
+    <h2>${dayLabel(d)||'Rest'}</h2>
+    <div class="sub">Nothing owed. Rest is part of it.</div>
+    ${why}
+    <div class="ctarow"><button class="cta" data-swapto="${i}:walk">Walk instead</button><button class="cta ghost" data-swap="${i}">Change this day</button></div>
+    <button class="skipbtn" data-go="plan">See the week</button></div>`;
+  const chips=[daySub(d)];
+  if(d.mins&&!isWalk) chips.push('about '+d.mins+' min');
+  if(d.setDelta) chips.push('one set lighter than usual');
+  if(d.deload) chips.push('easy week');
+  const prog=isWalk? '' : heroProgress(d);
+  return `<div class="hero">
+    <div class="kicker">${isWalk? DAYS[i].toUpperCase()+' · WALK' : heroKicker(d,done)}</div>
     <h2>${dayLabel(d)}</h2>
-    <div class="sub">${daySub(d)}${d.mins&&!isWalk?' · about '+d.mins+' minutes':''}${d.setDelta?' · one set lighter than usual':''}</div>
+    <div class="chips">${chips.filter(Boolean).map(c=>`<span>${c}</span>`).join('')}</div>
     ${isWalk&&st!==null
       ? `<div class="track"><div class="tnum">${num(st)}<small> of ${num(stepTarget())} steps</small></div>
-          <div class="bar"><i style="width:${walkPct}%;background:${hue.deep}"></i></div>
-          <div class="tsrc">Counted by ${sourceName()}. Nothing to log.</div></div>`
-      : ''}
-    ${targetLine()}
-    ${plan.why[0]?`<button class="whyline" data-whytoday="1" aria-expanded="false">Why today looks like this <span aria-hidden="true">›</span></button>
-      <div class="why" id="whyToday" hidden>${plan.why[0]}</div>`:''}
-    ${d.slot==='rest'
-      ? `<button class="cta ghost" data-go="plan">See the week</button>`
-      : isWalk
-        ? (walkDone()? `<div class="doneline">Done. ${num(st)} steps in.</div>` : `<button class="cta ghost" data-go="plan">See the week</button>`)
-        : `<div class="ctarow"><button class="cta" id="startToday">${done&&d.type?'Do it again':'Start'}</button>
-            ${d.templateId||d.runId||d.circuitId? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`}
-    ${d.type&&d.slot!=='walk'&&!(d.templateId||d.runId||d.circuitId)? `<button class="viewbtn" data-view="${i}">See what is in it</button>`:''}
-    ${d.type&&d.slot!=='walk'&&!done? `<button class="skipbtn" data-restday="${i}">Not today</button>`:''}
+          <div class="bar"><i style="width:${walkPct}%"></i></div>
+          <div class="tsrc">Counted by ${sourceName()}. Nothing to log.</div></div>` : ''}
+    ${prog? `<div class="prog">${prog}</div>` : ''}
+    ${isWalk
+      ? (walkDone()? `<div class="doneline">Done. ${num(st)} steps in.</div>` : `<div class="ctarow"><button class="cta ghost" data-swap="${i}">Change this day</button></div>`)
+      : `<div class="ctarow"><button class="cta" id="startToday">${done?'Do it again':'Start session'}</button>
+          ${d.templateId||d.runId||d.circuitId? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`}
+    ${d.type&&!isWalk&&!(d.templateId||d.runId||d.circuitId)? `<button class="viewbtn" data-view="${i}">See what is in it</button>`:''}
+    ${why}
+    <div class="herofoot">
+      ${d.type&&!isWalk&&!done? `<button class="skipbtn" data-restday="${i}">Not today</button>`:''}
+      ${isWalk? '' : `<button class="skipbtn" data-swap="${i}">Change this day</button>`}
+    </div>
     ${d.exclude&&d.exclude.length?`<div class="note">Leaving out ${d.exclude.join(', ')} while it settles.</div>`:''}
-  </div>
-  ${prioritiesRow()}
-  ${glanceRow()}
-  ${logRow()}
-  ${eatingRow()}
+  </div>`;
+}
+/* ---------- the day's meals, as a list ----------
+   Breakfast, lunch, snacks and dinner, with a tick, what went in and the
+   calories; tapping any row opens that meal in the food list. Built from the
+   same day's food as everything else, and from mealSlots() for the planned
+   time and for when dinner is the meal after training. Under 18s see ticks,
+   never calories. */
+const MEAL_ROWS=[['b','Breakfast'],['l','Lunch'],['s','Snacks'],['d','Dinner']];
+function mealsList(){
+  const k=todayKey(), teen=isTeen(), food=dayFood(k), skipped=((S.days[k]||{}).skipped)||[];
+  let slots=[]; try{ slots=mealSlots(k).slots; }catch(e){}
+  const roleSlot=r=>slots.find(x=>x.role===r);
+  const now=new Date().getHours()*60+new Date().getMinutes();
+  const rows=MEAL_ROWS.map(([m,label])=>{
+    const items=food.filter(f=>(f.meal||'s')===m), sl=m==='s'? null : roleSlot(m);
+    if(m==='d'&&sl&&sl.tag==='post') label='Dinner, after training';
+    if(m==='d'&&sl&&sl.tag==='pre') label='Dinner, before training';
+    if(m==='b'&&sl&&sl.tag==='post') label='Breakfast, after training';
+    return {m,label,items,sl,kcal:Math.round(items.reduce((a,f)=>a+(+f.kcal||0)*(+f.q||1),0)),skipped:skipped.indexOf(m)>=0,
+      p:Math.round(items.reduce((a,f)=>a+(+f.p||0)*(+f.q||1),0))};
+  });
+  const per=teen? null : perMealProtein();
+  const next=rows.find(r=>r.m!=='s'&&!r.items.length&&!r.skipped&&(!r.sl||r.sl.min>=now-90));
+  const t=S.targets||{}, tot=foodTotals(k);
+  const head= teen? `<span class="mh">${new Set(food.map(x=>x.meal||'s')).size} logged today</span>`
+    : (t.protein? `<button class="mh" data-glance="protein">Protein ${Math.round(tot.protein||0)}/${t.protein} g · fibre ${Math.round(tot.fibre||0)}/${t.fibre||30} g</button>`
+      : `<span class="mh">${num(Math.round(tot.kcal||0))} kcal so far</span>`);
+  const row=r=>{
+    const what= r.skipped? 'skipped' : (r.items.length? r.items.slice(0,2).map(f=>f.n).join(', ')+(r.items.length>2? ' and '+(r.items.length-2)+' more' : '')
+      : (r.sl? 'around '+r.sl.time : (r.m==='s'? 'none yet' : 'not logged yet')));
+    const right= r.items.length? (teen? '' : `<b class="mk">${num(r.kcal)}</b>`) : (r.skipped? '' : `<span class="madd ${r===next?'next':''}">Add</span>`);
+    /* a main meal that reached the per-meal protein mark says so */
+    const hit=per&&r.m!=='s'&&r.p>=per;
+    return `<button class="mrow ${r.items.length?'done':''} ${hit?'hit':''} ${r.skipped?'skipped':''}" data-mealslot="${r.m}"
+      aria-label="${r.label}: ${r.skipped? 'skipped' : (r.items.length? r.items.length+(r.items.length===1?' item':' items')+(teen?'':', '+r.kcal+' kcal') : 'nothing logged')}. Tap to ${r.items.length?'see or add':'log it'}.">
+      <span class="mtick" aria-hidden="true">${r.items.length? '✓' : (r.skipped? '–' : '')}</span>
+      <span class="mtxt"><span class="mn">${r.label}</span> <span class="mw">${escHabit(what)}</span>${per&&r.items.length&&r.m!=='s'? `<span class="mpr">${r.p}g protein${hit?', at the mark':''}</span>` : ''}</span>${right}</button>`;
+  };
+  /* the spread of protein across meals, as the strip it replaces said it */
+  let spread='';
+  if(t.protein&&!teen){
+    const ms=(()=>{ try{ return mealSlots(); }catch(e){ return {slots:[],per:null}; } })();
+    const counted=ms.slots.filter(x=>!x.optional&&!x.skipped), hit=counted.filter(x=>ms.per&&x.p>=ms.per).length;
+    if(ms.per&&counted.length) spread=`${hit} of ${counted.length} meals at ${ms.per}g protein so far. Spreading it helps; the day's total, above, matters most.`;
+  }
+  return `<div class="mealscard">
+    <div class="mhead"><b>Meals</b>${head}</div>
+    <div class="meals">${rows.map(row).join('')}</div>
+    <div class="mfoot">${spread? `<span class="mealsnote">${spread}</span>` : '<span></span>'}<button id="eatBtn">Why these times</button></div></div>`;
+}
+/* Weigh in and today's check-in, each saying where it stands. Under 18s get
+   Log food in place of the scales. */
+function quickTiles(){
+  const k=todayKey(), logged=S.days[k]||{}, done=!!logged.checkedIn;
+  const btn=(id,label,state,isDone)=>`<button class="quick ${isDone?'done':''}" data-glance="${id}">
+    <span class="ql">${label}</span>${state? `<span class="qs">${state}</span>`:''}</button>`;
+  const ci=btn('checkin',"Today's Check-in",done?'done':'',done);
+  if(isTeen()){ const meals=dayFood(k).length; return `<div class="quicks">${btn('food','Log food',meals? meals+' logged':'',meals>0)}${ci}</div>`; }
+  const weighed=S.weights.length&&S.weights[S.weights.length-1].d===k;
+  return `<div class="quicks">${btn('weigh','Weigh in',weighed? showW(S.weights[S.weights.length-1].kg,S.profile.units==='imperial') : '',weighed)}${ci}</div>`;
+}
+function todayHeadDate(){
+  const n=new Date();
+  return n.toLocaleDateString('en-IE',{weekday:'long',day:'numeric',month:'long'});
+}
+function renderToday(){
+  const plan=ensurePlan(), d=todayPlan(), i=dowIdx(), logged=S.days[todayKey()];
+  const st=stepsToday();
+  const dl=$('todayDate'); if(dl) dl.textContent=todayHeadDate();
+  const av=$('avatarLetter'); if(av){ const h=(S.profile&&(S.profile.name||S.profile.handle))||''; av.textContent=(h.replace(/^@/,'')[0]||'Y').toUpperCase(); }
+  /* priorities go above the session when any of them is urgent (score 70 or
+     more: a check in due, poor sleep, a pain check, lower readiness on a
+     training day, a stressful yesterday) */
+  const prios=priorities(), urgent=prios.some(p=>p.score>=70);
+  const hero=heroCard(plan,d,i), pr=prioritiesRow(prios);
+  $('todayView').innerHTML=`
+  ${ringsRow()}
+  ${driverLine()}
+  ${urgent? pr+hero : hero+pr}
+  ${mealsList()}
+  ${quickTiles()}
+  <div class="goalrow">${targetLine()}</div>
   <div class="sechead"><h2>Your week so far</h2><button data-go="plan">The whole week</button></div>
-  <div class="weekstrip">${plan.days.map((x,n)=>`<button data-planday="${n}" class="${n===i?'today':''} ${n<i?'past':''}">
+  <div class="weekstrip">${plan.days.map((x,n)=>`<button data-planday="${n}" class="${n===i?'today':''} ${n<i?'past':''}" aria-label="${DAYS[n]}: ${dayLabel(x)||'Rest'}${dayDone(n)?', done':''}">
       <span class="d">${DAYS[n][0]}</span>
-      <span class="dot ${x.kind==='rest'?'rest':''} ${dayDone(n)?'done':''}" style="${x.kind==='rest'||!dayDone(n)?'':'background:'+(HUE[x.kind]||HUE.any).deep}"></span>
+      <span class="dot ${x.kind==='rest'||!x.type?'off':''} ${dayDone(n)?'done':''}"></span>
     </button>`).join('')}</div>
-  <div class="note" style="margin:2px 14px 10px">${weekLine()}</div>
-  ${/* Weigh in and the check in are the quick buttons at the top; the rows
-       that repeated them here are gone (UAT P116). The row that suggests a
-       tracker shows for the first week only, then lives on the You tab
-       (UAT P208). */ ''}
+  <div class="note weekline">${weekLine()}</div>
+  <div class="rowcard">
   ${healthOn()
-    ? `<div class="todo auto"><span class="ic" style="background:var(--green-tint);color:var(--green-text)">⌚</span>
+    ? `<div class="todo auto"><span class="ic" style="background:var(--cyan-tint);color:var(--cyan-text)">⌚</span>
         <span class="t"><b>Steps and sleep</b><span>${st!==null?num(st)+' steps':'no data yet'}${logged&&logged.auto?' · '+logged.auto.sleep+'h sleep':''} · demo data, not ${sourceName()} yet</span></span>
         <span class="autotag">automatic</span></div>`
-    : (inFirstWeek()? `<button class="todo" id="connectBtn"><span class="ic" style="background:var(--green-tint);color:var(--green-text)">⌚</span>
+    : (inFirstWeek()? `<button class="todo" id="connectBtn"><span class="ic" style="background:var(--cyan-tint);color:var(--cyan-text)">⌚</span>
         <span class="t"><b>Connect your watch or phone</b><span>Steps and sleep fill themselves in. You never log them.</span></span>
         <span class="chev">›</span></button>` : '')}
   ${activeHabits().map(h=>habitRowFor(h.slot)).join('')||habitRow()}
@@ -723,13 +821,21 @@ function renderToday(){
       <span style="display:flex;gap:6px">
         <button class="mini go" data-painok="${n}">Fine now</button>
         <button class="mini" data-painsore="${n}">Still sore</button></span></div>`).join('')}
+  </div>
   ${(()=>{ const next=plan.days.slice(i+1,i+3);
-    if(!next.length) return `<div class="note" style="margin:0 14px 10px">That is the week. ${checkinDone()? 'You have already checked in.' : 'Your check in is '+checkinDayName()+'.'}</div>`;
-    return `<div class="sechead"><h2>Next up</h2></div>`
+    if(!next.length) return `<div class="note" style="margin:10px 16px">That is the week. ${checkinDone()? 'You have already checked in.' : 'Your check in is '+checkinDayName()+'.'}</div>`;
+    return `<div class="sechead"><h2>Next up</h2></div><div class="rowcard">`
       +next.map((x,n)=>`<button class="pday" data-planday="${i+1+n}"><div class="dd">${DAYS[i+1+n]}</div>
       <div class="txt"><b>${dayLabel(x)}</b><span>${daySub(x)}</span></div>
-      <div class="sq" style="background:${x.kind==='rest'?'var(--line)':(HUE[x.kind]||HUE.any).deep}"></div></button>`).join(''); })()}`;
+      <div class="sq" style="background:${x.kind==='rest'||!x.type?'var(--line)':'var(--cyan)'}"></div></button>`).join('')+'</div>'; })()}`;
 }
+document.addEventListener('click',e=>{
+  const rg=e.target.closest('[data-ring]');
+  if(!rg||rg.dataset.glance) return;
+  if(rg.dataset.ring==='ready'){ openReadiness(); return; }
+  if(rg.dataset.ring==='train'){ const d=todayPlan();
+    if(d&&d.type) openDayDetail(dowIdx()); else go('plan'); }
+});
 /* ---------- one number, one sheet ----------
    Tapping a tile on the home screen used to open the whole daily log: five
    controls when the person wanted to change one. Each tile now opens the

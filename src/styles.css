@@ -597,12 +597,13 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .logtile .s{font-size:11.5px;font-weight:600;color:var(--mute);line-height:1.35}
 .logtile.done{background:var(--bg)}
 .logtile.done .t:after{content:" ✓";color:var(--green-text)}
-.logtile.wide{min-height:0;padding:15px;margin-bottom:10px;border:0;background:var(--tone);color:var(--on-ink)}
-.logtile.wide .ic{width:30px;height:30px;color:var(--on-ink)}
+/* build 56: food stays first and wide, on the surface with a coral bar */
+.logtile.wide{min-height:0;padding:15px;margin-bottom:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.logtile.wide .ic{width:30px;height:30px;color:var(--coral-text)}
 .logtile.wide .t{font-size:18px;letter-spacing:-.01em}
-.logtile.wide .s{color:var(--on-ink);font-size:12.5px}
-.logtile.wide .bar{display:block;height:4px;border-radius:3px;background:color-mix(in srgb,var(--on-ink) 28%,transparent);margin-top:10px;overflow:hidden}
-.logtile.wide .bar i{display:block;height:100%;background:var(--on-ink)}
+.logtile.wide .s{color:var(--sub);font-size:12.5px}
+.logtile.wide .bar{display:block;height:5px;border-radius:3px;background:var(--track);margin-top:10px;overflow:hidden}
+.logtile.wide .bar i{display:block;height:100%;background:var(--coral)}
 .logtiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .updatebar{position:fixed;left:50%;bottom:calc(72px + env(safe-area-inset-bottom,0px));transform:translate(-50%,12px);
   width:calc(100% - 24px);max-width:436px;z-index:75;display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;
@@ -1020,3 +1021,130 @@ pre.brief{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Me
 .claimcard{display:flex;flex-direction:column;gap:6px;margin:16px 0 4px;padding:12px 14px;border-radius:12px;background:var(--green-tint);color:var(--ink);font-size:13px;line-height:1.45;text-align:left}
 .claimcard b{font-size:14px}
 .claimbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+
+/* ===================== Today, build 56 =====================
+   Rings, the driver line, priorities as tinted-number rows, the session as a
+   dark card in both themes, meals as a list, two quick tiles, and the rest of
+   the page as rounded cards on the page background. Scoped to #todayView (and
+   the header title) so the screens still to come keep their look until their
+   own build. */
+header.top .pagetitle{display:none;flex-direction:column;justify-content:center;min-width:0}
+body[data-screen="today"] header.top .pagetitle{display:flex}
+body[data-screen="today"] header.top .brand{display:none}
+body[data-screen="today"] header.top{border-bottom:0;height:62px}
+.pagetitle .pd{font-size:12.5px;font-weight:600;color:var(--mute);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pagetitle h1{margin:0;font-weight:800;font-size:24px;letter-spacing:-.01em;line-height:1.1}
+#themeBtn:before{content:"";position:absolute;width:38px;height:38px;border-radius:999px;background:var(--surface);border:1px solid var(--line)}
+#themeBtn svg{position:relative}
+#avatarBtn .av{width:38px;height:38px;border-radius:999px;background:var(--log-bg);color:var(--log-ink);display:grid;place-items:center;font-weight:800;font-size:15px}
+#todayView{padding:0 12px 8px}
+#todayView .sechead{border-top:0;padding:18px 4px 8px}
+#todayView .sechead h2{font-size:17px;font-weight:800;letter-spacing:0;text-transform:none;color:var(--ink)}
+#todayView .sechead button{color:var(--mute)}
+.rings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px 0 2px}
+.rings .ring{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;padding:2px 0 4px;border-radius:12px;text-align:center}
+.rings .ring:active{opacity:.75}
+.rings .rwrap{position:relative;width:100%;max-width:98px;aspect-ratio:1}
+.rings .rwrap svg{display:block;width:100%;height:100%}
+.rings .rt{fill:none;stroke:var(--track);stroke-width:9}
+.rings .ra{fill:none;stroke:var(--tone);stroke-width:9;stroke-linecap:round}
+.rings .rv{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--font-num);font-weight:700;line-height:1;letter-spacing:0;color:var(--ink)}
+.rings .rk{font-size:11px;font-weight:800;letter-spacing:.08em;margin-top:2px}
+.rings .rs{font-size:11px;color:var(--mute);line-height:1.3;padding:0 2px}
+.driver{text-align:center;padding:4px 4px 0}
+.driver p{margin:0;font-size:13px;line-height:1.45;color:var(--sub)}
+.driver .conf{margin:4px 0 0;vertical-align:middle}
+.driver .pills{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:8px}
+.pill{min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:12.5px;font-weight:700;color:var(--ink);position:relative}
+.pill:after{content:"";position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:44px}
+#todayView .prios{padding:0;gap:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+#todayView .prio{grid-template-columns:26px 1fr;border:0;border-radius:0;border-bottom:1px solid var(--line);padding:12px 14px;background:none}
+#todayView .prio:last-child{border-bottom:0}
+#todayView .prio .pt b{font-size:15px;font-weight:800}
+#todayView .prio .pt span{font-size:13px;color:var(--sub)}
+#todayView .prio .pt .conf{color:var(--mute);background:var(--track)}
+#todayView .prio .pt .conf-good{background:var(--green-tint);color:var(--green-text)}
+#todayView .prio .pt .conf-building,#todayView .prio .pt .conf-none{background:var(--amber-tint);color:var(--amber-text)}
+#todayView .prio .pa{justify-content:flex-start;margin-top:8px}
+#todayView .hero{margin-top:14px;background:var(--hero);color:var(--hero-ink);border:1px solid var(--hero-line);border-radius:12px;padding:14px}
+#todayView .hero .kicker{font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--mint)}
+#todayView .hero h2{font-size:23px;line-height:1.15;margin:4px 0 0;color:var(--hero-ink)}
+#todayView .hero .sub{color:var(--hero-sub);margin:6px 0 10px}
+#todayView .hero .chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px;padding:0}
+#todayView .hero .chips span{min-height:26px;padding:3px 9px;border-radius:13px;background:var(--hero-chip);display:inline-flex;align-items:center;font-size:12px;font-weight:600;color:var(--hero-ink)}
+#todayView .hero .prog{margin-top:10px;font-size:13px;line-height:1.45;color:var(--hero-sub)}
+#todayView .hero .ctarow{margin-top:12px}
+#todayView .hero .cta{height:46px;border-radius:8px;background:var(--mint);color:var(--mint-ink);font-weight:800}
+#todayView .hero .cta.ghost{flex:0 0 auto;padding:0 14px;width:auto;background:none;border:1px solid var(--hero-chip);color:var(--hero-ink);font-weight:700;font-size:14px}
+#todayView .hero.restday .ctarow .cta.ghost{flex:1}
+#todayView .hero .whyline{color:var(--hero-sub)}
+#todayView .hero .why{background:var(--hero-chip);color:var(--hero-ink);margin:0 0 6px}
+#todayView .hero .skipbtn,#todayView .hero .viewbtn{color:var(--hero-sub);margin:0}
+#todayView .hero .herofoot{display:flex;justify-content:center;gap:18px;flex-wrap:wrap}
+#todayView .hero .herofoot:empty{display:none}
+#todayView .hero .note{color:var(--hero-sub)}
+#todayView .hero .track .tnum{color:var(--hero-ink)}
+#todayView .hero .track .tnum small,#todayView .hero .tsrc{color:var(--hero-sub)}
+#todayView .hero .track .bar{background:var(--hero-chip)}
+#todayView .hero .track .bar i{background:var(--mint)}
+#todayView .hero .doneline{color:var(--mint)}
+.mealscard{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.mealscard .mhead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px 6px}
+.mealscard .mhead b{font-size:16px;font-weight:800}
+.mealscard .mh{font-size:12px;font-weight:700;color:var(--mute);text-align:right;min-height:36px;display:flex;align-items:center}
+.mrow{display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:center;width:100%;min-height:48px;padding:8px 14px;border-top:1px solid var(--line);text-align:left;font-size:14px}
+.mrow .mtick{width:20px;height:20px;border-radius:50%;border:2px dashed var(--mute);display:grid;place-items:center;font-size:11px;font-weight:800}
+.mrow.done .mtick{border:0;background:var(--green);color:var(--cta-ink)}
+.mrow.skipped .mtick{border-style:solid;border-color:var(--line);color:var(--mute)}
+.mrow .mtxt{min-width:0}
+.mrow .mn{font-weight:700}
+.mrow .mw{color:var(--mute);font-size:13px}
+.mrow .mk{font-weight:700}
+.mrow .mpr{display:block;font-size:12px;color:var(--mute)}
+.mrow.hit .mpr{color:var(--green-text);font-weight:700}
+.mrow .madd{height:32px;padding:0 13px;border-radius:999px;border:1px solid var(--line);display:inline-flex;align-items:center;font-weight:800;font-size:12.5px}
+.mrow .madd.next{background:var(--cta);border-color:var(--cta);color:var(--cta-ink)}
+.mealscard .mfoot{display:flex;align-items:center;gap:10px;padding:2px 14px 4px;border-top:1px solid var(--line)}
+.mealscard .mealsnote{flex:1;font-size:12px;color:var(--mute);line-height:1.4}
+.mealscard #eatBtn{font-size:12.5px;font-weight:700;color:var(--green-text);min-height:44px;flex:0 0 auto}
+#todayView .quicks{padding:0;margin-top:10px}
+#todayView .quick{min-height:48px;border-radius:10px;background:var(--surface);border:1px solid var(--line);flex-direction:row;justify-content:space-between;align-items:center;padding:0 14px}
+#todayView .quick .ql{font-size:14px}
+#todayView .quick .qs{font-size:12px;color:var(--green-text);font-weight:700}
+#todayView .quick.done{background:var(--surface)}
+#todayView .quick.done .ql:after{content:""}
+#todayView .goalrow:has(.skipbtn){display:flex;justify-content:center}
+#todayView .goalrow .targetline{margin-top:12px;border:1px solid var(--line);background:var(--surface)}
+#todayView .goalrow .why{margin:12px 0 0}
+#todayView .weekstrip{padding:0}
+#todayView .weekstrip .dot{width:12px;height:12px;background:var(--track)}
+#todayView .weekstrip .dot.done{background:var(--cyan)}
+#todayView .weekstrip .dot:not(.off):not(.done){background:none;box-shadow:inset 0 0 0 2px var(--mute)}
+#todayView .weekstrip .today{background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+#todayView .weekline{margin:6px 4px 0}
+.rowcard{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.rowcard:empty{display:none}
+.rowcard > :last-child{border-bottom:0}
+#todayView .todo .ic{border-radius:50%}
+#todayView .addhabit{width:auto;margin:0;border-radius:0;border:0;border-bottom:1px solid var(--line)}
+#todayView .pday{width:100%;text-align:left}
+#todayView .pday:last-child{border-bottom:0}
+#todayView .pday .sq{width:10px;height:10px;border-radius:50%}
+.cicard{margin:10px 0;padding:12px 14px;border-radius:12px;background:var(--surface);border:1px solid var(--line)}
+.cicard .cih{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.cicard .cih b{font-size:15px}
+.cicard .cih span{font-size:12px;color:var(--mute)}
+.cicard .cigrid{display:grid;grid-template-columns:auto 1fr 64px;gap:4px 10px;align-items:center;margin:8px 0 10px;font-size:13px}
+.cicard .cigrid label,.cicard .cil{font-weight:600}
+.cicard .cigrid b{text-align:right;font-size:12.5px}
+.cicard .ciauto{grid-column:span 2;color:var(--mute);font-size:12.5px;min-height:44px;display:flex;align-items:center}
+.cicard input[type=range]{width:100%;min-height:44px;accent-color:var(--green)}
+.cicard input[type=range].unset{opacity:.55}
+.cicard .cta{height:44px;border-radius:8px}
+.cicard .cta:disabled{background:var(--track);color:var(--mute)}
+.cicard .skipbtn{margin:4px auto 0}
+.logtiles + .cicard,.cicard + .logtiles{margin-top:10px}
+/* the Log sheet sits on the page colour with its tiles as cards, inset from the edges */
+#logSheet{background:var(--bg)}
+#logBody{padding:0 14px 16px}
+#todayView .hero.restday > .skipbtn{margin:8px auto 0}

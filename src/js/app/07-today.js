@@ -292,8 +292,8 @@ function weekLine(){
   const bits=[];
   bits.push(done+' of '+planned+' sessions done');
   if(days) bits.push(days+' of the last 7 days logged');
-  const tr=(typeof weightTrend==='function'&&typeof weightSeries==='function')? weightTrend(weightSeries()) : null;
-  if(tr&&tr.perWeek!==null&&Math.abs(tr.perWeek)>=0.05)
+  const tr=trendRate(); /* build 64: the same rate as the chart and the weight line */
+  if(tr&&Math.abs(tr.perWeek)>=0.05)
     bits.push((tr.perWeek<0?'down ':'up ')+Math.abs(tr.perWeek).toFixed(2)+' kg a week');
   return bits.join(' · ');
 }

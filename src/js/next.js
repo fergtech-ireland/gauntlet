@@ -370,26 +370,31 @@ function openCheckin(){
   stepperize(document.getElementById('altBody'));
   openSheet('altSheet');
 }
-/* ---------- the weight line under the rings, build 61 ----------
+/* ---------- the weight line under the rings, builds 61 and 64 ----------
    The single bar from the weight card on You, at the top of Today: where you
-   started, where you are, the goal, and how far along. It also marks the end
-   of the numbers and the start of what to do next. Adults with a weight goal
-   and a weigh in only; otherwise it is a plain rule, so the break stays. Taps
-   through to You. Reads weightProgress(): the trend, as on the weight chart. */
+   started, where the trend is, the goal, and how far along. Build 64: the bar
+   is coloured by whether the trend gets there by the goal date (green on
+   track, amber behind, red off track, grey until there is a week of weigh
+   ins), and the line under it names the goal weight and date and where the
+   trend lands, from weightOutlook(), the same as the card on You and the
+   chart. Adults with a weight goal and a weigh in only; otherwise a plain
+   rule, so the break stays. Taps through to You. */
 function weightLine(){
   const rule='<div class="wline rule" aria-hidden="true"></div>';
   if(isTeen()) return rule;
   const tg=S.target&&S.target.kind==='weight'? S.target : null, ws=S.weights||[];
-  if(!tg||!ws.length||typeof currentKg!=='function') return rule;
+  if(!tg||!ws.length) return rule;
   const imp=S.profile.units==='imperial', n=v=>showW(v,imp).split(' ')[0], unit=showW(0,imp).split(' ')[1]||'kg';
-  /* build 62: weightProgress(), the same numbers as the card on You and the goal */
-  const wp=weightProgress(), now=wp.now, from=wp.start, goal=wp.goal, pct=wp.pct, moved=-wp.moved;
+  const wp=weightProgress(), o=weightOutlook(), now=wp.now, from=wp.start, goal=wp.goal, pct=wp.pct, moved=-wp.moved;
+  const st=wp.hit? 'hit' : o.status;
   const done=Math.abs(moved)<0.05? 'level so far' : (moved>0? n(moved)+' '+unit+' down' : n(-moved)+' '+unit+' up');
-  const left=wp.daysLeft!==null&&!wp.hit? (wp.daysLeft>=0? ' · '+wp.daysLeft+' days left' : ' · '+(-wp.daysLeft)+' days past') : '';
+  const left=wp.daysLeft!==null&&!wp.hit&&wp.daysLeft>=0? ' · '+wp.daysLeft+' days left' : '';
   const mid= wp.hit? 'Goal met' : `${n(now)} ${unit} · ${pct}%`;
   const scaleTxt= wp.last&&Math.abs(wp.scale-now)>=0.1? ' · scale '+n(wp.scale) : '';
-  return `<button class="wline" data-go="progress" aria-label="Weight: started ${showW(from,imp)}, trend now ${showW(now,imp)}, goal ${showW(goal,imp)}, ${pct}% of the way. Tap for You.">
+  const look=outlookLine(o,imp);
+  return `<button class="wline st-${st}" data-go="progress" aria-label="Weight: trend ${showW(now,imp)}, started ${showW(from,imp)}, goal ${showW(goal,imp)}, ${pct}% of the way. ${look}. Tap for You.">
     <span class="wlh"><span>Start <b>${n(from)}</b></span><b class="wnow">${mid}</b><span>Goal <b>${n(goal)}</b></span></span>
     <span class="ybar"><i style="width:${pct}%"></i></span>
-    <span class="wls">${wp.hit? 'Set the next one on You' : 'Trend '+done+' · '+showW(wp.toGo,imp)+' to go'+left+scaleTxt}</span></button>`;
+    <span class="wls">${wp.hit? 'Set the next one on You' : 'Trend '+done+' · '+showW(wp.toGo,imp)+' to go'+left+scaleTxt}</span>
+    ${wp.hit? '' : `<span class="wlook">${look}</span>`}</button>`;
 }

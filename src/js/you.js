@@ -42,19 +42,23 @@ function weightGoalCard(){
      scale last said under it. */
   const wp=weightProgress(), now=wp.now, tg=S.target&&S.target.kind==='weight'? S.target : null;
   const big=showW(now,imp).split(' ');
-  const change=wp.moved, since=(tg&&tg.set)||(wp.first? wp.first.d : todayKey()), weeks=Math.round(gapDaysBetween(since,todayKey())/7);
+  const change=wp.moved, since=(tg&&tg.set&&wp.first&&tg.set>wp.first.d)? tg.set : (wp.first? wp.first.d : todayKey()), weeks=Math.round(gapDaysBetween(since,todayKey())/7);
   const moved= weighIns().length<2&&Math.abs(change)<0.1? 'one weigh in so far' : (Math.abs(change)<0.1? 'level since the start'
     : (change<0? 'down ' : 'up ')+showW(Math.abs(change),imp).split(' ')[0]+(weeks>=1? ' in '+weeks+' week'+(weeks===1?'':'s') : ' so far'));
-  let right='', bar='';
+  let right='', bar='', look='', st='';
   if(tg){
+    /* build 64: coloured by whether the trend reaches the goal in time, with
+       the same line as Today's weight line and the chart */
+    const o=weightOutlook(); st=' st-'+(wp.hit? 'hit' : o.status);
+    look= wp.hit? '' : `<p class="wlook">${outlookLine(o,imp)}</p>`;
     right= wp.hit? (tg.hit? `Goal met ${prettyDateSafe(tg.hit)}` : 'Goal met') : `${showW(wp.toGo,imp)} to go`;
     bar=`<div class="ybar" role="img" aria-label="${wp.pct}% of the way from ${showW(wp.start,imp)} to ${showW(wp.goal,imp)}"><i style="width:${wp.pct}%"></i></div>
       <div class="yends"><span>Start ${showW(wp.start,imp).split(' ')[0]}</span><span>Goal ${showW(wp.goal,imp).split(' ')[0]}</span></div>`;
   }
-  return `<section class="ycard" id="yWeight">
+  return `<section class="ycard${st}" id="yWeight">
     <div class="ych"><b>Weight</b>${right? `<span>${right}</span>` : `<button class="ylink" data-setting="goal">Set a goal</button>`}</div>
     <div class="ybig"><span class="num">${big[0]}</span> <span>${big[1]} trend, ${moved}</span></div>
-    ${bar}${wp.last? `<p class="ynote">Scale said ${showW(wp.scale,imp)} ${wp.last.d===todayKey()? 'today' : prettyDateSafe(wp.last.d)}. The trend smooths out day to day swings from water and food, so one heavy morning does not undo weeks of work.</p>` : ''}</section>`;
+    ${bar}${look}${wp.last? `<p class="ynote">Scale said ${showW(wp.scale,imp)} ${wp.last.d===todayKey()? 'today' : prettyDateSafe(wp.last.d)}. The trend smooths out day to day swings from water and food, so one heavy morning does not undo weeks of work.</p>` : ''}</section>`;
 }
 function gapDaysBetween(a,b){ return Math.round((dateOf(b)-dateOf(a))/864e5); }
 

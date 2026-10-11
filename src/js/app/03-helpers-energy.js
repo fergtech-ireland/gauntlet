@@ -327,31 +327,68 @@ function bodyFatPct(p,kg){
   const est=1.2*(w/(h*h))+0.23*a-10.8*sx-5.4;
   return {pct:Math.max(3,Math.min(70,+est.toFixed(1))), source:'estimated'};
 }
-/* ---------- weight: one source for every screen (builds 62 and 63) ----------
-   Progress is the trend, the same smoothed line the weight chart draws
-   (trendSeries: each weigh in moves it a quarter of the way), so one heavy
+/* ---------- weight: one source for every screen (builds 62, 63 and 64) ----------
+   Everything is the trend the weight chart draws: an exponentially weighted
+   average where each weigh in moves it a quarter of the way, so one heavy
    morning after two weeks of losing does not wipe the progress off the
    screen. What the scale said is kept beside it, labelled.
      weighIns()       the weigh ins, in date order, one a day
+     trendSeries()    the trend line, one point per weigh in
      weightScale()    the latest weigh in (what the scale said)
-     weightNow()      the trend now, as on the chart; else the weight in
-                      your details
-     weightStart()    where the goal started (target.from), else the start
-                      of the trend (your first weigh in)
-     weightProgress() start, now (trend), scale, goal, how far along, how
-                      much to go, and whether the trend has reached the goal
-   Every display reads these, and currentKg() is weightNow(), so calories and
-   the forecast use the same figure too. */
+     weightNow()      the trend now; else the weight in your details
+     weightStart()    where the goal started (the trend that day), or where
+                      the trend starts if the goal came before the first
+                      weigh in
+     trendRate()      how fast the trend is moving, kg a day, from the last
+                      four weeks of it
+     weightProgress() start, now, scale, goal, how far along, how much to go
+     weightOutlook()  where the trend lands on the goal date, and whether
+                      that is on track (green), behind (amber) or off track
+                      (red)
+   Build 64: these used to depend on trendSeries, which lived in a script that
+   loads after the first draw, so Today's weight line fell back to the scale
+   reading on every open while You (drawn later) showed the trend. The trend
+   lives here now, before anything is drawn. Today, You, the goal and the chart
+   all read these, and currentKg() is weightNow(), so calories and the forecast
+   use the same figure too. */
+const EWMA_ALPHA=0.25;
 function weighIns(){ return tidyWeights((S.weights||[]).slice()); }
+function trendSeries(){
+  const pts=weighIns(); if(!pts.length) return [];
+  let t=pts[0].kg; return pts.map((p,i)=>{ t = i? t+EWMA_ALPHA*(p.kg-t) : p.kg; return {d:p.d,kg:+t.toFixed(3),raw:p.kg}; });
+}
+/* the trend as it stood on a day: its value at the last weigh in on or before it */
+function trendOn(k){ let v=null; for(const p of trendSeries()){ if(p.d<=k) v=p.kg; else break; } return v; }
 function weightScale(){ const w=weighIns(); return w.length? w[w.length-1].kg : (+S.profile.weight||null); }
 function weightNow(){
-  const w=weighIns(); if(!w.length) return +S.profile.weight||null;
-  if(typeof trendSeries==='function'){ const t=trendSeries(); if(t.length) return t[t.length-1].kg; }
-  return w[w.length-1].kg;
+  const t=trendSeries(); if(t.length) return t[t.length-1].kg;
+  return +S.profile.weight||null;
 }
 function weightStart(){
-  const t=S.target; if(t&&t.kind==='weight'&&+t.from>0) return +t.from;
-  const w=weighIns(); return w.length? w[0].kg : (+S.profile.weight||null);
+  const t=S.target&&S.target.kind==='weight'? S.target : null, tr=trendSeries();
+  /* A goal set before the first weigh in started from a typed weight the
+     chart never saw (Feargal's 114.8 against a first weigh in of 116), so it
+     counts from where the trend starts instead. A goal set with weigh ins
+     already in keeps its start, which since build 63 is the trend that day. */
+  if(t&&tr.length&&t.set&&t.set<tr[0].d) return +tr[0].kg.toFixed(1);
+  if(t&&+t.from>0) return +t.from;
+  if(t&&tr.length&&t.set){ const at=trendOn(t.set); if(at!==null) return +at.toFixed(1); }
+  return tr.length? +tr[0].kg.toFixed(1) : (+S.profile.weight||null);
+}
+/* Least squares through the trend line over its last 28 days. Needs three
+   weigh ins at least six days apart; less than that is not a direction. */
+const TREND_WINDOW=28, TREND_MIN_DAYS=6;
+function trendRate(){
+  const tr=trendSeries(); if(tr.length<3) return null;
+  const end=tr[tr.length-1].d, cut=addDays(end,-TREND_WINDOW);
+  const pts=tr.filter(p=>p.d>=cut); if(pts.length<3) return null;
+  const t0=dateOf(pts[0].d).getTime(), xs=pts.map(p=>(dateOf(p.d).getTime()-t0)/864e5), ys=pts.map(p=>p.kg);
+  const days=xs[xs.length-1]; if(days<TREND_MIN_DAYS) return null;
+  const mx=xs.reduce((a,b)=>a+b,0)/xs.length, my=ys.reduce((a,b)=>a+b,0)/ys.length;
+  let nu=0,de=0; xs.forEach((x,i)=>{ nu+=(x-mx)*(ys[i]-my); de+=(x-mx)*(x-mx); });
+  if(!de) return null;
+  const perDay=nu/de;
+  return {perDay, perWeek:perDay*7, days:Math.round(days), n:pts.length};
 }
 function weightProgress(){
   const now=weightNow(); if(now===null) return null;
@@ -363,6 +400,51 @@ function weightProgress(){
   const ws=weighIns();
   return {now:+now.toFixed(1),start,goal,pct:hit? 100 : pct,moved,hit,falling,toGo:goal===null? null : +Math.abs(now-goal).toFixed(1),
     scale:weightScale(),daysLeft:t&&t.by? Math.round((dateOf(t.by)-dateOf(todayKey()))/864e5) : null, first:ws[0]||null, last:ws.slice(-1)[0]||null};
+}
+/* Will the trend get there in time? The trend's own rate carried forward in a
+   straight line to the goal date (a straight line is the simple, honest
+   reading of a trend; the weekly calorie forecast does the curved maths).
+     green  on this trend the goal is reached by the goal date
+     amber  heading the right way but late: at the goal date it is within a
+            quarter of the distance still to go
+     red    further behind than that, flat, going the wrong way, or the date
+            has passed
+     none   not enough weigh ins for a direction yet
+   The quarter is this app's rule of thumb, not a published threshold. */
+const OUTLOOK_AMBER=0.25;
+function weightOutlook(){
+  const wp=weightProgress(); if(!wp||wp.goal===null) return null;
+  const t=S.target, r=trendRate(), today=todayKey(), now=weightNow(), goal=wp.goal;
+  const o={status:'none', goal, now:wp.now, by:t.by||null, daysLeft:wp.daysLeft, perDay:r? r.perDay : null,
+    perWeek:r? +r.perWeek.toFixed(2) : null, days:r? r.days : 0, atBy:null, eta:null, short:null,
+    needPerWeek: t.by&&wp.daysLeft>0? +((goal-now)/wp.daysLeft*7).toFixed(2) : null};
+  if(wp.hit){ o.status='hit'; return o; }
+  if(!r) return o;
+  /* carried forward from the last weigh in, where the trend line ends */
+  const dir= goal<now? -1 : 1, towards= r.perDay*dir>0.005, from=wp.last? wp.last.d : today;
+  if(towards){ const d=Math.ceil((goal-now)/r.perDay); if(d<=3650) o.eta=addDays(from,d); }
+  if(t.by&&wp.daysLeft>0){
+    o.atBy=+(now+r.perDay*Math.round((dateOf(t.by)-dateOf(from))/864e5)).toFixed(1);
+    if(!towards) o.status='red';
+    else if(o.eta&&o.eta<=t.by) o.status='green';
+    else { o.short=+Math.abs(o.atBy-goal).toFixed(1); o.status= o.short<=Math.abs(now-goal)*OUTLOOK_AMBER? 'amber' : 'red'; }
+  } else if(t.by){ o.status='red'; o.short=wp.toGo; }
+  else o.status= towards? 'green' : 'red';
+  return o;
+}
+const OUTLOOK_WORD={green:'On track',amber:'Behind',red:'Off track',hit:'Goal met',none:'Not enough yet'};
+/* One line, used by Today, You and the chart, so they always say the same. */
+function outlookLine(o,imp){
+  if(!o) return '';
+  const w=v=>showW(v,imp), goalTxt=w(o.goal)+(o.by? ' by '+prettyDate(o.by) : '');
+  if(o.status==='hit') return 'Goal met';
+  if(o.status==='none') return 'Goal '+goalTxt+' · a week of weigh ins gives the forecast';
+  const pace=Math.abs(o.perWeek)<0.05? 'level' : (o.perWeek<0? 'down ' : 'up ')+showW(Math.abs(o.perWeek),imp)+' a week';
+  if(!o.by) return (o.status==='green'? 'Heading for ' : 'Off track for ')+goalTxt+' · trend '+pace+(o.eta? ' · there around '+prettyDate(o.eta) : '');
+  if(o.daysLeft<=0) return 'Goal date passed · '+w(o.short)+' still to go';
+  if(o.status==='green') return 'On track for '+goalTxt+(o.eta? ' · there around '+prettyDate(o.eta) : '');
+  if(o.atBy===null||o.status==='red'&&!o.short) return 'Off track for '+goalTxt+' · trend '+pace;
+  return OUTLOOK_WORD[o.status]+' · about '+w(o.atBy)+' by '+prettyDate(o.by)+', goal '+w(o.goal);
 }
 function currentKg(){ return weightNow(); }
 /* Which way they are going: an explicit weight target wins over the aim. */

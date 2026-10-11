@@ -1885,7 +1885,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('28 · the timeline is labelled at the start and at today', (() => {
       const labels = [...svg.matchAll(/<text[^>]*class="wlab[^"]*"[^>]*>([^<]+)<\/text>/g)].map(m => m[1]);
       return labels.includes('Today') && labels.some(l => /^\d{1,2} [A-Z][a-z]{2}$/.test(l)); })());
-    G.setTarget('weight', 70, G.addDays(G.todayKey(), 300)); S.target.from = 92;
+    /* build 64: a goal with a date pulls the chart out to it (journey 70); a far goal with no date is still named at the edge */
+    G.setTarget('weight', 70, null); S.target.from = 92;
     const svg2 = G.weightChart();
     t('28 · a goal far below is named rather than squashing the chart',
       /Goal 70 kg, [\d.]+ kg below this/.test(svg2) && !/class="wgoal"/.test(svg2), (svg2.match(/Goal[^<]{0,40}/) || [''])[0]);
@@ -2054,7 +2055,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     /* it tells you whether it is working */
     t('31 · the week line counts sessions done', /of \d+ sessions done/.test(txt(home())), txt(home()).slice(0, 200));
     for (let i = 0; i < 6; i++) { const k = G.addDays(G.todayKey(), -i); S.days[k] = { wb: 7, kcal: 2100 }; }
-    S.weights = [{ d: G.addDays(G.todayKey(), -14), kg: 95 }, { d: G.todayKey(), kg: 93.6 }];
+    /* build 64: the week line uses the chart's rate, which needs three weigh ins at least six days apart */
+    S.weights = [{ d: G.addDays(G.todayKey(), -14), kg: 95 }, { d: G.addDays(G.todayKey(), -7), kg: 94.3 }, { d: G.todayKey(), kg: 93.6 }];
     G.renderAll();
     const line = txt(home());
     t('31 · and days logged, which is the habit that matters', /of the last 7 days logged/.test(line));
@@ -2803,7 +2805,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
 
     /* the goal */
     t('41 · a goal within reach is a line', /class="wgoal"/.test(G.weightChart()));
-    G.setTarget('weight', 70, G.addDays(G.todayKey(), 300)); S.target.from = 95;
+    G.setTarget('weight', 70, null); S.target.from = 95; /* build 64: no date, so no line out to it */
     const far = G.weightChart();
     t('41 · a goal far off is named at the edge, not drawn', !/class="wgoal"/.test(far) && /Goal 70 kg, [\d.]+ kg below this/.test(far));
 
@@ -5268,6 +5270,58 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     S.target.from = 95; G.save(); G.go('today'); G.renderAll();
     const wp2 = G.weightProgress();
     t('69 · one heavy morning after two weeks of losing still shows the progress', wp2.moved < 0 && wp2.pct > 0 && /Trend [\d.]+ kg down/.test(txt(d.querySelector('#todayView .wline'))), JSON.stringify(wp2) + ' ' + txt(d.querySelector('#todayView .wline')));
+  }
+  /* ---------------------------------------------------------- 70 */
+  journey(70, 'Build 64: one weight trend, heading to the goal date, green, amber or red');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G, { weight: 114.8 });
+    const S = G.S, k = G.todayKey();
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    /* Feargal's week from the screenshots: the goal set before the first weigh in, from a typed 114.8 */
+    S.weights = [116, 115.6, 114.8, 114.8, 114.6, 114.5, 114.5, 116].map((kg, i) => ({ d: G.addDays(k, i - 7), kg }));
+    S.target = { kind: 'weight', value: 105, by: G.addDays(k, 80), from: 114.8, set: G.addDays(k, -20), hit: null };
+    G.save();
+    /* the bug: Today is drawn at startup, before the chart's script loaded, so it fell back to the scale */
+    const again = await boot({ before: w2 => { for (const x of Object.keys(w.localStorage)) w2.localStorage.setItem(x, w.localStorage.getItem(x)); } });
+    allErrs.push(...again.errs);
+    const first = txt(again.d.querySelector('#todayView .wline'));
+    t('70 · the first draw of Today, straight after opening, shows the trend, not the scale', /115\.2 kg · 7%/.test(first) && /Start 116/.test(first) && /10\.2 kg to go/.test(first) && /scale 116/.test(first), first);
+    const wp = G.weightProgress(), o = G.weightOutlook();
+    t('70 · a goal set before the first weigh in starts where the trend starts, as on the chart', wp.start === 116 && wp.now === 115.2 && wp.toGo === 10.2 && wp.moved === -0.8, JSON.stringify(wp));
+    t('70 · one rate, from the trend line', (() => { const r = G.trendRate(); return !!r && r.perDay < 0 && o.perDay === r.perDay; })());
+    t('70 · on this trend the goal is reached in time, so it is green', o.status === 'green' && !!o.eta && o.eta <= S.target.by, JSON.stringify(o));
+    G.go('today'); G.renderAll();
+    const wl = d.querySelector('#todayView .wline'), look = G.outlookLine(o, false);
+    t('70 · Today\'s line is green and names the goal weight and date', wl.classList.contains('st-green') && txt(wl.querySelector('.wlook')) === look && /105 kg by \d{1,2} [A-Z][a-z]{2}/.test(look), look);
+    G.go('progress'); G.renderAll();
+    const card = d.getElementById('yWeight');
+    t('70 · You says the same, in the same colour, from the same start', card.classList.contains('st-green') && txt(card.querySelector('.wlook')) === look && /Start 116/.test(txt(card)) && /down 0\.8/.test(txt(card)), txt(card));
+    const svg = d.querySelector('svg.wchart'), html = svg.outerHTML;
+    const by = G.prettyDate(S.target.by);
+    t('70 · the chart\'s line runs to the goal date and is green', svg.classList.contains('st-green') && new RegExp('([\\d.]+) kg by ' + by).test(html) && /class="wgoaldot"/.test(html), (html.match(/class="wlab fc"[^>]*>[^<]*/) || [''])[0]);
+    t('70 · with the goal drawn as a line, however far below it is', /class="wgoal"/.test(html) && new RegExp('Goal 105 kg by ' + by).test(html));
+    t('70 · the chart\'s end point is where the trend lands on the goal date', (() => { const m = html.match(/class="wlab fc"[^>]*>([\d.]+) kg by/); return m && Math.abs(+m[1] - o.atBy) < 0.051; })(), o.atBy);
+    t('70 · the sentence under it quotes the same', txt(d.querySelector('.wsentence')).indexOf(look) >= 0 && txt(d.querySelector('.wsentence')).indexOf(o.atBy.toFixed(1) + ' kg') >= 0, txt(d.querySelector('.wsentence')));
+    t('70 · the chart\'s headline and rate agree with Today', /115\.2/.test(txt(d.querySelector('#wHead .wbig'))) && new RegExp('Down ' + Math.abs(G.trendRate().perWeek).toFixed(2)).test(txt(d.getElementById('wHead'))));
+    /* behind but close: amber; well behind: red */
+    S.target.by = G.addDays(k, 60); G.save();
+    const oa = G.weightOutlook();
+    G.go('today'); G.renderAll();
+    t('70 · a little behind is amber, with where it lands and the goal', oa.status === 'amber' && d.querySelector('#todayView .wline').classList.contains('st-amber') && /^Behind · about [\d.]+ kg by/.test(G.outlookLine(oa, false)), JSON.stringify(oa));
+    S.target.by = G.addDays(k, 30); G.save(); G.renderAll();
+    t('70 · well behind is red', G.weightOutlook().status === 'red' && d.querySelector('#todayView .wline').classList.contains('st-red'));
+    G.go('progress'); G.renderAll();
+    t('70 · and the chart turns red with it, saying what pace it needs', d.querySelector('svg.wchart').classList.contains('st-red') && /It needs about [\d.]+ kg a week down/.test(txt(d.querySelector('.wsentence'))));
+    S.weights = [115, 115.3, 115.6, 115.9].map((kg, i) => ({ d: G.addDays(k, (i - 3) * 3), kg })); S.target.by = G.addDays(k, 80); G.save();
+    G.go('today'); G.renderAll();
+    t('70 · going the wrong way is red and says so', G.weightOutlook().status === 'red' && /trend up/.test(txt(d.querySelector('#todayView .wlook'))));
+    S.weights = [{ d: G.addDays(k, -2), kg: 116 }, { d: k, kg: 115.4 }]; G.save(); G.renderAll();
+    t('70 · too few weigh ins for a direction is grey, and still names the goal and date', G.weightOutlook().status === 'none' && d.querySelector('#todayView .wline').classList.contains('st-none') && /Goal 105 kg by/.test(txt(d.querySelector('#todayView .wlook'))));
+    S.target.by = G.addDays(k, -3); S.weights = [116, 115.8, 115.6, 115.4, 115.2].map((kg, i) => ({ d: G.addDays(k, (i - 4) * 2), kg })); G.save(); G.renderAll();
+    t('70 · a goal date gone by is red', G.weightOutlook().status === 'red' && /Goal date passed/.test(txt(d.querySelector('#todayView .wlook'))));
+    S.target.hit = k; G.save(); G.renderAll();
+    t('70 · a goal met needs no forecast', !d.querySelector('#todayView .wlook') && /Goal met/.test(txt(d.querySelector('#todayView .wline'))));
   }
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);

@@ -109,7 +109,7 @@ const waterWindow=k=>{ const p=phaseOn(k); return !!p&&(p.key==='lateLuteal'||p.
                   point estimate on its own would be dishonest.
    ============================================================ */
 const SCI={kcalPerKg:7700, walkMET:3.0, walkCadence:100, liftMET:4.0, sedentaryPAL:1.2,
-  maxLossFraction:0.01, defaultBand:0.45, ewmaAlpha:0.25};
+  maxLossFraction:0.01, defaultBand:0.45, ewmaAlpha:EWMA_ALPHA};
 
 const bodyAt=kg=>Object.assign({},S.profile,{weight:kg});
 /* Same allowance as the maintenance figure: the first 2,500 steps are already
@@ -125,11 +125,7 @@ function tdeeEstimate(kg,stepsPerDay,liftMinPerDay){
   if(!stepsPerDay) return plannedTdee(S.profile,kg).kcal;
   return Math.round(bmrOf(bodyAt(kg))*SCI.sedentaryPAL + walkKcal(stepsPerDay,kg) + liftKcal(liftMinPerDay,kg));
 }
-/* exponentially weighted trend, so one heavy morning does not become a direction */
-function trendSeries(){
-  const pts=weighIns(); if(!pts.length) return [];
-  let t=pts[0].kg; return pts.map((p,i)=>{ t = i? t+SCI.ewmaAlpha*(p.kg-t) : p.kg; return {d:p.d,kg:+t.toFixed(3),raw:p.kg}; });
-}
+/* trendSeries(), the exponentially weighted trend, lives in 03-helpers-energy (build 64) so the first draw has it */
 const trendNow=()=>{ const t=trendSeries(); return t.length? t[t.length-1].kg : (S.profile.weight||null); };
 function weightSlopePerDay(windowDays){
   const cut=windowDays? addDays(todayKey(),-windowDays) : null;

@@ -336,11 +336,9 @@ function bodyFatPct(p,kg){
      trendSeries()    the trend line, one point per weigh in
      weightScale()    the latest weigh in (what the scale said)
      weightNow()      the trend now; else the weight in your details
-     weightStart()    where the goal started (the trend that day), or where
-                      the trend starts if the goal came before the first
-                      weigh in
-     trendRate()      how fast the trend is moving, kg a day, from the last
-                      four weeks of it
+     weightStart()    the trend on the day the goal was set, or where the
+                      trend starts if the goal came before the first weigh in
+     trendRate()      kg a day, worked out as the chart's three month view
      weightProgress() start, now, scale, goal, how far along, how much to go
      weightOutlook()  where the trend lands on the goal date, and whether
                       that is on track (green), behind (amber) or off track
@@ -366,22 +364,27 @@ function weightNow(){
 }
 function weightStart(){
   const t=S.target&&S.target.kind==='weight'? S.target : null, tr=trendSeries();
-  /* A goal set before the first weigh in started from a typed weight the
-     chart never saw (Feargal's 114.8 against a first weigh in of 116), so it
-     counts from where the trend starts instead. A goal set with weigh ins
-     already in keeps its start, which since build 63 is the trend that day. */
-  if(t&&tr.length&&t.set&&t.set<tr[0].d) return +tr[0].kg.toFixed(1);
+  /* Build 64: with weigh ins, the start is always read off the trend line the
+     chart draws, never a typed or saved number. Feargal's goal had kept 114.8,
+     a scale reading from when it was set, so the bar started below the whole
+     chart and stayed empty. The trend on the day the goal was set; where the
+     trend starts if the goal came first (or has no date). */
+  if(tr.length){
+    const at= t&&t.set&&t.set>=tr[0].d? trendOn(t.set) : null;
+    return +(at!==null? at : tr[0].kg).toFixed(1);
+  }
   if(t&&+t.from>0) return +t.from;
-  if(t&&tr.length&&t.set){ const at=trendOn(t.set); if(at!==null) return +at.toFixed(1); }
-  return tr.length? +tr[0].kg.toFixed(1) : (+S.profile.weight||null);
+  return +S.profile.weight||null;
 }
-/* Least squares through the trend line over its last 28 days. Needs three
-   weigh ins at least six days apart; less than that is not a direction. */
-const TREND_WINDOW=28, TREND_MIN_DAYS=6;
+/* How fast the weight is moving, worked out exactly as the chart does for its
+   default three month view (least squares through the weigh ins shown), so
+   the widgets and the chart's "kg a week" agree. A direction needs three
+   weigh ins at least six days apart. */
+const TREND_WINDOW=90, TREND_MIN_DAYS=6;
 function trendRate(){
-  const tr=trendSeries(); if(tr.length<3) return null;
-  const end=tr[tr.length-1].d, cut=addDays(end,-TREND_WINDOW);
-  const pts=tr.filter(p=>p.d>=cut); if(pts.length<3) return null;
+  const all=weighIns(), cut=addDays(todayKey(),-TREND_WINDOW);
+  let pts=all.filter(p=>p.d>=cut); if(pts.length<2) pts=all.slice(-Math.max(2,Math.min(all.length,12)));
+  if(pts.length<3) return null;
   const t0=dateOf(pts[0].d).getTime(), xs=pts.map(p=>(dateOf(p.d).getTime()-t0)/864e5), ys=pts.map(p=>p.kg);
   const days=xs[xs.length-1]; if(days<TREND_MIN_DAYS) return null;
   const mx=xs.reduce((a,b)=>a+b,0)/xs.length, my=ys.reduce((a,b)=>a+b,0)/ys.length;
@@ -401,7 +404,7 @@ function weightProgress(){
   return {now:+now.toFixed(1),start,goal,pct:hit? 100 : pct,moved,hit,falling,toGo:goal===null? null : +Math.abs(now-goal).toFixed(1),
     scale:weightScale(),daysLeft:t&&t.by? Math.round((dateOf(t.by)-dateOf(todayKey()))/864e5) : null, first:ws[0]||null, last:ws.slice(-1)[0]||null};
 }
-/* Will the trend get there in time? The trend's own rate carried forward in a
+/* Will the trend get there in time? The chart's rate carried forward in a
    straight line to the goal date (a straight line is the simple, honest
    reading of a trend; the weekly calorie forecast does the curved maths).
      green  on this trend the goal is reached by the goal date

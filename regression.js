@@ -374,7 +374,7 @@ setTimeout(() => {
   t('a weight target counts down', (() => {
     S.weights = [{d: G.addDays(G.todayKey(), -60), kg: 90}, {d: G.todayKey(), kg: 85}];
     const tg = G.setTarget('weight', 80, G.addDays(G.todayKey(), 84));
-    tg.from = 90;
+    tg.from = 90; tg.set = G.addDays(G.todayKey(), -60); /* build 64: the start is the trend the day the goal was set */
     /* build 63: progress is the trend (90, then 88.75), as on the weight chart */
     const pr = G.targetProgress();
     return pr.now === 88.75 && pr.pct === 13 && pr.remaining === 8.8 && pr.daysLeft === 84; })(),

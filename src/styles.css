@@ -149,14 +149,7 @@ header.top{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1
 .wkey .k-fc{width:16px;height:0;border-top:2.5px dashed var(--amber)}
 .wkey .k-goal{width:16px;height:0;border-top:2px dashed var(--green-text)}
 .wsentence{margin:4px 0 0}
-/* build 64: where the trend is heading, coloured by whether it reaches the goal in time */
-.wchart.st-none .wfc,.wkey.st-none .k-fc{stroke:var(--mute);border-color:var(--mute)}
-.wchart.st-none .wfcdot{fill:var(--mute)} .wchart.st-none .wband{fill:var(--mute)} .wchart.st-none .wlab.fc{fill:var(--mute)}
-.wchart.st-green .wfc,.wkey.st-green .k-fc{stroke:var(--green);border-color:var(--green)}
-.wchart.st-green .wfcdot{fill:var(--green)} .wchart.st-green .wband{fill:var(--green)} .wchart.st-green .wlab.fc{fill:var(--green-text)}
-.wchart.st-red .wfc,.wkey.st-red .k-fc{stroke:var(--coral);border-color:var(--coral)}
-.wchart.st-red .wfcdot{fill:var(--coral)} .wchart.st-red .wband{fill:var(--coral)} .wchart.st-red .wlab.fc{fill:var(--coral-text)}
-.wchart .wgoaldot{fill:var(--surface);stroke:var(--green-text);stroke-width:2}
+/* build 64: the weight widgets coloured by whether the trend reaches the goal in time */
 .ycard .wlook{text-align:left;margin:8px 0 0}
 .wlook{display:block;text-wrap:balance;margin-top:6px;font-size:12.5px;font-weight:700;text-align:center;color:var(--mute)}
 .st-green .wlook,.wlook.st-green{color:var(--green-text)}

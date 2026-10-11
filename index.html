@@ -179,14 +179,7 @@ header.top{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1
 .wkey .k-fc{width:16px;height:0;border-top:2.5px dashed var(--amber)}
 .wkey .k-goal{width:16px;height:0;border-top:2px dashed var(--green-text)}
 .wsentence{margin:4px 0 0}
-/* build 64: where the trend is heading, coloured by whether it reaches the goal in time */
-.wchart.st-none .wfc,.wkey.st-none .k-fc{stroke:var(--mute);border-color:var(--mute)}
-.wchart.st-none .wfcdot{fill:var(--mute)} .wchart.st-none .wband{fill:var(--mute)} .wchart.st-none .wlab.fc{fill:var(--mute)}
-.wchart.st-green .wfc,.wkey.st-green .k-fc{stroke:var(--green);border-color:var(--green)}
-.wchart.st-green .wfcdot{fill:var(--green)} .wchart.st-green .wband{fill:var(--green)} .wchart.st-green .wlab.fc{fill:var(--green-text)}
-.wchart.st-red .wfc,.wkey.st-red .k-fc{stroke:var(--coral);border-color:var(--coral)}
-.wchart.st-red .wfcdot{fill:var(--coral)} .wchart.st-red .wband{fill:var(--coral)} .wchart.st-red .wlab.fc{fill:var(--coral-text)}
-.wchart .wgoaldot{fill:var(--surface);stroke:var(--green-text);stroke-width:2}
+/* build 64: the weight widgets coloured by whether the trend reaches the goal in time */
 .ycard .wlook{text-align:left;margin:8px 0 0}
 .wlook{display:block;text-wrap:balance;margin-top:6px;font-size:12.5px;font-weight:700;text-align:center;color:var(--mute)}
 .st-green .wlook,.wlook.st-green{color:var(--green-text)}
@@ -2487,11 +2480,9 @@ function bodyFatPct(p,kg){
      trendSeries()    the trend line, one point per weigh in
      weightScale()    the latest weigh in (what the scale said)
      weightNow()      the trend now; else the weight in your details
-     weightStart()    where the goal started (the trend that day), or where
-                      the trend starts if the goal came before the first
-                      weigh in
-     trendRate()      how fast the trend is moving, kg a day, from the last
-                      four weeks of it
+     weightStart()    the trend on the day the goal was set, or where the
+                      trend starts if the goal came before the first weigh in
+     trendRate()      kg a day, worked out as the chart's three month view
      weightProgress() start, now, scale, goal, how far along, how much to go
      weightOutlook()  where the trend lands on the goal date, and whether
                       that is on track (green), behind (amber) or off track
@@ -2517,22 +2508,27 @@ function weightNow(){
 }
 function weightStart(){
   const t=S.target&&S.target.kind==='weight'? S.target : null, tr=trendSeries();
-  /* A goal set before the first weigh in started from a typed weight the
-     chart never saw (Feargal's 114.8 against a first weigh in of 116), so it
-     counts from where the trend starts instead. A goal set with weigh ins
-     already in keeps its start, which since build 63 is the trend that day. */
-  if(t&&tr.length&&t.set&&t.set<tr[0].d) return +tr[0].kg.toFixed(1);
+  /* Build 64: with weigh ins, the start is always read off the trend line the
+     chart draws, never a typed or saved number. Feargal's goal had kept 114.8,
+     a scale reading from when it was set, so the bar started below the whole
+     chart and stayed empty. The trend on the day the goal was set; where the
+     trend starts if the goal came first (or has no date). */
+  if(tr.length){
+    const at= t&&t.set&&t.set>=tr[0].d? trendOn(t.set) : null;
+    return +(at!==null? at : tr[0].kg).toFixed(1);
+  }
   if(t&&+t.from>0) return +t.from;
-  if(t&&tr.length&&t.set){ const at=trendOn(t.set); if(at!==null) return +at.toFixed(1); }
-  return tr.length? +tr[0].kg.toFixed(1) : (+S.profile.weight||null);
+  return +S.profile.weight||null;
 }
-/* Least squares through the trend line over its last 28 days. Needs three
-   weigh ins at least six days apart; less than that is not a direction. */
-const TREND_WINDOW=28, TREND_MIN_DAYS=6;
+/* How fast the weight is moving, worked out exactly as the chart does for its
+   default three month view (least squares through the weigh ins shown), so
+   the widgets and the chart's "kg a week" agree. A direction needs three
+   weigh ins at least six days apart. */
+const TREND_WINDOW=90, TREND_MIN_DAYS=6;
 function trendRate(){
-  const tr=trendSeries(); if(tr.length<3) return null;
-  const end=tr[tr.length-1].d, cut=addDays(end,-TREND_WINDOW);
-  const pts=tr.filter(p=>p.d>=cut); if(pts.length<3) return null;
+  const all=weighIns(), cut=addDays(todayKey(),-TREND_WINDOW);
+  let pts=all.filter(p=>p.d>=cut); if(pts.length<2) pts=all.slice(-Math.max(2,Math.min(all.length,12)));
+  if(pts.length<3) return null;
   const t0=dateOf(pts[0].d).getTime(), xs=pts.map(p=>(dateOf(p.d).getTime()-t0)/864e5), ys=pts.map(p=>p.kg);
   const days=xs[xs.length-1]; if(days<TREND_MIN_DAYS) return null;
   const mx=xs.reduce((a,b)=>a+b,0)/xs.length, my=ys.reduce((a,b)=>a+b,0)/ys.length;
@@ -2552,7 +2548,7 @@ function weightProgress(){
   return {now:+now.toFixed(1),start,goal,pct:hit? 100 : pct,moved,hit,falling,toGo:goal===null? null : +Math.abs(now-goal).toFixed(1),
     scale:weightScale(),daysLeft:t&&t.by? Math.round((dateOf(t.by)-dateOf(todayKey()))/864e5) : null, first:ws[0]||null, last:ws.slice(-1)[0]||null};
 }
-/* Will the trend get there in time? The trend's own rate carried forward in a
+/* Will the trend get there in time? The chart's rate carried forward in a
    straight line to the goal date (a straight line is the simple, honest
    reading of a trend; the weekly calorie forecast does the curved maths).
      green  on this trend the goal is reached by the goal date
@@ -3936,8 +3932,8 @@ function weekLine(){
   const bits=[];
   bits.push(done+' of '+planned+' sessions done');
   if(days) bits.push(days+' of the last 7 days logged');
-  const tr=trendRate(); /* build 64: the same rate as the chart and the weight line */
-  if(tr&&Math.abs(tr.perWeek)>=0.05)
+  const tr=(typeof weightTrend==='function'&&typeof weightSeries==='function')? weightTrend(weightSeries()) : null;
+  if(tr&&tr.perWeek!==null&&Math.abs(tr.perWeek)>=0.05)
     bits.push((tr.perWeek<0?'down ':'up ')+Math.abs(tr.perWeek).toFixed(2)+' kg a week');
   return bits.join(' · ');
 }
@@ -11685,33 +11681,23 @@ function weightChart(){
       <div class="ce-s">A line needs two points and a direction needs three. ${r.line}</div>
       <button class="mini go" data-glance="weigh">Weigh in</button></div>`;
   }
-  /* Build 64: one source. The line is trendSeries() and where it is heading
-     is weightOutlook(): the trend's own rate carried to the goal date, the
-     same as Today and You, coloured green, amber or red by whether it gets
-     there in time. With no goal date it looks as far ahead as the weigh ins
-     behind it (one to four weeks). */
-  const smoothAll=trendSeries();
+  const tr=weightTrend(pts);
+  const smoothAll=(typeof trendSeries==='function')? trendSeries() : [];
   const byDay={}; smoothAll.forEach(sp=>{ byDay[sp.d]=sp.kg; });
   const t0=dateOf(pts[0].d).getTime();
   const dayOf=k=>(dateOf(k).getTime()-t0)/864e5;
   const todayX=dayOf(todayKey()), lastX=dayOf(pts[pts.length-1].d);
   const smooth=pts.map(p=>({x:dayOf(p.d), kg: byDay[p.d]!==undefined? byDay[p.d] : p.kg, raw:p.kg, d:p.d}));
   const nowKg=smooth[smooth.length-1].kg;
-  const look=weightOutlook(), rate=trendRate(), st=look? (look.status==='hit'? 'green' : look.status) : (rate? 'amber' : 'none');
-  const toGoalDate=look&&look.by&&look.daysLeft>0&&look.status!=='hit';
-  const fwd= toGoalDate? Math.min(365,Math.max(1,Math.round(dayOf(look.by)-lastX))) : wHorizon(pts);
-  const endX= toGoalDate? lastX+fwd : Math.max(todayX,lastX)+fwd;
-  const endDay=addDays(pts[pts.length-1].d,Math.round(endX-lastX));
-  const projEnd= rate? nowKg+rate.perDay*(endX-lastX) : null;
-  const band0=(typeof bandFor==='function')? bandFor(mondayKey()) : 0.5;
-  const band=Math.min(3,band0*Math.sqrt(Math.max(1,(endX-lastX)/7)));
+  const fwd=wHorizon(pts);
+  const endX=Math.max(todayX,lastX)+fwd;
+  const projEnd=nowKg+tr.perDay*(endX-lastX);
+  const band=(typeof bandFor==='function')? bandFor(mondayKey()) : 0.5;
 
-  /* the vertical range: the data, the forecast, and the goal (always when the
-     line runs to the goal date, otherwise only if it is close) */
+  /* the vertical range: the data, the forecast, and the goal only if it is close */
   const goal=S.target&&S.target.kind==='weight'? +S.target.value : null;
-  const ends= projEnd===null? [] : [projEnd-band,projEnd+band];
-  let lo=Math.min(...pts.map(p=>p.kg),...ends), hi=Math.max(...pts.map(p=>p.kg),...ends);
-  const near=goal!==null&&(toGoalDate||(goal>=lo-Math.max(2,(hi-lo)*0.6)&&goal<=hi+Math.max(2,(hi-lo)*0.6)));
+  let lo=Math.min(...pts.map(p=>p.kg),projEnd-band), hi=Math.max(...pts.map(p=>p.kg),projEnd+band);
+  const near=goal!==null&&goal>=lo-Math.max(2,(hi-lo)*0.6)&&goal<=hi+Math.max(2,(hi-lo)*0.6);
   if(near){ lo=Math.min(lo,goal); hi=Math.max(hi,goal); }
   const padKg=Math.max(0.3,(hi-lo)*0.08); lo-=padKg; hi+=padKg;
   const {ticks,step}=niceTicks(lo,hi);
@@ -11723,53 +11709,49 @@ function weightChart(){
 
   const grid=ticks.map(v=>`<line class="wgrid" x1="${L}" x2="${W-R}" y1="${f(y(v))}" y2="${f(y(v))}"/>
     <text class="wlab" x="${L-6}" y="${f(y(v)+4)}" text-anchor="end">${step<1? v.toFixed(1) : Math.round(v)}</text>`).join('');
-  /* dates: the first shown, today, and the goal date when the line runs there */
-  const xT=x(todayX), xE=x(endX), farEnd=toGoalDate&&xE-xT>60;
   const midX=Math.round(todayX/2);
-  /* the first date gives way to Today when the two would overlap */
-  const dates=`${xT-L>=70? `<text class="wlab" x="${L}" y="${H-9}">${shortDate(pts[0].d)}</text>` : ''}
-    ${!toGoalDate&&todayX>20? `<text class="wlab" x="${f(x(midX))}" y="${H-9}" text-anchor="middle">${shortDate(addDays(pts[0].d,midX))}</text>`:''}
-    <text class="wlab strong" x="${f(Math.max(L+18,xT))}" y="${H-9}" text-anchor="middle">Today</text>
-    ${farEnd? `<text class="wlab goal" x="${f(xE)}" y="${H-9}" text-anchor="end">${shortDate(look.by)}</text>`:''}`;
+  const dates=`<text class="wlab" x="${L}" y="${H-9}">${shortDate(pts[0].d)}</text>
+    ${todayX>20? `<text class="wlab" x="${f(x(midX))}" y="${H-9}" text-anchor="middle">${shortDate(addDays(pts[0].d,midX))}</text>`:''}
+    <text class="wlab strong" x="${f(x(todayX))}" y="${H-9}" text-anchor="middle">Today</text>`;
   /* a goal close enough is a line; a goal far off is named at the edge it is
      beyond, so it is never lost and never squashes the chart flat */
   const goalLine= goal===null? '' : (near
     ? `<line class="wgoal" x1="${L}" x2="${W-R}" y1="${f(y(goal))}" y2="${f(y(goal))}"/>
-       <text class="wlab goal" x="${L+4}" y="${f(y(goal)-5)}">Goal ${goal} kg${toGoalDate? ' by '+shortDate(look.by) : ''}</text>
-       ${toGoalDate? `<circle class="wgoaldot" cx="${f(xE)}" cy="${f(y(goal))}" r="4"/>` : ''}`
+       <text class="wlab goal" x="${L+4}" y="${f(y(goal)-5)}">Goal ${goal} kg</text>`
     : `<text class="wlab goal" x="${L+4}" y="${goal<lo? H-B-6 : T+12}">Goal ${goal} kg, ${Math.abs(goal-nowKg).toFixed(1)} kg ${goal<lo?'below':'above'} this</text>`);
   const dots=smooth.map(p=>`<circle class="raw" cx="${f(x(p.x))}" cy="${f(y(p.raw))}" r="2.4"/>`).join('');
   const line=smooth.map((p,i)=>`${i?'L':'M'}${f(x(p.x))} ${f(y(p.kg))}`).join(' ');
-  const xn=x(lastX), yn=y(nowKg);
-  let proj='', flab='';
-  if(projEnd!==null){
-    const ye=y(projEnd);
-    const bandPath=`M${f(xn)} ${f(yn)} L${f(xE)} ${f(y(projEnd+band))} L${f(xE)} ${f(y(projEnd-band))} Z`;
-    /* The label goes on the side of the line the line is not: below a falling
-       line, above a rising one. If the goal line passes through it, it moves
-       just past the goal line, and it always stays inside the frame. */
-    const falling=ye>=yn;
-    let ly=falling? ye+19 : ye-11;
-    if(goal!==null&&near){
-      const gy=y(goal);
-      if(gy>=ly-13&&gy<=ly+4) ly= falling? gy+16 : gy-6;
-    }
-    ly=Math.min(H-B-18,Math.max(T+12,ly));
-    proj=`<path d="${bandPath}" class="wband"/>
-    <path d="M${f(xn)} ${f(yn)} L${f(xE)} ${f(ye)}" class="wfc"/>
-    <circle cx="${f(xE)}" cy="${f(ye)}" r="3.6" class="wfcdot"/>`;
-    flab=`<text class="wlab fc" x="${f(xE)}" y="${f(ly)}" text-anchor="end">${projEnd.toFixed(1)} kg by ${shortDate(endDay)}</text>`;
+  const xn=x(lastX), yn=y(nowKg), xe=x(endX), ye=y(projEnd);
+  const bandPath=`M${f(xn)} ${f(yn)} L${f(xe)} ${f(y(projEnd+band))} L${f(xe)} ${f(y(projEnd-band))} Z`;
+  /* the forecast label sits beside its end point, above or below whichever is
+     clear, and never past the edge */
+  /* The line runs from today to the end point, so a label to the left of the
+     end point sits clear of it on the side the line is not: below when the
+     line falls, above when it rises. If that would hit the edge or the goal
+     label, it moves to the other side. */
+  /* The label goes on the side of the line the line is not: below a falling
+     line, above a rising one. The only other thing it can hit is the goal
+     line, which runs the full width, so if that passes through the label it
+     moves just past the goal line, and it always stays inside the frame. */
+  const falling=ye>=yn;
+  let ly=falling? ye+19 : ye-11;
+  if(goal!==null&&near){
+    const gy=y(goal);
+    if(gy>=ly-13&&gy<=ly+4) ly= falling? gy+16 : gy-6;
   }
+  ly=Math.min(H-B-4,Math.max(T+12,ly));
+  const flab=`<text class="wlab fc" x="${f(xe)}" y="${f(ly)}" text-anchor="end">${projEnd.toFixed(1)} kg by ${shortDate(addDays(todayKey(),fwd))}</text>`;
   const pointsJson=escHabit(JSON.stringify(smooth.map(p=>[p.d,+p.raw.toFixed(1),+p.kg.toFixed(1),+f(x(p.x))])));
-  const words=`Weighed ${pts.length} times over ${Math.round(lastX)} days: trend ${nowKg.toFixed(1)} kg`
-    +(rate? ', '+(rate.perWeek<0? 'down ':'up ')+Math.abs(rate.perWeek).toFixed(2)+' kg a week. About '+projEnd.toFixed(1)+' kg by '+shortDate(endDay)+' at this rate.' : '. Not enough weigh ins for a direction yet.')
-    +(look&&look.status!=='none'? ' '+outlookLine(look)+'.' : '');
+  const words=`Weighed ${pts.length} times over ${Math.round(lastX)} days: trend ${nowKg.toFixed(1)} kg, `
+    +(tr.perWeek<0? 'down ':'up ')+Math.abs(tr.perWeek).toFixed(2)+' kg a week. About '+projEnd.toFixed(1)+' kg in '+fwd+' days at this rate.';
 
-  return `<svg viewBox="0 0 ${W} ${H}" class="chart wchart st-${st}" role="img" aria-label="${escHabit(words)}" data-points="${pointsJson}">
+  return `<svg viewBox="0 0 ${W} ${H}" class="chart wchart" role="img" aria-label="${escHabit(words)}" data-points="${pointsJson}">
     ${grid}
     <line class="wtoday" x1="${f(x(todayX))}" x2="${f(x(todayX))}" y1="${T}" y2="${H-B}"/>
     ${goalLine}
-    ${proj}
+    <path d="${bandPath}" class="wband"/>
+    <path d="M${f(xn)} ${f(yn)} L${f(xe)} ${f(ye)}" class="wfc"/>
+    <circle cx="${f(xe)}" cy="${f(ye)}" r="3.6" class="wfcdot"/>
     ${dots}
     <path d="${line}" class="wtrend"/>
     <circle cx="${f(xn)}" cy="${f(yn)}" r="5" class="wnow"/>
@@ -11784,7 +11766,7 @@ function weightPanel(){
   const pts=wSeriesFor(weightRange);
   const head=(()=>{
     if(pts.length<2) return '';
-    const tr=trendRate(); /* build 64: the same rate as the line ahead and Today */
+    const tr=weightTrend(pts);
     const smooth=trendSeries();
     const now=smooth.length? smooth[smooth.length-1].kg : pts[pts.length-1].kg;
     const firstTrend=(smooth.find(s=>s.d>=pts[0].d)||{kg:pts[0].kg}).kg;
@@ -11797,31 +11779,28 @@ function weightPanel(){
       <div class="wbig"><b>${now.toFixed(1)}</b><span>kg trend</span></div>
       <div class="wstats">
         <span class="wpill ${Math.abs(change)<0.2?'':dir}">${change<0?'−':'+'}${Math.abs(change).toFixed(1)} kg since ${shortDate(pts[0].d)}</span>
-        ${tr? `<span class="wsub">${tr.perWeek<0?'Down':'Up'} ${Math.abs(tr.perWeek).toFixed(2)} kg a week</span>` : ''}
+        <span class="wsub">${tr.perWeek<0?'Down':'Up'} ${Math.abs(tr.perWeek).toFixed(2)} kg a week</span>
         <span class="wsub">Scale said ${last.kg} kg ${last.d===todayKey()?'today':shortDate(last.d)}</span>
       </div></div>`;
   })();
   const ranges=`<div class="wranges" role="tablist" aria-label="How far back">${W_RANGES.map(([id,label])=>
     `<button role="tab" aria-selected="${weightRange===id}" class="${weightRange===id?'on':''}" data-wrange="${id}">${label}</button>`).join('')}</div>`;
-  const lk=weightOutlook(), lst=lk? (lk.status==='hit'? 'green' : lk.status) : (trendRate()? 'amber' : 'none');
-  const legend=pts.length<2? '' : `<div class="wkey st-${lst}">
+  const legend=pts.length<2? '' : `<div class="wkey">
     <span><i class="k-dot"></i>Scale</span><span><i class="k-line"></i>Trend</span>
     <span><i class="k-fc"></i>Where it is heading</span>${S.target&&S.target.kind==='weight'?'<span><i class="k-goal"></i>Goal</span>':''}</div>`;
-  /* One sentence about where it is heading, from the same outlook as the
-     line ahead, Today and You, quoting the chart's own end point. */
+  /* one sentence about where it is heading. If the calorie forecast disagrees
+     with the weigh ins by more than a few hundred grams, say so plainly rather
+     than printing a second number without explanation. */
   const sentence=(()=>{
-    if(pts.length<2) return '';
-    const r=trendRate(), o=weightOutlook(), imp=S.profile.units==='imperial';
-    if(!r) return `<div class="note wsentence">${o? outlookLine(o,imp)+'. ' : ''}A direction needs three weigh ins at least six days apart; then the line shows where the trend is heading${o&&o.by? ' to your goal date' : ''}.</div>`;
-    const smooth=trendSeries(), now=smooth[smooth.length-1].kg, last=smooth[smooth.length-1].d;
-    const toGoal=o&&o.by&&o.daysLeft>0&&o.status!=='hit';
-    const fwd= toGoal? Math.min(365,Math.max(1,Math.round((dateOf(o.by)-dateOf(last))/864e5))) : wHorizon(pts);
-    const endD=toGoal? addDays(last,fwd) : addDays(last,Math.round((Math.max(dateOf(todayKey()),dateOf(last))-dateOf(last))/864e5)+fwd);
-    const end=now+r.perDay*Math.round((dateOf(endD)-dateOf(last))/864e5);
-    let s=`At this rate, about <b>${end.toFixed(1)} kg</b> by ${shortDate(endD)}.`;
-    if(o&&o.status!=='none'&&o.status!=='hit') s+=` <b class="wlook st-${o.status}" style="display:inline;margin:0">${outlookLine(o,imp)}.</b>`;
-    if(o&&o.status==='amber'||o&&o.status==='red'&&o.needPerWeek!==null) s+=` It needs about ${showW(Math.abs(o.needPerWeek),imp)} a week ${o.needPerWeek<0?'down':'up'}; the trend is ${Math.abs(r.perWeek)<0.05? 'level' : showW(Math.abs(r.perWeek),imp)+' a week '+(r.perWeek<0?'down':'up')}.`;
-    if(r.days<14) s+=` Based on ${r.days} days of weigh ins, so it will firm up as more come in.`;
+    if(pts.length<3) return '';
+    const tr=weightTrend(pts), smooth=trendSeries(), now=smooth[smooth.length-1].kg;
+    const fwd=wHorizon(pts), end=now+tr.perDay*fwd;
+    let s=`At this rate, about <b>${end.toFixed(1)} kg</b> by ${shortDate(addDays(todayKey(),fwd))}.`;
+    const proj=(typeof projectWeeks==='function')? projectWeeks(4) : null;
+    if(fwd<W_FWD) s+=` That only looks ${fwd} days ahead, because that is how much there is to go on.`;
+    else if(proj&&proj[3]&&Math.abs(proj[3].kg-end)>=0.3)
+      s+=` Your logged calories point to ${(+proj[3].kg).toFixed(1)} kg, so ${proj[3].kg<end? 'the food suggests a little faster than the scale is showing' : 'the scale is moving a little faster than the food suggests'}; the two usually meet after a couple more weeks of logging.`;
+    else if(proj&&proj[3]) s+=' Your logged calories point to the same place.';
     return `<div class="note wsentence">${s}</div>`;
   })();
   return `${head}${ranges}${weightChart()}${legend}${sentence}${forecastNote()}`;

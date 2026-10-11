@@ -297,7 +297,8 @@ function drawDay(){
     <div class="nums">${nf('kcal','Calories',t.kcal)}${nf('protein','Protein (g)',t.protein)}${nf('carbs','Carbs (g)',t.carbs)}${nf('fat','Fat (g)',t.fat)}</div>
     <div class="nums" style="margin-top:8px">${nf('w','Weight (kg)','',0.1)}${nf('fibre','Fibre (g)',t.fibre)}</div>
     ${(S.weights||[]).some(x=>x.d===todayKey())? `<div class="note" style="margin-top:4px">Weight came from this morning's weigh in. Changing it here changes that too.</div>`:''}
-    <div class="note">Blank is fine. A day with one slider on it is still a useful day.</div>`;
+    <div class="note">Blank is fine. A day with one answer in it is still a useful day.</div>`;
+  stepperize($('dayBody'));
 }
 document.addEventListener('click',e=>{
   const tr=e.target.closest('[data-train]');
@@ -390,7 +391,7 @@ function inlineCheckinHtml(){
   return `<div class="cicard" id="ciCard">
     <div class="cih"><b>Today's check-in</b><span>${done? 'saved today, change anything' : 'twenty seconds'}</span></div>
     <div class="cigrid">
-      ${auto? `<span class="cil">Sleep</span><span class="ciauto">${auto.sleep}h from ${sourceName()}</span><b></b>` : row('sleep','Sleep',3,11,0.25,7)}
+      ${auto? `<span class="cil">Sleep</span><span class="ciauto">${auto.sleep}h from ${sourceName()}</span>` : row('sleep','Sleep',3,11,0.25,7)}
       ${row('wb','How today went',1,10,1,6)}
       ${row('stress','Stress',1,10,1,5)}
     </div>
@@ -554,3 +555,47 @@ Object.defineProperties(window.__G,{
   weekDraft:{get:()=>weekDraft,set:v=>{weekDraft=v},configurable:true},
   wkStep:{get:()=>wkStep,set:v=>{wkStep=v},configurable:true}
 });
+
+/* ---------- plus and minus instead of sliders (build 60) ----------
+   Feargal: sliders are hard to hit on a phone. Every number in the daily
+   check-in (the full sheet and the quick one) and the weekly one is now a
+   minus, the value and a plus. The slider stays in the page, hidden, as the
+   value's home, so everything that reads it, saves it or tests it is
+   unchanged; the buttons set it and fire the same input event a drag did.
+   Nothing is filled in for anyone: on an answer not given yet, the first tap
+   puts in the usual starting value rather than stepping past it. */
+const STEP_RANGES='input[type=range][data-dayrange],input[type=range][data-cirange],input[type=range][data-weekrange]';
+function stepperize(root){
+  (root||document).querySelectorAll(STEP_RANGES).forEach(inp=>{
+    if(inp.dataset.stepped) return;
+    inp.dataset.stepped='1'; inp.hidden=true;
+    const key=inp.dataset.dayrange? 'dayrange:'+inp.dataset.dayrange : (inp.dataset.cirange? 'cirange:'+inp.dataset.cirange : 'weekrange:'+inp.dataset.weekrange);
+    const out=inp.dataset.dayrange? document.getElementById('out'+inp.dataset.dayrange)
+      : (inp.dataset.cirange? document.getElementById('ciout_'+inp.dataset.cirange) : document.getElementById('outw_'+inp.dataset.weekrange));
+    if(!out) { inp.hidden=false; return; }
+    if(!/\d/.test(out.textContent)){ inp.dataset.untouched='1'; out.classList.add('nset'); }
+    const name=(inp.getAttribute('aria-label')||'it').toLowerCase();
+    const btn=(dir,label,sym)=>{ const b=document.createElement('button'); b.type='button'; b.className='nsb';
+      b.setAttribute('data-nstep',key+'|'+dir); b.setAttribute('aria-label',label+' '+name); b.textContent=sym; return b; };
+    out.setAttribute('aria-live','polite');
+    out.classList.add('nsv');
+    out.parentNode.insertBefore(btn(-1,'Less','−'),out);
+    out.parentNode.insertBefore(btn(1,'More','+'),out.nextSibling);
+  });
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-nstep]'); if(!b) return;
+  const [key,dir]=b.dataset.nstep.split('|');
+  const [attr,name]=key.split(':'), inp=document.querySelector('input[data-'+attr+'="'+name+'"]'); if(!inp) return;
+  const step=+inp.step||1, min=+inp.min, max=+inp.max;
+  let v=+inp.value;
+  if(inp.dataset.untouched==='1') delete inp.dataset.untouched;
+  else v=v+(+dir)*step;
+  v=Math.max(min,Math.min(max,Math.round(v/step)*step));
+  inp.value=String(+v.toFixed(2)); inp.classList.remove('unset');
+  inp.dispatchEvent(new Event('input',{bubbles:true}));
+  const out=b.parentNode.querySelector('.nsv'); if(out) out.classList.toggle('nset',!/\d/.test(out.textContent));
+  if(navigator.vibrate) navigator.vibrate(8);
+});
+/* the weekly check in's two numbers get the same buttons */
+{ const _drawWeekStep=drawWeekStep; drawWeekStep=function(){ _drawWeekStep(); stepperize($('weekBody')); }; }

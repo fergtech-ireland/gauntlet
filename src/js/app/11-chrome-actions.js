@@ -435,6 +435,7 @@ function openLog(){
       ${tile('coach','Ask about your record','Everything the app knows','var(--green-text)')}
     </div>`;
   ciTeenNote();
+  if(typeof stepperize==='function') stepperize($('logBody'));
   openSheet('logSheet');
 }
 document.addEventListener('click',e=>{

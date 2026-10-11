@@ -585,7 +585,9 @@ function inFirstWeek(){
 const RING_C=2*Math.PI*44;
 function ringHtml(id,frac,tone,value,label,caption,aria,extra,cls){
   const len=Math.max(0,Math.min(1,frac||0))*RING_C;
-  const vs=String(value), word=/^[A-Za-z]+$/.test(vs), fs=word? (vs.length>=7? 19 : 22) : (vs.length>=7? 18 : (vs.length>=6? 21 : (vs.length>=5? 24 : 28)));
+  const vs=String(value), word=/^[A-Za-z ]+$/.test(vs), fs0=word? (vs.length>=7? 19 : 22) : (vs.length>=7? 18 : (vs.length>=6? 21 : (vs.length>=5? 24 : 28)));
+  /* the second row of rings is smaller, so its numbers are too */
+  const fs=/\bsm\b/.test(cls||'')? Math.round(fs0*0.74) : fs0;
   return `<button class="ring ${cls||''}" data-ring="${id}" ${extra||''} aria-label="${aria}" style="--tone:var(--${tone})">
     <span class="rwrap"><svg viewBox="0 0 104 104" aria-hidden="true"><circle class="rt" cx="52" cy="52" r="44"/>
       ${len>0? `<circle class="ra" cx="52" cy="52" r="44" stroke-dasharray="${len.toFixed(1)} ${RING_C.toFixed(1)}" transform="rotate(-90 52 52)"/>` : ''}</svg>
@@ -640,7 +642,47 @@ function readyRing(){
   return ringHtml('ready',x.f,x.tone,x.v,'READY',x.c,
     r.level==='building'? 'Readiness: building your baseline. Tap for what it needs.' : `Readiness: ${r.text.toLowerCase()}. Tap for why.`);
 }
-function ringsRow(){ return `<div class="rings">${readyRing()}${foodRing()}${trainRing()}</div>`; }
+/* ---------- three more rings, build 60 ----------
+   What people actually look up: daily steps are the most tracked figure on
+   wearables (59% of US wearable users, Insider Intelligence 2021); weight or
+   diet and sleep are among the most tracked in apps (27% and 24%, YouGov
+   2024); and the app's own evidence puts total protein first among food
+   targets. So the second row is Sleep, Protein and Steps, each against the
+   person's own aim, each one tap from logging. They are smaller than the top
+   three, which stay the day's headline. A ring that is behind turns amber and
+   says so in its caption, which is what the old pills under the rings did.
+   Under 18s get Check-in in place of Protein (no targets for them). */
+function sleepRing(){
+  const k=todayKey(), sl=realSleep(S.days[k]), tg=sleepTarget();
+  if(sl===null) return ringHtml('sleep',0,'cyan','Log','SLEEP','last night',`Sleep: last night not logged. Tap to log it.`,`data-sleeplog="${k}"`,'sm');
+  const short=sl<tg.lo;
+  return ringHtml('sleep',Math.min(1,sl/tg.lo),short?'amber':'cyan',sl+'h','SLEEP',short? 'under '+tg.lo+'h' : 'aim '+tg.lo+'h+',
+    `Slept ${sl} hours last night, aim ${tg.t}. Tap for your sleep.`,'data-glance="sleep"','sm'+(short?' behind':''));
+}
+function proteinRing(){
+  const k=todayKey(), t=S.targets||{};
+  if(isTeen()){ const done=!!(S.days[k]||{}).checkedIn;
+    return ringHtml('checkin',done?1:0,'green',done?'Done':'Not yet','CHECK-IN','today',done? 'Today\'s check-in done.' : 'Today\'s check-in not done. Tap to do it.','data-checkinnow="1"','sm'); }
+  const pr=Math.round(foodTotals(k).protein||0);
+  if(!t.protein) return ringHtml('protein',0,'coral',pr+'g','PROTEIN','no target','Protein '+pr+' grams today. Tap to open Eat.','data-go="eat"','sm');
+  const c=(typeof dayClock==='function')? dayClock() : null;
+  const pace=c? Math.min(1,Math.max(0,(c.n-60)/Math.max(60,c.bed-240))) : 1;
+  const behind=dayFood(k).length>0&&pr<t.protein*pace-20;
+  return ringHtml('protein',pr/t.protein,behind?'amber':'coral',pr+'g','PROTEIN',pr>=t.protein? 'target hit' : (behind? 'behind, of '+t.protein+'g' : 'of '+t.protein+'g'),
+    `Protein ${pr} of ${t.protein} grams${behind?', behind for the time of day':''}. Tap to open Eat.`,'data-go="eat"','sm'+(behind?' behind':''));
+}
+function stepsRing(){
+  const k=todayKey(), auto=stepsToday(), typed=(S.days[k]||{}).steps, st=auto!==null? auto : (typeof typed==='number'? typed : null), tg=stepTarget();
+  if(st===null) return ringHtml('steps',0,'green','Add','STEPS','of '+num(tg),'Steps: none in yet. Tap to put them in.','data-quickopen="steps"','sm');
+  const c=(typeof dayClock==='function')? dayClock() : null;
+  const pace=c? Math.min(1,Math.max(0,(c.n-60)/Math.max(60,c.bed-120))) : 1;
+  const behind=c&&c.n>=6*60&&st<tg*pace*0.7;
+  const v= st>=10000? (st/1000).toFixed(1).replace('.0','')+'k' : num(st);
+  return ringHtml('steps',st/tg,behind?'amber':'green',v,'STEPS',st>=tg? 'target hit' : 'of '+num(tg),
+    `${num(st)} of ${num(tg)} steps${behind?', behind for the time of day':''}.${auto===null?' Tap to change.':''}`,'data-quickopen="steps"','sm'+(behind?' behind':''));
+}
+function ringsRow(){ return `<div class="ringset"><div class="rings">${readyRing()}${foodRing()}${trainRing()}</div>
+  <div class="rings rings2">${sleepRing()}${proteinRing()}${stepsRing()}</div></div>`; }
 /* What is moving readiness and how much that rests on, then (build 59) the
    one or two things furthest off for this time of day, from focusPills() in
    next.js. It used to show last night's sleep whatever the data said. */
@@ -811,30 +853,32 @@ function renderToday(){
   const st=stepsToday();
   const dl=$('todayDate'); if(dl) dl.textContent=todayHeadDate();
   const av=$('avatarLetter'); if(av){ const h=(S.profile&&(S.profile.name||S.profile.handle))||''; av.textContent=(h.replace(/^@/,'')[0]||'Y').toUpperCase(); }
-  /* priorities go above the session when any of them is urgent (score 70 or
-     more: a check in due, poor sleep, a pain check, lower readiness on a
-     training day, a stressful yesterday) */
-  /* Build 59: the most useful next step for this time of day sits straight
-     under the rings (nextUp() in next.js), and whatever it shows is not
-     repeated in the priorities. The session card comes before the meals while
-     the session is still ahead of the next meal; once it is done, or on a
-     rest day, the meals come first. */
+  /* Build 60: one structure, top to bottom, nothing said twice.
+       the rings: six numbers, each one tap from logging or explaining
+       the coach card: the next thing for this time of day, then up to two
+         more things that matter today, then anything worth watching that is
+         not already a ring (stress, sessions behind, a stale weigh in)
+       training and meals, in the order the day reaches them
+       weigh in and the check-in
+       the goal, then the week
+     Gone: the readiness sentence under the rings (it is in the Ready ring's
+     sheet), the pills that repeated the rings, a separate priorities list,
+     and the Next up list (the week strip already opens every day). */
   const nx=(typeof nextUp==='function')? nextUp() : null;
   const SAME={checkin:'checkin',pain:'pain',meal:'food',weigh:'weigh',sleep:'sleep',bed:'sleep'};
-  const prios=priorities().filter(p=>!nx||SAME[nx.top.id]!==p.id), urgent=prios.some(p=>p.score>=70);
-  const hero=heroCard(plan,d,i), pr=prioritiesRow(prios);
+  const prios=priorities().filter(p=>!nx||SAME[nx.top.id]!==p.id);
+  const hero=heroCard(plan,d,i);
   const sessFirst=(()=>{ if(!d.type||d.slot==='rest'||d.slot==='walk'||dayDone(i)) return false;
     try{ const c=dayClock(), ms=mealSlots().slots.filter(x=>x.role&&!x.skipped).map(x=>c.rel(x.min)).filter(m=>m>=c.n-60);
       return !ms.length||c.train<=Math.min(...ms)+60; }catch(e){ return true; } })();
-  const sessAndMeals= sessFirst? (urgent? pr+hero : hero+pr)+mealsList() : (urgent? pr : '')+mealsList()+hero+(urgent? '' : pr);
+  const coach=(typeof coachCard==='function')? coachCard(nx,prios) : '';
   $('todayView').innerHTML=`
   ${ringsRow()}
-  ${nx? nextCard(nx) : ''}
-  ${driverLine(nx&&nx.top.id)}
-  ${sessAndMeals}
+  ${coach}
+  ${sessFirst? hero+mealsList() : mealsList()+hero}
   ${quickTiles()}
   <div class="goalrow">${targetLine()}</div>
-  <div class="sechead"><h2>Your week so far</h2><button data-go="plan">The whole week</button></div>
+  <div class="sechead"><h2>This week</h2><button data-go="plan">The whole week</button></div>
   <div class="weekstrip">${plan.days.map((x,n)=>`<button data-planday="${n}" class="${n===i?'today':''} ${n<i?'past':''}" aria-label="${DAYS[n]}: ${dayLabel(x)||'Rest'}${dayDone(n)?', done':''}">
       <span class="d">${DAYS[n][0]}</span>
       <span class="dot ${x.kind==='rest'||!x.type?'off':''} ${dayDone(n)?'done':''}"></span>
@@ -858,12 +902,7 @@ function renderToday(){
         <button class="mini go" data-painok="${n}">Fine now</button>
         <button class="mini" data-painsore="${n}">Still sore</button></span></div>`).join('')}
   </div>
-  ${(()=>{ const next=plan.days.slice(i+1,i+3);
-    if(!next.length) return `<div class="note" style="margin:10px 16px">That is the week. ${checkinDone()? 'You have already checked in.' : 'Your check in is '+checkinDayName()+'.'}</div>`;
-    return `<div class="sechead"><h2>Next up</h2></div><div class="rowcard">`
-      +next.map((x,n)=>`<button class="pday" data-planday="${i+1+n}"><div class="dd">${DAYS[i+1+n]}</div>
-      <div class="txt"><b>${dayLabel(x)}</b><span>${daySub(x)}</span></div>
-      <div class="sq" style="background:${x.kind==='rest'||!x.type?'var(--line)':'var(--cyan)'}"></div></button>`).join('')+'</div>'; })()}`;
+`;
 }
 document.addEventListener('click',e=>{
   const rg=e.target.closest('[data-ring]');

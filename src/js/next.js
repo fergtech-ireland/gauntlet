@@ -135,19 +135,41 @@ function nextUp(at){
   const c=dayClock(at), d=(typeof todayPlan==='function')? todayPlan() : null, i=dowIdx();
   let why='Nothing to do right now.';
   if(d&&d.type&&d.slot!=='walk'&&d.slot!=='rest'&&!dayDone(i)&&c.train>c.n) why='Next: '+dayLabel(d)+' at '+minToHhmm(c.trainAbs)+'.';
-  else if(typeof nextEating==='function'){ try{ const ne=nextEating().next; if(ne) why='Next: '+ne.what.toLowerCase().replace(/,.*$/,'')+' around '+ne.time+'.'; }catch(e){} }
+  /* the eating plan also lists the training slot and the last coffee; only a
+     meal counts here, so a finished session is never offered as next */
+  else if(typeof nextEating==='function'){ try{ const now=c.now, ne=nextEating().plan.items.find(x=>!['train','coffee'].includes(x.tag)&&hhmmToMin(x.time)>=now);
+    if(ne) why='Next: '+ne.what.toLowerCase().replace(/,.*$/,'')+' around '+ne.time+'.'; }catch(e){} }
   return {top:{id:'clear',tone:'green',kick:'All caught up',title:'Nothing due right now',why,act:''},then:'',list};
 }
-function nextCard(nx){
+/* Build 60: the coach card. Up next, then up to two more things that matter
+   today (the same priorities as before, in the same rows), then anything
+   worth watching that is not a ring. Empty when there is nothing to say. */
+const RING_SIGNALS=['sleep','protein','kcal','steps'];
+function coachCard(nx,prios,at){
+  nx=nx||nextUp(at);
+  const also=(prios||[]).slice(0,2);
+  const watch=focusSignals(at).filter(x=>RING_SIGNALS.indexOf(x.id)<0&&x.id!==NEXT_SAME[nx.top.id]&&x.sev>=0.15)
+    .sort((a,b)=>b.sev-a.sev).slice(0,2).map(x=>x.html).join('');
+  const clear=nx.top.id==='clear';
+  if(clear&&!also.length&&!watch) return '';
+  const alsoHtml= also.length? `<div class="alsohead">${clear? 'What matters today' : 'Also today'}</div>
+    <div class="prios">${also.map((x,n)=>{ const tone=PRIO_TONE[x.id]||'green';
+      return `<div class="prio p-${x.id}"><div class="pn" style="background:var(--${tone}-tint);color:var(--${tone}-text)">${n+1}</div>
+      <div class="pt"><b>${x.t}</b><span>${x.why}</span>${x.conf? confChip(x.conf) : ''}${x.action? `<div class="pa">${x.action}</div>` : ''}</div></div>`; }).join('')}</div>` : '';
+  const head= clear? '' : nextCard(nx,true);
+  return `<section class="daycoach ${clear?'t-green':'t-'+nx.top.tone}" ${clear? '' : `data-next="${nx.top.id}"`} aria-label="Your day">${head}${alsoHtml}
+    ${watch? `<div class="pills watch" aria-label="Worth watching">${watch}</div>` : ''}</section>`;
+}
+function nextCard(nx,inner){
   nx=nx||nextUp();
   const x=nx.top;
-  return `<section class="nextcard t-${x.tone}" data-next="${x.id}" aria-label="Up next: ${x.title.replace(/<[^>]+>/g,'')}">
+  return `<${inner?'div':'section'} class="nextcard t-${x.tone}" data-next="${x.id}" aria-label="Up next: ${x.title.replace(/<[^>]+>/g,'')}">
     <div class="nk"><span class="ndot" aria-hidden="true"></span>Up next<span class="nkw"> · ${x.kick}</span></div>
     <div class="nt">${x.title}</div>
     <div class="nw">${x.why}</div>
     ${x.act? `<div class="na">${x.act}</div>` : ''}
-    ${nx.then? `<div class="nthen">Then: ${escHabit(nx.then)}</div>` : ''}
-  </section>`;
+    ${nx.then&&!inner? `<div class="nthen">Then: ${escHabit(nx.then)}</div>` : ''}
+  </${inner?'div':'section'}>`;
 }
 /* ---------- what to watch today ----------
    Each candidate scores how far off it is, 0 to 1, for this time of day. */
@@ -193,15 +215,20 @@ function focusSignals(at){
   const ds=S.days[k]||{}, y=S.days[addDays(k,-1)]||{};
   const stressV=typeof ds.stress==='number'? ds.stress : (typeof y.stress==='number'? y.stress : null);
   if(stressV!==null&&stressV>=7) add('stress',0.35+(stressV-7)*0.15,`<button class="pill off" data-checkinnow="1">Stress ${stressV}/10 ${typeof ds.stress==='number'?'today':'yesterday'}</button>`);
-  /* sessions already missed this week, counting only days the app was in use */
-  const wc=weekCounts(), i=dowIdx();
-  if(wc.planned&&S.plan&&S.plan.days){
+  /* Sessions behind this week. Build 59 counted any planned day without a
+     tick as missed, so a session done on a different day from the one it was
+     planned for (moved, swapped, or two in a day) showed as missed while the
+     Train ring said 6 of 6. Now it is a count: planned days already gone
+     (only days the app was in use) against sessions done so far, on any day. */
+  const i=dowIdx();
+  if(S.plan&&S.plan.days){
     const keys=Object.keys(S.days||{}).concat((S.weights||[]).map(x=>x.d),(S.workouts||[]).map(x=>x.d)).filter(Boolean).sort();
     const since=keys[0]||k;
-    let missed=0;
-    for(let n=0;n<i;n++){ const x=S.plan.days[n]; if(!x||!x.type||x.slot==='walk'||x.slot==='rest'||dayDone(n)) continue;
-      if(addDays(k,n-i)>=since) missed++; }
-    if(missed) add('train',Math.min(1,0.2+0.2*missed),`<button class="pill off" data-go="plan">${missed} ${missed===1?'session':'sessions'} missed this week</button>`);
+    let owed=0, done=0;
+    for(let n=0;n<i;n++){ const x=S.plan.days[n]; if(x&&x.type&&x.slot!=='walk'&&x.slot!=='rest'&&addDays(k,n-i)>=since) owed++; }
+    for(let n=0;n<=i;n++) if(dayDone(n)) done++;
+    const missed=Math.max(0,owed-done);
+    if(missed) add('train',Math.min(1,0.2+0.2*missed),`<button class="pill off" data-go="plan">${missed} ${missed===1?'session':'sessions'} behind this week</button>`);
   }
   /* a weigh in that has gone stale */
   if(!teen&&S.target&&S.target.kind==='weight'){
@@ -312,6 +339,8 @@ document.addEventListener('click',e=>{
     const d=Object.assign({},S.days[k]); delete d.sleep; delete d.sleepManual; delete d.sleepBed; delete d.sleepWake;
     S.days[k]=d; save(); sleepDraft=null; closeSheets(); renderAll();
     toast('Sleep cleared','Undo',()=>undoSleep(k,before)); return; }
+  const qo=e.target.closest('[data-quickopen]');
+  if(qo){ openQuick(qo.dataset.quickopen); return; }
   /* the Up next card's own buttons */
   if(e.target.closest('[data-checkinnow]')){ openCheckin(); return; }
   if(e.target.closest('[data-nextstart]')){ startPlanDay(todayPlan()); return; }
@@ -338,5 +367,6 @@ function openCheckin(){
   document.getElementById('altSub').textContent='Twenty seconds. Only what you move is saved.';
   document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 10px">${inlineCheckinHtml()}</div>`;
   ciTeenNote();
+  stepperize(document.getElementById('altBody'));
   openSheet('altSheet');
 }

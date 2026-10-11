@@ -476,7 +476,7 @@ body[data-screen="today"] header.top .on-today,body[data-screen="feed"] header.t
 .big-pick{height:52px;border-radius:8px;border:1px solid var(--line);font-weight:600;font-size:14px;display:grid;place-items:center}
 .big-pick.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
 .field{margin-bottom:20px}
-.field .fl{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
+.field .fl{display:flex;align-items:center;gap:8px;margin-bottom:4px}
 .field .fl .k{font-size:11px;font-weight:700;color:var(--mute);flex:1;letter-spacing:.1em;text-transform:uppercase}
 .field .fl .v{font-family:var(--font-num);font-weight:700;font-size:21px;letter-spacing:0}
 input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:24px;background:none}
@@ -1140,7 +1140,7 @@ body[data-screen="today"] header.top{border-bottom:0;height:62px}
 .cicard .cih{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .cicard .cih b{font-size:15px}
 .cicard .cih span{font-size:12px;color:var(--mute)}
-.cicard .cigrid{display:grid;grid-template-columns:auto 1fr 64px;gap:4px 10px;align-items:center;margin:8px 0 10px;font-size:13px}
+.cicard .cigrid{display:grid;grid-template-columns:1fr 44px auto 44px;gap:4px 10px;align-items:center;margin:8px 0 10px;font-size:13px}
 .cicard .cigrid label,.cicard .cil{font-weight:600}
 .cicard .cigrid b{text-align:right;font-size:12.5px}
 .cicard .ciauto{grid-column:span 2;color:var(--mute);font-size:12.5px;min-height:44px;display:flex;align-items:center}
@@ -1382,3 +1382,29 @@ body.has-live .toast:not(.top){bottom:140px}
 .slnum span{font-size:12px;color:var(--mute);font-weight:700}
 .sltimes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .sltimes input{font-size:18px}
+
+/* ---------- build 60: six rings and one coach card ---------- */
+.ringset{display:flex;flex-direction:column;gap:2px}
+.rings2{padding:0 6px 2px}
+.rings2 .rwrap{max-width:70px}
+.rings2 .rt,.rings2 .ra{stroke-width:10}
+.rings2 .rk{font-size:10.5px}
+.rings2 .rs{font-size:10.5px}
+.rings .ring.behind .rs{color:var(--amber-text);font-weight:700}
+.daycoach{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--tone,var(--green));border-radius:12px;overflow:hidden}
+.daycoach.t-green{--tone:var(--green)}.daycoach.t-cyan{--tone:var(--cyan)}.daycoach.t-coral{--tone:var(--coral)}.daycoach.t-amber{--tone:var(--amber)}
+.daycoach > .nextcard{margin:0;border:0;border-radius:0;background:none}
+.daycoach .alsohead{padding:10px 14px 0;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.daycoach > .nextcard + .alsohead{border-top:1px solid var(--line)}
+#todayView .daycoach .prios{border:0;border-radius:0;background:none}
+#todayView .daycoach .prio{padding:10px 14px}
+#todayView .daycoach .prio .pt b{font-size:14px}
+.daycoach .watch{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px 12px;border-top:1px solid var(--line)}
+/* plus and minus in place of sliders on the check-ins */
+.nsb{flex:0 0 auto;width:44px;height:44px;border-radius:12px;background:var(--track);color:var(--ink);font-size:22px;font-weight:700;line-height:1;display:grid;place-items:center}
+.nsb:active{opacity:.7}
+.field .fl .nsv{min-width:76px;text-align:center}
+.cicard .cigrid .nsv{min-width:64px;text-align:center;font-size:15px}
+.cicard .cigrid .cil{grid-column:1}
+.cicard .cigrid .ciauto{grid-column:2 / span 3;text-align:right}
+.nsv.nset{font-family:var(--font-ui);font-size:13px;font-weight:700;color:var(--mute);letter-spacing:0}

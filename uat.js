@@ -2030,13 +2030,13 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
 
     t('31 · the first thing is today, with something to press', !!home().querySelector('.hero') &&
       !!home().querySelector('#startToday, [data-go="plan"], #todayViewEdit'));
-    t('31 · today\'s numbers are right there, as three rings', d.querySelectorAll('.rings .ring').length === 3
-      && [...d.querySelectorAll('.rings .ring')].map(r => r.dataset.ring).join() === 'ready,food,train');
+    t('31 · today\'s numbers are right there, as rings: Ready, Food, Train, then Sleep, Protein, Steps', d.querySelectorAll('.rings .ring').length === 6
+      && [...d.querySelectorAll('.rings .ring')].map(r => r.dataset.ring).join() === 'ready,food,train,sleep,protein,steps');
     t('31 · calories are on the first screen, because that is what people stop logging, and one tap opens the food diary',
       d.querySelector('.rings [data-ring="food"]').dataset.go === 'eat');
     t('31 · and they show what is left, not just what is eaten', /kcal left/.test(txt(d.querySelector('.rings'))));
     /* build 59: what sits under the readiness line is whatever is furthest off, not always sleep; sleep is one tap from the Up next card in the morning */
-    t('31 · each one can be logged in one tap', !!d.querySelector('.rings [data-go="eat"]') && !!d.querySelector('[data-glance="protein"]') && !!d.querySelector('.driver .pills .pill')
+    t('31 · each one can be logged in one tap', !!d.querySelector('.rings [data-go="eat"]') && !!d.querySelector('[data-glance="protein"]') && !!d.querySelector('.rings [data-ring="sleep"][data-sleeplog]')
       && /data-sleepquick/.test(G.nextCard(G.nextUp(G.clockOf('wake') + 30))));
     t('31 · with a row for the two things worth logging', d.querySelectorAll('.quicks .quick').length === 2);
 
@@ -2642,7 +2642,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
     G.go('today'); G.renderAll();
     const order = [...d.querySelectorAll('#todayView > *')].map(e => e.classList.contains('mealscard') ? 'meals'
-      : e.classList.contains('rings') ? 'numbers' : e.classList.contains('quicks') ? 'quick' : e.classList.contains('weekstrip') ? 'week' : '').filter(Boolean);
+      : e.classList.contains('ringset') ? 'numbers' : e.classList.contains('quicks') ? 'quick' : e.classList.contains('weekstrip') ? 'week' : '').filter(Boolean);
     t('39 · meals sit under the numbers they feed, with the quick tiles, above the week', order.join(',') === 'numbers,meals,quick,week', order.join(','));
     t('39 · the per meal mark is 0.4 g per kg of the protein bodyweight basis',
       G.perMealProtein() === Math.round(0.4 * G.proteinBasis(S.profile).kg));
@@ -3214,7 +3214,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('P1-04 · a stressful day yesterday is raised', prios().some(p => p.classList.contains('p-stress')));
     S.profile.checkinDay = G.dowIdx(); S.checkins = []; G.renderAll();
     /* build 59: it leads Today as the Up next card, and is not repeated in the list under it */
-    t('P1-04 · the weekly check in comes first on its day', G.priorities()[0].id === 'checkin' && !!d.querySelector('#todayView .nextcard[data-next="checkin"]')
+    t('P1-04 · the weekly check in comes first on its day', G.priorities()[0].id === 'checkin' && !!d.querySelector('#todayView .daycoach[data-next="checkin"]')
       && !prios().some(p => p.classList.contains('p-checkin')));
     S.target = { kind: 'weight', value: 85, by: null, from: 95 }; S.weights = [{ d: day(10), kg: 92 }]; G.renderAll();
     t('P1-04 · never more than three', G.priorities().length === 3 && prios().length <= 3, G.priorities().length + ' / ' + prios().length);
@@ -3346,9 +3346,11 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
       const p = home().querySelector('.prio.p-protein, .prio.p-proteinok, .prio.p-food'); return !p || !p.querySelector('.conf'); })());
     t('P117 · sleep advice still does', (() => { for (let n = 0; n < 7; n++) S.days[G.addDays(G.todayKey(), -n)] = Object.assign({}, S.days[G.addDays(G.todayKey(), -n)], { sleep: 5.8 });
       G.renderAll(); const p = home().querySelector('.prio.p-sleep'); return !!p && !!p.querySelector('.conf'); })());
-    t('P118 · with no tracker Today shows sleep, never a blank steps count', !!home().querySelector('.driver [data-glance="sleep"]') && !home().querySelector('[data-glance="steps"]') && !/no tracker/.test(txt(home().querySelector('.driver'))));
-    t('P118 · it shows last night, with the aim', /5\.8h/.test(txt(home().querySelector('[data-glance="sleep"]'))) && /aim 7h or more/.test(txt(home().querySelector('[data-glance="sleep"]'))));
-    home().querySelector('.driver [data-glance="sleep"]').click();
+    /* build 60: sleep and steps are rings; with no tracker the steps ring asks for them rather than showing 0 */
+    const stepsRing = home().querySelector('.rings [data-ring="steps"]');
+    t('P118 · with no tracker Today shows sleep, never a blank steps count', !!home().querySelector('.rings [data-ring="sleep"][data-glance="sleep"]') && !home().querySelector('[data-glance="steps"]') && /Add/.test(txt(stepsRing)) && !/\b0\b/.test(txt(stepsRing.querySelector('.rv'))));
+    t('P118 · it shows last night, against the aim', /5\.8h/.test(txt(home().querySelector('[data-ring="sleep"]'))) && /under 7h/.test(txt(home().querySelector('[data-ring="sleep"]'))));
+    home().querySelector('.rings [data-ring="sleep"]').click();
     t('P118 · and opens the sleep view', /Sleep/.test(txt(d.getElementById('altTitle'))));
     G.closeSheets(); G.go('today'); G.renderAll();
     t('P119 · the why paragraph is one tappable line, closed', !!home().querySelector('[data-whytoday]') && d.getElementById('whyToday').hidden);
@@ -4475,8 +4477,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     S.days[day(0)] = { sleep: 8.8 }; S.days[day(1)] = Object.assign({}, S.days[day(1)], { stress: 2, wb: 9 });
     G.renderAll();
     t('58 · a better day reads Better, against your usual', txt(ring('ready').querySelector('.rv')) === 'Better' && /than your usual/.test(txt(ring('ready'))));
-    t('58 · the driver line says what is moving it, with how much it rests on', /Driven by more sleep than usual \(8\.8h/.test(txt(home().querySelector('.driver')))
-      && !!home().querySelector('.driver .conf'));
+    /* build 60: the readiness sentence lives in the Ready ring's sheet, not under the rings */
+    t('58 · what is moving readiness is one tap away, with how much it rests on', (() => { ring('ready').click(); const ok = /Driven by more sleep than usual \(8\.8h/.test(txt(d.getElementById('altBody'))) && !!d.querySelector('#altBody .conf'); G.closeSheets(); return ok && !home().querySelector('.driver'); })());
     /* build 59: sleep is a candidate when it is moving readiness; it shows when it is among the two furthest off */
     t('58 · last night\'s sleep is a thing to watch when it moves readiness, and opens the sleep view', (() => {
       const sp = G.focusSignals().find(x => x.id === 'sleep'); return !!sp && sp.sev >= 0.15 && /Slept 8\.8h · aim 7h or more/.test(sp.html) && /data-glance="sleep"/.test(sp.html); })());
@@ -4504,12 +4506,13 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('58 · and the prescription itself is unchanged by readiness', G.nextPrescription(ex.exId, ex).kg === next);
 
     /* ---- priorities move above the session at 70 or more ---- */
-    const order = () => [...home().children].map(e => e.classList.contains('hero') ? 'hero' : e.classList.contains('prios') ? 'prios' : '').filter(Boolean).join(',');
+    /* build 60: the priorities sit in the coach card, straight under the rings, above the session */
+    const order = () => [...home().children].map(e => e.classList.contains('hero') ? 'hero' : (e.classList.contains('daycoach') && e.querySelector('.prios')) ? 'prios' : '').filter(Boolean).join(',');
     t('58 · lower readiness (75) puts the priorities above the session', G.priorities()[0].score >= 70 && order() === 'prios,hero', order());
     S.days[day(0)] = { sleep: 8.8 }; S.days[day(1)] = Object.assign({}, S.days[day(1)], { stress: 2, wb: 9 });
     G.addFood('chicken', 1, 'l'); G.renderAll();
     const top2 = G.priorities()[0];
-    t('58 · on a good day the session comes first', (!top2 || top2.score < 70) && (order() === 'hero,prios' || order() === 'hero'), order() + ' ' + (top2 && top2.score));
+    t('58 · on a good day nothing urgent is raised above it', (!top2 || top2.score < 70) && /hero$/.test(order()), order() + ' ' + (top2 && top2.score));
     t('58 · each kind of priority keeps its colour', (() => { S.days[day(1)].stress = 8; G.renderAll();
       const p = home().querySelector('.prio.p-stress .pn'); return !!p && /amber-tint/.test(p.getAttribute('style')); })());
     S.days[day(1)].stress = 2;
@@ -4901,7 +4904,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
 
     /* ---- the card sits straight under the rings ---- */
     const kids = () => [...home().children].map(e => e.className.split(' ')[0]);
-    t('65 · Up next is the first thing under the rings', kids()[0] === 'rings' && kids()[1] === 'nextcard', kids().slice(0, 3).join());
+    t('65 · Up next is the first thing under the rings', kids()[0] === 'ringset' && kids()[1] === 'daycoach' && !!home().querySelector('.daycoach .nextcard'), kids().slice(0, 3).join());
     /* ---- morning: last night's sleep, in one tap ---- */
     const morning = G.nextUp(at(7, 30));
     t('65 · first thing in the morning it asks how long you slept', morning.top.id === 'sleep' && /data-sleepquick/.test(morning.top.act));
@@ -4936,7 +4939,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     S.profile.checkinDay = i; S.checkins = []; G.renderAll();
     t('65 · on its day, the weekly check in leads the morning and the evening', G.nextUp(at(11, 30)).top.id === 'checkin' && G.nextUp(at(21)).top.id === 'checkin');
     t('65 · though half an hour before training the session comes first', G.nextUp(at(17, 30)).top.id === 'session');
-    t('65 · and the priorities do not repeat what the card shows', !home().querySelector('.prio.p-checkin') && !!home().querySelector('.nextcard[data-next="checkin"]'));
+    t('65 · and the priorities do not repeat what the card shows', !home().querySelector('.prio.p-checkin') && !!home().querySelector('.daycoach[data-next="checkin"]'));
     S.checkins = [{ weekOf: G.mondayKey() }]; G.renderAll();
 
     /* ---- the line under the rings follows the data ---- */
@@ -5107,6 +5110,106 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('66 · exercise search puts the results first, the filters after', list.firstElementChild && !list.firstElementChild.classList.contains('pickchips') && !!list.querySelector('[data-pick]'));
     t('66 · template and session searches are search boxes too', (() => { G.closeSheets(); G.drawTemplates(); G.openSheet('tplSheet'); const a = G.isSearchBox(d.getElementById('tplQ'));
       G.closeSheets(); G.openSwap(i); const b = G.isSearchBox(d.getElementById('swapQ')); G.closeSheets(); return a && b; })());
+  }
+
+  /* ---------------------------------------------------------- 67 */
+  journey(67, 'Build 60: six rings, one coach card, nothing said twice, and a session done on another day is not missed');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S, k = G.todayKey(), i = G.dowIdx();
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const home = () => d.getElementById('todayView');
+    S.profile.checkinDay = (i + 3) % 7;
+    S.profile.wakeTime = '07:00'; S.profile.bedtime = '23:00'; S.profile.trainTime = '18:00';
+
+    /* ---- the bug in Feargal's screenshot: Train said 6 of 6, the pill said one missed ---- */
+    const sess = S.plan.days.find(x => x.templateId);
+    S.plan.days = S.plan.days.map((x, n) => Object.assign({}, n <= i && n % 2 === 0 ? sess : G.slotFor('rest'), { dow: n }));
+    const plannedSoFar = S.plan.days.slice(0, i).filter(x => x.templateId).length;
+    S.week = S.week.map((x, n) => ({ done: [] }));
+    /* every session done, but each on the day after the one it was planned for */
+    let moved = 0; for (let n = 0; n <= i && moved < plannedSoFar; n++) if (n % 2 === 1 || n === i) { S.week[n] = { done: ['workout'] }; moved++; }
+    for (let n = 1; n <= 10; n++) S.days[G.addDays(k, -n)] = { sleep: 7.5 };
+    G.save(); G.go('today'); G.renderAll();
+    const behind = () => G.focusSignals().find(x => x.id === 'train');
+    t('67 · sessions done on a different day from the plan are not counted as missed', plannedSoFar === 0 || !behind(), behind() && behind().html);
+    S.week = S.week.map(() => ({ done: [] })); G.renderAll();
+    t('67 · sessions genuinely not done still are', plannedSoFar === 0 || (!!behind() && new RegExp(plannedSoFar + ' sessions? behind').test(behind().html)), plannedSoFar + ' ' + (behind() && behind().html));
+    t('67 · a finished session is never offered as next', (() => { S.plan.days[i] = Object.assign({}, sess, { dow: i }); S.week[i] = { done: ['workout'] };
+      const n = G.nextUp(17 * 60 + 54); return !(n.top.id === 'clear' && /train/i.test(n.top.why)) && n.top.id !== 'session'; })());
+
+    /* ---- six rings ---- */
+    G.renderAll();
+    const ring = id => home().querySelector('.rings [data-ring="' + id + '"]');
+    t('67 · six rings in two rows, the day\'s headline three on top', home().querySelectorAll('.ringset .rings').length === 2
+      && [...home().querySelectorAll('.ringset .rings')[0].querySelectorAll('.ring')].map(r => r.dataset.ring).join() === 'ready,food,train'
+      && [...home().querySelectorAll('.ringset .rings')[1].querySelectorAll('.ring')].map(r => r.dataset.ring).join() === 'sleep,protein,steps');
+    delete S.days[k]; G.renderAll();
+    t('67 · Sleep asks for last night when it is not in, and opens the sleep log', /Log/.test(txt(ring('sleep'))) && ring('sleep').dataset.sleeplog === k);
+    ring('sleep').click();
+    t('67 · (the sleep log)', /Log sleep/.test(txt(d.getElementById('altTitle')))); G.closeSheets();
+    S.days[k] = { sleep: 6 }; G.renderAll();
+    t('67 · a short night turns it amber and says so', ring('sleep').classList.contains('behind') && /6h/.test(txt(ring('sleep'))) && /under 7h/.test(txt(ring('sleep'))));
+    S.days[k].sleep = 8; G.renderAll();
+    t('67 · a good one does not', !ring('sleep').classList.contains('behind') && /aim 7h\+/.test(txt(ring('sleep'))));
+    t('67 · Protein is grams against the target, one tap to Eat', new RegExp('of ' + S.targets.protein + 'g').test(txt(ring('protein'))) && ring('protein').dataset.go === 'eat');
+    t('67 · Steps with nothing in asks for them, never a 0', /Add/.test(txt(ring('steps'))) && ring('steps').dataset.quickopen === 'steps');
+    ring('steps').click();
+    t('67 · and opens the steps box', /Steps today/.test(txt(d.getElementById('quickTitle')))); G.closeSheets();
+    S.days[k].steps = 12400; G.renderAll();
+    t('67 · typed steps show, past target in thousands', /12\.4k/.test(txt(ring('steps'))) && /target hit/.test(txt(ring('steps'))));
+
+    /* ---- nothing said twice ---- */
+    t('67 · the readiness sentence and the pills that repeated the rings are gone', !home().querySelector('.driver'));
+    t('67 · the Next up list is gone (the week strip opens every day)', !home().querySelector('.pday') && home().querySelectorAll('.weekstrip [data-planday]').length === 7);
+    t('67 · priorities live in the coach card, not as a second list', !home().querySelector('#todayView > .prios') && [...home().querySelectorAll('.prios')].every(p => p.closest('.daycoach')));
+    t('67 · the coach card never shows a pill for something already a ring', (() => { const c = home().querySelector('.daycoach'); return !c || !/kcal over|Protein \d|Slept|steps/.test(txt(c.querySelector('.watch'))); })());
+    /* nothing to say: no empty card */
+    S.days[k] = { sleep: 8, checkedIn: Date.now() };
+    const quiet = G.coachCard({ top: { id: 'clear' }, then: '', list: [] }, [], 14 * 60);
+    t('67 · with nothing to say there is no card at all', quiet === '' || /alsohead|watch/.test(quiet));
+    t('67 · the order is rings, coach, training and meals, the two quick logs, the goal, the week', (() => {
+      G.renderAll(); const k2 = [...home().children].map(e => e.className.split(' ')[0]).filter(c => ['ringset', 'daycoach', 'hero', 'mealscard', 'quicks', 'goalrow', 'weekstrip'].includes(c));
+      const want = ['ringset'].concat(k2.includes('daycoach') ? ['daycoach'] : []);
+      return k2.slice(0, want.length).join() === want.join() && k2.indexOf('quicks') > Math.max(k2.indexOf('hero'), k2.indexOf('mealscard')) && k2.indexOf('weekstrip') === k2.length - 1; })(),
+      [...home().children].map(e => e.className.split(' ')[0]).join());
+  }
+
+  /* ---------------------------------------------------------- 68 */
+  journey(68, 'Build 60: the check-ins use plus and minus, not sliders');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S, k = G.todayKey();
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const visibleRanges = root => [...root.querySelectorAll('input[type="range"]')].filter(x => !x.hidden).length;
+    const btn = (root, key, dir) => root.querySelector('[data-nstep="' + key.replace(/^data-/, '').replace(/="(.*)"$/, ':$1') + '|' + dir + '"]');
+    G.openLog();
+    const lb = d.getElementById('logBody');
+    t('68 · the quick check-in has no sliders on show', visibleRanges(lb) === 0 && lb.querySelectorAll('.nsb').length === 6);
+    t('68 · each answer is minus, the value, plus, with names a screen reader can say', /Less how today went/i.test(btn(lb, 'data-cirange="wb"', -1).getAttribute('aria-label')) && /More stress/i.test(btn(lb, 'data-cirange="stress"', 1).getAttribute('aria-label')));
+    t('68 · nothing is answered until a button is pressed', /not rated/.test(txt(d.getElementById('ciout_wb'))) && d.getElementById('ciSave').disabled);
+    btn(lb, 'data-cirange="wb"', 1).click();
+    t('68 · the first tap puts in the usual starting value, not one past it', /^6\/10$/.test(txt(d.getElementById('ciout_wb'))) && !d.getElementById('ciSave').disabled);
+    btn(lb, 'data-cirange="wb"', 1).click(); btn(lb, 'data-cirange="wb"', 1).click();
+    t('68 · then each tap is one step', /^8\/10$/.test(txt(d.getElementById('ciout_wb'))));
+    for (let n = 0; n < 6; n++) btn(lb, 'data-cirange="wb"', 1).click();
+    t('68 · and it stops at the top', /^10\/10$/.test(txt(d.getElementById('ciout_wb'))));
+    btn(lb, 'data-cirange="sleep"', 1).click(); btn(lb, 'data-cirange="sleep"', -1).click(); btn(lb, 'data-cirange="sleep"', -1).click();
+    t('68 · sleep moves by a quarter of an hour', /^6\.5h$/.test(txt(d.getElementById("ciout_sleep"))), txt(d.getElementById('ciout_sleep')));
+    d.getElementById('ciSave').click();
+    t('68 · and saves as before', S.days[k].wb === 10 && S.days[k].sleep === 6.5 && S.days[k].stress === undefined && !!S.days[k].checkedIn);
+    G.openDay();
+    const db = d.getElementById('dayBody');
+    t('68 · the full check-in has no sliders on show either', visibleRanges(db) === 0 && !!btn(db, 'data-dayrange="stress"', 1));
+    btn(db, 'data-dayrange="stress"', 1).click(); btn(db, 'data-dayrange="stress"', -1).click();
+    t('68 · and its buttons fill the same answers', /^4 \/ 10$/.test(txt(d.getElementById('outstress'))));
+    G.closeSheets(); G.openWeek(); G.wkStep = 1; w.drawWeekStep();
+    const wb = d.getElementById('weekBody'), before = +txt(d.getElementById('outw_recovery'));
+    t('68 · the weekly check in\'s two numbers use them too', visibleRanges(wb) === 0 && wb.querySelectorAll('.nsb').length === 4);
+    btn(wb, 'data-weekrange="recovery"', 1).click();
+    t('68 · already answered, a tap steps straight away', +txt(d.getElementById('outw_recovery')) === Math.min(10, before + 1) && G.weekDraft ? true : +txt(d.getElementById('outw_recovery')) === Math.min(10, before + 1));
   }
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);

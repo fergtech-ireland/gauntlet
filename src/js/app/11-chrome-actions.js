@@ -29,7 +29,7 @@ function openSheet(id){
 }
 function closeSheets(){
   const wasOpen=document.querySelector('.sheet.on');
-  document.querySelectorAll('.sheet').forEach(s2=>{ s2.classList.remove('on'); s2.style.zIndex=''; s2.style.transform=''; });
+  document.querySelectorAll('.sheet').forEach(s2=>{ s2.classList.remove('on','searching'); s2.style.zIndex=''; s2.style.transform=''; });
   scrim.classList.remove('on'); scrim.style.zIndex='';
   if(wasOpen&&sheetReturn&&document.contains(sheetReturn)){
     try{ sheetReturn.focus({preventScroll:true}); }catch(e){}
@@ -56,14 +56,30 @@ document.addEventListener('keydown',e=>{
    that is 88% of the window ends up with its input underneath it. The visual
    viewport tells us how much room is actually left, so the sheet is resized to
    that, and whatever was focused is scrolled back into sight. */
+/* Build 59: search had to be closed to see what it found. The sheet stayed
+   pinned to the bottom of the page behind the keyboard, and the focused box
+   was scrolled to the middle, so the results sat under the keys. Now an open
+   keyboard lifts the sheet to sit on top of it (--keyboard is its height,
+   --vvh what is left above it), and a search box goes to the top of its sheet
+   with the results straight under it, the filters tucked away while there is
+   text in the box. Enter (Search on the keyboard) closes the keyboard. */
+const isSearchBox=el=>!!(el&&el.tagName==='INPUT'&&el.closest&&el.closest('.sheet')&&(el.type==='search'||el.closest('.foodsearch,.search')));
+function searchToTop(el){
+  const sh=el&&el.closest? el.closest('.sheet') : null; if(!sh) return;
+  const box=el.closest('.foodsearch,.search')||el;
+  const off=box.getBoundingClientRect().top-sh.getBoundingClientRect().top;
+  sh.scrollTop=Math.max(0,sh.scrollTop+off-6);
+}
 function fitToKeyboard(){
   const vv=window.visualViewport; if(!vv) return;
   const covered=Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
   document.documentElement.style.setProperty('--keyboard', covered+'px');
+  document.documentElement.style.setProperty('--vvh', vv.height+'px');
   document.documentElement.classList.toggle('keyboard-open', covered>120);
   if(covered>120){
     const el=document.activeElement;
-    if(el&&/^(INPUT|TEXTAREA)$/.test(el.tagName)){
+    if(isSearchBox(el)) searchToTop(el);
+    else if(el&&/^(INPUT|TEXTAREA)$/.test(el.tagName)){
       try{ el.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){ try{ el.scrollIntoView(); }catch(e2){} }
     }
   }
@@ -76,7 +92,18 @@ document.addEventListener('focusin',e=>{
   if(!/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
   /* wait for the keyboard to actually appear before measuring */
   setTimeout(fitToKeyboard,120);
+  if(isSearchBox(e.target)){ setTimeout(()=>searchToTop(e.target),200); return; }
   setTimeout(()=>{ try{ e.target.scrollIntoView({block:'center'}); }catch(err){} },200);
+});
+document.addEventListener('input',e=>{
+  if(!isSearchBox(e.target)) return;
+  const sh=e.target.closest('.sheet'), on=!!e.target.value.trim();
+  sh.classList.toggle('searching',on);
+  /* after the results have been redrawn by the sheet's own listener */
+  setTimeout(()=>searchToTop(e.target),0);
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&isSearchBox(e.target)){ e.preventDefault(); e.target.blur(); }
 });
 document.addEventListener('focusout',()=>setTimeout(fitToKeyboard,120));
 
@@ -368,7 +395,8 @@ const LOG_ICONS={
   day:'<circle cx="12" cy="12" r="8"/><path d="M9 14c.9.9 1.9 1.3 3 1.3s2.1-.4 3-1.3M9 9.5h.01M15 9.5h.01"/>',
   week:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4"/>',
   templates:'<path d="M4 6h16M4 12h16M4 18h10"/>',
-  coach:'<path d="M21 12a8 8 0 1 1-3.2-6.4M12 8v4l2.5 2.5"/>'};
+  coach:'<path d="M21 12a8 8 0 1 1-3.2-6.4M12 8v4l2.5 2.5"/>',
+  sleep:'<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>'};
 const logIcon=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${LOG_ICONS[k]||''}</svg>`;
 function openLog(){
   const d=todayPlan(), logged=S.days[todayKey()], k=todayKey();
@@ -378,6 +406,9 @@ function openLog(){
     <span class="ic">${logIcon(id)}</span>
     <span class="t">${title}</span><span class="s">${sub}</span></button>`;
   const left=t.kcal? Math.max(0,Math.round(t.kcal-eaten.kcal)) : null;
+  /* build 59: only one check-in card in the page at a time (ids) */
+  document.querySelectorAll('#altBody #ciCard').forEach(n=>n.remove());
+  const slept=realSleep(S.days[k]);
   /* Build 56: the same items in the same order, with today's check-in as
      three sliders in place (saved through the same code as the full sheet;
      More opens that sheet). */
@@ -398,6 +429,7 @@ function openLog(){
     ${inlineCheckinHtml()}
     <div class="logtiles">
       ${!isTeen()&&typeof stepsToday==='function'&&!healthOn()? tile('steps','Steps',(()=>{ const v=(S.days[todayKey()]||{}).steps; return typeof v==='number'? num(v)+' today' : 'What your phone says'; })(),'var(--amber-text)',typeof (S.days[todayKey()]||{}).steps==='number') : ''}
+      ${tile('sleep','Sleep',slept!==null? 'Last night '+slept+'h, or another night' : 'Last night, or any night this week','var(--cyan-text)',slept!==null)}
       ${tile('week','Weekly check in',checkinDone()?'Done for this week':'Next week is built from it','var(--amber-text)',checkinDone())}
       ${tile('templates','Something else','Any template, circuit or run','var(--sub)')}
       ${tile('coach','Ask about your record','Everything the app knows','var(--green-text)')}
@@ -415,6 +447,7 @@ document.addEventListener('click',e=>{
   if(what==='day') openDay();
   if(what==='week') openWeek();
   if(what==='steps') openQuick('steps');
+  if(what==='sleep'&&typeof openSleepLog==='function') openSleepLog(todayKey());
   if(what==='templates'&&typeof drawTemplates==='function'){ drawTemplates(); openSheet('tplSheet'); }
   if(what==='coach'&&typeof openCoach==='function') openCoach();
 });

@@ -458,7 +458,8 @@ body[data-screen="today"] header.top .on-today,body[data-screen="feed"] header.t
 .sheet{position:fixed;left:0;right:0;bottom:0;max-width:460px;margin:0 auto;z-index:61;background:var(--surface);
   border-radius:12px 12px 0 0;transform:translateY(103%);transition:transform .25s cubic-bezier(.2,.8,.25,1);
   max-height:calc(88vh - var(--keyboard, 0px));overflow:auto;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
-.keyboard-open .sheet{max-height:calc(100vh - var(--keyboard, 0px) - 12px)}
+.keyboard-open .sheet{max-height:calc(var(--vvh,100vh) - 12px)}
+.keyboard-open .sheet.on{bottom:var(--keyboard,0px);padding-bottom:8px}
 .keyboard-open .sheet .sub{display:none}
 .sheet.on{transform:translateY(0)}
 .grab{width:36px;height:4px;border-radius:4px;background:var(--line);margin:8px auto 6px}
@@ -1064,28 +1065,35 @@ body[data-screen="today"] header.top{border-bottom:0;height:62px}
 #todayView .prio .pt .conf-good{background:var(--green-tint);color:var(--green-text)}
 #todayView .prio .pt .conf-building,#todayView .prio .pt .conf-none{background:var(--amber-tint);color:var(--amber-text)}
 #todayView .prio .pa{justify-content:flex-start;margin-top:8px}
-#todayView .hero{margin-top:14px;background:var(--hero);color:var(--hero-ink);border:1px solid var(--hero-line);border-radius:12px;padding:14px}
-#todayView .hero .kicker{font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--mint)}
-#todayView .hero h2{font-size:23px;line-height:1.15;margin:4px 0 0;color:var(--hero-ink)}
-#todayView .hero .sub{color:var(--hero-sub);margin:6px 0 10px}
-#todayView .hero .chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px;padding:0}
-#todayView .hero .chips span{min-height:26px;padding:3px 9px;border-radius:13px;background:var(--hero-chip);display:inline-flex;align-items:center;font-size:12px;font-weight:600;color:var(--hero-ink)}
-#todayView .hero .prog{margin-top:10px;font-size:13px;line-height:1.45;color:var(--hero-sub)}
+/* Build 59: the session card is a light card like the rest of Today, not a
+   black block. Tinted icon, what and when, chips, one green Start, quiet links. */
+#todayView .hero{margin-top:12px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:12px 14px 6px}
+#todayView .hero .shead{display:flex;align-items:center;gap:12px}
+#todayView .hero .sic{flex:0 0 auto;width:40px;height:40px;border-radius:12px;display:grid;place-items:center}
+#todayView .hero .stx{min-width:0;flex:1}
+#todayView .hero .kicker{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--cyan-text)}
+#todayView .hero.isdone .kicker,#todayView .hero.islive .kicker{color:var(--green-text)}
+#todayView .hero h2{font-size:18px;font-weight:800;line-height:1.2;margin:2px 0 0;color:var(--ink);overflow-wrap:anywhere}
+#todayView .hero .sub{color:var(--sub);font-size:13px;margin:8px 0 2px}
+#todayView .hero .chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0;padding:0}
+#todayView .hero .chips span{min-height:24px;padding:2px 9px;border-radius:12px;background:var(--track);display:inline-flex;align-items:center;font-size:12px;font-weight:600;color:var(--sub)}
+#todayView .hero .prog{margin-top:10px;font-size:13px;line-height:1.45;color:var(--green-text);font-weight:600}
 #todayView .hero .ctarow{margin-top:12px}
-#todayView .hero .cta{height:46px;border-radius:8px;background:var(--mint);color:var(--mint-ink);font-weight:800}
-#todayView .hero .cta.ghost{flex:0 0 auto;padding:0 14px;width:auto;background:none;border:1px solid var(--hero-chip);color:var(--hero-ink);font-weight:700;font-size:14px}
-#todayView .hero.restday .ctarow .cta.ghost{flex:1}
-#todayView .hero .whyline{color:var(--hero-sub)}
-#todayView .hero .why{background:var(--hero-chip);color:var(--hero-ink);margin:0 0 6px}
-#todayView .hero .skipbtn,#todayView .hero .viewbtn{color:var(--hero-sub);margin:0}
-#todayView .hero .herofoot{display:flex;justify-content:center;gap:18px;flex-wrap:wrap}
+#todayView .hero .cta{height:44px;border-radius:10px;font-size:14.5px;font-weight:800}
+#todayView .hero .cta.ghost{flex:0 0 auto;padding:0 14px;width:auto;background:none;border:1px solid var(--line);color:var(--ink);font-weight:700;font-size:14px}
+#todayView .hero.isdone .ctarow .cta.ghost,#todayView .hero.restday .ctarow .cta.ghost{flex:1}
+#todayView .hero .whyline{color:var(--mute);font-size:12.5px}
+#todayView .hero .why{background:var(--track);color:var(--sub);margin:0 0 8px}
+#todayView .hero .skipbtn,#todayView .hero .viewbtn{color:var(--mute);margin:0;font-size:12.5px;min-height:44px}
+#todayView .hero .herofoot{display:flex;justify-content:flex-start;align-items:center;column-gap:16px;flex-wrap:wrap;margin-top:2px}
+#todayView .hero .herofoot .skipbtn,#todayView .hero .herofoot .whyline{display:inline-flex;align-items:center;margin:0;padding:0;text-decoration:none;font-size:12.5px;font-weight:700;color:var(--mute)}
 #todayView .hero .herofoot:empty{display:none}
-#todayView .hero .note{color:var(--hero-sub)}
-#todayView .hero .track .tnum{color:var(--hero-ink)}
-#todayView .hero .track .tnum small,#todayView .hero .tsrc{color:var(--hero-sub)}
-#todayView .hero .track .bar{background:var(--hero-chip)}
-#todayView .hero .track .bar i{background:var(--mint)}
-#todayView .hero .doneline{color:var(--mint)}
+#todayView .hero .note{color:var(--mute)}
+#todayView .hero .track .tnum{color:var(--ink)}
+#todayView .hero .track .tnum small,#todayView .hero .tsrc{color:var(--mute)}
+#todayView .hero .track .bar{background:var(--track)}
+#todayView .hero .track .bar i{background:var(--cta)}
+#todayView .hero .doneline{color:var(--green-text);font-weight:700;margin-top:8px}
 .mealscard{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .mealscard .mhead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px 6px}
 .mealscard .mhead b{font-size:16px;font-weight:800}
@@ -1325,3 +1333,52 @@ body[data-screen="progress"] #profHandle{display:none}
 #restBar .rtrack i{display:block;height:100%;width:100%;background:var(--mint);border-radius:3px;transition:width 1s linear}
 #restBar .n{font-size:24px;min-width:0;color:var(--hero-ink)}
 #restBar button{height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--hero-chip);background:none;color:var(--hero-ink);font-size:13px}
+
+/* ---------- build 59 ---------- */
+/* search stays at the top of its sheet, with the results under it */
+#foodBody.q .plate,#foodBody.q #foodCats{display:none}
+.sheet .search{position:sticky;top:6px;z-index:3;box-shadow:0 0 0 7px var(--surface)}
+.keyboard-open .sheet.searching .tfilters,.keyboard-open .sheet.searching .swapquick,.keyboard-open .sheet.searching .swapnow,
+.keyboard-open .sheet.searching #exList > .pickchips,.keyboard-open .sheet.searching .fhead,.keyboard-open .sheet.searching .fhead + .bar,
+.keyboard-open .sheet.searching .mealtabs{display:none}
+/* Up next */
+.nextcard{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--tone,var(--green));border-radius:12px;padding:12px 14px}
+.nextcard.t-green{--tone:var(--green)}.nextcard.t-cyan{--tone:var(--cyan)}.nextcard.t-coral{--tone:var(--coral)}.nextcard.t-amber{--tone:var(--amber)}
+.nextcard .nk{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.nextcard.t-green .nk{color:var(--green-text)}.nextcard.t-cyan .nk{color:var(--cyan-text)}.nextcard.t-coral .nk{color:var(--coral-text)}.nextcard.t-amber .nk{color:var(--amber-text)}
+.nextcard .nkw{text-transform:none;letter-spacing:0;font-weight:700}
+.nextcard .ndot{width:8px;height:8px;border-radius:50%;background:var(--tone)}
+.nextcard .nt{font-size:18px;font-weight:800;line-height:1.2;margin-top:4px}
+.nextcard .nw{font-size:13px;color:var(--sub);line-height:1.45;margin-top:3px}
+.nextcard .na{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.nextcard .na .cta{height:44px;flex:0 0 auto;padding:0 18px;width:auto;font-size:14.5px;font-weight:800}
+.nextcard .na .mini{min-height:44px}
+.nextcard .sleepq{display:flex;flex-wrap:wrap;gap:6px}
+.nextcard .sleepq .mini{min-width:52px;justify-content:center;font-size:14px}
+.nextcard .nthen{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:12.5px;color:var(--mute);font-weight:600}
+/* what to watch */
+.pill.off{border-color:var(--amber);color:var(--amber-text);background:var(--amber-tint)}
+.pill.ok{border-color:var(--green-tint);color:var(--green-text);background:var(--green-tint)}
+.pill.calm{display:inline-flex;align-items:center}
+/* the session bar, above the nav */
+.livebar{position:fixed;left:0;right:0;bottom:calc(63px + env(safe-area-inset-bottom));max-width:460px;margin:0 auto;z-index:49;display:none;
+  align-items:center;gap:6px;padding:6px 8px 6px 10px;background:var(--ink);color:var(--on-ink);border-radius:12px 12px 0 0}
+.livebar.on{display:flex}
+.livebar .lvmain{flex:1;min-width:0;display:flex;align-items:center;gap:10px;min-height:44px;text-align:left;color:inherit}
+.livebar .lvdot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:var(--mint);animation:lvpulse 1.6s ease-in-out infinite}
+@keyframes lvpulse{50%{opacity:.35}}
+.livebar .lvtx{min-width:0;flex:1;display:flex;flex-direction:column}
+.livebar .lvtx b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.livebar .lvtx span{font-size:12px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.livebar .lvgo{flex:0 0 auto;height:36px;padding:0 14px;border-radius:999px;background:var(--mint);color:var(--mint-ink);font-weight:800;font-size:13.5px;display:grid;place-items:center}
+.livebar .lvend{flex:0 0 auto;min-width:44px;min-height:44px;font-size:12.5px;font-weight:700;color:inherit;opacity:.8}
+body.has-live .app{padding-bottom:132px}
+body.has-live .toast:not(.top){bottom:140px}
+/* logging sleep */
+.sleeplog .sleepnights{margin:0 0 12px}
+.slhours{display:flex;align-items:center;gap:10px;justify-content:center;margin:4px 0 12px}
+.slnum{display:flex;flex-direction:column;align-items:center}
+.slnum input{width:120px;text-align:center;font-family:var(--font-num);font-weight:700;font-size:44px;line-height:1.1;color:var(--ink);background:none;outline:none;border-bottom:2px solid var(--line)}
+.slnum span{font-size:12px;color:var(--mute);font-weight:700}
+.sltimes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sltimes input{font-size:18px}

@@ -132,7 +132,7 @@ document.addEventListener('input',e=>{
 });
 function finishCircuit(){
   if(!GYM||GYM.done) return null;
-  GYM.done=true; clearInterval(gymTick);
+  GYM.done=true; clearInterval(gymTick); if(typeof clearLive==='function') clearLive();
   const mins=Math.max(1,Math.round((Date.now()-GYM.started)/60000));
   const done=circuitDone(), total=GYM.items.length;
   let prevAt=GYM.started;
@@ -231,7 +231,8 @@ function drawExList(q){
         ? `<div class="slab" style="padding:0 14px">${hits.length} match${hits.length===1?'':'es'}</div>`+rest.map(row).join('')
         : GROUPS.map(g=>{ const rows=rest.filter(x=>x.g===g);
             return rows.length? `<div class="slab" style="padding:0 14px">${g} · ${rows.length}</div>`+rows.map(row).join('') : ''; }).join(''));
-  $('exList').innerHTML=chips+body;
+  /* build 59: while searching, results come first, straight under the box */
+  $('exList').innerHTML= term? body+chips : chips+body;
 }
 document.addEventListener('click',e=>{
   const fg=e.target.closest('[data-pickg]');
@@ -352,11 +353,14 @@ function finishWorkout(){
     record.totalMs= first&&last&&first.startAt&&last.endAt&&!last.manual? last.endAt-first.startAt : null;
     record.rpe=null;
   }
+  /* build 59: the warm up each movement ended on is there next time */
+  if(typeof rememberWarmups==='function') rememberWarmups(GYM);
   /* which movements set a personal best, kept so the session can show it later */
   try{ record.prs=GYM.ex.filter(e=>typeof exHasPR==='function'&&exHasPR(e)).map(e=>e.exId); }catch(err){ record.prs=[]; }
   S.workouts.unshift(record);
   if(record.kind==='hifb') GYM.record=record;
   GYM.done=true; clearInterval(gymTick); clearInterval(restTick); $('restBar').classList.remove('on');
+  if(typeof clearLive==='function') clearLive();
   logSession({title:GYM.name,type:'workout',adds:1,workoutId:record.id,steps:GYM.ex.map(e=>({n:exOf(e.exId).n,r:''}))});
   const amended = GYM.templateId && templateChanged(GYM.templateId, GYM);
   $('gymBody').innerHTML=`<div class="summary">
@@ -432,7 +436,7 @@ $('gymFinish').addEventListener('click',()=>{
   finishWorkout();
 });
 document.addEventListener('click',e=>{
-  if(e.target.closest('#gymDone')){ $('gym').classList.remove('on'); go('today'); }
+  if(e.target.closest('#gymDone')){ $('gym').classList.remove('on'); go('today'); if(typeof drawLiveBar==='function') drawLiveBar(); }
   if(e.target.closest('#tplUpdate')){
     const t=S.templates.find(x=>x.id===GYM.templateId);
     t.ex=gymToTemplateRows(); save(); toast('Template updated to match what you actually did');

@@ -2035,7 +2035,9 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('31 · calories are on the first screen, because that is what people stop logging, and one tap opens the food diary',
       d.querySelector('.rings [data-ring="food"]').dataset.go === 'eat');
     t('31 · and they show what is left, not just what is eaten', /kcal left/.test(txt(d.querySelector('.rings'))));
-    t('31 · each one can be logged in one tap', !!d.querySelector('.rings [data-go="eat"]') && !!d.querySelector('[data-glance="protein"]') && !!d.querySelector('.driver [data-glance="sleep"], .driver [data-glance="steps"]'));
+    /* build 59: what sits under the readiness line is whatever is furthest off, not always sleep; sleep is one tap from the Up next card in the morning */
+    t('31 · each one can be logged in one tap', !!d.querySelector('.rings [data-go="eat"]') && !!d.querySelector('[data-glance="protein"]') && !!d.querySelector('.driver .pills .pill')
+      && /data-sleepquick/.test(G.nextCard(G.nextUp(G.clockOf('wake') + 30))));
     t('31 · with a row for the two things worth logging', d.querySelectorAll('.quicks .quick').length === 2);
 
     /* the week, once, not twice */
@@ -2141,7 +2143,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('32 · there is no rating widget on Home any more, by request', !d.querySelector('[data-glance="day"]'));
     G.go('today'); G.renderAll();
     /* with no tracker the third tile shows sleep (UAT P118); typed steps live in the + menu */
-    t('32 · with no tracker, Today shows sleep, not a blank steps count', !!d.querySelector('.driver [data-glance="sleep"]') && !d.querySelector('#todayView [data-glance="steps"]'));
+    t('32 · with no tracker, Today never shows a blank steps count, and sleep is offered in the morning', !d.querySelector('#todayView [data-glance="steps"]')
+      && /data-sleeplog|data-glance="sleep"/.test(G.focusPills(null, G.clockOf('wake') + 60)));
     G.openLog(); d.querySelector('#logBody [data-log="steps"]').click();
     t('32 · steps can still be typed in from the + menu', /Steps today/.test(txt(d.getElementById('quickTitle'))));
     d.querySelector('[data-quickstep="1000"]').click();
@@ -2177,7 +2180,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     /* ---- the keyboard ---- */
     t('32 · the app measures what the keyboard covers', /visualViewport/.test(source) && typeof G.fitToKeyboard === 'function');
     t('32 · sheets give up that space rather than hiding their own input',
-      /max-height:calc\(88vh - var\(--keyboard, 0px\)\)/.test(source) && /keyboard-open \.sheet\{max-height/.test(source));
+      /max-height:calc\(88vh - var\(--keyboard, 0px\)\)/.test(source) && /keyboard-open \.sheet\{max-height:calc\(var\(--vvh,100vh\) - 12px\)/.test(source) && /keyboard-open \.sheet\.on\{bottom:var\(--keyboard,0px\)/.test(source));
     t('32 · and the food search sticks to the top while typing',
       /\.foodsearch\{position:sticky;top:0/.test(source));
     G.openFood(false);
@@ -3210,11 +3213,13 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     setDay(1, { stress: 8 }); G.renderAll();
     t('P1-04 · a stressful day yesterday is raised', prios().some(p => p.classList.contains('p-stress')));
     S.profile.checkinDay = G.dowIdx(); S.checkins = []; G.renderAll();
-    t('P1-04 · the weekly check in comes first on its day', prios()[0].classList.contains('p-checkin'));
+    /* build 59: it leads Today as the Up next card, and is not repeated in the list under it */
+    t('P1-04 · the weekly check in comes first on its day', G.priorities()[0].id === 'checkin' && !!d.querySelector('#todayView .nextcard[data-next="checkin"]')
+      && !prios().some(p => p.classList.contains('p-checkin')));
     S.target = { kind: 'weight', value: 85, by: null, from: 95 }; S.weights = [{ d: day(10), kg: 92 }]; G.renderAll();
-    t('P1-04 · never more than three', prios().length === 3, String(prios().length));
+    t('P1-04 · never more than three', G.priorities().length === 3 && prios().length <= 3, G.priorities().length + ' / ' + prios().length);
     t('P1-04 · and ranked, so the weigh in waits when more matters', !prios().some(p => p.classList.contains('p-weigh')));
-    t('P1-04 · numbered in order', prios().map(p => txt(p.querySelector('.pn'))).join() === '1,2,3');
+    t('P1-04 · numbered in order', prios().length >= 2 && prios().map(p => txt(p.querySelector('.pn'))).join() === prios().map((p, n) => n + 1).join());
     t('P1-04 · advice built on data says how much', prios().filter(p => p.classList.contains('p-sleep')).every(p => !!p.querySelector('.conf')));
 
     /* quiet when there is nothing to say */
@@ -4472,7 +4477,9 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('58 · a better day reads Better, against your usual', txt(ring('ready').querySelector('.rv')) === 'Better' && /than your usual/.test(txt(ring('ready'))));
     t('58 · the driver line says what is moving it, with how much it rests on', /Driven by more sleep than usual \(8\.8h/.test(txt(home().querySelector('.driver')))
       && !!home().querySelector('.driver .conf'));
-    t('58 · last night\'s sleep is on Today and opens the sleep view', /Slept 8\.8h · aim 7h or more/.test(txt(home().querySelector('.driver [data-glance="sleep"]'))));
+    /* build 59: sleep is a candidate when it is moving readiness; it shows when it is among the two furthest off */
+    t('58 · last night\'s sleep is a thing to watch when it moves readiness, and opens the sleep view', (() => {
+      const sp = G.focusSignals().find(x => x.id === 'sleep'); return !!sp && sp.sev >= 0.15 && /Slept 8\.8h · aim 7h or more/.test(sp.html) && /data-glance="sleep"/.test(sp.html); })());
     ring('ready').click();
     t('58 · tapping Ready explains it, and says it never moves the weights', d.getElementById('altSheet').classList.contains('on')
       && /Readiness/.test(txt(d.getElementById('altTitle'))) && /Not the weights/.test(txt(d.getElementById('altBody'))));
@@ -4874,6 +4881,232 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('64 · HIFB: finishing it records it and moves to block 1', !!G.GYM.hifb.buyIn.ms && /BLOCK 1 OF 4 · SET 1 OF 4/.test(txt(now())));
     for (let j = 0; j < 4; j++) d.querySelector('[data-fdone="0:' + j + '"]').click();
     t('64 · HIFB: the last set of a block puts its run in hand, already timing', !!G.GYM.ex[0].run.startAt && !!now().querySelector('[data-runlive="0"]'));
+  }
+
+  /* ---------------------------------------------------------- 65 */
+  journey(65, 'Build 59: Today leads with the next thing for the time of day; the line under the rings follows the data; sleep logs on its own');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S, k = G.todayKey(), i = G.dowIdx();
+    S.profile.checkinDay = (i + 3) % 7;   /* not today: the weekly check in is tested on its own below */
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const home = () => d.getElementById('todayView');
+    const day = n => G.addDays(k, -n);
+    S.profile.wakeTime = '07:00'; S.profile.bedtime = '23:00'; S.profile.trainTime = '18:00';
+    const lift = S.plan.days.find(x => x.templateId);
+    S.plan.days[i] = Object.assign({}, lift, { dow: i }); S.week[i] = { done: [] };
+    G.save(); G.go('today'); G.renderAll();
+    const at = (h, m) => h * 60 + (m || 0);
+
+    /* ---- the card sits straight under the rings ---- */
+    const kids = () => [...home().children].map(e => e.className.split(' ')[0]);
+    t('65 · Up next is the first thing under the rings', kids()[0] === 'rings' && kids()[1] === 'nextcard', kids().slice(0, 3).join());
+    /* ---- morning: last night's sleep, in one tap ---- */
+    const morning = G.nextUp(at(7, 30));
+    t('65 · first thing in the morning it asks how long you slept', morning.top.id === 'sleep' && /data-sleepquick/.test(morning.top.act));
+    t('65 · with hours around your own week to tap', (() => { for (let n = 1; n <= 7; n++) S.days[day(n)] = { sleep: 6 }; const h = G.nextUp(at(7, 30)).top.act;
+      return /data-sleepquick="6"/.test(h) && /data-sleepquick="5"/.test(h) && /data-sleepquick="7"/.test(h); })());
+    /* ---- around a meal: that meal ---- */
+    const lunchSlot = G.mealSlots(k).slots.find(x => x.role === 'l');
+    const midday = G.nextUp(lunchSlot.min + 10);
+    t('65 · at lunchtime, with lunch not logged, it is lunch', midday.top.id === 'meal' && /Log lunch/.test(midday.top.title) && /data-nextfood="l"/.test(midday.top.act), midday.top.id);
+    G.addFood('chicken', 1, 'l');
+    t('65 · once lunch is in, it moves on', G.nextUp(lunchSlot.min + 10).top.id !== 'meal' || !/lunch/i.test(G.nextUp(lunchSlot.min + 10).top.title));
+    /* ---- before training: the session ---- */
+    const pre = G.nextUp(at(17, 30));
+    t('65 · half an hour before the usual time, it is the session, with Start', pre.top.id === 'session' && /data-nextstart/.test(pre.top.act) && /In about 30 min/.test(pre.top.kick), pre.top.id + ' ' + pre.top.kick);
+    /* ---- evening: today's check-in, the one that kept being forgotten ---- */
+    const eve = G.nextUp(at(20, 30));
+    t('65 · in the evening it is today\'s check-in', eve.top.id === 'daycheck' && /data-checkinnow/.test(eve.top.act), eve.top.id);
+    t('65 · and the card says what comes after it', typeof eve.then === 'string');
+    /* the card's button opens the three sliders on their own and saves them the usual way */
+    const btn = d.createElement('button'); btn.setAttribute('data-checkinnow', '1'); home().appendChild(btn); btn.click();
+    t('65 · Check in opens the quick check-in', d.getElementById('altSheet').classList.contains('on') && !!d.querySelector('#altBody #ciCard') && /Today's check-in/.test(txt(d.getElementById('altTitle'))));
+    const slide = (id, v) => { const el = d.getElementById(id); el.value = String(v); el.dispatchEvent(new w.Event('input', { bubbles: true })); };
+    slide('ci_wb', 7); slide('ci_stress', 4); d.getElementById('ciSave').click();
+    t('65 · saving it counts as checked in, and keeps what else the day held', !!S.days[k].checkedIn && S.days[k].wb === 7 && S.days[k].stress === 4 && G.dayFood(k).length === 1);
+    t('65 · then the evening card moves on', G.nextUp(at(20, 30)).top.id !== 'daycheck');
+    t('65 · late on, it is lights out', G.nextUp(at(22, 20)).top.id === 'bed' && /Lights out around/.test(G.nextUp(at(22, 20)).top.title));
+    /* only one check-in card in the page */
+    G.closeSheets(); G.openLog();
+    t('65 · + Log and the quick check-in never leave two check-in cards in the page', d.querySelectorAll('#ciCard').length === 1);
+    G.closeSheets();
+    /* ---- the weekly check in on its day ---- */
+    S.profile.checkinDay = i; S.checkins = []; G.renderAll();
+    t('65 · on its day, the weekly check in leads the morning and the evening', G.nextUp(at(11, 30)).top.id === 'checkin' && G.nextUp(at(21)).top.id === 'checkin');
+    t('65 · though half an hour before training the session comes first', G.nextUp(at(17, 30)).top.id === 'session');
+    t('65 · and the priorities do not repeat what the card shows', !home().querySelector('.prio.p-checkin') && !!home().querySelector('.nextcard[data-next="checkin"]'));
+    S.checkins = [{ weekOf: G.mondayKey() }]; G.renderAll();
+
+    /* ---- the line under the rings follows the data ---- */
+    S.days[k] = Object.assign({}, S.days[k], { sleep: 8 });
+    for (let n = 1; n <= 14; n++) S.days[day(n)] = Object.assign({}, S.days[day(n)], { sleep: 8, stress: 4, wb: 7 });
+    G.renderAll();
+    const ids = h => G.focusSignals(h).filter(x => x.sev >= 0.15).map(x => x.id);
+    t('65 · a good night is not flagged', ids(at(15)).indexOf('sleep') < 0);
+    S.targets.protein = 180; G.addFood('oats', 1, 'b');
+    t('65 · protein well behind for the time of day is', ids(at(19)).indexOf('protein') >= 0 && /Protein \d+\/180g/.test(G.focusPills(null, at(19))));
+    S.days[k].sleep = 5; G.renderAll();
+    t('65 · a short night is', ids(at(15)).indexOf('sleep') >= 0 && /Slept 5h/.test(G.focusSignals(at(15)).find(x => x.id === 'sleep').html));
+    t('65 · at most two things are shown', (G.focusPills(null, at(19)).match(/class="pill/g) || []).length <= 2);
+    t('65 · what the card already says is not repeated underneath', !/Slept/.test(G.focusPills('sleep', at(15))));
+    /* nothing off: it says so rather than inventing something */
+    const quiet = await boot(); allErrs.push(...quiet.errs); onboard(quiet.G);
+    const QG = quiet.G, qk = QG.todayKey();
+    QG.S.days[qk] = { sleep: 8 }; QG.S.targets.protein = 0; QG.S.targets.kcal = 0;
+    t('65 · with nothing off it says so', /Nothing off today/.test(QG.focusPills('session', at(15))) || !QG.focusSignals(at(15)).some(x => x.sev >= 0.15));
+
+    /* ---- logging sleep on its own ---- */
+    G.closeSheets(); G.openLog();
+    const sleepTile = d.querySelector('#logBody [data-log="sleep"]');
+    t('65 · + Log has Sleep', !!sleepTile && /Sleep/.test(txt(sleepTile)));
+    sleepTile.click();
+    t('65 · it opens its own sheet, not the check-in', d.getElementById('altSheet').classList.contains('on') && /Log sleep/.test(txt(d.getElementById('altTitle'))) && !d.querySelector('#altBody #ciCard'));
+    t('65 · for last night or any of the six before', d.querySelectorAll('#altBody [data-sleepnight]').length === 7 && /Last night/.test(txt(d.querySelector('#altBody [data-sleepnight]'))));
+    d.querySelector('[data-sleepnight="' + day(2) + '"]').click();
+    const tm = (id, v) => { const el = d.getElementById(id); el.value = v; el.dispatchEvent(new w.Event('input', { bubbles: true })); };
+    const checkedBefore = S.days[day(2)].checkedIn;
+    tm('sleepBed', '23:30'); tm('sleepWake', '06:45');
+    t('65 · bed and wake times work out the hours across midnight', +d.getElementById('sleepHours').value === 7.25, d.getElementById('sleepHours').value);
+    d.getElementById('sleepSave').click();
+    t('65 · it saves to the morning you woke up, with the times', S.days[day(2)].sleep === 7.25 && S.days[day(2)].sleepBed === '23:30' && S.days[day(2)].sleepWake === '06:45');
+    t('65 · and never counts as checking in', S.days[day(2)].checkedIn === checkedBefore);
+    t('65 · readiness reads it like any other night', G.realSleep(S.days[day(2)]) === 7.25);
+    G.openSleepLog(day(2)); d.getElementById('sleepClear').click();
+    t('65 · a night can be cleared', S.days[day(2)].sleep === undefined);
+    d.getElementById('toastAct').click();
+    t('65 · with Undo', S.days[day(2)].sleep === 7.25);
+    /* one tap from the morning card */
+    delete S.days[k].sleep; G.renderAll();
+    const q = d.createElement('button'); q.setAttribute('data-sleepquick', '6.5'); home().appendChild(q); q.click();
+    t('65 · a tap on the morning card saves last night', S.days[k].sleep === 6.5 && S.days[k].sleepManual === true);
+    /* a tracker never blocks it: the demo stand-in used to replace the slider */
+    S.health = { connected: true, source: 'apple', simulated: true }; S.days[k].auto = { steps: 5000, sleep: 9.9, sim: true }; G.save();
+    G.openDay();
+    t('65 · with the demo tracker on, the check-in still has the sleep slider', !!d.querySelector('#dayBody [data-dayrange="sleep"]'));
+    G.closeSheets(); G.openLog();
+    t('65 · and so does the quick check-in', !!d.querySelector('#logBody #ci_sleep'));
+    G.closeSheets();
+    S.days[k].auto = { steps: 5000, sleep: 9.9 };
+    t('65 · with a real tracker, sleep logged by hand still wins for that night', G.realSleep(S.days[k]) === 6.5);
+    S.health = { connected: false }; delete S.days[k].auto; G.save();
+  }
+
+  /* ---------------------------------------------------------- 66 */
+  journey(66, 'Build 59: a session keeps going when closed; one warm up set per exercise, kept; search shows results with the keyboard up; the session card is light');
+  {
+    const { w, d, G, errs, source } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S, k = G.todayKey(), i = G.dowIdx();
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const home = () => d.getElementById('todayView');
+    const lift = S.plan.days.find(x => x.templateId);
+    S.plan.days[i] = Object.assign({}, lift, { dow: i }); S.week[i] = { done: [] }; G.save(); G.go('today'); G.renderAll();
+
+    /* ---- the session card ---- */
+    t('66 · the session card is no longer a dark block', !/#todayView \.hero\{[^}]*background:var\(--hero\)/.test(source) && /#todayView \.hero\{[^}]*background:var\(--surface\)/.test(source));
+    const hero = () => home().querySelector('.hero');
+    t('66 · it keeps Start, See or edit, Why today, Not today and Change this day', !!hero().querySelector('#startToday') && !!hero().querySelector('#todayViewEdit')
+      && !!hero().querySelector('[data-whytoday]') && !!hero().querySelector('[data-restday="' + i + '"]') && !!hero().querySelector('[data-swap="' + i + '"]'));
+    t('66 · with a small icon and the time in the kicker', !!hero().querySelector('.shead .sic svg') && /\d\d:\d\d/.test(txt(hero().querySelector('.kicker'))));
+
+    /* ---- one warm up set per exercise ---- */
+    d.getElementById('startToday').click();
+    const G0 = G.GYM, ex = G.GYM.ex[0];
+    t('66 · a first session has no warm up until you add one', !ex.sets.some(s => s.warm));
+    d.querySelector('[data-addwarm="0"]').click();
+    t('66 · + Warm up adds one set, not a ramp', G.GYM.ex[0].sets.filter(s => s.warm).length === 1 && G.GYM.ex[0].sets[0].warm);
+    t('66 · and the button becomes Remove warm up, so there is only ever one', !d.querySelector('[data-addwarm="0"]') && !!d.querySelector('[data-delwarm="0"]'));
+    G.GYM.ex[0].sets[0].kg = 30; G.GYM.ex[0].sets[0].reps = 10;
+    G.GYM.ex[0].sets.forEach(s => { if (!s.warm) { s.kg = 60; s.reps = 8; } s.done = true; });
+    G.drawGym();
+
+    /* ---- close it: it keeps going ---- */
+    d.getElementById('gymClose').click();
+    t('66 · closing the session hides it but keeps it', !d.getElementById('gym').classList.contains('on') && G.GYM === G0 && !G.GYM.done);
+    t('66 · with a bar above the nav to get back', d.getElementById('liveBar').classList.contains('on') && /Push|Pull|Legs|Upper|Lower|Full/.test(txt(d.getElementById('liveBar'))) && !!d.querySelector('#liveBar [data-liveresume]'));
+    t('66 · saying how far in it is', /sets done/.test(txt(d.getElementById('liveBar'))));
+    t('66 · it is saved on the phone, so a reload cannot lose it', !!w.localStorage.getItem('gauntlet.live') && JSON.parse(w.localStorage.getItem('gauntlet.live')).gym.ex[0].sets[1].kg === 60);
+    t('66 · Today leads with Resume', G.nextUp().top.id === 'live' && /Resume session/.test(txt(hero().querySelector('#startToday'))));
+    d.getElementById('startToday').click();
+    t('66 · Start while one is going opens that one, not a new one', d.getElementById('gym').classList.contains('on') && G.GYM === G0 && G.GYM.ex[0].sets[1].kg === 60);
+    t('66 · and the bar steps aside while it is open', !d.getElementById('liveBar').classList.contains('on'));
+    d.getElementById('gymClose').click();
+    const lvb = d.querySelector('#liveBar [data-liveresume]'); if (lvb) lvb.click();
+    t('66 · tapping the bar opens it where it was', d.getElementById('gym').classList.contains('on') && G.GYM.ex[0].sets[0].kg === 30);
+
+    /* ---- back after a reload ---- */
+    const saved = { state: w.localStorage.getItem('gauntlet.v4'), live: w.localStorage.getItem('gauntlet.live') };
+    const again = await boot({ before: w2 => { w2.localStorage.setItem('gauntlet.v4', saved.state); w2.localStorage.setItem('gauntlet.live', saved.live); } });
+    allErrs.push(...again.errs);
+    t('66 · after a reload the session is back, with its sets', !!again.G.GYM && !again.G.GYM.done && again.G.GYM.ex[0].sets.some(x => !x.warm && x.kg === 60 && x.done));
+    t('66 · and the bar shows it, without opening it over the screen', again.d.getElementById('liveBar').classList.contains('on') && !again.d.getElementById('gym').classList.contains('on'));
+    t('66 · its clock kept the time it started', !!again.G.GYM && again.G.GYM.started === G0.started);
+    const endBtn = again.d.querySelector('#liveBar [data-liveend]'); if (endBtn) endBtn.click();
+    t('66 · End throws it away', !!endBtn && !!again.G.GYM && again.G.GYM.done && !again.w.localStorage.getItem('gauntlet.live') && !again.d.getElementById('liveBar').classList.contains('on'));
+    if (endBtn) again.d.getElementById('toastAct').click();
+    t('66 · with Undo', !!endBtn && !!again.G.GYM && !again.G.GYM.done && again.d.getElementById('liveBar').classList.contains('on'));
+    const old = await boot({ before: w2 => { if (!saved.live) return; const o = JSON.parse(saved.live); o.gym.started -= 13 * 3600e3; w2.localStorage.setItem('gauntlet.v4', saved.state); w2.localStorage.setItem('gauntlet.live', JSON.stringify(o)); } });
+    allErrs.push(...old.errs);
+    t('66 · one left more than twelve hours is not brought back', !(old.G.GYM && !old.G.GYM.done) && !old.w.localStorage.getItem('gauntlet.live'));
+
+    /* ---- finish: the warm up is kept ---- */
+    G.finishWorkout();
+    t('66 · finishing clears the saved session', !w.localStorage.getItem('gauntlet.live'));
+    t('66 · and keeps each warm up for next time', S.warmups[ex.exId] && S.warmups[ex.exId].kg === 30 && S.warmups[ex.exId].reps === 10);
+    t('66 · the warm up is not counted as a working set', (S.lifts[ex.exId] || []).length > 0 && S.lifts[ex.exId][0].sets.every(x => x.kg === 60));
+    d.getElementById('gym').classList.remove('on');
+    G.startWorkout(S.plan.days[i].templateId);
+    const w0 = G.GYM.ex[0].sets[0];
+    t('66 · next time it is there, same weight and reps, ready to tick', !!w0 && w0.warm && w0.kg === 30 && w0.reps === 10 && !w0.done);
+    t('66 · the set in hand starts on it', /WARM UP/.test(txt(d.querySelector('#gymBody .gnow .gk'))));
+    G.GYM.ex[0].sets[0].kg = 35; G.GYM.ex[0].sets.forEach(s => { if (!s.warm) { s.kg = 62.5; s.reps = 8; } s.done = true; });
+    G.finishWorkout(); d.getElementById('gym').classList.remove('on');
+    t('66 · a change to it carries too', !!S.warmups[ex.exId] && S.warmups[ex.exId].kg === 35);
+    G.startWorkout(S.plan.days[i].templateId);
+    const dwb = d.querySelector('[data-delwarm="0"]'); if (dwb) dwb.click();
+    t('66 · Remove warm up takes it out', !!dwb && !G.GYM.ex[0].sets.some(s => s.warm));
+    G.GYM.ex[0].sets.forEach(s => { s.kg = 62.5; s.reps = 8; s.done = true; });
+    G.finishWorkout(); d.getElementById('gym').classList.remove('on');
+    G.startWorkout(S.plan.days[i].templateId);
+    t('66 · and it stays out next time', S.warmups[ex.exId] === false && !G.GYM.ex[0].sets.some(s => s.warm));
+    G.GYM = null; G.drawLiveBar();
+    /* a warm up done before build 59 is picked up from the session record */
+    delete S.warmups[ex.exId];
+    S.workouts.unshift({ id: 'w_old', d: G.addDays(k, -3), name: 'Old', ex: [{ exId: ex.exId, sets: [{ kg: 20, reps: 10, warm: true }, { kg: 40, reps: 5, warm: true }, { kg: 60, reps: 8, warm: false }] }] });
+    t('66 · one from before is picked up from the last session', JSON.stringify(G.warmFor(ex.exId)) === JSON.stringify({ kg: 40, reps: 5 }));
+    S.workouts.shift();
+    t('66 · a first warm up is about half the working weight for 8', JSON.stringify(G.firstWarm('bench', 60)) === JSON.stringify({ kg: 30, reps: 8 }));
+
+    /* ---- a session opened and closed untouched is not kept ---- */
+    G.startWorkout(S.plan.days[i].templateId); d.getElementById('gymClose').click();
+    t('66 · one opened and closed with nothing done or typed is dropped', !G.liveSession() && !d.getElementById('liveBar').classList.contains('on') && !w.localStorage.getItem('gauntlet.live'));
+
+    /* ---- search with the keyboard up ---- */
+    t('66 · an open keyboard lifts the sheet to sit on it', /\.keyboard-open \.sheet\.on\{bottom:var\(--keyboard,0px\)/.test(source));
+    t('66 · search boxes stick to the top of their sheet', /\.sheet \.search\{position:sticky/.test(source) && /\.foodsearch\{position:sticky;top:0/.test(source));
+    G.openFood(false);
+    const fs = d.getElementById('foodSearch');
+    t('66 · the food search is treated as a search box', G.isSearchBox(fs));
+    fs.value = 'chick'; fs.dispatchEvent(new w.Event('input', { bubbles: true }));
+    t('66 · typing shows results straight under the box, with the plate and categories tucked away', d.getElementById('foodSheet').classList.contains('searching')
+      && d.getElementById('foodBody').classList.contains('q') && /#foodBody\.q \.plate,#foodBody\.q #foodCats\{display:none\}/.test(G.__src || d.documentElement.innerHTML)
+      && d.querySelectorAll('#foodList [data-foodadd]').length > 0);
+    fs.value = ''; fs.dispatchEvent(new w.Event('input', { bubbles: true }));
+    t('66 · and come back when the box is cleared', !d.getElementById('foodBody').classList.contains('q') && !d.getElementById('foodSheet').classList.contains('searching'));
+    fs.value = 'chick'; fs.dispatchEvent(new w.Event('input', { bubbles: true }));
+    let blurred = false; fs.focus(); fs.addEventListener('blur', () => { blurred = true; });
+    fs.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    t('66 · Search on the keyboard closes the keyboard and leaves the results', blurred && d.querySelectorAll('#foodList [data-foodadd]').length > 0);
+    G.closeSheets();
+    t('66 · closing the sheet clears the searching state', !d.getElementById('foodSheet').classList.contains('searching'));
+    G.openExPicker(null);
+    const q = d.getElementById('exQ'); q.value = 'squat'; q.dispatchEvent(new w.Event('input', { bubbles: true }));
+    const list = d.getElementById('exList');
+    t('66 · exercise search puts the results first, the filters after', list.firstElementChild && !list.firstElementChild.classList.contains('pickchips') && !!list.querySelector('[data-pick]'));
+    t('66 · template and session searches are search boxes too', (() => { G.closeSheets(); G.drawTemplates(); G.openSheet('tplSheet'); const a = G.isSearchBox(d.getElementById('tplQ'));
+      G.closeSheets(); G.openSwap(i); const b = G.isSearchBox(d.getElementById('swapQ')); G.closeSheets(); return a && b; })());
   }
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);

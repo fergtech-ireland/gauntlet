@@ -488,7 +488,8 @@ body[data-screen="today"] header.top .on-today,body[data-screen="feed"] header.t
 .sheet{position:fixed;left:0;right:0;bottom:0;max-width:460px;margin:0 auto;z-index:61;background:var(--surface);
   border-radius:12px 12px 0 0;transform:translateY(103%);transition:transform .25s cubic-bezier(.2,.8,.25,1);
   max-height:calc(88vh - var(--keyboard, 0px));overflow:auto;padding-bottom:calc(16px + env(safe-area-inset-bottom))}
-.keyboard-open .sheet{max-height:calc(100vh - var(--keyboard, 0px) - 12px)}
+.keyboard-open .sheet{max-height:calc(var(--vvh,100vh) - 12px)}
+.keyboard-open .sheet.on{bottom:var(--keyboard,0px);padding-bottom:8px}
 .keyboard-open .sheet .sub{display:none}
 .sheet.on{transform:translateY(0)}
 .grab{width:36px;height:4px;border-radius:4px;background:var(--line);margin:8px auto 6px}
@@ -1094,28 +1095,35 @@ body[data-screen="today"] header.top{border-bottom:0;height:62px}
 #todayView .prio .pt .conf-good{background:var(--green-tint);color:var(--green-text)}
 #todayView .prio .pt .conf-building,#todayView .prio .pt .conf-none{background:var(--amber-tint);color:var(--amber-text)}
 #todayView .prio .pa{justify-content:flex-start;margin-top:8px}
-#todayView .hero{margin-top:14px;background:var(--hero);color:var(--hero-ink);border:1px solid var(--hero-line);border-radius:12px;padding:14px}
-#todayView .hero .kicker{font-size:12px;font-weight:800;letter-spacing:.04em;color:var(--mint)}
-#todayView .hero h2{font-size:23px;line-height:1.15;margin:4px 0 0;color:var(--hero-ink)}
-#todayView .hero .sub{color:var(--hero-sub);margin:6px 0 10px}
-#todayView .hero .chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px;padding:0}
-#todayView .hero .chips span{min-height:26px;padding:3px 9px;border-radius:13px;background:var(--hero-chip);display:inline-flex;align-items:center;font-size:12px;font-weight:600;color:var(--hero-ink)}
-#todayView .hero .prog{margin-top:10px;font-size:13px;line-height:1.45;color:var(--hero-sub)}
+/* Build 59: the session card is a light card like the rest of Today, not a
+   black block. Tinted icon, what and when, chips, one green Start, quiet links. */
+#todayView .hero{margin-top:12px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:12px 14px 6px}
+#todayView .hero .shead{display:flex;align-items:center;gap:12px}
+#todayView .hero .sic{flex:0 0 auto;width:40px;height:40px;border-radius:12px;display:grid;place-items:center}
+#todayView .hero .stx{min-width:0;flex:1}
+#todayView .hero .kicker{font-size:11px;font-weight:800;letter-spacing:.06em;color:var(--cyan-text)}
+#todayView .hero.isdone .kicker,#todayView .hero.islive .kicker{color:var(--green-text)}
+#todayView .hero h2{font-size:18px;font-weight:800;line-height:1.2;margin:2px 0 0;color:var(--ink);overflow-wrap:anywhere}
+#todayView .hero .sub{color:var(--sub);font-size:13px;margin:8px 0 2px}
+#todayView .hero .chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0;padding:0}
+#todayView .hero .chips span{min-height:24px;padding:2px 9px;border-radius:12px;background:var(--track);display:inline-flex;align-items:center;font-size:12px;font-weight:600;color:var(--sub)}
+#todayView .hero .prog{margin-top:10px;font-size:13px;line-height:1.45;color:var(--green-text);font-weight:600}
 #todayView .hero .ctarow{margin-top:12px}
-#todayView .hero .cta{height:46px;border-radius:8px;background:var(--mint);color:var(--mint-ink);font-weight:800}
-#todayView .hero .cta.ghost{flex:0 0 auto;padding:0 14px;width:auto;background:none;border:1px solid var(--hero-chip);color:var(--hero-ink);font-weight:700;font-size:14px}
-#todayView .hero.restday .ctarow .cta.ghost{flex:1}
-#todayView .hero .whyline{color:var(--hero-sub)}
-#todayView .hero .why{background:var(--hero-chip);color:var(--hero-ink);margin:0 0 6px}
-#todayView .hero .skipbtn,#todayView .hero .viewbtn{color:var(--hero-sub);margin:0}
-#todayView .hero .herofoot{display:flex;justify-content:center;gap:18px;flex-wrap:wrap}
+#todayView .hero .cta{height:44px;border-radius:10px;font-size:14.5px;font-weight:800}
+#todayView .hero .cta.ghost{flex:0 0 auto;padding:0 14px;width:auto;background:none;border:1px solid var(--line);color:var(--ink);font-weight:700;font-size:14px}
+#todayView .hero.isdone .ctarow .cta.ghost,#todayView .hero.restday .ctarow .cta.ghost{flex:1}
+#todayView .hero .whyline{color:var(--mute);font-size:12.5px}
+#todayView .hero .why{background:var(--track);color:var(--sub);margin:0 0 8px}
+#todayView .hero .skipbtn,#todayView .hero .viewbtn{color:var(--mute);margin:0;font-size:12.5px;min-height:44px}
+#todayView .hero .herofoot{display:flex;justify-content:flex-start;align-items:center;column-gap:16px;flex-wrap:wrap;margin-top:2px}
+#todayView .hero .herofoot .skipbtn,#todayView .hero .herofoot .whyline{display:inline-flex;align-items:center;margin:0;padding:0;text-decoration:none;font-size:12.5px;font-weight:700;color:var(--mute)}
 #todayView .hero .herofoot:empty{display:none}
-#todayView .hero .note{color:var(--hero-sub)}
-#todayView .hero .track .tnum{color:var(--hero-ink)}
-#todayView .hero .track .tnum small,#todayView .hero .tsrc{color:var(--hero-sub)}
-#todayView .hero .track .bar{background:var(--hero-chip)}
-#todayView .hero .track .bar i{background:var(--mint)}
-#todayView .hero .doneline{color:var(--mint)}
+#todayView .hero .note{color:var(--mute)}
+#todayView .hero .track .tnum{color:var(--ink)}
+#todayView .hero .track .tnum small,#todayView .hero .tsrc{color:var(--mute)}
+#todayView .hero .track .bar{background:var(--track)}
+#todayView .hero .track .bar i{background:var(--cta)}
+#todayView .hero .doneline{color:var(--green-text);font-weight:700;margin-top:8px}
 .mealscard{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .mealscard .mhead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px 6px}
 .mealscard .mhead b{font-size:16px;font-weight:800}
@@ -1355,6 +1363,55 @@ body[data-screen="progress"] #profHandle{display:none}
 #restBar .rtrack i{display:block;height:100%;width:100%;background:var(--mint);border-radius:3px;transition:width 1s linear}
 #restBar .n{font-size:24px;min-width:0;color:var(--hero-ink)}
 #restBar button{height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--hero-chip);background:none;color:var(--hero-ink);font-size:13px}
+
+/* ---------- build 59 ---------- */
+/* search stays at the top of its sheet, with the results under it */
+#foodBody.q .plate,#foodBody.q #foodCats{display:none}
+.sheet .search{position:sticky;top:6px;z-index:3;box-shadow:0 0 0 7px var(--surface)}
+.keyboard-open .sheet.searching .tfilters,.keyboard-open .sheet.searching .swapquick,.keyboard-open .sheet.searching .swapnow,
+.keyboard-open .sheet.searching #exList > .pickchips,.keyboard-open .sheet.searching .fhead,.keyboard-open .sheet.searching .fhead + .bar,
+.keyboard-open .sheet.searching .mealtabs{display:none}
+/* Up next */
+.nextcard{margin-top:12px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--tone,var(--green));border-radius:12px;padding:12px 14px}
+.nextcard.t-green{--tone:var(--green)}.nextcard.t-cyan{--tone:var(--cyan)}.nextcard.t-coral{--tone:var(--coral)}.nextcard.t-amber{--tone:var(--amber)}
+.nextcard .nk{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.nextcard.t-green .nk{color:var(--green-text)}.nextcard.t-cyan .nk{color:var(--cyan-text)}.nextcard.t-coral .nk{color:var(--coral-text)}.nextcard.t-amber .nk{color:var(--amber-text)}
+.nextcard .nkw{text-transform:none;letter-spacing:0;font-weight:700}
+.nextcard .ndot{width:8px;height:8px;border-radius:50%;background:var(--tone)}
+.nextcard .nt{font-size:18px;font-weight:800;line-height:1.2;margin-top:4px}
+.nextcard .nw{font-size:13px;color:var(--sub);line-height:1.45;margin-top:3px}
+.nextcard .na{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+.nextcard .na .cta{height:44px;flex:0 0 auto;padding:0 18px;width:auto;font-size:14.5px;font-weight:800}
+.nextcard .na .mini{min-height:44px}
+.nextcard .sleepq{display:flex;flex-wrap:wrap;gap:6px}
+.nextcard .sleepq .mini{min-width:52px;justify-content:center;font-size:14px}
+.nextcard .nthen{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:12.5px;color:var(--mute);font-weight:600}
+/* what to watch */
+.pill.off{border-color:var(--amber);color:var(--amber-text);background:var(--amber-tint)}
+.pill.ok{border-color:var(--green-tint);color:var(--green-text);background:var(--green-tint)}
+.pill.calm{display:inline-flex;align-items:center}
+/* the session bar, above the nav */
+.livebar{position:fixed;left:0;right:0;bottom:calc(63px + env(safe-area-inset-bottom));max-width:460px;margin:0 auto;z-index:49;display:none;
+  align-items:center;gap:6px;padding:6px 8px 6px 10px;background:var(--ink);color:var(--on-ink);border-radius:12px 12px 0 0}
+.livebar.on{display:flex}
+.livebar .lvmain{flex:1;min-width:0;display:flex;align-items:center;gap:10px;min-height:44px;text-align:left;color:inherit}
+.livebar .lvdot{flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:var(--mint);animation:lvpulse 1.6s ease-in-out infinite}
+@keyframes lvpulse{50%{opacity:.35}}
+.livebar .lvtx{min-width:0;flex:1;display:flex;flex-direction:column}
+.livebar .lvtx b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.livebar .lvtx span{font-size:12px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.livebar .lvgo{flex:0 0 auto;height:36px;padding:0 14px;border-radius:999px;background:var(--mint);color:var(--mint-ink);font-weight:800;font-size:13.5px;display:grid;place-items:center}
+.livebar .lvend{flex:0 0 auto;min-width:44px;min-height:44px;font-size:12.5px;font-weight:700;color:inherit;opacity:.8}
+body.has-live .app{padding-bottom:132px}
+body.has-live .toast:not(.top){bottom:140px}
+/* logging sleep */
+.sleeplog .sleepnights{margin:0 0 12px}
+.slhours{display:flex;align-items:center;gap:10px;justify-content:center;margin:4px 0 12px}
+.slnum{display:flex;flex-direction:column;align-items:center}
+.slnum input{width:120px;text-align:center;font-family:var(--font-num);font-weight:700;font-size:44px;line-height:1.1;color:var(--ink);background:none;outline:none;border-bottom:2px solid var(--line)}
+.slnum span{font-size:12px;color:var(--mute);font-weight:700}
+.sltimes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sltimes input{font-size:18px}
 </style>
 </head>
 <body data-screen="today">
@@ -1432,6 +1489,9 @@ body[data-screen="progress"] #profHandle{display:none}
   <button class="tab" role="tab" aria-selected="false" data-go="eat"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10M17 3c-2 2-3 5-3 8h3v10"/></svg><span>Eat</span></button>
   <button class="tab" role="tab" aria-selected="false" data-go="progress"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>You</span><i class="badge" id="youBadge">0</i></button>
 </nav>
+<!-- Build 59: a session left going shows here, above the nav, until it is
+     finished or ended (live.js). -->
+<div class="livebar" id="liveBar" role="region" aria-label="Session in progress"></div>
 <div class="scrim" id="scrim"></div>
 
 <div class="sheet" id="sessSheet" role="dialog" aria-modal="true" tabindex="-1">
@@ -1574,7 +1634,7 @@ body[data-screen="progress"] #profHandle{display:none}
        pinned at the bottom with Skip. -->
   <div class="gymtop">
     <div class="gymbar">
-      <button class="iconbtn" id="gymClose" aria-label="Pause and close">
+      <button class="iconbtn" id="gymClose" aria-label="Minimise, the session keeps going">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
       <div class="t"><div class="n" id="gymName">Workout</div><div class="s" id="gymSub">0:00</div></div>
       <button class="fin" id="gymFinish">Finish</button>
@@ -1651,7 +1711,7 @@ body[data-screen="progress"] #profHandle{display:none}
 const HUE={run:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},workout:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},
   fast:{deep:'var(--amber-text)',tint:'var(--amber-tint)'},meal:{deep:'var(--coral-text)',tint:'var(--coral-tint)'},any:{deep:'var(--ink)',tint:'var(--track)'},
   walk:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},rest:{deep:'var(--mute)',tint:'var(--track)'},checkin:{deep:'var(--green-text)',tint:'var(--green-tint)'}};
-const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='58';
+const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='59';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -3390,6 +3450,8 @@ function restorePlan(snap,msg){
 }
 function startPlanDay(day){
   if(!day) return null;
+  /* build 59: a session already going opens instead of a new one over it */
+  if(typeof liveGuard==='function'&&liveGuard()) return GYM;
   if(day.templateId) return startWorkout(day.templateId,{exclude:day.exclude,setDelta:day.setDelta,deload:day.deload});
   if(day.circuitId&&typeof startCircuit==='function') return startCircuit(day.circuitId);
   if(day.runId){ const sess=runSession(day.runId); if(sess) return startSession(sess); }
@@ -3490,6 +3552,8 @@ function daysWith(n,test){
 }
 function realSleep(r){
   if(!r) return null;
+  /* build 59: sleep logged by hand wins over a tracker's figure for that night */
+  if(r.sleepManual&&typeof r.sleep==='number') return r.sleep;
   if(r.auto&&!r.auto.sim&&typeof r.auto.sleep==='number') return r.auto.sleep;
   return typeof r.sleep==='number'? r.sleep : null;
 }
@@ -3557,7 +3621,7 @@ function openSleep(){
     ${lines.length? `<div class="sstats">${lines.join('')}</div>` : `<div class="note">A few more nights and this shows your average, how short you are against ${tg.lo} hours, and how steady it is.</div>`}
     <div class="method" style="margin-top:10px"><b>Tonight</b><span>To get ${sleepTarget().lo+0.5} hours before your usual ${(S.profile&&S.profile.wakeTime)||EAT_CLOCK.wake} start, lights out around <strong class="inl">${lightsOut()}</strong>. Keep the last coffee well before that, and a similar time each night helps as much as the hours.</span></div>
     <div class="note">How regular your sleep is, going to bed and getting up at similar times, may matter as much as how long it is. Measuring that needs bed and wake times, which a connected tracker provides; the hours here are what you logged.</div>
-    <button class="sheetcta" data-glance="checkin" style="width:100%">Log last night's sleep</button>
+    <button class="sheetcta" data-sleeplog="${todayKey()}" style="width:100%">Log sleep, last night or another</button>
   </div>`;
   openSheet('altSheet');
 }
@@ -4040,16 +4104,15 @@ function readyRing(){
     r.level==='building'? 'Readiness: building your baseline. Tap for what it needs.' : `Readiness: ${r.text.toLowerCase()}. Tap for why.`);
 }
 function ringsRow(){ return `<div class="rings">${readyRing()}${foodRing()}${trainRing()}</div>`; }
-/* What is moving readiness, how much that rests on, and last night's sleep or
-   today's steps, one tap from logging. */
-function driverLine(){
+/* What is moving readiness and how much that rests on, then (build 59) the
+   one or two things furthest off for this time of day, from focusPills() in
+   next.js. It used to show last night's sleep whatever the data said. */
+function driverLine(nextId){
   const r=readiness();
   const text= r.level==='building'? r.text : (r.drivers.length? 'Driven by '+r.drivers.join('; ')+'.' : 'Nothing well away from your usual.');
   const conf= r.level==='building'? '' : confChip({level: r.baseDays>=14?'good':(r.baseDays>=7?'fair':'building'), text:'based on '+r.baseDays+' of the last 28 days'});
-  const st=(typeof stepsToday==='function')? stepsToday() : null, sl=realSleep(S.days[todayKey()]), tg=sleepTarget();
-  const sleepPill=`<button class="pill" data-glance="sleep">${sl===null? 'Sleep: log last night' : 'Slept '+sl+'h · aim '+(isTeen()? tg.t : tg.lo+'h or more')}</button>`;
-  const stepPill= st===null? '' : `<button class="pill" data-glance="steps">${num(st)} steps of ${num(stepTarget())}</button>`;
-  return `<div class="driver"><p>${text} ${conf}</p><div class="pills">${sleepPill}${stepPill}</div></div>`;
+  const pills=(typeof focusPills==='function')? focusPills(nextId) : '';
+  return `<div class="driver"><p>${text} ${conf}</p>${pills? `<div class="pills" aria-label="Worth watching today">${pills}</div>` : ''}</div>`;
 }
 function openReadiness(){
   const r=readiness();
@@ -4083,42 +4146,62 @@ function heroKicker(d,done){
   const m=clockOf('train'), t=minToHhmm(m), when= m>=17*60? 'TONIGHT' : (m<12*60? 'THIS MORNING' : 'TODAY');
   return `${when}, ${t} · ${style}`;
 }
+/* ---------- the session card, build 59 ----------
+   It was a big black block on a light page, the heaviest thing on the screen
+   even on a rest day or once the session was done. Now it is a card like the
+   others: a small tinted icon, what and when, the chips, the progression line,
+   one green Start (Resume when a session is going), and the rest as quiet
+   links. Done and rest days shrink to a line or two. Every action it had is
+   still here, with the same names. */
+const SESS_ICON={
+  lift:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg>',
+  run:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="4.5" r="1.8"/><path d="m8 21 3-6 3 2v4M6 12l3-3 4 1 3 4 3 1M11 15l-2-3"/></svg>',
+  circuit:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg>',
+  walk:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4.5" r="1.8"/><path d="m9 21 2.5-6M13 21v-4l-2-3 1-5 3 3 3 1M10 9l-3 3"/></svg>',
+  rest:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
+  done:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg>'};
 function heroCard(plan,d,i){
   const st=stepsToday(), done=dayDone(i), isWalk=d.slot==='walk', rest=!d.type||d.slot==='rest';
   const walkPct=st!==null? Math.min(100,Math.round(st/stepTarget()*100)) : 0;
-  const why=plan.why[0]? `<button class="whyline" data-whytoday="1" aria-expanded="false">Why today looks like this <span aria-hidden="true">›</span></button>
-      <div class="why" id="whyToday" hidden>${plan.why[0]}</div>` : '';
+  const whyBtn=plan.why[0]? `<button class="whyline" data-whytoday="1" aria-expanded="false" aria-label="Why today looks like this">Why today <span aria-hidden="true">›</span></button>` : '';
+  const whyBox=plan.why[0]? `<div class="why" id="whyToday" hidden>${plan.why[0]}</div>` : '';
+  const head=(icon,tone,kick,title,extra)=>`<div class="shead"><span class="sic" style="background:var(--${tone}-tint);color:var(--${tone}-text)">${SESS_ICON[icon]}</span>
+      <div class="stx"><div class="kicker">${kick}</div><h2>${title}</h2></div>${extra||''}</div>`;
   if(rest) return `<div class="hero restday">
-    <div class="kicker">${DAYS[i].toUpperCase()} · REST</div>
-    <h2>${dayLabel(d)||'Rest'}</h2>
+    ${head('rest','cyan',DAYS[i].toUpperCase()+' · REST',dayLabel(d)||'Rest')}
     <div class="sub">Nothing owed. Rest is part of it.</div>
-    ${why}
-    <div class="ctarow"><button class="cta" data-swapto="${i}:walk">Walk instead</button><button class="cta ghost" data-swap="${i}">Change this day</button></div>
-    <button class="skipbtn" data-go="plan">See the week</button></div>`;
+    <div class="ctarow"><button class="cta ghost" data-swapto="${i}:walk">Walk instead</button><button class="cta ghost" data-swap="${i}">Change this day</button></div>
+    <div class="herofoot">${whyBtn}<button class="skipbtn" data-go="plan">See the week</button></div>${whyBox}</div>`;
+  const live=(typeof liveSession==='function')&&liveSession();
   const chips=[daySub(d)];
   if(d.mins&&!isWalk) chips.push('about '+d.mins+' min');
   if(d.setDelta) chips.push('one set lighter than usual');
   if(d.deload) chips.push('easy week');
-  const prog=isWalk? '' : heroProgress(d);
-  return `<div class="hero">
-    <div class="kicker">${isWalk? DAYS[i].toUpperCase()+' · WALK' : heroKicker(d,done)}</div>
-    <h2>${dayLabel(d)}</h2>
+  const prog=isWalk||done? '' : heroProgress(d);
+  const icon= done? 'done' : (isWalk? 'walk' : (d.runId? 'run' : (d.circuitId? 'circuit' : 'lift')));
+  const tone= done||live? 'green' : 'cyan';
+  const kick= isWalk? DAYS[i].toUpperCase()+' · WALK' : (live? 'IN PROGRESS · '+liveClock() : heroKicker(d,done));
+  const has=d.templateId||d.runId||d.circuitId;
+  const main= isWalk? (walkDone()? `<div class="doneline">Done. ${num(st)} steps in.</div>` : '')
+    : live? `<div class="ctarow"><button class="cta" id="startToday">Resume session</button>${has? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`
+    : done? `<div class="ctarow"><button class="cta ghost" id="startToday">Do it again</button>${has? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`
+    : `<div class="ctarow"><button class="cta" id="startToday">Start session</button>${has? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`;
+  return `<div class="hero ${done?'isdone':''} ${live?'islive':''}">
+    ${head(icon,tone,kick,dayLabel(d))}
     <div class="chips">${chips.filter(Boolean).map(c=>`<span>${c}</span>`).join('')}</div>
     ${isWalk&&st!==null
       ? `<div class="track"><div class="tnum">${num(st)}<small> of ${num(stepTarget())} steps</small></div>
           <div class="bar"><i style="width:${walkPct}%"></i></div>
           <div class="tsrc">Counted by ${sourceName()}. Nothing to log.</div></div>` : ''}
     ${prog? `<div class="prog">${prog}</div>` : ''}
-    ${isWalk
-      ? (walkDone()? `<div class="doneline">Done. ${num(st)} steps in.</div>` : `<div class="ctarow"><button class="cta ghost" data-swap="${i}">Change this day</button></div>`)
-      : `<div class="ctarow"><button class="cta" id="startToday">${done?'Do it again':'Start session'}</button>
-          ${d.templateId||d.runId||d.circuitId? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`}
-    ${d.type&&!isWalk&&!(d.templateId||d.runId||d.circuitId)? `<button class="viewbtn" data-view="${i}">See what is in it</button>`:''}
-    ${why}
+    ${main}
+    ${d.type&&!isWalk&&!has? `<button class="viewbtn" data-view="${i}">See what is in it</button>`:''}
     <div class="herofoot">
-      ${d.type&&!isWalk&&!done? `<button class="skipbtn" data-restday="${i}">Not today</button>`:''}
-      ${isWalk? '' : `<button class="skipbtn" data-swap="${i}">Change this day</button>`}
+      ${whyBtn}
+      ${d.type&&!isWalk&&!done&&!live? `<button class="skipbtn" data-restday="${i}">Not today</button>`:''}
+      <button class="skipbtn" data-swap="${i}">Change this day</button>
     </div>
+    ${whyBox}
     ${d.exclude&&d.exclude.length?`<div class="note">Leaving out ${d.exclude.join(', ')} while it settles.</div>`:''}
   </div>`;
 }
@@ -4194,13 +4277,24 @@ function renderToday(){
   /* priorities go above the session when any of them is urgent (score 70 or
      more: a check in due, poor sleep, a pain check, lower readiness on a
      training day, a stressful yesterday) */
-  const prios=priorities(), urgent=prios.some(p=>p.score>=70);
+  /* Build 59: the most useful next step for this time of day sits straight
+     under the rings (nextUp() in next.js), and whatever it shows is not
+     repeated in the priorities. The session card comes before the meals while
+     the session is still ahead of the next meal; once it is done, or on a
+     rest day, the meals come first. */
+  const nx=(typeof nextUp==='function')? nextUp() : null;
+  const SAME={checkin:'checkin',pain:'pain',meal:'food',weigh:'weigh',sleep:'sleep',bed:'sleep'};
+  const prios=priorities().filter(p=>!nx||SAME[nx.top.id]!==p.id), urgent=prios.some(p=>p.score>=70);
   const hero=heroCard(plan,d,i), pr=prioritiesRow(prios);
+  const sessFirst=(()=>{ if(!d.type||d.slot==='rest'||d.slot==='walk'||dayDone(i)) return false;
+    try{ const c=dayClock(), ms=mealSlots().slots.filter(x=>x.role&&!x.skipped).map(x=>c.rel(x.min)).filter(m=>m>=c.n-60);
+      return !ms.length||c.train<=Math.min(...ms)+60; }catch(e){ return true; } })();
+  const sessAndMeals= sessFirst? (urgent? pr+hero : hero+pr)+mealsList() : (urgent? pr : '')+mealsList()+hero+(urgent? '' : pr);
   $('todayView').innerHTML=`
   ${ringsRow()}
-  ${driverLine()}
-  ${urgent? pr+hero : hero+pr}
-  ${mealsList()}
+  ${nx? nextCard(nx) : ''}
+  ${driverLine(nx&&nx.top.id)}
+  ${sessAndMeals}
   ${quickTiles()}
   <div class="goalrow">${targetLine()}</div>
   <div class="sechead"><h2>Your week so far</h2><button data-go="plan">The whole week</button></div>
@@ -4715,7 +4809,7 @@ function openSheet(id){
 }
 function closeSheets(){
   const wasOpen=document.querySelector('.sheet.on');
-  document.querySelectorAll('.sheet').forEach(s2=>{ s2.classList.remove('on'); s2.style.zIndex=''; s2.style.transform=''; });
+  document.querySelectorAll('.sheet').forEach(s2=>{ s2.classList.remove('on','searching'); s2.style.zIndex=''; s2.style.transform=''; });
   scrim.classList.remove('on'); scrim.style.zIndex='';
   if(wasOpen&&sheetReturn&&document.contains(sheetReturn)){
     try{ sheetReturn.focus({preventScroll:true}); }catch(e){}
@@ -4742,14 +4836,30 @@ document.addEventListener('keydown',e=>{
    that is 88% of the window ends up with its input underneath it. The visual
    viewport tells us how much room is actually left, so the sheet is resized to
    that, and whatever was focused is scrolled back into sight. */
+/* Build 59: search had to be closed to see what it found. The sheet stayed
+   pinned to the bottom of the page behind the keyboard, and the focused box
+   was scrolled to the middle, so the results sat under the keys. Now an open
+   keyboard lifts the sheet to sit on top of it (--keyboard is its height,
+   --vvh what is left above it), and a search box goes to the top of its sheet
+   with the results straight under it, the filters tucked away while there is
+   text in the box. Enter (Search on the keyboard) closes the keyboard. */
+const isSearchBox=el=>!!(el&&el.tagName==='INPUT'&&el.closest&&el.closest('.sheet')&&(el.type==='search'||el.closest('.foodsearch,.search')));
+function searchToTop(el){
+  const sh=el&&el.closest? el.closest('.sheet') : null; if(!sh) return;
+  const box=el.closest('.foodsearch,.search')||el;
+  const off=box.getBoundingClientRect().top-sh.getBoundingClientRect().top;
+  sh.scrollTop=Math.max(0,sh.scrollTop+off-6);
+}
 function fitToKeyboard(){
   const vv=window.visualViewport; if(!vv) return;
   const covered=Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
   document.documentElement.style.setProperty('--keyboard', covered+'px');
+  document.documentElement.style.setProperty('--vvh', vv.height+'px');
   document.documentElement.classList.toggle('keyboard-open', covered>120);
   if(covered>120){
     const el=document.activeElement;
-    if(el&&/^(INPUT|TEXTAREA)$/.test(el.tagName)){
+    if(isSearchBox(el)) searchToTop(el);
+    else if(el&&/^(INPUT|TEXTAREA)$/.test(el.tagName)){
       try{ el.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){ try{ el.scrollIntoView(); }catch(e2){} }
     }
   }
@@ -4762,7 +4872,18 @@ document.addEventListener('focusin',e=>{
   if(!/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
   /* wait for the keyboard to actually appear before measuring */
   setTimeout(fitToKeyboard,120);
+  if(isSearchBox(e.target)){ setTimeout(()=>searchToTop(e.target),200); return; }
   setTimeout(()=>{ try{ e.target.scrollIntoView({block:'center'}); }catch(err){} },200);
+});
+document.addEventListener('input',e=>{
+  if(!isSearchBox(e.target)) return;
+  const sh=e.target.closest('.sheet'), on=!!e.target.value.trim();
+  sh.classList.toggle('searching',on);
+  /* after the results have been redrawn by the sheet's own listener */
+  setTimeout(()=>searchToTop(e.target),0);
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&isSearchBox(e.target)){ e.preventDefault(); e.target.blur(); }
 });
 document.addEventListener('focusout',()=>setTimeout(fitToKeyboard,120));
 
@@ -5054,7 +5175,8 @@ const LOG_ICONS={
   day:'<circle cx="12" cy="12" r="8"/><path d="M9 14c.9.9 1.9 1.3 3 1.3s2.1-.4 3-1.3M9 9.5h.01M15 9.5h.01"/>',
   week:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4"/>',
   templates:'<path d="M4 6h16M4 12h16M4 18h10"/>',
-  coach:'<path d="M21 12a8 8 0 1 1-3.2-6.4M12 8v4l2.5 2.5"/>'};
+  coach:'<path d="M21 12a8 8 0 1 1-3.2-6.4M12 8v4l2.5 2.5"/>',
+  sleep:'<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>'};
 const logIcon=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${LOG_ICONS[k]||''}</svg>`;
 function openLog(){
   const d=todayPlan(), logged=S.days[todayKey()], k=todayKey();
@@ -5064,6 +5186,9 @@ function openLog(){
     <span class="ic">${logIcon(id)}</span>
     <span class="t">${title}</span><span class="s">${sub}</span></button>`;
   const left=t.kcal? Math.max(0,Math.round(t.kcal-eaten.kcal)) : null;
+  /* build 59: only one check-in card in the page at a time (ids) */
+  document.querySelectorAll('#altBody #ciCard').forEach(n=>n.remove());
+  const slept=realSleep(S.days[k]);
   /* Build 56: the same items in the same order, with today's check-in as
      three sliders in place (saved through the same code as the full sheet;
      More opens that sheet). */
@@ -5084,6 +5209,7 @@ function openLog(){
     ${inlineCheckinHtml()}
     <div class="logtiles">
       ${!isTeen()&&typeof stepsToday==='function'&&!healthOn()? tile('steps','Steps',(()=>{ const v=(S.days[todayKey()]||{}).steps; return typeof v==='number'? num(v)+' today' : 'What your phone says'; })(),'var(--amber-text)',typeof (S.days[todayKey()]||{}).steps==='number') : ''}
+      ${tile('sleep','Sleep',slept!==null? 'Last night '+slept+'h, or another night' : 'Last night, or any night this week','var(--cyan-text)',slept!==null)}
       ${tile('week','Weekly check in',checkinDone()?'Done for this week':'Next week is built from it','var(--amber-text)',checkinDone())}
       ${tile('templates','Something else','Any template, circuit or run','var(--sub)')}
       ${tile('coach','Ask about your record','Everything the app knows','var(--green-text)')}
@@ -5101,6 +5227,7 @@ document.addEventListener('click',e=>{
   if(what==='day') openDay();
   if(what==='week') openWeek();
   if(what==='steps') openQuick('steps');
+  if(what==='sleep'&&typeof openSleepLog==='function') openSleepLog(todayKey());
   if(what==='templates'&&typeof drawTemplates==='function'){ drawTemplates(); openSheet('tplSheet'); }
   if(what==='coach'&&typeof openCoach==='function') openCoach();
 });
@@ -6702,7 +6829,9 @@ function openDay(){
   drawDay(); openSheet('dayCheck');
 }
 function drawDay(){
-  const t=S.targets, d=dayDraft, auto=autoOf(todayKey());
+  /* build 59: only a real tracker's sleep replaces the slider. The demo
+     stand-in used to, which left no way to put sleep in at all. */
+  const t=S.targets, d=dayDraft, auto=realAuto(todayKey());
   const nf=(k,label,target,step)=>`<div class="nf"><label>${label}</label>
     <input type="number" inputmode="decimal" step="${step||1}" data-day="${k}" value="${d[k]!==undefined&&d[k]!==null?d[k]:''}" placeholder="-">
     ${target?`<div class="tg">target ${target}</div>`:''}</div>`;
@@ -6822,7 +6951,7 @@ $('saveDay').addEventListener('click',()=>{
    wrong in a twenty second check-in that may be done before the session. */
 let ciDraft=null;
 function inlineCheckinHtml(){
-  const prev=today()||{}, auto=autoOf(todayKey());
+  const prev=today()||{}, auto=realAuto(todayKey());
   ciDraft={};
   const val=(k,v)=> v===null||v===undefined? (k==='sleep'?'not answered':'not rated') : (k==='sleep'? v+'h' : v+'/10');
   const row=(k,label,min,max,step,def)=>`<label for="ci_${k}">${label}</label>
@@ -7716,6 +7845,7 @@ S.templates=Array.isArray(S.templates)&&S.templates.length? S.templates : seedTe
     S.templates=S.templates.concat(add); S.templatesAdded=(S.templatesAdded||0)+add.length; } })();
 S.workouts=Array.isArray(S.workouts)? S.workouts : [];
 S.restPrefs=S.restPrefs&&typeof S.restPrefs==='object'? S.restPrefs : {};
+S.warmups=S.warmups&&typeof S.warmups==='object'? S.warmups : {};
 S.habits=(S.habits&&typeof S.habits==='object')? S.habits : {};
 S.customHabits=Array.isArray(S.customHabits)? S.customHabits : [];
 /* the single habit from the earlier version becomes the habit to start */
@@ -7726,7 +7856,7 @@ S.target=(S.target&&typeof S.target==='object')? S.target : null;
 S.customFoods=Array.isArray(S.customFoods)? S.customFoods : [];
 S.savedMeals=Array.isArray(S.savedMeals)? S.savedMeals : [];
 const _fresh2=freshState;
-freshState=function(){ const f=_fresh2(); f.templates=seedTemplates(); f.runPlans=seedRunPlans(); f.circuits=seedCircuits(); f.workouts=[]; f.restPrefs={}; f.customFoods=[]; f.savedMeals=[]; return f; };
+freshState=function(){ const f=_fresh2(); f.templates=seedTemplates(); f.runPlans=seedRunPlans(); f.circuits=seedCircuits(); f.workouts=[]; f.restPrefs={}; f.warmups={}; f.customFoods=[]; f.savedMeals=[]; return f; };
 
 /* ---------- history and records ---------- */
 const e1RM=(kg,reps)=>reps>0? Math.round(kg*(1+reps/30)) : 0;
@@ -7954,6 +8084,39 @@ function warmSetsFor(exId,workKg){
   });
   return out;
 }
+/* ---------- one warm up set per exercise, build 59 ----------
+   Feargal does one warm up set per exercise and wants it kept: whatever
+   weight and reps it ended on are there next time, ready to tick. Stored per
+   movement in S.warmups ({kg, reps}, or false once removed so history does
+   not bring it back). Before build 59 warm ups were only in the session
+   records, so a movement with none stored takes the last warm up set from
+   its most recent session. A first one is half the working weight for 8
+   reps: a rule of thumb, not a prescription, and editable like any set. */
+function warmFor(exId){
+  const m=S.warmups||{}, v=m[exId];
+  if(v===false) return null;
+  if(v&&v.reps!==undefined&&v.reps!=='') return {kg:v.kg===''||v.kg===undefined? '' : +v.kg, reps:+v.reps};
+  for(const w of (S.workouts||[])){ const e=(w.ex||[]).find(x=>x.exId===exId); if(!e) continue;
+    const ws=(e.sets||[]).filter(s=>s.warm); if(!ws.length) return null;
+    const last=ws[ws.length-1]; return {kg:last.kg===''? '' : +last.kg, reps:+last.reps||8}; }
+  return null;
+}
+function firstWarm(exId,workKg){
+  if(!workKg||workKg<=0) return {kg:'',reps:8};
+  const x=exOf(exId), bar=x.eq==='barbell', step=bar? 2.5 : (incrementFor(exId)||2.5);
+  let kg=roundTo(workKg*0.5,step); if(bar&&kg<BAR_KG) kg=Math.min(BAR_KG,workKg);
+  if(kg>=workKg) kg=Math.max(0,+(workKg-step).toFixed(2));
+  return {kg,reps:8};
+}
+/* keep the warm up each movement ended the session on */
+function rememberWarmups(G){
+  S.warmups=S.warmups&&typeof S.warmups==='object'? S.warmups : {};
+  (G.ex||[]).forEach(e=>{
+    const ws=e.sets.filter(s=>s.warm);
+    if(ws.length){ const w=ws[ws.length-1]; if(w.reps!==''&&w.reps!==undefined) S.warmups[e.exId]={kg:w.kg===''? '' : +w.kg, reps:+w.reps}; }
+    else if(e.warmRemoved) S.warmups[e.exId]=false;
+  });
+}
 /* what actually goes on each side of the bar */
 function platesFor(kg,barKg){
   const bar=barKg||BAR_KG;
@@ -8039,6 +8202,12 @@ function runOf(r,easy){
   return {m:+r.m, pace: easy&&/fast|max/i.test(r.pace||'')? 'Steady' : (r.pace||''), startAt:null, endAt:null, ms:null, manual:false};
 }
 function newExEntry(row){
+  const e=newExEntryBase(row), w=(typeof warmFor==='function')? warmFor(row.exId) : null;
+  /* build 59: the warm up from last time comes back, ready to tick */
+  if(w) e.sets.unshift({kg:w.kg,reps:w.reps,warm:true,done:false});
+  return e;
+}
+function newExEntryBase(row){
   const rest=S.restPrefs[row.exId]!==undefined? S.restPrefs[row.exId] : (row.rest||90);
   const prev=lastSets(row.exId);
   const rx=nextPrescription(row.exId,row);
@@ -8267,7 +8436,7 @@ function drawGym(){
         const kg=work.length? Math.max(...work) : null;
         const pl=kg? plateLine(e.exId,kg) : '';
         return pl? `<div class="tempoline">${pl}</div>` : ''; })()}
-      <div class="setbtns"><button data-addset="${i}">+ Set</button><button data-addwarm="${i}">+ Warm up</button>
+      <div class="setbtns"><button data-addset="${i}">+ Set</button>${e.sets.some(s=>s.warm)? `<button data-delwarm="${i}">Remove warm up</button>` : `<button data-addwarm="${i}">+ Warm up</button>`}
         ${e.sets.length>1?`<button data-delset="${i}">Remove set</button>`:''}${GYM.hifb&&!e.run?`<button data-addrun="${i}">+ Run after</button>`:''}</div>
     </div>${runAt(String(i))}`;
   }).join('')+runAt('out')
@@ -8359,15 +8528,19 @@ document.addEventListener('click',e=>{
     const working=GYM.ex[i].sets.filter(x=>!x.warm);
     const src=working.filter(x=>x.done).pop() || working[working.length-1] || {};
     GYM.ex[i].sets.push({kg:src.kg||'',reps:src.reps||'',warm:false,done:false}); drawGym(); }
+  /* build 59: one warm up set per exercise, remembered for next time */
   const aw=e.target.closest('[data-addwarm]');
   if(aw){ const i=+aw.dataset.addwarm, e2=GYM.ex[i];
+    if(e2.sets.some(s=>s.warm)) return;
     const work=e2.sets.filter(s=>!s.warm&&s.kg!=='').map(s=>+s.kg);
     const target=work.length? Math.max(...work) : (e2.rx&&e2.rx.kg) || 0;
-    const ramp=warmSetsFor(e2.exId,target);
-    if(ramp.length){ e2.sets=ramp.concat(e2.sets.filter(s=>!s.warm)); drawGym();
-      toast(ramp.length+' warm up sets built from '+target+'kg'); }
-    else { e2.sets.unshift({kg:'',reps:'',warm:true,done:false}); drawGym();
-      toast('Put a working weight in and this fills itself'); } }
+    const w=warmFor(e2.exId)||firstWarm(e2.exId,target);
+    e2.sets.unshift({kg:w.kg,reps:w.reps,warm:true,done:false}); delete e2.warmRemoved; drawGym();
+    toast(w.kg!==''? 'Warm up: '+w.kg+'kg × '+w.reps+'. It is kept for next time' : 'Warm up added. Whatever you put in is kept for next time'); }
+  const dw=e.target.closest('[data-delwarm]');
+  if(dw){ const i=+dw.dataset.delwarm, e2=GYM.ex[i], before=e2.sets.slice();
+    e2.sets=e2.sets.filter(s=>!s.warm); e2.warmRemoved=true; drawGym();
+    toast('Warm up removed for next time too','Undo',()=>{ e2.sets=before; delete e2.warmRemoved; drawGym(); }); }
   const ds=e.target.closest('[data-delset]');
   if(ds){ const i=+ds.dataset.delset;
     if(GYM.ex[i].sets.length>1){ const gone=GYM.ex[i].sets.pop(); drawGym();
@@ -8389,13 +8562,10 @@ document.addEventListener('input',e=>{
 });
 $('restPlus').addEventListener('click',()=>{ rest.left+=15; rest.total=Math.max(rest.total||0,rest.left); paintRest(); });
 $('restSkip').addEventListener('click',()=>{ clearInterval(restTick); $('restBar').classList.remove('on'); });
-$('gymClose').addEventListener('click',()=>{
-  const work=GYM&&!GYM.done&&(GYM.mode==='circuit'? circuitDone()>0 : gymSets()>0);
-  $('gym').classList.remove('on'); clearInterval(restTick); $('restBar').classList.remove('on');
-  if(work) toast('Session paused, nothing lost','Resume',()=>{ $('gym').classList.add('on');
-    GYM.mode==='circuit'? drawCircuit() : drawGym(); });
-  else clearInterval(gymTick);
-});
+/* Build 59: closing minimises. The session keeps going with a bar above the
+   nav to come back to it (live.js); only one opened and left untouched is
+   dropped. */
+$('gymClose').addEventListener('click',()=>{ minimiseGym(); });
 
 /* ---------- food, logged in taps rather than sums ----------
    The research on why people stop tracking is unanimous: friction. A 2023 study
@@ -8955,6 +9125,7 @@ function drawFood(){
     </div>`}
     <div id="foodList">${foodListHTML()}</div>
     <div class="fdone"><button class="sheetcta" id="foodDone">${foodCameFromLog?'Back to the log':'Done'}</button></div>`;
+  foodSearching();
 }
 /* Adding a food you have not got in the list, without leaving the sheet. */
 /* Fibre today: what counted, what did not, where it came from, and why 30g */
@@ -9074,8 +9245,12 @@ document.addEventListener('input',e=>{
     if(el){ const sp=el.querySelector('span'); if(sp) sp.textContent=targetKcalPreview(); } }
   /* Only the results redraw, so the input keeps its focus, its cursor and its
      composition state on its own. */
-  if(e.target.id==='foodSearch'){ foodQuery=e.target.value; drawFoodList(); }
+  if(e.target.id==='foodSearch'){ foodQuery=e.target.value; drawFoodList(); foodSearching(); }
 });
+/* build 59: only the list redraws while typing, so the plate, shortcuts and
+   categories stayed above the results and pushed them under the keyboard.
+   They step aside while there is text in the box. */
+function foodSearching(){ const b=$('foodBody'); if(b) b.classList.toggle('q',!!foodQuery.trim()); }
 
 /* ---------- circuits, run for time ---------- */
 /* ---------- the session player, for HYROX and CrossFit as well as circuits ----------
@@ -9211,7 +9386,7 @@ document.addEventListener('input',e=>{
 });
 function finishCircuit(){
   if(!GYM||GYM.done) return null;
-  GYM.done=true; clearInterval(gymTick);
+  GYM.done=true; clearInterval(gymTick); if(typeof clearLive==='function') clearLive();
   const mins=Math.max(1,Math.round((Date.now()-GYM.started)/60000));
   const done=circuitDone(), total=GYM.items.length;
   let prevAt=GYM.started;
@@ -9310,7 +9485,8 @@ function drawExList(q){
         ? `<div class="slab" style="padding:0 14px">${hits.length} match${hits.length===1?'':'es'}</div>`+rest.map(row).join('')
         : GROUPS.map(g=>{ const rows=rest.filter(x=>x.g===g);
             return rows.length? `<div class="slab" style="padding:0 14px">${g} · ${rows.length}</div>`+rows.map(row).join('') : ''; }).join(''));
-  $('exList').innerHTML=chips+body;
+  /* build 59: while searching, results come first, straight under the box */
+  $('exList').innerHTML= term? body+chips : chips+body;
 }
 document.addEventListener('click',e=>{
   const fg=e.target.closest('[data-pickg]');
@@ -9431,11 +9607,14 @@ function finishWorkout(){
     record.totalMs= first&&last&&first.startAt&&last.endAt&&!last.manual? last.endAt-first.startAt : null;
     record.rpe=null;
   }
+  /* build 59: the warm up each movement ended on is there next time */
+  if(typeof rememberWarmups==='function') rememberWarmups(GYM);
   /* which movements set a personal best, kept so the session can show it later */
   try{ record.prs=GYM.ex.filter(e=>typeof exHasPR==='function'&&exHasPR(e)).map(e=>e.exId); }catch(err){ record.prs=[]; }
   S.workouts.unshift(record);
   if(record.kind==='hifb') GYM.record=record;
   GYM.done=true; clearInterval(gymTick); clearInterval(restTick); $('restBar').classList.remove('on');
+  if(typeof clearLive==='function') clearLive();
   logSession({title:GYM.name,type:'workout',adds:1,workoutId:record.id,steps:GYM.ex.map(e=>({n:exOf(e.exId).n,r:''}))});
   const amended = GYM.templateId && templateChanged(GYM.templateId, GYM);
   $('gymBody').innerHTML=`<div class="summary">
@@ -9511,7 +9690,7 @@ $('gymFinish').addEventListener('click',()=>{
   finishWorkout();
 });
 document.addEventListener('click',e=>{
-  if(e.target.closest('#gymDone')){ $('gym').classList.remove('on'); go('today'); }
+  if(e.target.closest('#gymDone')){ $('gym').classList.remove('on'); go('today'); if(typeof drawLiveBar==='function') drawLiveBar(); }
   if(e.target.closest('#tplUpdate')){
     const t=S.templates.find(x=>x.id===GYM.templateId);
     t.ex=gymToTemplateRows(); save(); toast('Template updated to match what you actually did');
@@ -9800,7 +9979,7 @@ document.addEventListener('click',e=>{
   if(circDraft&&circDraft.items.some(x=>x.move)&&(e.target.closest('#circAddRun')||e.target.closest('#circAddStation'))){
     circDraft.items.push(e.target.closest('#circAddRun')? {t:'run',move:'run',amt:400,kg:null} : {t:'station',move:'burpee',amt:10,kg:null});
     drawCircEdit(); e.stopImmediatePropagation(); return; }
-  const cs=e.target.closest('[data-circstart]'); if(cs){ closeSheets(); startCircuit(cs.dataset.circstart); }
+  const cs=e.target.closest('[data-circstart]'); if(cs){ closeSheets(); if(!(typeof liveGuard==='function'&&liveGuard())) startCircuit(cs.dataset.circstart); }
   const rs2=e.target.closest('[data-runstart]'); if(rs2){ closeSheets(); const sess=runSession(rs2.dataset.runstart); if(sess) startSession(sess); }
   if(e.target.closest('#circNew')){
     const base=(S.circuits||[])[0];
@@ -9831,7 +10010,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('click',e=>{
   const st=e.target.closest('[data-tplstart]');
-  if(st){ startWorkout(st.dataset.tplstart||null); return; }
+  if(st){ if(!(typeof liveGuard==='function'&&liveGuard())) startWorkout(st.dataset.tplstart||null); return; }
   const ed=e.target.closest('[data-tpledit]');
   if(ed){ swapReturn= ed.closest('#swapSheet')? {n:swapView.n} : null; openTplEdit(ed.dataset.tpledit); return; }
   if(e.target.closest('[data-tplopen]')){ drawTemplates(); openSheet('tplSheet'); }
@@ -10272,6 +10451,482 @@ if(window.__G){
     foodDay:{get:()=>foodDay,configurable:true}
   });
 }
+/* ===================== build 59: what is next, and what to watch =====================
+   From a week of Feargal using the app: the daily check-in kept being
+   forgotten, because nothing on Today asked for it at the time it made sense,
+   and the line under the rings always showed sleep whatever the data said.
+
+   So Today now leads with one thing, the most useful next step for this time
+   of day, straight under the rings, with the action on the card:
+     morning      last night's sleep (one tap), a pain check, a weigh in
+     around meals the meal that is due
+     before and   the session, an hour or two either side of the usual time,
+     after work   or Resume when one is already going
+     evening      today's check-in, twenty seconds, three sliders
+     late         lights out
+   The weekly check in, on its day, outranks all of these but a live session.
+   The time of day is taken from the person's own wake, train and bed times,
+   so a night shift gets its own morning.
+
+   Underneath, the pills no longer always say sleep. Each candidate (sleep,
+   protein, calories, steps, stress, the week's sessions, a weigh in) is scored
+   by how far it is from where it should be for this time of day, and the two
+   furthest off are shown. When nothing is off it says so. */
+const nowMins=()=>{ const n=new Date(); return n.getHours()*60+n.getMinutes(); };
+/* a tracker's own reading, never the demo stand-in */
+const realAuto=k=>{ const a=(typeof autoOf==='function')? autoOf(k) : null; return a&&!a.sim? a : null; };
+const sleepLoggedFor=k=>realSleep(S.days[k])!==null;
+function fmtIn(m){ m=Math.max(0,Math.round(m)); if(m<60) return m+' min'; const h=Math.floor(m/60), r=m%60; return h+(r>=30? '½' : '')+' hour'+(h===1&&r<30?'':'s'); }
+function dayClock(at){
+  const wake=clockOf('wake'), bed=clockOf('bed'), train=clockOf('train');
+  const rel=m=>((m-wake)%1440+1440)%1440;
+  const now=typeof at==='number'? at : nowMins();
+  return {now, n:rel(now), bed:rel(bed)||960, train:rel(train), rel, wake, bedAbs:bed, trainAbs:train};
+}
+/* The hours offered as one-tap buttons: around this person's own week. */
+function sleepChoices(){
+  const st=sleepStats();
+  const mid=st.avg!==null? Math.round(st.avg*2)/2 : (isTeen()? 8.5 : 7.5);
+  const out=[]; for(let h=mid-1;h<=mid+1.01;h+=0.5) if(h>=3&&h<=12) out.push(+h.toFixed(1));
+  return out;
+}
+function nextCandidates(at){
+  const c=dayClock(at), out=[], add=(score,o)=>out.push(Object.assign({score},o));
+  const k=todayKey(), day=S.days[k]||{}, teen=isTeen(), i=dowIdx(), d=(typeof todayPlan==='function')? todayPlan() : null;
+
+  /* a session already going: nothing beats getting back to it */
+  if(typeof liveSession==='function'&&liveSession())
+    add(100,{id:'live',tone:'green',kick:'In progress',title:'Back to '+escHabit(GYM.name),why:liveSummary(),
+      act:`<button class="cta" data-liveresume="1">Resume</button>`});
+
+  /* the weekly check in, on its day */
+  const ciDay=(S.profile&&S.profile.checkinDay!==undefined)? +S.profile.checkinDay : 6;
+  if(i===ciDay&&!checkinDone())
+    add(c.n>=c.bed-300? 94 : 82,{id:'checkin',tone:'amber',kick:'Weekly check in',title:'Check in for the week',
+      why:'Next week is built from it. Mostly filled in already, about two minutes.',act:`<button class="cta" data-log="week">Check in</button>`});
+
+  /* a pain check the morning after */
+  const pm=(typeof painMorningDue==='function')? painMorningDue()[0] : null;
+  if(pm&&c.n<6*60)
+    add(90,{id:'pain',tone:'coral',kick:'This morning',title:'How is it this morning?',
+      why:`${escHabit(exOf(pm.exId).n)} was ${pm.during} out of 10 yesterday. It should have settled by now.`,
+      act:`<button class="mini" data-painmorning="${pm.idx}:settled">Settled</button><button class="mini" data-painmorning="${pm.idx}:still">Still there</button><button class="mini" data-painmorning="${pm.idx}:worse">Worse</button>`});
+
+  /* last night's sleep, in the first part of the day, unless a tracker has it */
+  if(!sleepLoggedFor(k)&&!realAuto(k)&&c.n<6*60)
+    add(c.n<4*60? 89 : 72,{id:'sleep',tone:'cyan',kick:'This morning',title:'How long did you sleep?',
+      why:'Readiness is built from it. Tap the nearest, or put in the times.',
+      act:`<div class="sleepq" role="group" aria-label="Hours slept last night">${sleepChoices().map(h=>`<button class="mini" data-sleepquick="${h}">${String(h).replace('.5','½')}h</button>`).join('')}<button class="mini" data-sleeplog="${k}">Other</button></div>`});
+
+  /* today's session, either side of the usual time */
+  const trains=d&&d.type&&d.slot!=='walk'&&d.slot!=='rest';
+  if(trains&&!dayDone(i)&&!(typeof liveSession==='function'&&liveSession())){
+    const until=c.train-c.n;
+    const what=dayLabel(d);
+    if(until<=150&&until>=-120)
+      add(until<=45? 91 : 80,{id:'session',tone:'cyan',kick:until>0? 'In about '+fmtIn(until) : 'Now',title:escHabit(what),
+        why: until>0? 'Planned for '+minToHhmm(c.trainAbs)+'. '+(daySub(d)||'') : 'Planned for '+minToHhmm(c.trainAbs)+'. Still time today.',
+        act:`<button class="cta" data-nextstart="1">Start session</button>`});
+    else if(until<-120&&c.n<c.bed-90)
+      add(52,{id:'session',tone:'cyan',kick:'Not done yet',title:escHabit(what),why:'Planned for earlier. There is still time, or move it.',
+        act:`<button class="cta" data-nextstart="1">Start session</button><button class="mini" data-restday="${i}">Not today</button>`});
+  }
+
+  /* the meal that is due now */
+  if(typeof mealSlots==='function'&&typeof dayFood==='function'){
+    let slots=[]; try{ slots=mealSlots(k).slots; }catch(e){}
+    const food=dayFood(k), skipped=day.skipped||[];
+    const NAMES={b:'Breakfast',l:'Lunch',d:'Dinner'};
+    const due=slots.filter(x=>x.role&&NAMES[x.role]&&!x.skipped&&skipped.indexOf(x.role)<0&&!food.some(f=>(f.meal||'s')===x.role))
+      .map(x=>({x,off:c.rel(x.min)-c.n})).filter(y=>y.off<=45&&y.off>=-90).sort((a,b)=>Math.abs(a.off)-Math.abs(b.off))[0];
+    if(due){
+      const name=NAMES[due.x.role];
+      add(due.off<=0? 76 : 68,{id:'meal',tone:'coral',kick:due.off>0? 'Around '+due.x.time : 'Due '+due.x.time,title:'Log '+name.toLowerCase(),
+        why: teen? 'Regular meals keep you going through the day.' : (perMealProtein()? 'About '+perMealProtein()+'g of protein makes it count.' : 'Tap it from a list, one tap each.'),
+        act:`<button class="cta" data-nextfood="${due.x.role}">Log ${name.toLowerCase()}</button><button class="mini" data-nextskip="${due.x.role}">I skipped it</button>`});
+    }
+  }
+
+  /* today's check-in, in the evening: the one that kept being forgotten */
+  if(!day.checkedIn){
+    const evening= c.n>=c.bed-210 || (dayDone(i)&&c.n>=c.bed-330);
+    if(evening) add(93,{id:'daycheck',tone:'green',kick:'This evening',title:"Today's check-in",
+      why:'How today went and how stressed you were. Tomorrow\'s readiness is built from it. Twenty seconds.',
+      act:`<button class="cta" data-checkinnow="1">Check in</button>`});
+    else if(c.n>=c.bed-420) add(30,{id:'daycheck',tone:'green',kick:'Later',title:"Today's check-in",
+      why:'Best done this evening, once the day is mostly over.',act:`<button class="mini" data-checkinnow="1">Do it now</button>`});
+  }
+
+  /* a weigh in, in the morning, when a weight goal needs one */
+  if(!teen&&S.target&&S.target.kind==='weight'&&c.n<4*60){
+    const last=S.weights.length? S.weights[S.weights.length-1].d : null;
+    const gap=last? Math.round((dateOf(k)-dateOf(last))/864e5) : 99;
+    if(gap>=7) add(64,{id:'weigh',tone:'green',kick:'This morning',title:'Weigh in',
+      why:(last? 'Last one was '+gap+' days ago. ' : 'None yet. ')+'Before breakfast, after the bathroom, is the steadiest reading.',
+      act:`<button class="cta" data-glance="weigh">Weigh in</button>`});
+  }
+
+  /* late: wind down */
+  if(c.n>=c.bed-90){
+    const ss=sleepStats();
+    add(day.checkedIn? 45 : 25,{id:'bed',tone:'cyan',kick:'Tonight',title:'Lights out around '+lightsOut(),
+      why: ss.last7>=3&&ss.avg<ss.target.lo? `You have averaged ${ss.avg.toFixed(1)} hours this week, under the ${ss.target.lo} hour aim.` : 'A similar time each night helps as much as the hours.',
+      act:`<button class="mini" data-opensleep="1">See sleep</button>`});
+  }
+  return out.sort((a,b)=>b.score-a.score);
+}
+/* What comes after the card, in a few words, so the day has a shape. */
+function thenLine(list,top){
+  const rest=list.filter(x=>x!==top&&x.id!==top.id&&x.score>=40);
+  if(rest.length) return rest[0].title.replace(/<[^>]+>/g,'');
+  return '';
+}
+function nextUp(at){
+  const list=nextCandidates(at);
+  if(list.length) return {top:list[0],then:thenLine(list,list[0]),list};
+  /* nothing due: say what is coming, so the card is never empty */
+  const c=dayClock(at), d=(typeof todayPlan==='function')? todayPlan() : null, i=dowIdx();
+  let why='Nothing to do right now.';
+  if(d&&d.type&&d.slot!=='walk'&&d.slot!=='rest'&&!dayDone(i)&&c.train>c.n) why='Next: '+dayLabel(d)+' at '+minToHhmm(c.trainAbs)+'.';
+  else if(typeof nextEating==='function'){ try{ const ne=nextEating().next; if(ne) why='Next: '+ne.what.toLowerCase().replace(/,.*$/,'')+' around '+ne.time+'.'; }catch(e){} }
+  return {top:{id:'clear',tone:'green',kick:'All caught up',title:'Nothing due right now',why,act:''},then:'',list};
+}
+function nextCard(nx){
+  nx=nx||nextUp();
+  const x=nx.top;
+  return `<section class="nextcard t-${x.tone}" data-next="${x.id}" aria-label="Up next: ${x.title.replace(/<[^>]+>/g,'')}">
+    <div class="nk"><span class="ndot" aria-hidden="true"></span>Up next<span class="nkw"> · ${x.kick}</span></div>
+    <div class="nt">${x.title}</div>
+    <div class="nw">${x.why}</div>
+    ${x.act? `<div class="na">${x.act}</div>` : ''}
+    ${nx.then? `<div class="nthen">Then: ${escHabit(nx.then)}</div>` : ''}
+  </section>`;
+}
+/* ---------- what to watch today ----------
+   Each candidate scores how far off it is, 0 to 1, for this time of day. */
+function focusSignals(at){
+  const c=dayClock(at), k=todayKey(), teen=isTeen(), out=[];
+  const add=(id,sev,html)=>out.push({id,sev,html});
+  const tg=sleepTarget(), ss=sleepStats(), sl=realSleep(S.days[k]), r=readiness();
+  /* sleep */
+  const sleepDriver=r.level!=='building'&&r.drivers.some(x=>/sleep/.test(x));
+  if(sl!==null){
+    const short=Math.max(0,tg.lo-sl), avgShort=ss.last7>=3? Math.max(0,tg.lo-ss.avg) : 0;
+    const sev=Math.min(1,short/2+avgShort/2+(sleepDriver? 0.3 : 0));
+    add('sleep',sev,`<button class="pill ${short>0?'off':''}" data-glance="sleep">Slept ${sl}h · aim ${isTeen()? tg.t : tg.lo+'h or more'}</button>`);
+  } else if(c.n<9*60&&!realAuto(k)){
+    add('sleep',0.45,`<button class="pill" data-sleeplog="${k}">Sleep: log last night</button>`);
+  } else if(ss.last7>=3&&ss.avg<tg.lo-0.3){
+    add('sleep',Math.min(1,(tg.lo-ss.avg)/1.5),`<button class="pill off" data-glance="sleep">Sleep ${ss.avg.toFixed(1)}h a night this week</button>`);
+  }
+  /* protein, against where it should be by now */
+  const t=S.targets||{};
+  if(!teen&&t.protein&&typeof foodTotals==='function'){
+    const food=dayFood(k).length, pr=Math.round(foodTotals(k).protein||0);
+    const frac=Math.min(1,Math.max(0,(c.n-60)/Math.max(60,c.bed-180-60)));
+    const expected=Math.round(t.protein*frac);
+    if(food&&pr<expected-15) add('protein',Math.min(1,(expected-pr)/t.protein*1.6),`<button class="pill off" data-go="eat">Protein ${pr}/${t.protein}g · behind for now</button>`);
+    else if(!food&&c.n>=6*60) add('protein',0.5,`<button class="pill off" data-go="eat">Nothing logged to eat yet</button>`);
+    else if(food&&pr>=expected) add('protein',0,`<button class="pill ok" data-go="eat">Protein on pace</button>`);
+  }
+  /* calories over */
+  if(!teen&&t.kcal&&typeof foodTotals==='function'){
+    const kc=Math.round(foodTotals(k).kcal||0);
+    if(kc>t.kcal) add('kcal',Math.min(1,0.3+(kc-t.kcal)/600),`<button class="pill off" data-go="eat">${num(kc-t.kcal)} kcal over today</button>`);
+  }
+  /* steps, against the pace for the time of day */
+  const st=(typeof stepsToday==='function'&&stepsToday()!==null)? stepsToday() : (typeof (S.days[k]||{}).steps==='number'? S.days[k].steps : null);
+  if(st!==null){
+    const frac=Math.min(1,Math.max(0,(c.n-60)/Math.max(60,c.bed-120)));
+    const want=stepTarget()*frac;
+    if(c.n>=6*60&&st<want*0.7) add('steps',Math.min(1,(want-st)/stepTarget()),`<button class="pill off" data-glance="steps">${num(st)} of ${num(stepTarget())} steps</button>`);
+    else add('steps',0,`<button class="pill ok" data-glance="steps">${num(st)} steps</button>`);
+  }
+  /* stress yesterday or today */
+  const ds=S.days[k]||{}, y=S.days[addDays(k,-1)]||{};
+  const stressV=typeof ds.stress==='number'? ds.stress : (typeof y.stress==='number'? y.stress : null);
+  if(stressV!==null&&stressV>=7) add('stress',0.35+(stressV-7)*0.15,`<button class="pill off" data-checkinnow="1">Stress ${stressV}/10 ${typeof ds.stress==='number'?'today':'yesterday'}</button>`);
+  /* sessions already missed this week, counting only days the app was in use */
+  const wc=weekCounts(), i=dowIdx();
+  if(wc.planned&&S.plan&&S.plan.days){
+    const keys=Object.keys(S.days||{}).concat((S.weights||[]).map(x=>x.d),(S.workouts||[]).map(x=>x.d)).filter(Boolean).sort();
+    const since=keys[0]||k;
+    let missed=0;
+    for(let n=0;n<i;n++){ const x=S.plan.days[n]; if(!x||!x.type||x.slot==='walk'||x.slot==='rest'||dayDone(n)) continue;
+      if(addDays(k,n-i)>=since) missed++; }
+    if(missed) add('train',Math.min(1,0.2+0.2*missed),`<button class="pill off" data-go="plan">${missed} ${missed===1?'session':'sessions'} missed this week</button>`);
+  }
+  /* a weigh in that has gone stale */
+  if(!teen&&S.target&&S.target.kind==='weight'){
+    const last=S.weights.length? S.weights[S.weights.length-1].d : null;
+    const gap=last? Math.round((dateOf(k)-dateOf(last))/864e5) : 99;
+    if(gap>=8) add('weigh',Math.min(0.6,0.2+gap/60),`<button class="pill off" data-glance="weigh">${last? 'Weighed '+gap+' days ago' : 'No weigh in yet'}</button>`);
+  }
+  return out;
+}
+const NEXT_SAME={sleep:'sleep',meal:'protein',daycheck:'stress',weigh:'weigh',session:'train'};
+function focusPills(excludeId,at){
+  const sig=focusSignals(at).filter(x=>x.id!==NEXT_SAME[excludeId]);
+  const off=sig.filter(x=>x.sev>=0.15).sort((a,b)=>b.sev-a.sev).slice(0,2);
+  if(off.length) return off.map(x=>x.html).join('');
+  const ok=sig.filter(x=>x.sev<0.15&&/pill ok|pill"/.test(x.html)).slice(0,1);
+  return ok.length? ok[0].html : `<span class="pill ok calm">Nothing off today</span>`;
+}
+
+/* ---------- logging sleep on its own ----------
+   Sleep could only be put in through the day's check-in, and with the demo
+   tracker on it could not be put in at all, because the check-in showed the
+   stand-in figure instead of the slider. Now it has its own sheet, for last
+   night or any of the six before it, as hours or as the times you went to bed
+   and got up. It is stored on the day you woke up, as before, so readiness,
+   the sleep view and the coach all read it without change. It never counts as
+   checking in. */
+let sleepDraft=null;
+function sleepNightLabel(k){
+  if(k===todayKey()) return 'Last night';
+  const night=dateOf(addDays(k,-1));
+  return night.toLocaleDateString('en-IE',{weekday:'long'})+' night';
+}
+function openSleepLog(k){
+  k=(k&&k<=todayKey())? k : todayKey();
+  const cur=S.days[k]||{};
+  const st=sleepStats();
+  sleepDraft={k,h: typeof cur.sleep==='number'? cur.sleep : (st.avg!==null? Math.round(st.avg*4)/4 : (isTeen()? 8.5 : 7.5)),
+    bed:cur.sleepBed||'', wake:cur.sleepWake||'', had:typeof cur.sleep==='number'};
+  drawSleepLog();
+  openSheet('altSheet');
+}
+function drawSleepLog(){
+  const D=sleepDraft; if(!D) return;
+  const nights=[]; for(let n=0;n<7;n++) nights.push(addDays(todayKey(),-n));
+  const tracked=realAuto(D.k);
+  document.getElementById('altTitle').textContent='Log sleep';
+  document.getElementById('altSub').textContent='Hours slept, counted on the morning you woke up. It never counts as your check-in.';
+  document.getElementById('altBody').innerHTML=`<div class="sleeplog" style="padding:0 14px 10px">
+    <div class="pickchips sleepnights" role="tablist" aria-label="Which night">${nights.map(x=>{ const v=(S.days[x]||{}).sleep;
+      return `<button role="tab" aria-selected="${x===D.k}" class="${x===D.k?'on':''}" data-sleepnight="${x}">${sleepNightLabel(x)}${typeof v==='number'? ' · '+v+'h' : ''}</button>`; }).join('')}</div>
+    <div class="slhours">
+      <button class="qstep" data-sleepstep="-0.25" aria-label="A quarter of an hour less">−</button>
+      <div class="slnum"><input id="sleepHours" type="number" inputmode="decimal" step="0.25" min="0" max="16" value="${D.h}" aria-label="Hours slept"><span>hours</span></div>
+      <button class="qstep" data-sleepstep="0.25" aria-label="A quarter of an hour more">+</button>
+    </div>
+    <div class="sltimes">
+      <div class="nf"><label for="sleepBed">Went to sleep</label><input id="sleepBed" type="time" value="${D.bed}" data-sleeptime="bed"></div>
+      <div class="nf"><label for="sleepWake">Woke up</label><input id="sleepWake" type="time" value="${D.wake}" data-sleeptime="wake"></div>
+    </div>
+    <div class="note" id="sleepNote">${sleepNote()}</div>
+    ${tracked? `<div class="note">${sourceName()} recorded ${tracked.sleep}h for this night. What you save here is used instead.</div>` : ''}
+    <button class="sheetcta" id="sleepSave" style="width:100%;margin:8px 0 4px">Save ${sleepNightLabel(D.k).toLowerCase()}</button>
+    ${D.had? `<button class="skipbtn" id="sleepClear">Clear this night</button>` : ''}
+  </div>`;
+}
+function sleepNote(){
+  const D=sleepDraft, tg=sleepTarget(); if(!D) return '';
+  const h=+D.h;
+  if(!(h>0)) return 'Put in the hours, or the times either side.';
+  return h<tg.lo? `Under the ${tg.t} aim.` : (h>tg.hi+1.5? 'A long one. Fine now and then.' : `Inside the ${tg.t} aim.`);
+}
+/* bed and wake times give the hours, across midnight */
+function hoursBetween(bed,wake){
+  const a=hhmmToMin(bed), b=hhmmToMin(wake); if(a===null||b===null) return null;
+  return Math.round(((b-a+1440)%1440)/15)/4;
+}
+function saveSleep(k,h,extra){
+  h=+h; if(!(h>0&&h<=16)) return false;
+  const before=S.days[k]? JSON.parse(JSON.stringify(S.days[k])) : null;
+  S.days[k]=Object.assign({},S.days[k],{sleep:Math.round(h*4)/4,sleepManual:true},extra||{});
+  save(); renderAll();
+  return before;
+}
+function undoSleep(k,before){ if(before===null) delete S.days[k]; else S.days[k]=before; save(); renderAll(); }
+document.addEventListener('click',e=>{
+  const sl=e.target.closest('[data-sleeplog]');
+  if(sl){ closeSheets(); openSleepLog(sl.dataset.sleeplog||todayKey()); return; }
+  const sq=e.target.closest('[data-sleepquick]');
+  if(sq){ const k=todayKey(), h=+sq.dataset.sleepquick, before=saveSleep(k,h);
+    if(before!==false) toast('Slept '+h+'h, saved','Undo',()=>undoSleep(k,before)); return; }
+  const sn=e.target.closest('[data-sleepnight]');
+  if(sn&&sleepDraft){ const k=sn.dataset.sleepnight, cur=S.days[k]||{};
+    Object.assign(sleepDraft,{k,had:typeof cur.sleep==='number',bed:cur.sleepBed||'',wake:cur.sleepWake||'',
+      h:typeof cur.sleep==='number'? cur.sleep : sleepDraft.h}); drawSleepLog(); return; }
+  const ss=e.target.closest('[data-sleepstep]');
+  if(ss&&sleepDraft){ sleepDraft.h=Math.max(0,Math.min(16,+((+sleepDraft.h||0)+ +ss.dataset.sleepstep).toFixed(2)));
+    const el=$('sleepHours'); if(el) el.value=sleepDraft.h; const n=$('sleepNote'); if(n) n.textContent=sleepNote(); return; }
+  if(e.target.closest('#sleepSave')&&sleepDraft){
+    const D=sleepDraft, extra={};
+    if(D.bed) extra.sleepBed=D.bed; if(D.wake) extra.sleepWake=D.wake;
+    const before=saveSleep(D.k,D.h,extra);
+    if(before===false){ toast('Put the hours in first'); return; }
+    const label=sleepNightLabel(D.k), k=D.k, h=Math.round(D.h*4)/4;
+    sleepDraft=null; closeSheets();
+    toast(label+': '+h+'h saved','Undo',()=>undoSleep(k,before)); return; }
+  if(e.target.closest('#sleepClear')&&sleepDraft){
+    const k=sleepDraft.k, before=JSON.parse(JSON.stringify(S.days[k]||{}));
+    const d=Object.assign({},S.days[k]); delete d.sleep; delete d.sleepManual; delete d.sleepBed; delete d.sleepWake;
+    S.days[k]=d; save(); sleepDraft=null; closeSheets(); renderAll();
+    toast('Sleep cleared','Undo',()=>undoSleep(k,before)); return; }
+  /* the Up next card's own buttons */
+  if(e.target.closest('[data-checkinnow]')){ openCheckin(); return; }
+  if(e.target.closest('[data-nextstart]')){ startPlanDay(todayPlan()); return; }
+  const nf=e.target.closest('[data-nextfood]');
+  if(nf){ openFood(false,{slot:nf.dataset.nextfood}); return; }
+  const nsk=e.target.closest('[data-nextskip]');
+  if(nsk){ const k=todayKey(), m=nsk.dataset.nextskip, day=S.days[k]=Object.assign({},S.days[k]);
+    day.skipped=(day.skipped||[]).filter(x=>x!==m).concat([m]); save(); renderAll();
+    toast({b:'Breakfast',l:'Lunch',d:'Dinner'}[m]+' skipped','Undo',()=>{ const d2=S.days[k]; d2.skipped=(d2.skipped||[]).filter(x=>x!==m); save(); renderAll(); }); return; }
+});
+document.addEventListener('input',e=>{
+  if(e.target.id==='sleepHours'&&sleepDraft){ sleepDraft.h=e.target.value===''? '' : +e.target.value; const n=$('sleepNote'); if(n) n.textContent=sleepNote(); }
+  const tt=e.target.closest&&e.target.closest('[data-sleeptime]');
+  if(tt&&sleepDraft){ sleepDraft[tt.dataset.sleeptime]=e.target.value;
+    const h=hoursBetween(sleepDraft.bed,sleepDraft.wake);
+    if(h!==null&&h>0){ sleepDraft.h=h; const el=$('sleepHours'); if(el) el.value=h; }
+    const n=$('sleepNote'); if(n) n.textContent=sleepNote(); }
+});
+/* Today's check-in on its own, from the Up next card: the same three sliders
+   as + Log, saved the same way. */
+function openCheckin(){
+  document.querySelectorAll('#ciCard').forEach(n=>n.remove());
+  document.getElementById('altTitle').textContent="Today's check-in";
+  document.getElementById('altSub').textContent='Twenty seconds. Only what you move is saved.';
+  document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 10px">${inlineCheckinHtml()}</div>`;
+  ciTeenNote();
+  openSheet('altSheet');
+}
+/* ===================== build 59: a session keeps going when closed =====================
+   Feargal lost sessions by closing the player: the chevron hid it with a
+   Resume toast that went after five seconds, and pressing Start again built a
+   new session over the old one. A reload, or the phone dropping the app, lost
+   it outright, because the session lived only in memory.
+
+   Now:
+     closing (the chevron, or a swipe down on the player's header) minimises it
+     the clock keeps running, and a bar sits above the bottom nav with the name,
+     the time and the sets done; tapping it opens the session where it was
+     Start anywhere while one is going opens that one instead of a new one
+     the session is written to its own key on this device after every change,
+     so a reload or a closed app comes back to the same sets (for twelve hours)
+     the bar has End, which throws it away, with Undo
+   It is kept on the phone only (gauntlet.live), not in the backed up state: a
+   half-done session is not a record. Delete everything removes it. */
+const LIVE_KEY='gauntlet.live', LIVE_MAX_MS=12*3600e3;
+function gymHasWork(G){
+  G=G||GYM; if(!G||G.done) return false;
+  if(G.mode==='circuit') return (G.items||[]).some(x=>x.done)||(G.roundsDone||0)>0||(G.strength||[]).some(s=>s.sets.some(x=>x.done));
+  if(G.ex.some(e=>e.sets.some(s=>s.done||s.touched))) return true;
+  return (typeof gymRuns==='function')&&gymRuns(G).some(x=>x.r.startAt||x.r.ms);
+}
+/* started counts too: a session opened on purpose is kept until it is ended */
+const liveSession=()=>!!(typeof GYM!=='undefined'&&GYM&&!GYM.done&&GYM.started);
+const gymShown=()=>document.getElementById('gym').classList.contains('on');
+function liveClock(){ if(!liveSession()) return ''; const s=Math.floor((Date.now()-GYM.started)/1000);
+  const h=Math.floor(s/3600), m=Math.floor(s%3600/60); return h? h+':'+String(m).padStart(2,'0')+':'+String(s%60).padStart(2,'0') : m+':'+String(s%60).padStart(2,'0'); }
+function liveSummary(){
+  if(!liveSession()) return '';
+  if(GYM.mode==='circuit'){ const n=(GYM.items||[]).filter(x=>x.done).length; return liveClock()+' in · '+n+' of '+(GYM.items||[]).length+' done'; }
+  const n=GYM.ex.reduce((a,e)=>a+e.sets.filter(s=>s.done&&!s.warm).length,0), all=GYM.ex.reduce((a,e)=>a+e.sets.filter(s=>!s.warm).length,0);
+  return liveClock()+' in · '+n+' of '+all+' sets done';
+}
+function persistLive(){
+  try{
+    if(liveSession()) localStorage.setItem(LIVE_KEY,JSON.stringify({at:Date.now(),gym:GYM}));
+    else localStorage.removeItem(LIVE_KEY);
+  }catch(e){}
+}
+function clearLive(){ try{ localStorage.removeItem(LIVE_KEY); }catch(e){} }
+/* the clock, the bar and the save, once a second while a session is going */
+let liveTick=null;
+function ensureLiveTick(){
+  clearInterval(liveTick);
+  if(!liveSession()) return;
+  let n=0;
+  liveTick=setInterval(()=>{
+    if(!liveSession()){ clearInterval(liveTick); liveTick=null; drawLiveBar(); return; }
+    const sub=$('gymSub');
+    if(sub&&gymShown()) sub.textContent= GYM.mode==='circuit'&&typeof circSubText==='function'? circSubText() : elapsed();
+    const t=$('liveTime'); if(t) t.textContent=liveClock();
+    if(++n%5===0) persistLive();
+  },1000);
+}
+function drawLiveBar(){
+  const bar=$('liveBar'); if(!bar) return;
+  const show=liveSession()&&!gymShown();
+  bar.classList.toggle('on',show);
+  document.body.classList.toggle('has-live',show);
+  if(!show) return;
+  bar.innerHTML=`<button class="lvmain" data-liveresume="1" aria-label="Back to ${escHabit(GYM.name)}, ${liveSummary()}">
+      <span class="lvdot" aria-hidden="true"></span>
+      <span class="lvtx"><b>${escHabit(GYM.name)}</b><span><span id="liveTime">${liveClock()}</span> · ${liveSummary().replace(/^[^·]*· /,'')}</span></span>
+      <span class="lvgo">Resume</span></button>
+    <button class="lvend" data-liveend="1" aria-label="End this session without saving">End</button>`;
+}
+function minimiseGym(){
+  if(!GYM) return;
+  $('gym').classList.remove('on');
+  clearInterval(restTick); $('restBar').classList.remove('on');
+  if(GYM.done){ clearLive(); drawLiveBar(); return; }
+  /* opened and closed with nothing done or typed: not worth keeping */
+  if(!gymHasWork()){ GYM.done=true; GYM.dropped=true; clearInterval(gymTick); clearLive(); drawLiveBar(); renderAll(); return; }
+  persistLive(); ensureLiveTick(); drawLiveBar(); renderAll();
+}
+function resumeLive(){
+  if(!liveSession()) return false;
+  closeSheets();
+  $('gym').classList.add('on');
+  if(GYM.mode==='circuit') drawCircuit(); else drawGym();
+  ensureLiveTick(); drawLiveBar();
+  return true;
+}
+function endLive(){
+  if(!liveSession()) return;
+  const snap=JSON.parse(JSON.stringify(GYM));
+  GYM.done=true; GYM.dropped=true; clearInterval(gymTick); clearLive(); drawLiveBar(); renderAll();
+  toast(snap.name+' ended, nothing saved','Undo',()=>{ GYM=snap; persistLive(); ensureLiveTick(); drawLiveBar(); renderAll(); });
+}
+/* Start anywhere while a session is going opens that one. True when it did. */
+function liveGuard(){
+  if(!liveSession()||gymShown()) return false;
+  resumeLive(); toast(GYM.name+' is still going. Finish or end it to start another.');
+  return true;
+}
+/* back after a reload or a closed app */
+function restoreLive(){
+  let raw=null; try{ raw=localStorage.getItem(LIVE_KEY); }catch(e){}
+  if(!raw||liveSession()) return false;
+  try{
+    const o=JSON.parse(raw), G=o&&o.gym;
+    if(!G||G.done||!G.started||Date.now()-G.started>LIVE_MAX_MS||!Array.isArray(G.ex)){ clearLive(); return false; }
+    GYM=G; ensureLiveTick(); drawLiveBar(); renderAll();
+    return true;
+  }catch(e){ clearLive(); return false; }
+}
+/* the player's own changes save straight away; the tick catches typing */
+['drawGym','drawCircuit'].forEach(fn=>{
+  const orig=window[fn]; if(typeof orig!=='function') return;
+  window[fn]=function(){ const r=orig.apply(this,arguments); if(liveSession()){ persistLive(); if(!liveTick) ensureLiveTick(); } return r; };
+});
+document.addEventListener('change',e=>{ if(gymShown()&&e.target.closest&&e.target.closest('#gym')) persistLive(); });
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') persistLive(); });
+window.addEventListener('pagehide',persistLive);
+document.addEventListener('click',e=>{
+  if(e.target.closest('[data-liveresume]')){ resumeLive(); return; }
+  if(e.target.closest('[data-liveend]')){ endLive(); return; }
+},true);
+/* swipe down on the player's header minimises it, as a sheet would close */
+(function(){
+  let y0=null, dy=0;
+  const top=()=>document.querySelector('#gym .gymtop');
+  document.addEventListener('touchstart',e=>{ const t=top(); y0= t&&t.contains(e.target)&&gymShown()? e.touches[0].clientY : null; dy=0; },{passive:true});
+  document.addEventListener('touchmove',e=>{ if(y0===null) return; dy=e.touches[0].clientY-y0;
+    const g=$('gym'); if(dy>0&&g){ g.style.transition='none'; g.style.transform='translateY('+Math.min(dy,240)+'px)'; } },{passive:true});
+  document.addEventListener('touchend',()=>{ if(y0===null) return; const g=$('gym');
+    if(g){ g.style.transition=''; g.style.transform=''; }
+    if(dy>80) minimiseGym(); y0=null; dy=0; },{passive:true});
+})();
+/* for the tests */
+if(window.__G) Object.assign(window.__G,{nextUp,nextCandidates,nextCard,focusSignals,focusPills,dayClock,openSleepLog,saveSleep,hoursBetween,
+  sleepNightLabel,openCheckin,realAuto,warmFor,firstWarm,rememberWarmups,liveSession,gymHasWork,minimiseGym,resumeLive,endLive,restoreLive,
+  persistLive,liveGuard,drawLiveBar,liveSummary,isSearchBox,searchToTop,priorities,heroCard,clockOf,realSleep,openDay,LIVE_KEY});
 </script>
 <script>
 /* boot, once everything is defined */
@@ -10282,6 +10937,8 @@ S.week.forEach((d,i)=>{ d.today = i===dowIdx(); });
 ensurePlan();
 mountColophons();
 renderAll();
+/* build 59: a session left going before a reload comes back */
+if(S.profile.onboarded&&typeof restoreLive==='function') restoreLive();
 if(!S.profile.onboarded) startOnboarding();
 </script>
 
@@ -11629,7 +12286,10 @@ async function withdrawConsent(){
 }
 function eraseLocal(){
   try{ localStorage.removeItem(STORE_KEY); localStorage.removeItem(CLOUD_KEY);
-    ['gauntlet.v3','gauntlet.v2','gauntlet.v1',NUDGE_KEY,THEME_KEY].forEach(k=>localStorage.removeItem(k)); }catch(e){}
+    ['gauntlet.v3','gauntlet.v2','gauntlet.v1',NUDGE_KEY,THEME_KEY,'gauntlet.live'].forEach(k=>localStorage.removeItem(k)); }catch(e){}
+  /* build 59: a session in progress is kept on the device too; drop it so
+     leaving the page cannot write it back */
+  try{ if(typeof GYM!=='undefined'&&GYM){ GYM.done=true; GYM.dropped=true; } }catch(e){}
 }
 async function eraseEverything(){
   const r=await eraseRemote();
@@ -12865,7 +13525,7 @@ document.addEventListener('click',e=>{
   if(sc){ openSession(sc.dataset.sess); return; }
   if(e.target.closest('#allSess')){ openAllSessions(); return; }
   const rd=e.target.closest('[data-redo]');
-  if(rd){ const id=rd.dataset.redo; closeSheets(); startWorkout(id); }
+  if(rd){ const id=rd.dataset.redo; closeSheets(); if(!(typeof liveGuard==='function'&&liveGuard())) startWorkout(id); }
 });
 Object.assign(window.__G||{},{renderSettings,openThemeSheet,openSession,openAllSessions,workoutFor,setRow,prettyDateSafe});
 Object.assign(window.__G||{},{STYLES,circStyle,HIFB,HIFB_ORDER,HIFB_DAYS,hifbPattern,isHifb,hifbRunKm,hifbMins,parseSplit,perKm,runOf,gymRuns,startRun,stopRun,runStats,fadeText,

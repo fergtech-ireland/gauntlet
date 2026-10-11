@@ -6,4 +6,6 @@ S.week.forEach((d,i)=>{ d.today = i===dowIdx(); });
 ensurePlan();
 mountColophons();
 renderAll();
+/* build 59: a session left going before a reload comes back */
+if(S.profile.onboarded&&typeof restoreLive==='function') restoreLive();
 if(!S.profile.onboarded) startOnboarding();

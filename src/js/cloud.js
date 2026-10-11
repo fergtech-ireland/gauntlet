@@ -574,7 +574,10 @@ async function withdrawConsent(){
 }
 function eraseLocal(){
   try{ localStorage.removeItem(STORE_KEY); localStorage.removeItem(CLOUD_KEY);
-    ['gauntlet.v3','gauntlet.v2','gauntlet.v1',NUDGE_KEY,THEME_KEY].forEach(k=>localStorage.removeItem(k)); }catch(e){}
+    ['gauntlet.v3','gauntlet.v2','gauntlet.v1',NUDGE_KEY,THEME_KEY,'gauntlet.live'].forEach(k=>localStorage.removeItem(k)); }catch(e){}
+  /* build 59: a session in progress is kept on the device too; drop it so
+     leaving the page cannot write it back */
+  try{ if(typeof GYM!=='undefined'&&GYM){ GYM.done=true; GYM.dropped=true; } }catch(e){}
 }
 async function eraseEverything(){
   const r=await eraseRemote();

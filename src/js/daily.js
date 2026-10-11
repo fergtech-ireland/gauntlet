@@ -258,7 +258,9 @@ function openDay(){
   drawDay(); openSheet('dayCheck');
 }
 function drawDay(){
-  const t=S.targets, d=dayDraft, auto=autoOf(todayKey());
+  /* build 59: only a real tracker's sleep replaces the slider. The demo
+     stand-in used to, which left no way to put sleep in at all. */
+  const t=S.targets, d=dayDraft, auto=realAuto(todayKey());
   const nf=(k,label,target,step)=>`<div class="nf"><label>${label}</label>
     <input type="number" inputmode="decimal" step="${step||1}" data-day="${k}" value="${d[k]!==undefined&&d[k]!==null?d[k]:''}" placeholder="-">
     ${target?`<div class="tg">target ${target}</div>`:''}</div>`;
@@ -378,7 +380,7 @@ $('saveDay').addEventListener('click',()=>{
    wrong in a twenty second check-in that may be done before the session. */
 let ciDraft=null;
 function inlineCheckinHtml(){
-  const prev=today()||{}, auto=autoOf(todayKey());
+  const prev=today()||{}, auto=realAuto(todayKey());
   ciDraft={};
   const val=(k,v)=> v===null||v===undefined? (k==='sleep'?'not answered':'not rated') : (k==='sleep'? v+'h' : v+'/10');
   const row=(k,label,min,max,step,def)=>`<label for="ci_${k}">${label}</label>

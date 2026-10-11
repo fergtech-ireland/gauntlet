@@ -60,6 +60,12 @@ function runOf(r,easy){
   return {m:+r.m, pace: easy&&/fast|max/i.test(r.pace||'')? 'Steady' : (r.pace||''), startAt:null, endAt:null, ms:null, manual:false};
 }
 function newExEntry(row){
+  const e=newExEntryBase(row), w=(typeof warmFor==='function')? warmFor(row.exId) : null;
+  /* build 59: the warm up from last time comes back, ready to tick */
+  if(w) e.sets.unshift({kg:w.kg,reps:w.reps,warm:true,done:false});
+  return e;
+}
+function newExEntryBase(row){
   const rest=S.restPrefs[row.exId]!==undefined? S.restPrefs[row.exId] : (row.rest||90);
   const prev=lastSets(row.exId);
   const rx=nextPrescription(row.exId,row);
@@ -288,7 +294,7 @@ function drawGym(){
         const kg=work.length? Math.max(...work) : null;
         const pl=kg? plateLine(e.exId,kg) : '';
         return pl? `<div class="tempoline">${pl}</div>` : ''; })()}
-      <div class="setbtns"><button data-addset="${i}">+ Set</button><button data-addwarm="${i}">+ Warm up</button>
+      <div class="setbtns"><button data-addset="${i}">+ Set</button>${e.sets.some(s=>s.warm)? `<button data-delwarm="${i}">Remove warm up</button>` : `<button data-addwarm="${i}">+ Warm up</button>`}
         ${e.sets.length>1?`<button data-delset="${i}">Remove set</button>`:''}${GYM.hifb&&!e.run?`<button data-addrun="${i}">+ Run after</button>`:''}</div>
     </div>${runAt(String(i))}`;
   }).join('')+runAt('out')
@@ -380,15 +386,19 @@ document.addEventListener('click',e=>{
     const working=GYM.ex[i].sets.filter(x=>!x.warm);
     const src=working.filter(x=>x.done).pop() || working[working.length-1] || {};
     GYM.ex[i].sets.push({kg:src.kg||'',reps:src.reps||'',warm:false,done:false}); drawGym(); }
+  /* build 59: one warm up set per exercise, remembered for next time */
   const aw=e.target.closest('[data-addwarm]');
   if(aw){ const i=+aw.dataset.addwarm, e2=GYM.ex[i];
+    if(e2.sets.some(s=>s.warm)) return;
     const work=e2.sets.filter(s=>!s.warm&&s.kg!=='').map(s=>+s.kg);
     const target=work.length? Math.max(...work) : (e2.rx&&e2.rx.kg) || 0;
-    const ramp=warmSetsFor(e2.exId,target);
-    if(ramp.length){ e2.sets=ramp.concat(e2.sets.filter(s=>!s.warm)); drawGym();
-      toast(ramp.length+' warm up sets built from '+target+'kg'); }
-    else { e2.sets.unshift({kg:'',reps:'',warm:true,done:false}); drawGym();
-      toast('Put a working weight in and this fills itself'); } }
+    const w=warmFor(e2.exId)||firstWarm(e2.exId,target);
+    e2.sets.unshift({kg:w.kg,reps:w.reps,warm:true,done:false}); delete e2.warmRemoved; drawGym();
+    toast(w.kg!==''? 'Warm up: '+w.kg+'kg × '+w.reps+'. It is kept for next time' : 'Warm up added. Whatever you put in is kept for next time'); }
+  const dw=e.target.closest('[data-delwarm]');
+  if(dw){ const i=+dw.dataset.delwarm, e2=GYM.ex[i], before=e2.sets.slice();
+    e2.sets=e2.sets.filter(s=>!s.warm); e2.warmRemoved=true; drawGym();
+    toast('Warm up removed for next time too','Undo',()=>{ e2.sets=before; delete e2.warmRemoved; drawGym(); }); }
   const ds=e.target.closest('[data-delset]');
   if(ds){ const i=+ds.dataset.delset;
     if(GYM.ex[i].sets.length>1){ const gone=GYM.ex[i].sets.pop(); drawGym();
@@ -410,11 +420,8 @@ document.addEventListener('input',e=>{
 });
 $('restPlus').addEventListener('click',()=>{ rest.left+=15; rest.total=Math.max(rest.total||0,rest.left); paintRest(); });
 $('restSkip').addEventListener('click',()=>{ clearInterval(restTick); $('restBar').classList.remove('on'); });
-$('gymClose').addEventListener('click',()=>{
-  const work=GYM&&!GYM.done&&(GYM.mode==='circuit'? circuitDone()>0 : gymSets()>0);
-  $('gym').classList.remove('on'); clearInterval(restTick); $('restBar').classList.remove('on');
-  if(work) toast('Session paused, nothing lost','Resume',()=>{ $('gym').classList.add('on');
-    GYM.mode==='circuit'? drawCircuit() : drawGym(); });
-  else clearInterval(gymTick);
-});
+/* Build 59: closing minimises. The session keeps going with a bar above the
+   nav to come back to it (live.js); only one opened and left untouched is
+   dropped. */
+$('gymClose').addEventListener('click',()=>{ minimiseGym(); });
 

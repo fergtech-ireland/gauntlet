@@ -89,6 +89,8 @@ function daysWith(n,test){
 }
 function realSleep(r){
   if(!r) return null;
+  /* build 59: sleep logged by hand wins over a tracker's figure for that night */
+  if(r.sleepManual&&typeof r.sleep==='number') return r.sleep;
   if(r.auto&&!r.auto.sim&&typeof r.auto.sleep==='number') return r.auto.sleep;
   return typeof r.sleep==='number'? r.sleep : null;
 }
@@ -156,7 +158,7 @@ function openSleep(){
     ${lines.length? `<div class="sstats">${lines.join('')}</div>` : `<div class="note">A few more nights and this shows your average, how short you are against ${tg.lo} hours, and how steady it is.</div>`}
     <div class="method" style="margin-top:10px"><b>Tonight</b><span>To get ${sleepTarget().lo+0.5} hours before your usual ${(S.profile&&S.profile.wakeTime)||EAT_CLOCK.wake} start, lights out around <strong class="inl">${lightsOut()}</strong>. Keep the last coffee well before that, and a similar time each night helps as much as the hours.</span></div>
     <div class="note">How regular your sleep is, going to bed and getting up at similar times, may matter as much as how long it is. Measuring that needs bed and wake times, which a connected tracker provides; the hours here are what you logged.</div>
-    <button class="sheetcta" data-glance="checkin" style="width:100%">Log last night's sleep</button>
+    <button class="sheetcta" data-sleeplog="${todayKey()}" style="width:100%">Log sleep, last night or another</button>
   </div>`;
   openSheet('altSheet');
 }
@@ -639,16 +641,15 @@ function readyRing(){
     r.level==='building'? 'Readiness: building your baseline. Tap for what it needs.' : `Readiness: ${r.text.toLowerCase()}. Tap for why.`);
 }
 function ringsRow(){ return `<div class="rings">${readyRing()}${foodRing()}${trainRing()}</div>`; }
-/* What is moving readiness, how much that rests on, and last night's sleep or
-   today's steps, one tap from logging. */
-function driverLine(){
+/* What is moving readiness and how much that rests on, then (build 59) the
+   one or two things furthest off for this time of day, from focusPills() in
+   next.js. It used to show last night's sleep whatever the data said. */
+function driverLine(nextId){
   const r=readiness();
   const text= r.level==='building'? r.text : (r.drivers.length? 'Driven by '+r.drivers.join('; ')+'.' : 'Nothing well away from your usual.');
   const conf= r.level==='building'? '' : confChip({level: r.baseDays>=14?'good':(r.baseDays>=7?'fair':'building'), text:'based on '+r.baseDays+' of the last 28 days'});
-  const st=(typeof stepsToday==='function')? stepsToday() : null, sl=realSleep(S.days[todayKey()]), tg=sleepTarget();
-  const sleepPill=`<button class="pill" data-glance="sleep">${sl===null? 'Sleep: log last night' : 'Slept '+sl+'h · aim '+(isTeen()? tg.t : tg.lo+'h or more')}</button>`;
-  const stepPill= st===null? '' : `<button class="pill" data-glance="steps">${num(st)} steps of ${num(stepTarget())}</button>`;
-  return `<div class="driver"><p>${text} ${conf}</p><div class="pills">${sleepPill}${stepPill}</div></div>`;
+  const pills=(typeof focusPills==='function')? focusPills(nextId) : '';
+  return `<div class="driver"><p>${text} ${conf}</p>${pills? `<div class="pills" aria-label="Worth watching today">${pills}</div>` : ''}</div>`;
 }
 function openReadiness(){
   const r=readiness();
@@ -682,42 +683,62 @@ function heroKicker(d,done){
   const m=clockOf('train'), t=minToHhmm(m), when= m>=17*60? 'TONIGHT' : (m<12*60? 'THIS MORNING' : 'TODAY');
   return `${when}, ${t} · ${style}`;
 }
+/* ---------- the session card, build 59 ----------
+   It was a big black block on a light page, the heaviest thing on the screen
+   even on a rest day or once the session was done. Now it is a card like the
+   others: a small tinted icon, what and when, the chips, the progression line,
+   one green Start (Resume when a session is going), and the rest as quiet
+   links. Done and rest days shrink to a line or two. Every action it had is
+   still here, with the same names. */
+const SESS_ICON={
+  lift:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg>',
+  run:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="4.5" r="1.8"/><path d="m8 21 3-6 3 2v4M6 12l3-3 4 1 3 4 3 1M11 15l-2-3"/></svg>',
+  circuit:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg>',
+  walk:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4.5" r="1.8"/><path d="m9 21 2.5-6M13 21v-4l-2-3 1-5 3 3 3 1M10 9l-3 3"/></svg>',
+  rest:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
+  done:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg>'};
 function heroCard(plan,d,i){
   const st=stepsToday(), done=dayDone(i), isWalk=d.slot==='walk', rest=!d.type||d.slot==='rest';
   const walkPct=st!==null? Math.min(100,Math.round(st/stepTarget()*100)) : 0;
-  const why=plan.why[0]? `<button class="whyline" data-whytoday="1" aria-expanded="false">Why today looks like this <span aria-hidden="true">›</span></button>
-      <div class="why" id="whyToday" hidden>${plan.why[0]}</div>` : '';
+  const whyBtn=plan.why[0]? `<button class="whyline" data-whytoday="1" aria-expanded="false" aria-label="Why today looks like this">Why today <span aria-hidden="true">›</span></button>` : '';
+  const whyBox=plan.why[0]? `<div class="why" id="whyToday" hidden>${plan.why[0]}</div>` : '';
+  const head=(icon,tone,kick,title,extra)=>`<div class="shead"><span class="sic" style="background:var(--${tone}-tint);color:var(--${tone}-text)">${SESS_ICON[icon]}</span>
+      <div class="stx"><div class="kicker">${kick}</div><h2>${title}</h2></div>${extra||''}</div>`;
   if(rest) return `<div class="hero restday">
-    <div class="kicker">${DAYS[i].toUpperCase()} · REST</div>
-    <h2>${dayLabel(d)||'Rest'}</h2>
+    ${head('rest','cyan',DAYS[i].toUpperCase()+' · REST',dayLabel(d)||'Rest')}
     <div class="sub">Nothing owed. Rest is part of it.</div>
-    ${why}
-    <div class="ctarow"><button class="cta" data-swapto="${i}:walk">Walk instead</button><button class="cta ghost" data-swap="${i}">Change this day</button></div>
-    <button class="skipbtn" data-go="plan">See the week</button></div>`;
+    <div class="ctarow"><button class="cta ghost" data-swapto="${i}:walk">Walk instead</button><button class="cta ghost" data-swap="${i}">Change this day</button></div>
+    <div class="herofoot">${whyBtn}<button class="skipbtn" data-go="plan">See the week</button></div>${whyBox}</div>`;
+  const live=(typeof liveSession==='function')&&liveSession();
   const chips=[daySub(d)];
   if(d.mins&&!isWalk) chips.push('about '+d.mins+' min');
   if(d.setDelta) chips.push('one set lighter than usual');
   if(d.deload) chips.push('easy week');
-  const prog=isWalk? '' : heroProgress(d);
-  return `<div class="hero">
-    <div class="kicker">${isWalk? DAYS[i].toUpperCase()+' · WALK' : heroKicker(d,done)}</div>
-    <h2>${dayLabel(d)}</h2>
+  const prog=isWalk||done? '' : heroProgress(d);
+  const icon= done? 'done' : (isWalk? 'walk' : (d.runId? 'run' : (d.circuitId? 'circuit' : 'lift')));
+  const tone= done||live? 'green' : 'cyan';
+  const kick= isWalk? DAYS[i].toUpperCase()+' · WALK' : (live? 'IN PROGRESS · '+liveClock() : heroKicker(d,done));
+  const has=d.templateId||d.runId||d.circuitId;
+  const main= isWalk? (walkDone()? `<div class="doneline">Done. ${num(st)} steps in.</div>` : '')
+    : live? `<div class="ctarow"><button class="cta" id="startToday">Resume session</button>${has? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`
+    : done? `<div class="ctarow"><button class="cta ghost" id="startToday">Do it again</button>${has? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`
+    : `<div class="ctarow"><button class="cta" id="startToday">Start session</button>${has? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`;
+  return `<div class="hero ${done?'isdone':''} ${live?'islive':''}">
+    ${head(icon,tone,kick,dayLabel(d))}
     <div class="chips">${chips.filter(Boolean).map(c=>`<span>${c}</span>`).join('')}</div>
     ${isWalk&&st!==null
       ? `<div class="track"><div class="tnum">${num(st)}<small> of ${num(stepTarget())} steps</small></div>
           <div class="bar"><i style="width:${walkPct}%"></i></div>
           <div class="tsrc">Counted by ${sourceName()}. Nothing to log.</div></div>` : ''}
     ${prog? `<div class="prog">${prog}</div>` : ''}
-    ${isWalk
-      ? (walkDone()? `<div class="doneline">Done. ${num(st)} steps in.</div>` : `<div class="ctarow"><button class="cta ghost" data-swap="${i}">Change this day</button></div>`)
-      : `<div class="ctarow"><button class="cta" id="startToday">${done?'Do it again':'Start session'}</button>
-          ${d.templateId||d.runId||d.circuitId? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`}
-    ${d.type&&!isWalk&&!(d.templateId||d.runId||d.circuitId)? `<button class="viewbtn" data-view="${i}">See what is in it</button>`:''}
-    ${why}
+    ${main}
+    ${d.type&&!isWalk&&!has? `<button class="viewbtn" data-view="${i}">See what is in it</button>`:''}
     <div class="herofoot">
-      ${d.type&&!isWalk&&!done? `<button class="skipbtn" data-restday="${i}">Not today</button>`:''}
-      ${isWalk? '' : `<button class="skipbtn" data-swap="${i}">Change this day</button>`}
+      ${whyBtn}
+      ${d.type&&!isWalk&&!done&&!live? `<button class="skipbtn" data-restday="${i}">Not today</button>`:''}
+      <button class="skipbtn" data-swap="${i}">Change this day</button>
     </div>
+    ${whyBox}
     ${d.exclude&&d.exclude.length?`<div class="note">Leaving out ${d.exclude.join(', ')} while it settles.</div>`:''}
   </div>`;
 }
@@ -793,13 +814,24 @@ function renderToday(){
   /* priorities go above the session when any of them is urgent (score 70 or
      more: a check in due, poor sleep, a pain check, lower readiness on a
      training day, a stressful yesterday) */
-  const prios=priorities(), urgent=prios.some(p=>p.score>=70);
+  /* Build 59: the most useful next step for this time of day sits straight
+     under the rings (nextUp() in next.js), and whatever it shows is not
+     repeated in the priorities. The session card comes before the meals while
+     the session is still ahead of the next meal; once it is done, or on a
+     rest day, the meals come first. */
+  const nx=(typeof nextUp==='function')? nextUp() : null;
+  const SAME={checkin:'checkin',pain:'pain',meal:'food',weigh:'weigh',sleep:'sleep',bed:'sleep'};
+  const prios=priorities().filter(p=>!nx||SAME[nx.top.id]!==p.id), urgent=prios.some(p=>p.score>=70);
   const hero=heroCard(plan,d,i), pr=prioritiesRow(prios);
+  const sessFirst=(()=>{ if(!d.type||d.slot==='rest'||d.slot==='walk'||dayDone(i)) return false;
+    try{ const c=dayClock(), ms=mealSlots().slots.filter(x=>x.role&&!x.skipped).map(x=>c.rel(x.min)).filter(m=>m>=c.n-60);
+      return !ms.length||c.train<=Math.min(...ms)+60; }catch(e){ return true; } })();
+  const sessAndMeals= sessFirst? (urgent? pr+hero : hero+pr)+mealsList() : (urgent? pr : '')+mealsList()+hero+(urgent? '' : pr);
   $('todayView').innerHTML=`
   ${ringsRow()}
-  ${driverLine()}
-  ${urgent? pr+hero : hero+pr}
-  ${mealsList()}
+  ${nx? nextCard(nx) : ''}
+  ${driverLine(nx&&nx.top.id)}
+  ${sessAndMeals}
   ${quickTiles()}
   <div class="goalrow">${targetLine()}</div>
   <div class="sechead"><h2>Your week so far</h2><button data-go="plan">The whole week</button></div>

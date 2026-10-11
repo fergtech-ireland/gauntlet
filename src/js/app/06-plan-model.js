@@ -747,6 +747,8 @@ function restorePlan(snap,msg){
 }
 function startPlanDay(day){
   if(!day) return null;
+  /* build 59: a session already going opens instead of a new one over it */
+  if(typeof liveGuard==='function'&&liveGuard()) return GYM;
   if(day.templateId) return startWorkout(day.templateId,{exclude:day.exclude,setDelta:day.setDelta,deload:day.deload});
   if(day.circuitId&&typeof startCircuit==='function') return startCircuit(day.circuitId);
   if(day.runId){ const sess=runSession(day.runId); if(sess) return startSession(sess); }

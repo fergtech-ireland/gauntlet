@@ -556,6 +556,7 @@ function drawFood(){
     </div>`}
     <div id="foodList">${foodListHTML()}</div>
     <div class="fdone"><button class="sheetcta" id="foodDone">${foodCameFromLog?'Back to the log':'Done'}</button></div>`;
+  foodSearching();
 }
 /* Adding a food you have not got in the list, without leaving the sheet. */
 /* Fibre today: what counted, what did not, where it came from, and why 30g */
@@ -675,6 +676,10 @@ document.addEventListener('input',e=>{
     if(el){ const sp=el.querySelector('span'); if(sp) sp.textContent=targetKcalPreview(); } }
   /* Only the results redraw, so the input keeps its focus, its cursor and its
      composition state on its own. */
-  if(e.target.id==='foodSearch'){ foodQuery=e.target.value; drawFoodList(); }
+  if(e.target.id==='foodSearch'){ foodQuery=e.target.value; drawFoodList(); foodSearching(); }
 });
+/* build 59: only the list redraws while typing, so the plate, shortcuts and
+   categories stayed above the results and pushed them under the keyboard.
+   They step aside while there is text in the box. */
+function foodSearching(){ const b=$('foodBody'); if(b) b.classList.toggle('q',!!foodQuery.trim()); }
 

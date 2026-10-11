@@ -175,7 +175,7 @@ document.addEventListener('click',e=>{
   if(circDraft&&circDraft.items.some(x=>x.move)&&(e.target.closest('#circAddRun')||e.target.closest('#circAddStation'))){
     circDraft.items.push(e.target.closest('#circAddRun')? {t:'run',move:'run',amt:400,kg:null} : {t:'station',move:'burpee',amt:10,kg:null});
     drawCircEdit(); e.stopImmediatePropagation(); return; }
-  const cs=e.target.closest('[data-circstart]'); if(cs){ closeSheets(); startCircuit(cs.dataset.circstart); }
+  const cs=e.target.closest('[data-circstart]'); if(cs){ closeSheets(); if(!(typeof liveGuard==='function'&&liveGuard())) startCircuit(cs.dataset.circstart); }
   const rs2=e.target.closest('[data-runstart]'); if(rs2){ closeSheets(); const sess=runSession(rs2.dataset.runstart); if(sess) startSession(sess); }
   if(e.target.closest('#circNew')){
     const base=(S.circuits||[])[0];
@@ -206,7 +206,7 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('click',e=>{
   const st=e.target.closest('[data-tplstart]');
-  if(st){ startWorkout(st.dataset.tplstart||null); return; }
+  if(st){ if(!(typeof liveGuard==='function'&&liveGuard())) startWorkout(st.dataset.tplstart||null); return; }
   const ed=e.target.closest('[data-tpledit]');
   if(ed){ swapReturn= ed.closest('#swapSheet')? {n:swapView.n} : null; openTplEdit(ed.dataset.tpledit); return; }
   if(e.target.closest('[data-tplopen]')){ drawTemplates(); openSheet('tplSheet'); }

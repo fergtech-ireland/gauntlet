@@ -716,6 +716,7 @@ S.templates=Array.isArray(S.templates)&&S.templates.length? S.templates : seedTe
     S.templates=S.templates.concat(add); S.templatesAdded=(S.templatesAdded||0)+add.length; } })();
 S.workouts=Array.isArray(S.workouts)? S.workouts : [];
 S.restPrefs=S.restPrefs&&typeof S.restPrefs==='object'? S.restPrefs : {};
+S.warmups=S.warmups&&typeof S.warmups==='object'? S.warmups : {};
 S.habits=(S.habits&&typeof S.habits==='object')? S.habits : {};
 S.customHabits=Array.isArray(S.customHabits)? S.customHabits : [];
 /* the single habit from the earlier version becomes the habit to start */
@@ -726,7 +727,7 @@ S.target=(S.target&&typeof S.target==='object')? S.target : null;
 S.customFoods=Array.isArray(S.customFoods)? S.customFoods : [];
 S.savedMeals=Array.isArray(S.savedMeals)? S.savedMeals : [];
 const _fresh2=freshState;
-freshState=function(){ const f=_fresh2(); f.templates=seedTemplates(); f.runPlans=seedRunPlans(); f.circuits=seedCircuits(); f.workouts=[]; f.restPrefs={}; f.customFoods=[]; f.savedMeals=[]; return f; };
+freshState=function(){ const f=_fresh2(); f.templates=seedTemplates(); f.runPlans=seedRunPlans(); f.circuits=seedCircuits(); f.workouts=[]; f.restPrefs={}; f.warmups={}; f.customFoods=[]; f.savedMeals=[]; return f; };
 
 /* ---------- history and records ---------- */
 const e1RM=(kg,reps)=>reps>0? Math.round(kg*(1+reps/30)) : 0;
@@ -953,6 +954,39 @@ function warmSetsFor(exId,workKg){
     out.push({kg,reps:r.reps,warm:true,done:false});
   });
   return out;
+}
+/* ---------- one warm up set per exercise, build 59 ----------
+   Feargal does one warm up set per exercise and wants it kept: whatever
+   weight and reps it ended on are there next time, ready to tick. Stored per
+   movement in S.warmups ({kg, reps}, or false once removed so history does
+   not bring it back). Before build 59 warm ups were only in the session
+   records, so a movement with none stored takes the last warm up set from
+   its most recent session. A first one is half the working weight for 8
+   reps: a rule of thumb, not a prescription, and editable like any set. */
+function warmFor(exId){
+  const m=S.warmups||{}, v=m[exId];
+  if(v===false) return null;
+  if(v&&v.reps!==undefined&&v.reps!=='') return {kg:v.kg===''||v.kg===undefined? '' : +v.kg, reps:+v.reps};
+  for(const w of (S.workouts||[])){ const e=(w.ex||[]).find(x=>x.exId===exId); if(!e) continue;
+    const ws=(e.sets||[]).filter(s=>s.warm); if(!ws.length) return null;
+    const last=ws[ws.length-1]; return {kg:last.kg===''? '' : +last.kg, reps:+last.reps||8}; }
+  return null;
+}
+function firstWarm(exId,workKg){
+  if(!workKg||workKg<=0) return {kg:'',reps:8};
+  const x=exOf(exId), bar=x.eq==='barbell', step=bar? 2.5 : (incrementFor(exId)||2.5);
+  let kg=roundTo(workKg*0.5,step); if(bar&&kg<BAR_KG) kg=Math.min(BAR_KG,workKg);
+  if(kg>=workKg) kg=Math.max(0,+(workKg-step).toFixed(2));
+  return {kg,reps:8};
+}
+/* keep the warm up each movement ended the session on */
+function rememberWarmups(G){
+  S.warmups=S.warmups&&typeof S.warmups==='object'? S.warmups : {};
+  (G.ex||[]).forEach(e=>{
+    const ws=e.sets.filter(s=>s.warm);
+    if(ws.length){ const w=ws[ws.length-1]; if(w.reps!==''&&w.reps!==undefined) S.warmups[e.exId]={kg:w.kg===''? '' : +w.kg, reps:+w.reps}; }
+    else if(e.warmRemoved) S.warmups[e.exId]=false;
+  });
 }
 /* what actually goes on each side of the bar */
 function platesFor(kg,barKg){

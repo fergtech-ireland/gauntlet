@@ -286,7 +286,7 @@ setTimeout(() => {
     const html = require('fs').readFileSync(require('path').join(__dirname, 'index.html'), 'utf8');
     const day = css.slice(css.indexOf(':root{'), css.indexOf('}', css.indexOf(':root{')));
     const night = css.slice(css.indexOf(':root[data-theme="night"]{'), css.indexOf('}', css.indexOf(':root[data-theme="night"]{')));
-    const used = [...new Set([...html.matchAll(/var\(--([a-z0-9-]+)/g)].map(m => m[1]))].filter(v => !['tone', 'keyboard', 'font-ui', 'font-num', 'shadow'].includes(v));
+    const used = [...new Set([...html.matchAll(/var\(--([a-z0-9-]+)/g)].map(m => m[1]))].filter(v => !['tone', 'keyboard', 'vvh', 'font-ui', 'font-num', 'shadow'].includes(v));
     const missing = used.filter(v => !new RegExp('--' + v + ':').test(day) || (!new RegExp('--' + v + ':').test(night) && !/^font-/.test(v)));
     if (missing.length) console.log('    missing tokens: ' + missing.join(', '));
     return used.length > 20 && !missing.length; })());

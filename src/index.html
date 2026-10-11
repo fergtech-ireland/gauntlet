@@ -106,6 +106,9 @@ var m=document.getElementById('themeColor');if(m)m.setAttribute('content',t==='n
   <button class="tab" role="tab" aria-selected="false" data-go="eat"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10M17 3c-2 2-3 5-3 8h3v10"/></svg><span>Eat</span></button>
   <button class="tab" role="tab" aria-selected="false" data-go="progress"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>You</span><i class="badge" id="youBadge">0</i></button>
 </nav>
+<!-- Build 59: a session left going shows here, above the nav, until it is
+     finished or ended (live.js). -->
+<div class="livebar" id="liveBar" role="region" aria-label="Session in progress"></div>
 <div class="scrim" id="scrim"></div>
 
 <div class="sheet" id="sessSheet" role="dialog" aria-modal="true" tabindex="-1">
@@ -248,7 +251,7 @@ var m=document.getElementById('themeColor');if(m)m.setAttribute('content',t==='n
        pinned at the bottom with Skip. -->
   <div class="gymtop">
     <div class="gymbar">
-      <button class="iconbtn" id="gymClose" aria-label="Pause and close">
+      <button class="iconbtn" id="gymClose" aria-label="Minimise, the session keeps going">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
       <div class="t"><div class="n" id="gymName">Workout</div><div class="s" id="gymSub">0:00</div></div>
       <button class="fin" id="gymFinish">Finish</button>
@@ -340,6 +343,8 @@ var m=document.getElementById('themeColor');if(m)m.setAttribute('content',t==='n
 <!-- include: js/workouts/04-player-finish.js -->
 <!-- include: js/workouts/05-templates-editors.js -->
 <!-- include: js/eat.js -->
+<!-- include: js/next.js -->
+<!-- include: js/live.js -->
 </script>
 <script>
 <!-- include: js/boot.js -->

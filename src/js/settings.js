@@ -334,7 +334,7 @@ document.addEventListener('click',e=>{
   if(sc){ openSession(sc.dataset.sess); return; }
   if(e.target.closest('#allSess')){ openAllSessions(); return; }
   const rd=e.target.closest('[data-redo]');
-  if(rd){ const id=rd.dataset.redo; closeSheets(); startWorkout(id); }
+  if(rd){ const id=rd.dataset.redo; closeSheets(); if(!(typeof liveGuard==='function'&&liveGuard())) startWorkout(id); }
 });
 Object.assign(window.__G||{},{renderSettings,openThemeSheet,openSession,openAllSessions,workoutFor,setRow,prettyDateSafe});
 Object.assign(window.__G||{},{STYLES,circStyle,HIFB,HIFB_ORDER,HIFB_DAYS,hifbPattern,isHifb,hifbRunKm,hifbMins,parseSplit,perKm,runOf,gymRuns,startRun,stopRun,runStats,fadeText,

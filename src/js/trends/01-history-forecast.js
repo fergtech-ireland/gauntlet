@@ -127,13 +127,13 @@ function tdeeEstimate(kg,stepsPerDay,liftMinPerDay){
 }
 /* exponentially weighted trend, so one heavy morning does not become a direction */
 function trendSeries(){
-  const pts=S.weights.slice(); if(!pts.length) return [];
+  const pts=weighIns(); if(!pts.length) return [];
   let t=pts[0].kg; return pts.map((p,i)=>{ t = i? t+SCI.ewmaAlpha*(p.kg-t) : p.kg; return {d:p.d,kg:+t.toFixed(3),raw:p.kg}; });
 }
 const trendNow=()=>{ const t=trendSeries(); return t.length? t[t.length-1].kg : (S.profile.weight||null); };
 function weightSlopePerDay(windowDays){
   const cut=windowDays? addDays(todayKey(),-windowDays) : null;
-  const pts=S.weights.filter(p=>!cut||p.d>=cut);
+  const pts=weighIns().filter(p=>!cut||p.d>=cut);
   if(pts.length<3) return null;
   const t0=dateOf(pts[0].d).getTime();
   const xs=pts.map(p=>(dateOf(p.d).getTime()-t0)/864e5), ys=pts.map(p=>p.kg);
@@ -312,8 +312,7 @@ function reviewWeek(weekOf){
    see it. */
 const CHART_DAYS_BACK=90, CHART_DAYS_FWD=28;
 function weightSeries(){
-  const all=(S.weights||[]).filter(p=>p&&typeof p.kg==='number'&&p.d).slice();
-  all.sort((a,b)=>a.d<b.d?-1:1);
+  const all=weighIns();
   const cut=addDays(todayKey(),-CHART_DAYS_BACK);
   const inWindow=all.filter(p=>p.d>=cut);
   return inWindow.length>=2? inWindow : all.slice(-12);

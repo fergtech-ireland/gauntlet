@@ -36,21 +36,18 @@ function weightGoalCard(){
   if(!ws.length) return `<section class="ycard" id="yWeight"><div class="ych"><b>Weight</b></div>
     <p class="ynote">Nothing logged yet. Once a week is plenty.</p>
     <button class="mini go" data-weigh="1">Weigh in</button></section>`;
-  const now=currentKg(), first=ws[0], tg=S.target&&S.target.kind==='weight'? S.target : null;
+  /* build 62: the latest weigh in, the goal's start and the goal, from
+     weightProgress(), the same figures as Today's weight line and the goal */
+  const wp=weightProgress(), now=wp.now, tg=S.target&&S.target.kind==='weight'? S.target : null;
   const big=showW(now,imp).split(' ');
-  const change=+(now-first.kg).toFixed(1), weeks=Math.round(gapDaysBetween(first.d,todayKey())/7);
-  const moved= ws.length<2||Math.abs(change)<0.1? (ws.length<2? 'one weigh in so far' : 'level so far')
-    : (change<0? 'down ' : 'up ')+showW(Math.abs(change),imp).split(' ')[0]+(weeks>=1? ' in '+weeks+' week'+(weeks===1?'':'s') : ' so far');
+  const change=wp.moved, since=wp.first? wp.first.d : todayKey(), weeks=Math.round(gapDaysBetween(since,todayKey())/7);
+  const moved= weighIns().length<2&&Math.abs(change)<0.1? 'one weigh in so far' : (Math.abs(change)<0.1? 'level since the start'
+    : (change<0? 'down ' : 'up ')+showW(Math.abs(change),imp).split(' ')[0]+(weeks>=1? ' in '+weeks+' week'+(weeks===1?'':'s') : ' so far'));
   let right='', bar='';
-  if(tg&&tg.hit){
-    right=`Goal met ${prettyDateSafe(tg.hit)}`;
-    bar=`<div class="ybar"><i style="width:100%"></i></div>`;
-  } else if(tg){
-    const from=+(tg.from||first.kg), goal=+tg.value, span=from-goal;
-    const f= Math.abs(span)<0.05? 1 : Math.max(0,Math.min(1,(from-now)/span));
-    right=`${showW(Math.abs(now-goal),imp)} to go`;
-    bar=`<div class="ybar" role="img" aria-label="${Math.round(f*100)}% of the way from ${showW(from,imp)} to ${showW(goal,imp)}"><i style="width:${Math.round(f*100)}%"></i></div>
-      <div class="yends"><span>Start ${showW(from,imp).split(' ')[0]}</span><span>Goal ${showW(goal,imp).split(' ')[0]}</span></div>`;
+  if(tg){
+    right= wp.hit? (tg.hit? `Goal met ${prettyDateSafe(tg.hit)}` : 'Goal met') : `${showW(wp.toGo,imp)} to go`;
+    bar=`<div class="ybar" role="img" aria-label="${wp.pct}% of the way from ${showW(wp.start,imp)} to ${showW(wp.goal,imp)}"><i style="width:${wp.pct}%"></i></div>
+      <div class="yends"><span>Start ${showW(wp.start,imp).split(' ')[0]}</span><span>Goal ${showW(wp.goal,imp).split(' ')[0]}</span></div>`;
   }
   return `<section class="ycard" id="yWeight">
     <div class="ych"><b>Weight</b>${right? `<span>${right}</span>` : `<button class="ylink" data-setting="goal">Set a goal</button>`}</div>

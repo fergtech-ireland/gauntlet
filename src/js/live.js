@@ -131,4 +131,4 @@ document.addEventListener('click',e=>{
 /* for the tests */
 if(window.__G) Object.assign(window.__G,{nextUp,nextCandidates,nextCard,focusSignals,focusPills,dayClock,openSleepLog,saveSleep,hoursBetween,
   sleepNightLabel,openCheckin,realAuto,warmFor,firstWarm,rememberWarmups,liveSession,gymHasWork,minimiseGym,resumeLive,endLive,restoreLive,
-  persistLive,liveGuard,drawLiveBar,liveSummary,isSearchBox,searchToTop,priorities,heroCard,clockOf,realSleep,openDay,coachCard,LIVE_KEY});
+  persistLive,liveGuard,drawLiveBar,liveSummary,isSearchBox,searchToTop,priorities,heroCard,clockOf,realSleep,openDay,coachCard,weighIns,weightNow,weightStart,weightProgress,tidyWeights,LIVE_KEY});

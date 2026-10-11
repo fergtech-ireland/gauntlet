@@ -9,7 +9,7 @@
 const HUE={run:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},workout:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},
   fast:{deep:'var(--amber-text)',tint:'var(--amber-tint)'},meal:{deep:'var(--coral-text)',tint:'var(--coral-tint)'},any:{deep:'var(--ink)',tint:'var(--track)'},
   walk:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},rest:{deep:'var(--mute)',tint:'var(--track)'},checkin:{deep:'var(--green-text)',tint:'var(--green-tint)'}};
-const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='61';
+const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='62';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -198,7 +198,7 @@ function setTarget(kind,value,by,exId){
 function clearTarget(){ S.target=null; save(); }
 function targetNow(){
   const t=S.target; if(!t) return null;
-  if(t.kind==='weight') return S.weights.length? S.weights[S.weights.length-1].kg : null;
+  if(t.kind==='weight') return (S.weights||[]).length? weightNow() : null;
   if(t.kind==='runkm'){
     const runs=S.mine.filter(p=>p.kind==='run'&&p.km); 
     return runs.length? Math.max(...runs.map(p=>+p.km)) : null;
@@ -218,7 +218,7 @@ function targetNow(){
 function targetProgress(){
   const t=S.target; if(!t) return null;
   const now=targetNow(); if(now===null) return null;
-  const start=t.from!==undefined? t.from : (t.kind==='weight'&&S.weights.length? S.weights[0].kg : 0);
+  const start=t.kind==='weight'? weightStart() : (t.from!==undefined? t.from : 0);
   const falling=t.kind==='weight'&&t.value<start;
   const span=Math.abs(t.value-start)||1;
   const moved=falling? (start-now) : (now-start);

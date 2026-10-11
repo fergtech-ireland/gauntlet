@@ -1747,7 +1747,7 @@ body.has-live .toast:not(.top){bottom:140px}
 const HUE={run:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},workout:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},
   fast:{deep:'var(--amber-text)',tint:'var(--amber-tint)'},meal:{deep:'var(--coral-text)',tint:'var(--coral-tint)'},any:{deep:'var(--ink)',tint:'var(--track)'},
   walk:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},rest:{deep:'var(--mute)',tint:'var(--track)'},checkin:{deep:'var(--green-text)',tint:'var(--green-tint)'}};
-const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='61';
+const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='62';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -1936,7 +1936,7 @@ function setTarget(kind,value,by,exId){
 function clearTarget(){ S.target=null; save(); }
 function targetNow(){
   const t=S.target; if(!t) return null;
-  if(t.kind==='weight') return S.weights.length? S.weights[S.weights.length-1].kg : null;
+  if(t.kind==='weight') return (S.weights||[]).length? weightNow() : null;
   if(t.kind==='runkm'){
     const runs=S.mine.filter(p=>p.kind==='run'&&p.km); 
     return runs.length? Math.max(...runs.map(p=>+p.km)) : null;
@@ -1956,7 +1956,7 @@ function targetNow(){
 function targetProgress(){
   const t=S.target; if(!t) return null;
   const now=targetNow(); if(now===null) return null;
-  const start=t.from!==undefined? t.from : (t.kind==='weight'&&S.weights.length? S.weights[0].kg : 0);
+  const start=t.kind==='weight'? weightStart() : (t.from!==undefined? t.from : 0);
   const falling=t.kind==='weight'&&t.value<start;
   const span=Math.abs(t.value-start)||1;
   const moved=falling? (start-now) : (now-start);
@@ -2066,7 +2066,20 @@ function freshState(){
   };
 }
 let memoryOnly=false;
+/* Build 62: one list of weigh ins, in date order, one per day (the last one
+   entered for a day wins). Weigh ins for an earlier day, from the check-in or
+   the weigh in sheet, used to land at the end of the list, and every screen
+   that read "the last one" or "the first one" read a different weigh in. It
+   is tidied in place, so nothing holding the list loses it. */
+function tidyWeights(arr){
+  if(!Array.isArray(arr)) return [];
+  const by={}; arr.forEach(p=>{ if(p&&p.d&&+p.kg>0) by[p.d]={d:p.d,kg:+p.kg}; });
+  const out=Object.keys(by).sort().map(k=>by[k]);
+  arr.length=0; out.forEach(p=>arr.push(p));
+  return arr;
+}
 function save(){ if(memoryOnly) return false;
+  if(S&&Array.isArray(S.weights)) tidyWeights(S.weights);
   try{ localStorage.setItem(STORE_KEY,JSON.stringify(S)); return true; }catch(e){ memoryOnly=true; return false; } }
 function migrate(d){
   /* Older saves are upgraded, never discarded. Each step is additive, so a
@@ -2092,7 +2105,7 @@ function normalise(d){
     plan:d.plan&&Array.isArray(d.plan.days)&&d.plan.days.length===7? d.plan : null,
     mine:Array.isArray(d.mine)?d.mine:[],
     tries:Array.isArray(d.tries)?d.tries:[], pickups:Array.isArray(d.pickups)?d.pickups:[],
-    weights:Array.isArray(d.weights)?d.weights:[], checkins:Array.isArray(d.checkins)?d.checkins:[],
+    weights:tidyWeights(Array.isArray(d.weights)?d.weights:[]), checkins:Array.isArray(d.checkins)?d.checkins:[],
     days:d.days&&typeof d.days==='object'?d.days:{}, lifts:d.lifts&&typeof d.lifts==='object'?d.lifts:{},
     templates:Array.isArray(d.templates)&&d.templates.length?d.templates:(typeof seedTemplates==='function'?seedTemplates():[]),
     workouts:Array.isArray(d.workouts)?d.workouts:[],
@@ -2448,10 +2461,36 @@ function bodyFatPct(p,kg){
   const est=1.2*(w/(h*h))+0.23*a-10.8*sx-5.4;
   return {pct:Math.max(3,Math.min(70,+est.toFixed(1))), source:'estimated'};
 }
+/* ---------- weight: one source for every screen (build 62) ----------
+   Every display of weight now reads these, so Today, You, the goal and the
+   progress panel show the same numbers:
+     weightNow()      the latest weigh in (what the scale said), else the
+                      weight in your details
+     weightStart()    where the goal started (target.from), else your first
+                      weigh in
+     weightProgress() start, now, goal, how far along, how much to go
+   The smoothed trend (currentKg, trendSeries) is still what the calorie and
+   forecast maths use, and the weight chart shows it, labelled as the trend,
+   beside what the scale said. */
+function weighIns(){ return tidyWeights((S.weights||[]).slice()); }
+function weightNow(){ const w=weighIns(); return w.length? w[w.length-1].kg : (+S.profile.weight||null); }
+function weightStart(){
+  const t=S.target; if(t&&t.kind==='weight'&&+t.from>0) return +t.from;
+  const w=weighIns(); return w.length? w[0].kg : (+S.profile.weight||null);
+}
+function weightProgress(){
+  const now=weightNow(); if(now===null) return null;
+  const t=S.target&&S.target.kind==='weight'? S.target : null, start=weightStart();
+  const goal=t? +t.value : null, falling=goal!==null&&goal<start, span=goal!==null? Math.abs(start-goal) : 0;
+  const moved=+(now-start).toFixed(1);
+  const pct= goal===null? null : (span<0.05? 100 : Math.max(0,Math.min(100,Math.round((falling? start-now : now-start)/span*100))));
+  const hit= !!t&&(!!t.hit||(falling? now<=goal : now>=goal));
+  return {now,start,goal,pct:hit? 100 : pct,moved,hit,falling,toGo:goal===null? null : +Math.abs(now-goal).toFixed(1),
+    daysLeft:t&&t.by? Math.round((dateOf(t.by)-dateOf(todayKey()))/864e5) : null, first:weighIns()[0]||null, last:weighIns().slice(-1)[0]||null};
+}
 function currentKg(){
   if(typeof trendNow==='function'){ const t=trendNow(); if(t) return t; }
-  const w=S.weights&&S.weights.length? S.weights[S.weights.length-1].kg : null;
-  return w||+S.profile.weight||null;
+  return weightNow();
 }
 /* Which way they are going: an explicit weight target wins over the aim. */
 function goalDirection(){
@@ -4377,7 +4416,7 @@ function renderToday(){
   ${coach}
   ${sessFirst? hero+mealsList() : mealsList()+hero}
   ${quickTiles()}
-  <div class="goalrow">${targetLine()}</div>
+  ${S.target&&S.target.kind==='weight'&&typeof weightLine==='function'? '' : `<div class="goalrow">${targetLine()}</div>`}
   <div class="sechead"><h2>This week</h2><button data-go="plan">The whole week</button></div>
   <div class="weekstrip">${plan.days.map((x,n)=>`<button data-planday="${n}" class="${n===i?'today':''} ${n<i?'past':''}" aria-label="${DAYS[n]}: ${dayLabel(x)||'Rest'}${dayDone(n)?', done':''}">
       <span class="d">${DAYS[n][0]}</span>
@@ -4737,8 +4776,9 @@ function renderProgress(){
   $('stWeek').textContent=planned? doneThisWeek+'/'+planned : String(doneThisWeek);
   const since=addDays(todayKey(),-29);
   $('stLogged').textContent=Object.keys(S.days||{}).filter(k=>k>=since&&Object.keys(S.days[k]||{}).length).length;
-  const first=S.weights[0], last=S.weights[S.weights.length-1];
-  const diff=first&&last? +(last.kg-first.kg).toFixed(1):0;
+  /* build 62: the same weigh ins and start as every other weight on screen */
+  const wp=weightProgress(), last=wp&&wp.last;
+  const diff=wp&&last? wp.moved : 0;
   const ripples=S.tries.map(t=>({u:P[t.from]||ME,at:t.at,t:`You tried <b>${t.title}</b> from <b>@${(P[t.from]||ME).n}</b>`}))
     .concat(S.pickups.map(k=>({u:P[k.by]||ME,at:k.at,t:`<b>@${(P[k.by]||ME).n}</b> tried your <b>${k.title}</b>`})))
     .sort((a,b)=>b.at-a.at).slice(0,3);
@@ -4751,7 +4791,7 @@ function renderProgress(){
     <div class="ph"><h3>Weight</h3><button data-weigh="1">Weigh in</button></div>
     ${S.weights.length? `<div class="bigrow"><div class="n">${showW(last.kg,imp).split(' ')[0]}<small> ${imp?'lb':'kg'}</small></div>
       ${S.weights.length>1?`<div class="side" style="color:${diff<0?'var(--green-text)':(diff>0?'var(--amber-text)':'var(--mute)')}">${diff>0?'+':''}${imp?Math.round(diff*2.20462)+' lb':diff+' kg'} since you started</div>`:''}</div>
-      ${S.weights.length>1? sparkline(S.weights):'<div class="note">Weigh in again next week and the line starts here.</div>'}`
+      ${S.weights.length>1? sparkline(weighIns()):'<div class="note">Weigh in again next week and the line starts here.</div>'}`
       : `<div class="note" style="margin:0">Nothing logged yet. Once a week is plenty.</div>`}
   </div>
   <div class="panel">
@@ -5280,7 +5320,7 @@ function openLog(){
     </button>
     <div class="logtiles">
       ${d&&d.type&&d.slot!=='walk'? tile('today',(dayDone(dowIdx())?'Do it again':'Start '+dayLabel(d)),daySub(d),'var(--cyan-text)',dayDone(dowIdx())):''}
-      ${isTeen()? '' : tile('weigh',weighed?'Weigh in again':'Weigh in',weighed? S.weights[S.weights.length-1].kg+' kg today':'Five seconds','var(--green-text)',weighed)}
+      ${isTeen()? '' : tile('weigh',weighed?'Weigh in again':'Weigh in',weighed? showW(weightNow(),S.profile.units==='imperial')+' today':'Five seconds','var(--green-text)',weighed)}
     </div>
     ${inlineCheckinHtml()}
     <div class="logtiles">
@@ -10950,22 +10990,22 @@ function openCheckin(){
    started, where you are, the goal, and how far along. It also marks the end
    of the numbers and the start of what to do next. Adults with a weight goal
    and a weigh in only; otherwise it is a plain rule, so the break stays. Taps
-   through to You. Uses the same trend weight as the card (currentKg). */
+   through to You. Reads weightProgress(), like every other weight display. */
 function weightLine(){
   const rule='<div class="wline rule" aria-hidden="true"></div>';
   if(isTeen()) return rule;
   const tg=S.target&&S.target.kind==='weight'? S.target : null, ws=S.weights||[];
   if(!tg||!ws.length||typeof currentKg!=='function') return rule;
   const imp=S.profile.units==='imperial', n=v=>showW(v,imp).split(' ')[0], unit=showW(0,imp).split(' ')[1]||'kg';
-  const now=currentKg(), from=+(tg.from||ws[0].kg), goal=+tg.value, span=from-goal;
-  const f= tg.hit? 1 : (Math.abs(span)<0.05? 1 : Math.max(0,Math.min(1,(from-now)/span)));
-  const pct=Math.round(f*100), moved=+(from-now).toFixed(1);
+  /* build 62: weightProgress(), the same numbers as the card on You and the goal */
+  const wp=weightProgress(), now=wp.now, from=wp.start, goal=wp.goal, pct=wp.pct, moved=-wp.moved;
   const done=Math.abs(moved)<0.05? 'level so far' : (moved>0? n(moved)+' '+unit+' down' : n(-moved)+' '+unit+' up');
-  const mid= tg.hit? 'Goal met' : `${n(now)} ${unit} · ${pct}%`;
+  const left=wp.daysLeft!==null&&!wp.hit? (wp.daysLeft>=0? ' · '+wp.daysLeft+' days left' : ' · '+(-wp.daysLeft)+' days past') : '';
+  const mid= wp.hit? 'Goal met' : `${n(now)} ${unit} · ${pct}%`;
   return `<button class="wline" data-go="progress" aria-label="Weight: started ${showW(from,imp)}, now ${showW(now,imp)}, goal ${showW(goal,imp)}, ${pct}% of the way. Tap for You.">
     <span class="wlh"><span>Start <b>${n(from)}</b></span><b class="wnow">${mid}</b><span>Goal <b>${n(goal)}</b></span></span>
     <span class="ybar"><i style="width:${pct}%"></i></span>
-    <span class="wls">${tg.hit? 'Set the next one on You' : done+' · '+showW(Math.abs(now-goal),imp)+' to go'}</span></button>`;
+    <span class="wls">${wp.hit? 'Set the next one on You' : done+' · '+showW(wp.toGo,imp)+' to go'+left}</span></button>`;
 }
 /* ===================== build 59: a session keeps going when closed =====================
    Feargal lost sessions by closing the player: the chevron hid it with a
@@ -11100,7 +11140,7 @@ document.addEventListener('click',e=>{
 /* for the tests */
 if(window.__G) Object.assign(window.__G,{nextUp,nextCandidates,nextCard,focusSignals,focusPills,dayClock,openSleepLog,saveSleep,hoursBetween,
   sleepNightLabel,openCheckin,realAuto,warmFor,firstWarm,rememberWarmups,liveSession,gymHasWork,minimiseGym,resumeLive,endLive,restoreLive,
-  persistLive,liveGuard,drawLiveBar,liveSummary,isSearchBox,searchToTop,priorities,heroCard,clockOf,realSleep,openDay,coachCard,LIVE_KEY});
+  persistLive,liveGuard,drawLiveBar,liveSummary,isSearchBox,searchToTop,priorities,heroCard,clockOf,realSleep,openDay,coachCard,weighIns,weightNow,weightStart,weightProgress,tidyWeights,LIVE_KEY});
 </script>
 <script>
 /* boot, once everything is defined */
@@ -11246,13 +11286,13 @@ function tdeeEstimate(kg,stepsPerDay,liftMinPerDay){
 }
 /* exponentially weighted trend, so one heavy morning does not become a direction */
 function trendSeries(){
-  const pts=S.weights.slice(); if(!pts.length) return [];
+  const pts=weighIns(); if(!pts.length) return [];
   let t=pts[0].kg; return pts.map((p,i)=>{ t = i? t+SCI.ewmaAlpha*(p.kg-t) : p.kg; return {d:p.d,kg:+t.toFixed(3),raw:p.kg}; });
 }
 const trendNow=()=>{ const t=trendSeries(); return t.length? t[t.length-1].kg : (S.profile.weight||null); };
 function weightSlopePerDay(windowDays){
   const cut=windowDays? addDays(todayKey(),-windowDays) : null;
-  const pts=S.weights.filter(p=>!cut||p.d>=cut);
+  const pts=weighIns().filter(p=>!cut||p.d>=cut);
   if(pts.length<3) return null;
   const t0=dateOf(pts[0].d).getTime();
   const xs=pts.map(p=>(dateOf(p.d).getTime()-t0)/864e5), ys=pts.map(p=>p.kg);
@@ -11431,8 +11471,7 @@ function reviewWeek(weekOf){
    see it. */
 const CHART_DAYS_BACK=90, CHART_DAYS_FWD=28;
 function weightSeries(){
-  const all=(S.weights||[]).filter(p=>p&&typeof p.kg==='number'&&p.d).slice();
-  all.sort((a,b)=>a.d<b.d?-1:1);
+  const all=weighIns();
   const cut=addDays(todayKey(),-CHART_DAYS_BACK);
   const inWindow=all.filter(p=>p.d>=cut);
   return inWindow.length>=2? inWindow : all.slice(-12);
@@ -11516,7 +11555,7 @@ function wHorizon(pts){
 }
 function wSeriesFor(range){
   const days=(W_RANGES.find(r=>r[0]===range)||W_RANGES[1])[2];
-  const all=(S.weights||[]).filter(p=>p&&typeof p.kg==='number'&&p.d).slice().sort((a,b)=>a.d<b.d?-1:1);
+  const all=weighIns();
   const cut=addDays(todayKey(),-days);
   const pts=all.filter(p=>p.d>=cut);
   return pts.length>=2? pts : all.slice(-Math.max(2,Math.min(all.length,12)));
@@ -11627,14 +11666,17 @@ function weightPanel(){
     const smooth=trendSeries();
     const now=smooth.length? smooth[smooth.length-1].kg : pts[pts.length-1].kg;
     const firstTrend=(smooth.find(s=>s.d>=pts[0].d)||{kg:pts[0].kg}).kg;
-    const change=now-firstTrend, last=S.weights[S.weights.length-1];
+    /* Build 62: the big number is the latest weigh in and the change is on the
+       scale from the first weigh in shown, so it matches Today, the card on
+       You and the goal. The smoothed trend is still drawn and written out
+       underneath, labelled as the trend, with the rate it gives. */
+    const last=weighIns().slice(-1)[0], change=+(last.kg-pts[0].kg).toFixed(1);
     const dir=change<0? 'down' : 'up';
     return `<div class="whead" id="wHead">
-      <div class="wbig"><b>${now.toFixed(1)}</b><span>kg trend</span></div>
+      <div class="wbig"><b>${last.kg.toFixed(1)}</b><span>kg, ${last.d===todayKey()?'today':shortDate(last.d)}</span></div>
       <div class="wstats">
         <span class="wpill ${Math.abs(change)<0.2?'':dir}">${change<0?'−':'+'}${Math.abs(change).toFixed(1)} kg since ${shortDate(pts[0].d)}</span>
-        <span class="wsub">${tr.perWeek<0?'Down':'Up'} ${Math.abs(tr.perWeek).toFixed(2)} kg a week</span>
-        <span class="wsub">Scale said ${last.kg} kg ${last.d===todayKey()?'today':shortDate(last.d)}</span>
+        <span class="wsub">${now.toFixed(1)} kg trend, ${tr.perWeek<0?'down':'up'} ${Math.abs(tr.perWeek).toFixed(2)} kg a week</span>
       </div></div>`;
   })();
   const ranges=`<div class="wranges" role="tablist" aria-label="How far back">${W_RANGES.map(([id,label])=>
@@ -13747,21 +13789,18 @@ function weightGoalCard(){
   if(!ws.length) return `<section class="ycard" id="yWeight"><div class="ych"><b>Weight</b></div>
     <p class="ynote">Nothing logged yet. Once a week is plenty.</p>
     <button class="mini go" data-weigh="1">Weigh in</button></section>`;
-  const now=currentKg(), first=ws[0], tg=S.target&&S.target.kind==='weight'? S.target : null;
+  /* build 62: the latest weigh in, the goal's start and the goal, from
+     weightProgress(), the same figures as Today's weight line and the goal */
+  const wp=weightProgress(), now=wp.now, tg=S.target&&S.target.kind==='weight'? S.target : null;
   const big=showW(now,imp).split(' ');
-  const change=+(now-first.kg).toFixed(1), weeks=Math.round(gapDaysBetween(first.d,todayKey())/7);
-  const moved= ws.length<2||Math.abs(change)<0.1? (ws.length<2? 'one weigh in so far' : 'level so far')
-    : (change<0? 'down ' : 'up ')+showW(Math.abs(change),imp).split(' ')[0]+(weeks>=1? ' in '+weeks+' week'+(weeks===1?'':'s') : ' so far');
+  const change=wp.moved, since=wp.first? wp.first.d : todayKey(), weeks=Math.round(gapDaysBetween(since,todayKey())/7);
+  const moved= weighIns().length<2&&Math.abs(change)<0.1? 'one weigh in so far' : (Math.abs(change)<0.1? 'level since the start'
+    : (change<0? 'down ' : 'up ')+showW(Math.abs(change),imp).split(' ')[0]+(weeks>=1? ' in '+weeks+' week'+(weeks===1?'':'s') : ' so far'));
   let right='', bar='';
-  if(tg&&tg.hit){
-    right=`Goal met ${prettyDateSafe(tg.hit)}`;
-    bar=`<div class="ybar"><i style="width:100%"></i></div>`;
-  } else if(tg){
-    const from=+(tg.from||first.kg), goal=+tg.value, span=from-goal;
-    const f= Math.abs(span)<0.05? 1 : Math.max(0,Math.min(1,(from-now)/span));
-    right=`${showW(Math.abs(now-goal),imp)} to go`;
-    bar=`<div class="ybar" role="img" aria-label="${Math.round(f*100)}% of the way from ${showW(from,imp)} to ${showW(goal,imp)}"><i style="width:${Math.round(f*100)}%"></i></div>
-      <div class="yends"><span>Start ${showW(from,imp).split(' ')[0]}</span><span>Goal ${showW(goal,imp).split(' ')[0]}</span></div>`;
+  if(tg){
+    right= wp.hit? (tg.hit? `Goal met ${prettyDateSafe(tg.hit)}` : 'Goal met') : `${showW(wp.toGo,imp)} to go`;
+    bar=`<div class="ybar" role="img" aria-label="${wp.pct}% of the way from ${showW(wp.start,imp)} to ${showW(wp.goal,imp)}"><i style="width:${wp.pct}%"></i></div>
+      <div class="yends"><span>Start ${showW(wp.start,imp).split(' ')[0]}</span><span>Goal ${showW(wp.goal,imp).split(' ')[0]}</span></div>`;
   }
   return `<section class="ycard" id="yWeight">
     <div class="ych"><b>Weight</b>${right? `<span>${right}</span>` : `<button class="ylink" data-setting="goal">Set a goal</button>`}</div>

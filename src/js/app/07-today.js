@@ -878,7 +878,7 @@ function renderToday(){
   ${coach}
   ${sessFirst? hero+mealsList() : mealsList()+hero}
   ${quickTiles()}
-  <div class="goalrow">${targetLine()}</div>
+  ${S.target&&S.target.kind==='weight'&&typeof weightLine==='function'? '' : `<div class="goalrow">${targetLine()}</div>`}
   <div class="sechead"><h2>This week</h2><button data-go="plan">The whole week</button></div>
   <div class="weekstrip">${plan.days.map((x,n)=>`<button data-planday="${n}" class="${n===i?'today':''} ${n<i?'past':''}" aria-label="${DAYS[n]}: ${dayLabel(x)||'Rest'}${dayDone(n)?', done':''}">
       <span class="d">${DAYS[n][0]}</span>

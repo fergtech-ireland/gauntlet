@@ -23,8 +23,9 @@ function renderProgress(){
   $('stWeek').textContent=planned? doneThisWeek+'/'+planned : String(doneThisWeek);
   const since=addDays(todayKey(),-29);
   $('stLogged').textContent=Object.keys(S.days||{}).filter(k=>k>=since&&Object.keys(S.days[k]||{}).length).length;
-  const first=S.weights[0], last=S.weights[S.weights.length-1];
-  const diff=first&&last? +(last.kg-first.kg).toFixed(1):0;
+  /* build 62: the same weigh ins and start as every other weight on screen */
+  const wp=weightProgress(), last=wp&&wp.last;
+  const diff=wp&&last? wp.moved : 0;
   const ripples=S.tries.map(t=>({u:P[t.from]||ME,at:t.at,t:`You tried <b>${t.title}</b> from <b>@${(P[t.from]||ME).n}</b>`}))
     .concat(S.pickups.map(k=>({u:P[k.by]||ME,at:k.at,t:`<b>@${(P[k.by]||ME).n}</b> tried your <b>${k.title}</b>`})))
     .sort((a,b)=>b.at-a.at).slice(0,3);
@@ -37,7 +38,7 @@ function renderProgress(){
     <div class="ph"><h3>Weight</h3><button data-weigh="1">Weigh in</button></div>
     ${S.weights.length? `<div class="bigrow"><div class="n">${showW(last.kg,imp).split(' ')[0]}<small> ${imp?'lb':'kg'}</small></div>
       ${S.weights.length>1?`<div class="side" style="color:${diff<0?'var(--green-text)':(diff>0?'var(--amber-text)':'var(--mute)')}">${diff>0?'+':''}${imp?Math.round(diff*2.20462)+' lb':diff+' kg'} since you started</div>`:''}</div>
-      ${S.weights.length>1? sparkline(S.weights):'<div class="note">Weigh in again next week and the line starts here.</div>'}`
+      ${S.weights.length>1? sparkline(weighIns()):'<div class="note">Weigh in again next week and the line starts here.</div>'}`
       : `<div class="note" style="margin:0">Nothing logged yet. Once a week is plenty.</div>`}
   </div>
   <div class="panel">

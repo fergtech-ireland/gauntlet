@@ -16,7 +16,20 @@ function freshState(){
   };
 }
 let memoryOnly=false;
+/* Build 62: one list of weigh ins, in date order, one per day (the last one
+   entered for a day wins). Weigh ins for an earlier day, from the check-in or
+   the weigh in sheet, used to land at the end of the list, and every screen
+   that read "the last one" or "the first one" read a different weigh in. It
+   is tidied in place, so nothing holding the list loses it. */
+function tidyWeights(arr){
+  if(!Array.isArray(arr)) return [];
+  const by={}; arr.forEach(p=>{ if(p&&p.d&&+p.kg>0) by[p.d]={d:p.d,kg:+p.kg}; });
+  const out=Object.keys(by).sort().map(k=>by[k]);
+  arr.length=0; out.forEach(p=>arr.push(p));
+  return arr;
+}
 function save(){ if(memoryOnly) return false;
+  if(S&&Array.isArray(S.weights)) tidyWeights(S.weights);
   try{ localStorage.setItem(STORE_KEY,JSON.stringify(S)); return true; }catch(e){ memoryOnly=true; return false; } }
 function migrate(d){
   /* Older saves are upgraded, never discarded. Each step is additive, so a
@@ -42,7 +55,7 @@ function normalise(d){
     plan:d.plan&&Array.isArray(d.plan.days)&&d.plan.days.length===7? d.plan : null,
     mine:Array.isArray(d.mine)?d.mine:[],
     tries:Array.isArray(d.tries)?d.tries:[], pickups:Array.isArray(d.pickups)?d.pickups:[],
-    weights:Array.isArray(d.weights)?d.weights:[], checkins:Array.isArray(d.checkins)?d.checkins:[],
+    weights:tidyWeights(Array.isArray(d.weights)?d.weights:[]), checkins:Array.isArray(d.checkins)?d.checkins:[],
     days:d.days&&typeof d.days==='object'?d.days:{}, lifts:d.lifts&&typeof d.lifts==='object'?d.lifts:{},
     templates:Array.isArray(d.templates)&&d.templates.length?d.templates:(typeof seedTemplates==='function'?seedTemplates():[]),
     workouts:Array.isArray(d.workouts)?d.workouts:[],

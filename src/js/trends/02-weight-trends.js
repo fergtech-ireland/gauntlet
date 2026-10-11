@@ -134,17 +134,17 @@ function weightPanel(){
     const smooth=trendSeries();
     const now=smooth.length? smooth[smooth.length-1].kg : pts[pts.length-1].kg;
     const firstTrend=(smooth.find(s=>s.d>=pts[0].d)||{kg:pts[0].kg}).kg;
-    /* Build 62: the big number is the latest weigh in and the change is on the
-       scale from the first weigh in shown, so it matches Today, the card on
-       You and the goal. The smoothed trend is still drawn and written out
-       underneath, labelled as the trend, with the rate it gives. */
-    const last=weighIns().slice(-1)[0], change=+(last.kg-pts[0].kg).toFixed(1);
+    /* Build 63: the trend leads, as everywhere else in the app now, and the
+       change is the trend's since the first weigh in shown. What the scale
+       said last is written underneath. */
+    const last=weighIns().slice(-1)[0], change=now-firstTrend;
     const dir=change<0? 'down' : 'up';
     return `<div class="whead" id="wHead">
-      <div class="wbig"><b>${last.kg.toFixed(1)}</b><span>kg, ${last.d===todayKey()?'today':shortDate(last.d)}</span></div>
+      <div class="wbig"><b>${now.toFixed(1)}</b><span>kg trend</span></div>
       <div class="wstats">
         <span class="wpill ${Math.abs(change)<0.2?'':dir}">${change<0?'−':'+'}${Math.abs(change).toFixed(1)} kg since ${shortDate(pts[0].d)}</span>
-        <span class="wsub">${now.toFixed(1)} kg trend, ${tr.perWeek<0?'down':'up'} ${Math.abs(tr.perWeek).toFixed(2)} kg a week</span>
+        <span class="wsub">${tr.perWeek<0?'Down':'Up'} ${Math.abs(tr.perWeek).toFixed(2)} kg a week</span>
+        <span class="wsub">Scale said ${last.kg} kg ${last.d===todayKey()?'today':shortDate(last.d)}</span>
       </div></div>`;
   })();
   const ranges=`<div class="wranges" role="tablist" aria-label="How far back">${W_RANGES.map(([id,label])=>

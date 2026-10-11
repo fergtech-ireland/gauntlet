@@ -424,7 +424,7 @@ function openLog(){
     </button>
     <div class="logtiles">
       ${d&&d.type&&d.slot!=='walk'? tile('today',(dayDone(dowIdx())?'Do it again':'Start '+dayLabel(d)),daySub(d),'var(--cyan-text)',dayDone(dowIdx())):''}
-      ${isTeen()? '' : tile('weigh',weighed?'Weigh in again':'Weigh in',weighed? showW(weightNow(),S.profile.units==='imperial')+' today':'Five seconds','var(--green-text)',weighed)}
+      ${isTeen()? '' : tile('weigh',weighed?'Weigh in again':'Weigh in',weighed? showW(weightScale(),S.profile.units==='imperial')+' today':'Five seconds','var(--green-text)',weighed)}
     </div>
     ${inlineCheckinHtml()}
     <div class="logtiles">

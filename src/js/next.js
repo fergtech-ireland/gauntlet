@@ -375,7 +375,7 @@ function openCheckin(){
    started, where you are, the goal, and how far along. It also marks the end
    of the numbers and the start of what to do next. Adults with a weight goal
    and a weigh in only; otherwise it is a plain rule, so the break stays. Taps
-   through to You. Reads weightProgress(), like every other weight display. */
+   through to You. Reads weightProgress(): the trend, as on the weight chart. */
 function weightLine(){
   const rule='<div class="wline rule" aria-hidden="true"></div>';
   if(isTeen()) return rule;
@@ -387,8 +387,9 @@ function weightLine(){
   const done=Math.abs(moved)<0.05? 'level so far' : (moved>0? n(moved)+' '+unit+' down' : n(-moved)+' '+unit+' up');
   const left=wp.daysLeft!==null&&!wp.hit? (wp.daysLeft>=0? ' · '+wp.daysLeft+' days left' : ' · '+(-wp.daysLeft)+' days past') : '';
   const mid= wp.hit? 'Goal met' : `${n(now)} ${unit} · ${pct}%`;
-  return `<button class="wline" data-go="progress" aria-label="Weight: started ${showW(from,imp)}, now ${showW(now,imp)}, goal ${showW(goal,imp)}, ${pct}% of the way. Tap for You.">
+  const scaleTxt= wp.last&&Math.abs(wp.scale-now)>=0.1? ' · scale '+n(wp.scale) : '';
+  return `<button class="wline" data-go="progress" aria-label="Weight: started ${showW(from,imp)}, trend now ${showW(now,imp)}, goal ${showW(goal,imp)}, ${pct}% of the way. Tap for You.">
     <span class="wlh"><span>Start <b>${n(from)}</b></span><b class="wnow">${mid}</b><span>Goal <b>${n(goal)}</b></span></span>
     <span class="ybar"><i style="width:${pct}%"></i></span>
-    <span class="wls">${wp.hit? 'Set the next one on You' : done+' · '+showW(wp.toGo,imp)+' to go'+left}</span></button>`;
+    <span class="wls">${wp.hit? 'Set the next one on You' : 'Trend '+done+' · '+showW(wp.toGo,imp)+' to go'+left+scaleTxt}</span></button>`;
 }

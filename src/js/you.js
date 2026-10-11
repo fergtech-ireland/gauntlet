@@ -37,10 +37,12 @@ function weightGoalCard(){
     <p class="ynote">Nothing logged yet. Once a week is plenty.</p>
     <button class="mini go" data-weigh="1">Weigh in</button></section>`;
   /* build 62: the latest weigh in, the goal's start and the goal, from
-     weightProgress(), the same figures as Today's weight line and the goal */
+     weightProgress(), the same figures as Today's weight line and the goal.
+     Build 63: the big number is the trend, as on the chart, with what the
+     scale last said under it. */
   const wp=weightProgress(), now=wp.now, tg=S.target&&S.target.kind==='weight'? S.target : null;
   const big=showW(now,imp).split(' ');
-  const change=wp.moved, since=wp.first? wp.first.d : todayKey(), weeks=Math.round(gapDaysBetween(since,todayKey())/7);
+  const change=wp.moved, since=(tg&&tg.set)||(wp.first? wp.first.d : todayKey()), weeks=Math.round(gapDaysBetween(since,todayKey())/7);
   const moved= weighIns().length<2&&Math.abs(change)<0.1? 'one weigh in so far' : (Math.abs(change)<0.1? 'level since the start'
     : (change<0? 'down ' : 'up ')+showW(Math.abs(change),imp).split(' ')[0]+(weeks>=1? ' in '+weeks+' week'+(weeks===1?'':'s') : ' so far'));
   let right='', bar='';
@@ -51,8 +53,8 @@ function weightGoalCard(){
   }
   return `<section class="ycard" id="yWeight">
     <div class="ych"><b>Weight</b>${right? `<span>${right}</span>` : `<button class="ylink" data-setting="goal">Set a goal</button>`}</div>
-    <div class="ybig"><span class="num">${big[0]}</span> <span>${big[1]}, ${moved}</span></div>
-    ${bar}</section>`;
+    <div class="ybig"><span class="num">${big[0]}</span> <span>${big[1]} trend, ${moved}</span></div>
+    ${bar}${wp.last? `<p class="ynote">Scale said ${showW(wp.scale,imp)} ${wp.last.d===todayKey()? 'today' : prettyDateSafe(wp.last.d)}. The trend smooths out day to day swings from water and food, so one heavy morning does not undo weeks of work.</p>` : ''}</section>`;
 }
 function gapDaysBetween(a,b){ return Math.round((dateOf(b)-dateOf(a))/864e5); }
 

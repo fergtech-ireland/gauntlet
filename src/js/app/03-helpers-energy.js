@@ -327,19 +327,28 @@ function bodyFatPct(p,kg){
   const est=1.2*(w/(h*h))+0.23*a-10.8*sx-5.4;
   return {pct:Math.max(3,Math.min(70,+est.toFixed(1))), source:'estimated'};
 }
-/* ---------- weight: one source for every screen (build 62) ----------
-   Every display of weight now reads these, so Today, You, the goal and the
-   progress panel show the same numbers:
-     weightNow()      the latest weigh in (what the scale said), else the
-                      weight in your details
-     weightStart()    where the goal started (target.from), else your first
-                      weigh in
-     weightProgress() start, now, goal, how far along, how much to go
-   The smoothed trend (currentKg, trendSeries) is still what the calorie and
-   forecast maths use, and the weight chart shows it, labelled as the trend,
-   beside what the scale said. */
+/* ---------- weight: one source for every screen (builds 62 and 63) ----------
+   Progress is the trend, the same smoothed line the weight chart draws
+   (trendSeries: each weigh in moves it a quarter of the way), so one heavy
+   morning after two weeks of losing does not wipe the progress off the
+   screen. What the scale said is kept beside it, labelled.
+     weighIns()       the weigh ins, in date order, one a day
+     weightScale()    the latest weigh in (what the scale said)
+     weightNow()      the trend now, as on the chart; else the weight in
+                      your details
+     weightStart()    where the goal started (target.from), else the start
+                      of the trend (your first weigh in)
+     weightProgress() start, now (trend), scale, goal, how far along, how
+                      much to go, and whether the trend has reached the goal
+   Every display reads these, and currentKg() is weightNow(), so calories and
+   the forecast use the same figure too. */
 function weighIns(){ return tidyWeights((S.weights||[]).slice()); }
-function weightNow(){ const w=weighIns(); return w.length? w[w.length-1].kg : (+S.profile.weight||null); }
+function weightScale(){ const w=weighIns(); return w.length? w[w.length-1].kg : (+S.profile.weight||null); }
+function weightNow(){
+  const w=weighIns(); if(!w.length) return +S.profile.weight||null;
+  if(typeof trendSeries==='function'){ const t=trendSeries(); if(t.length) return t[t.length-1].kg; }
+  return w[w.length-1].kg;
+}
 function weightStart(){
   const t=S.target; if(t&&t.kind==='weight'&&+t.from>0) return +t.from;
   const w=weighIns(); return w.length? w[0].kg : (+S.profile.weight||null);
@@ -351,13 +360,11 @@ function weightProgress(){
   const moved=+(now-start).toFixed(1);
   const pct= goal===null? null : (span<0.05? 100 : Math.max(0,Math.min(100,Math.round((falling? start-now : now-start)/span*100))));
   const hit= !!t&&(!!t.hit||(falling? now<=goal : now>=goal));
-  return {now,start,goal,pct:hit? 100 : pct,moved,hit,falling,toGo:goal===null? null : +Math.abs(now-goal).toFixed(1),
-    daysLeft:t&&t.by? Math.round((dateOf(t.by)-dateOf(todayKey()))/864e5) : null, first:weighIns()[0]||null, last:weighIns().slice(-1)[0]||null};
+  const ws=weighIns();
+  return {now:+now.toFixed(1),start,goal,pct:hit? 100 : pct,moved,hit,falling,toGo:goal===null? null : +Math.abs(now-goal).toFixed(1),
+    scale:weightScale(),daysLeft:t&&t.by? Math.round((dateOf(t.by)-dateOf(todayKey()))/864e5) : null, first:ws[0]||null, last:ws.slice(-1)[0]||null};
 }
-function currentKg(){
-  if(typeof trendNow==='function'){ const t=trendNow(); if(t) return t; }
-  return weightNow();
-}
+function currentKg(){ return weightNow(); }
 /* Which way they are going: an explicit weight target wins over the aim. */
 function goalDirection(){
   const t=S.target, kg=currentKg();

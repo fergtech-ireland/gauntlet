@@ -36,7 +36,7 @@ function renderProgress(){
   $('dashBody').innerHTML=`
   <div class="panel">
     <div class="ph"><h3>Weight</h3><button data-weigh="1">Weigh in</button></div>
-    ${S.weights.length? `<div class="bigrow"><div class="n">${showW(last.kg,imp).split(' ')[0]}<small> ${imp?'lb':'kg'}</small></div>
+    ${S.weights.length? `<div class="bigrow"><div class="n">${showW(wp.now,imp).split(' ')[0]}<small> ${imp?'lb':'kg'} trend</small></div>
       ${S.weights.length>1?`<div class="side" style="color:${diff<0?'var(--green-text)':(diff>0?'var(--amber-text)':'var(--mute)')}">${diff>0?'+':''}${imp?Math.round(diff*2.20462)+' lb':diff+' kg'} since you started</div>`:''}</div>
       ${S.weights.length>1? sparkline(weighIns()):'<div class="note">Weigh in again next week and the line starts here.</div>'}`
       : `<div class="note" style="margin:0">Nothing logged yet. Once a week is plenty.</div>`}

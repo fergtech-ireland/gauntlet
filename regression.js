@@ -375,11 +375,12 @@ setTimeout(() => {
     S.weights = [{d: G.addDays(G.todayKey(), -60), kg: 90}, {d: G.todayKey(), kg: 85}];
     const tg = G.setTarget('weight', 80, G.addDays(G.todayKey(), 84));
     tg.from = 90;
+    /* build 63: progress is the trend (90, then 88.75), as on the weight chart */
     const pr = G.targetProgress();
-    return pr.now === 85 && pr.pct === 50 && pr.remaining === 5 && pr.daysLeft === 84; })(),
+    return pr.now === 88.75 && pr.pct === 13 && pr.remaining === 8.8 && pr.daysLeft === 84; })(),
     JSON.stringify(G.targetProgress()));
   t('a met target is a met target', (() => {
-    S.weights.push({d: G.todayKey(), kg: 79});
+    for (let n = 10; n >= 0; n--) S.weights.push({d: G.addDays(G.todayKey(), -n), kg: 79});
     return G.targetProgress().hit; })());
   t('hitting it is recorded on rebuild', (() => { G.buildPlan(); return !!S.target.hit; })());
   t('the target reaches the brief', /Target: 80 kg by/.test(G.coachBrief()));

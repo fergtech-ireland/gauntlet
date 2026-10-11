@@ -203,11 +203,14 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     let pr = G.targetProgress();
     t('7 · nothing achieved yet', pr.pct === 0 && pr.remaining === 7, JSON.stringify(pr));
     t('7 · it shows on the hero with a date', /days left/.test(G.targetLine()));
+    /* build 63: progress is the trend, as on the weight chart */
     G.S.weights.push({ d: G.todayKey(), kg: 88.5 });
     pr = G.targetProgress();
-    t('7 · halfway is halfway', pr.pct === 50, String(pr.pct));
-    G.S.weights.push({ d: G.todayKey(), kg: 84.8 });
-    t('7 · the target is met', G.targetProgress().hit);
+    const tr7 = G.trendSeries().slice(-1)[0].kg;
+    t('7 · progress follows the trend, the line on the chart', pr.pct === Math.round((92 - tr7) / 7 * 100) && pr.pct > 0, pr.pct + ' vs trend ' + tr7);
+    t('7 · one low reading does not count as reaching it', (() => { G.S.weights.push({ d: G.todayKey(), kg: 84.8 }); G.save(); return !G.targetProgress().hit; })());
+    G.S.weights = [{ d: G.addDays(G.todayKey(), -21), kg: 92 }]; for (let n = 20; n >= 0; n--) G.S.weights.push({ d: G.addDays(G.todayKey(), -n), kg: 84.5 }); G.save();
+    t('7 · the target is met once the trend gets there', G.targetProgress().hit, JSON.stringify(G.targetProgress()));
     G.buildPlan();
     t('7 · and the day it happened is kept', !!G.S.target.hit);
     t('7 · the hero says so', /Target met/.test(G.targetLine()));
@@ -589,7 +592,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
 
     /* reaching the goal */
     S.profile = Object.assign({}, S.profile, { aim: 'lose', weight: 86 });
-    S.weights = [{ d: G.addDays(G.todayKey(), -10), kg: 90 }, { d: G.todayKey(), kg: 84.9 }];
+    /* build 63: the goal is reached when the trend gets there, not on one low morning */
+    S.weights = [{ d: G.addDays(G.todayKey(), -21), kg: 90 }]; for (let n = 20; n >= 0; n--) S.weights.push({ d: G.addDays(G.todayKey(), -n), kg: 84.5 });
     G.setTarget('weight', 85, G.addDays(G.todayKey(), 60)); S.target.from = 90;
     G.buildPlan();
     t('14 · hitting the goal is recorded', !!S.target.hit);
@@ -2295,13 +2299,14 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const svg = G.weightChart();
     t('34 · every weigh in is on the chart, as a dot',
       (svg.match(/class="raw"/g) || []).length >= S.weights.length, String((svg.match(/class="raw"/g) || []).length));
-    /* build 62: the headline is the latest weigh in, like every other weight on screen; the trend is written beside it, labelled */
-    t('34 · the headline is the latest weigh in, the same figure as Today and You', (() => {
+    /* build 63: the headline is the trend again, and the trend is now what every screen shows */
+    t('34 · the headline number is the smoothed trend, not the jagged reading', (() => {
       G.go('progress'); G.renderAll();
-      const b = d.querySelector('#wHead .wbig b').textContent; return b === G.weightNow().toFixed(1); })(),
-      d.querySelector('#wHead .wbig b') && d.querySelector('#wHead .wbig b').textContent + ' vs ' + G.weightNow());
-    t('34 · and the smoothed trend is written out, labelled, so a noisy day is still seen in context', (() => {
-      const head = d.getElementById('wHead').textContent; return head.indexOf(G.trendSeries().slice(-1)[0].kg.toFixed(1) + ' kg trend') >= 0; })());
+      const head = d.getElementById('wHead').textContent;
+      return head.indexOf(G.trendSeries().slice(-1)[0].kg.toFixed(1)) >= 0; })(),
+      'trend ' + G.trendSeries().slice(-1)[0].kg.toFixed(1) + ' vs reading ' + S.weights.slice(-1)[0].kg);
+    t('34 · so a noisy day does not change the headline number',
+      G.trendSeries().slice(-1)[0].kg !== S.weights.slice(-1)[0].kg);
     t('34 · and one legend says which line is which', (() => { const k = d.querySelector('.wkey');
       return !!k && /Scale/.test(k.textContent) && /Trend/.test(k.textContent) && d.querySelectorAll('.wkey').length === 1; })());
     t('34 · there is one trend line, not two competing ones',
@@ -2310,7 +2315,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
       const ys = [...svg.matchAll(/<text class="wlab" x="32"[^>]*>([^<]+)<\/text>/g)].map(m => m[1]);
       return ys.length >= 3 && ys.every(v => Math.abs(+v * 2 - Math.round(+v * 2)) < 1e-9); })());
     t('34 · dates along the bottom, including today', /Today<\/text>/.test(svg));
-    t('34 · the current trend weight is written above it', /kg trend/.test(d.getElementById('wHead').textContent));
+    t('34 · the current trend weight is the big number above it', /kg trend/.test(d.getElementById('wHead').textContent));
     t('34 · the forecast shows a range, not a single confident line', /class="wband"/.test(svg));
     t('34 · and the projected weight and date are written on it', /[\d.]+ kg by \d{1,2} [A-Z][a-z]{2}<\/text>/.test(svg));
     t('34 · nothing is drawn outside the frame', (() => {
@@ -4779,7 +4784,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     G.showYTab('progress');
     t('63 · the three cards come first, above the forecast', !!top && d.getElementById('dash').firstElementChild === top && top.querySelectorAll('.ycard').length === 3);
     const wc = d.getElementById('yWeight');
-    t('63 · weight shows the latest weigh in and what is left to the goal', /to go/.test(txt(wc)) && /kg, down/.test(txt(wc)), txt(wc));
+    t('63 · weight shows the latest weigh in and what is left to the goal', /to go/.test(txt(wc)) && /kg trend, down/.test(txt(wc)) && /Scale said/.test(txt(wc)), txt(wc));
     const bar = wc.querySelector('.ybar i'), pctv = parseFloat(bar.style.width);
     const want = Math.round(100 * (92 - G.weightNow()) / (92 - 86));
     t('63 · the bar is how far from start to the goal, on the same weight every screen uses', pctv > 0 && Math.abs(pctv - want) <= 1, bar.style.width + ' against ' + want + '%');
@@ -5240,23 +5245,29 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     G.save();
     t('69 · weigh ins are kept in date order, one a day, the last entered for a day winning', JSON.stringify(S.weights.map(x => x.kg)) === '[95,93.8,92.2]');
     const wp = G.weightProgress();
-    t('69 · one place works out now, start, goal and progress', wp.now === 92.2 && wp.start === 95 && wp.goal === 85 && wp.pct === 28 && wp.toGo === 7.2, JSON.stringify(wp));
+    /* build 63: now is the trend, as on the chart: 95, then 94.7, then 94.1 (each weigh in moves it a quarter of the way) */
+    t('69 · one place works out now (the trend), start, goal and progress', wp.now === 94.1 && wp.scale === 92.2 && wp.start === 95 && wp.goal === 85 && wp.pct === 9 && wp.toGo === 9.1, JSON.stringify(wp));
     G.go('today'); G.renderAll();
     const line = txt(d.querySelector('#todayView .wline'));
-    t('69 · Today\'s weight line shows them', /Start 95/.test(line) && /92\.2 kg · 28%/.test(line) && /Goal 85/.test(line) && /2\.8 kg down · 7\.2 kg to go/.test(line), line);
+    t('69 · Today\'s weight line shows them, with what the scale said', /Start 95/.test(line) && /94\.1 kg · 9%/.test(line) && /Goal 85/.test(line) && /Trend 0\.9 kg down · 9\.1 kg to go/.test(line) && /scale 92\.2/.test(line), line);
     t('69 · and the goal is not drawn a second time below it', !d.querySelector('#todayView .goalrow'));
     G.go('progress'); G.renderAll();
     const card = txt(d.getElementById('yWeight'));
-    t('69 · the card on You shows the same', /92\.2/.test(card) && /7\.2 kg to go/.test(card) && /Start 95/.test(card) && /Goal 85/.test(card) && d.querySelector('#yWeight .ybar i').style.width === '28%', card);
-    t('69 · and says how far from the same start', /down 2\.8/.test(card), card);
-    t('69 · the goal counts down from the same numbers', (() => { const p = G.targetProgress(); return p.now === 92.2 && p.start === 95 && p.pct === 28 && p.remaining === 7.2; })(), JSON.stringify(G.targetProgress()));
-    t('69 · the older weight panel agrees', (() => { const b = d.querySelector('#dashBody .bigrow'); return !b || (/92\.2/.test(txt(b)) && /-2\.8 kg since you started/.test(txt(b))); })());
-    t('69 · the trend chart leads with the same weigh in, from the same day, and labels the trend', (() => { const h = d.getElementById('wHead');
-      return !!h && txt(h.querySelector('.wbig')) === '92.2kg, today' && /−2\.8 kg since/.test(txt(h)) && /kg trend/.test(txt(h)); })(), txt(d.getElementById('wHead')));
+    t('69 · the card on You shows the same', /94\.1 kg trend/.test(card) && /9\.1 kg to go/.test(card) && /Start 95/.test(card) && /Goal 85/.test(card) && d.querySelector('#yWeight .ybar i').style.width === '9%', card);
+    t('69 · and says how far from the same start, and what the scale said', /down 0\.9/.test(card) && /Scale said 92\.2 kg today/.test(card), card);
+    t('69 · the goal counts down from the same numbers', (() => { const p = G.targetProgress(); return Math.abs(p.now - 94.075) < 0.01 && p.start === 95 && p.pct === 9 && p.remaining === 9.1; })(), JSON.stringify(G.targetProgress()));
+    t('69 · the older weight panel agrees', (() => { const b = d.querySelector('#dashBody .bigrow'); return !b || (/94\.1/.test(txt(b)) && /-0\.9 kg since you started/.test(txt(b))); })());
+    t('69 · the chart leads with the same trend, the same change, and what the scale said', (() => { const h = d.getElementById('wHead');
+      return !!h && txt(h.querySelector('.wbig')) === '94.1kg trend' && /−0\.9 kg since/.test(txt(h)) && /Scale said 92\.2 kg today/.test(txt(h)); })(), txt(d.getElementById('wHead')));
     t('69 · the trend is built in date order', (() => { const tr = G.trendSeries(); return tr.length === 3 && tr[0].raw === 95 && tr[2].raw === 92.2; })());
     G.openLog();
     t('69 · + Log says today\'s weigh in in the same units', /92\.2 kg today/.test(txt(d.querySelector('#logBody [data-log="weigh"]'))));
     G.closeSheets();
+    /* Feargal's case: two kilos down over two weeks, then one morning up two */
+    S.weights = [{ d: G.addDays(k, -14), kg: 95 }, { d: G.addDays(k, -10), kg: 94.3 }, { d: G.addDays(k, -6), kg: 93.6 }, { d: G.addDays(k, -3), kg: 93 }, { d: k, kg: 95 }];
+    S.target.from = 95; G.save(); G.go('today'); G.renderAll();
+    const wp2 = G.weightProgress();
+    t('69 · one heavy morning after two weeks of losing still shows the progress', wp2.moved < 0 && wp2.pct > 0 && /Trend [\d.]+ kg down/.test(txt(d.querySelector('#todayView .wline'))), JSON.stringify(wp2) + ' ' + txt(d.querySelector('#todayView .wline')));
   }
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);

@@ -1408,3 +1408,13 @@ body.has-live .toast:not(.top){bottom:140px}
 .cicard .cigrid .cil{grid-column:1}
 .cicard .cigrid .ciauto{grid-column:2 / span 3;text-align:right}
 .nsv.nset{font-family:var(--font-ui);font-size:13px;font-weight:700;color:var(--mute);letter-spacing:0}
+/* ---------- build 61: the weight line between the rings and what is next ---------- */
+.wline{display:block;width:100%;text-align:left;margin:14px 0 2px;padding:12px 2px 10px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.wline.rule{padding:0;border-bottom:0;margin:12px 0 0}
+.wline .wlh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;color:var(--mute)}
+.wline .wlh b{color:var(--ink);font-weight:700}
+.wline .wnow{font-family:var(--font-num);font-size:20px;color:var(--ink);letter-spacing:0}
+.wline .ybar{display:block;margin-top:6px}
+.wline .ybar i{display:block}
+.wline .wls{display:block;margin-top:5px;font-size:12px;color:var(--mute);text-align:center}
+.wline + .daycoach{margin-top:12px}

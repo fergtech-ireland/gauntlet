@@ -874,6 +874,7 @@ function renderToday(){
   const coach=(typeof coachCard==='function')? coachCard(nx,prios) : '';
   $('todayView').innerHTML=`
   ${ringsRow()}
+  ${typeof weightLine==='function'? weightLine() : ''}
   ${coach}
   ${sessFirst? hero+mealsList() : mealsList()+hero}
   ${quickTiles()}

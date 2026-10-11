@@ -370,3 +370,25 @@ function openCheckin(){
   stepperize(document.getElementById('altBody'));
   openSheet('altSheet');
 }
+/* ---------- the weight line under the rings, build 61 ----------
+   The single bar from the weight card on You, at the top of Today: where you
+   started, where you are, the goal, and how far along. It also marks the end
+   of the numbers and the start of what to do next. Adults with a weight goal
+   and a weigh in only; otherwise it is a plain rule, so the break stays. Taps
+   through to You. Uses the same trend weight as the card (currentKg). */
+function weightLine(){
+  const rule='<div class="wline rule" aria-hidden="true"></div>';
+  if(isTeen()) return rule;
+  const tg=S.target&&S.target.kind==='weight'? S.target : null, ws=S.weights||[];
+  if(!tg||!ws.length||typeof currentKg!=='function') return rule;
+  const imp=S.profile.units==='imperial', n=v=>showW(v,imp).split(' ')[0], unit=showW(0,imp).split(' ')[1]||'kg';
+  const now=currentKg(), from=+(tg.from||ws[0].kg), goal=+tg.value, span=from-goal;
+  const f= tg.hit? 1 : (Math.abs(span)<0.05? 1 : Math.max(0,Math.min(1,(from-now)/span)));
+  const pct=Math.round(f*100), moved=+(from-now).toFixed(1);
+  const done=Math.abs(moved)<0.05? 'level so far' : (moved>0? n(moved)+' '+unit+' down' : n(-moved)+' '+unit+' up');
+  const mid= tg.hit? 'Goal met' : `${n(now)} ${unit} · ${pct}%`;
+  return `<button class="wline" data-go="progress" aria-label="Weight: started ${showW(from,imp)}, now ${showW(now,imp)}, goal ${showW(goal,imp)}, ${pct}% of the way. Tap for You.">
+    <span class="wlh"><span>Start <b>${n(from)}</b></span><b class="wnow">${mid}</b><span>Goal <b>${n(goal)}</b></span></span>
+    <span class="ybar"><i style="width:${pct}%"></i></span>
+    <span class="wls">${tg.hit? 'Set the next one on You' : done+' · '+showW(Math.abs(now-goal),imp)+' to go'}</span></button>`;
+}

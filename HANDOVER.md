@@ -1,6 +1,6 @@
 # Gauntlet: handover for a new chat
 
-## Start here (11 Oct 2026, after build 60)
+## Start here (11 Oct 2026, after build 61)
 
 **Opening prompt for a new chat:** "Continue Gauntlet from HANDOVER.md in the repo." Claude attaches github.com/fergtech-ireland/gauntlet with push access, clones it, reads this file, and carries on. No uploads needed.
 
@@ -55,10 +55,10 @@
 
 **Working notes:** Supabase connector writes to gauntlet-test worked on 6 Oct (apply_migration); if they get cancelled again, Feargal pastes the migration into the SQL editor. Run `get_advisors` after every migration. A single UAT journey can be run from a scratch copy of uat.js (header plus that journey) to iterate quickly. Run the full suite in the background (`nohup node test.js > out.txt &`, then check) because it takes about 4 minutes and single commands time out at 5. Commits are authored as Claude (`git config user.email noreply@anthropic.com`). `package-lock.json` is gitignored.
 
-**Current build:** 60. Live: https://fergtech-ireland.github.io/gauntlet/ · Repo: github.com/fergtech-ireland/gauntlet (main)
+**Current build:** 61. Live: https://fergtech-ireland.github.io/gauntlet/ · Repo: github.com/fergtech-ireland/gauntlet (main)
 **Deploys:** Claude now has push access to the repo and the Supabase connector, so builds are committed and pushed directly (pushing to main publishes the live site). Build 49 pushed 6 Oct 2026; the repo was on build 47 before that.
 **Supabase:** delete policies in place. 6 Oct 2026: `increment_try` restricted to signed-in users (see `supabase-increment-try.sql`). Still open: switch on leaked password protection in the dashboard (Authentication, password settings).
-**Tests:** `npm install && npm test` = 1,930 checks, 0 failures (build 12, regression 154, cta 59, uat 1,629 with 68 journeys, sw 24, rls 53). Journeys 55 and 56 run the account flows against a fake Supabase that keeps the 0002 rules (including `handle_available`). Making a change: edit `src/`, `node build.js`, `npm test`, commit, push.
+**Tests:** `npm install && npm test` = 1,938 checks, 0 failures (build 12, regression 154, cta 59, uat 1,636 with 68 journeys, sw 24, rls 53). Journeys 55 and 56 run the account flows against a fake Supabase that keeps the 0002 rules (including `handle_available`). Making a change: edit `src/`, `node build.js`, `npm test`, commit, push.
 
 ## How we work
 - PWA served from `index.html`, which is built from `src/` by `node build.js` (never edit `index.html` by hand). Tests run in jsdom; layout is checked in real Chrome (Playwright, phone widths 320 to 430px).
@@ -105,6 +105,10 @@
   - Player (`02-active-workout.js`, `index.html`): header is minimise, the session name over a live clock in Barlow (`#gymSub`, still the AMRAP/EMOM countdown for circuits), Finish; under it `#gymSegs`, a segment per set and run in the order the session is done (`gymSeq`: an exercise's sets in turn, supersets round by round, an HIFB run after its block, buy-in first, buy-out last). The set in hand (`gymNow`: a live run first, else the first thing not done after the last thing done, so a skipped set or run does not hold the top) is a card at the top (`.gnow`): show me thumb (`data-showmove`), BLOCK/EXERCISE n OF m · SET a OF b (or WARM UP), the name, the prescription's reason (green when the weight goes up), big REPS and KG steppers (`data-fstep`, inputs `data-fset`, kept in step with the row's `data-set` both ways), and Done, set N (`data-fdone`, same handler as the row tick). A run in hand shows Start run or its live clock and Finish run. Every set row below is unchanged and editable; the one in hand is tinted (`.setline.now`). The table header lost its "Previous" column, which never had a column under it. After the last block: "After this: about Ng of protein at your next meal or snack" (`perMealProtein`, else 20 to 40g). The rest bar now sits at the bottom, dark, with a mint bar that empties (`#restFill`), the time, +15s and Skip. Circuits clear the segments.
   - Tests: journeys 62 (Plan), 63 (You, plus a teen pass) and 64 (player, plain and HIFB). Broken on purpose: readiness history ignoring the day, the teen food branch and the skip rule each fail a named check; unwiring Done in the set in hand crashes journey 64 (counted). Playwright sweep (adult and teen; Plan, You, player and player resting; Day and Night; 320, 390, 430px): all AA, no sideways scroll, no page errors. The sweep was checked by planting a faint line, which it caught. Footer says build 58.
 - Note: this workspace cannot reach Google Fonts, so local screenshots use a fallback face; check the fonts on the live site.
+
+## Build 61 (11 Oct): the weight line under the rings
+
+- `weightLine()` in next.js, placed between the rings and the coach card on Today: the single bar from the You weight card, with Start, the trend weight and percentage in the middle, Goal, and "N kg down · N kg to go" under it; "Goal met" with a full bar once hit. Same numbers as `#yWeight` (`currentKg`, `S.target.from`). Taps through to You. No weight goal, no weigh ins or under 18: a plain rule, so the break between the numbers and what to do next is always there. Checks in journey 67 (labelled 61).
 
 ## Build 60 (11 Oct): Today restructured, six rings, steppers
 

@@ -4903,7 +4903,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const at = (h, m) => h * 60 + (m || 0);
 
     /* ---- the card sits straight under the rings ---- */
-    const kids = () => [...home().children].map(e => e.className.split(' ')[0]);
+    const kids = () => [...home().children].map(e => e.className.split(' ')[0]).filter(c => c !== 'wline');
     t('65 · Up next is the first thing under the rings', kids()[0] === 'ringset' && kids()[1] === 'daycoach' && !!home().querySelector('.daycoach .nextcard'), kids().slice(0, 3).join());
     /* ---- morning: last night's sleep, in one tap ---- */
     const morning = G.nextUp(at(7, 30));
@@ -5159,6 +5159,21 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('67 · and opens the steps box', /Steps today/.test(txt(d.getElementById('quickTitle')))); G.closeSheets();
     S.days[k].steps = 12400; G.renderAll();
     t('67 · typed steps show, past target in thousands', /12\.4k/.test(txt(ring('steps'))) && /target hit/.test(txt(ring('steps'))));
+
+    /* ---- build 61: the weight line between the rings and what is next ---- */
+    const wl = () => home().querySelector('.wline');
+    t('61 · with no weight goal the break is a plain rule', !!wl() && wl().classList.contains('rule') && !wl().textContent.trim());
+    S.weights = [{ d: G.addDays(k, -28), kg: 95 }, { d: k, kg: 92 }]; S.target = { kind: 'weight', value: 85, by: G.addDays(k, 60), from: 95 }; G.renderAll();
+    const now61 = G.currentKg(), pct61 = Math.round((95 - now61) / 10 * 100);
+    t('61 · with one it sits straight under the rings, before the coach card', home().children[0].classList.contains('ringset') && home().children[1] === wl() && !wl().classList.contains('rule'));
+    t('61 · it shows the start, the goal and how far along', /Start 95/.test(txt(wl())) && /Goal 85/.test(txt(wl())) && new RegExp(pct61 + '%').test(txt(wl())) && /to go/.test(txt(wl())), txt(wl()));
+    t('61 · the bar matches that progress', wl().querySelector('.ybar i').style.width === pct61 + '%');
+    t('61 · it uses the same trend weight as the card on You', new RegExp(String(Math.round(now61 * 10) / 10).replace('.', '\\.') + ' kg').test(txt(wl())));
+    wl().click();
+    t('61 · tapping it opens You', d.getElementById('s-progress').classList.contains('on'));
+    G.go('today'); S.target.hit = k; G.renderAll();
+    t('61 · a goal met says so, with a full bar', /Goal met/.test(txt(wl())) && wl().querySelector('.ybar i').style.width === '100%');
+    S.target = null; S.weights = []; G.renderAll();
 
     /* ---- nothing said twice ---- */
     t('67 · the readiness sentence and the pills that repeated the rings are gone', !home().querySelector('.driver'));

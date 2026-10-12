@@ -19,7 +19,7 @@
    · Taking a goal off is the same: said plainly, kept, with Undo.
    · Training has a reset of its own that lists what changes, what is always
      kept (every weight and rep), and how each lift in the week will start,
-     lighter where it has had two weeks or more off.
+     lighter where it is back after a break.
    · One place lists everything that can be started over: You, Your plan,
      "Start something over". Every reset is logged there.
    Nothing here deletes a weigh in, a session or a lift, and the weight graph

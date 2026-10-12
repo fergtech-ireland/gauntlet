@@ -4420,11 +4420,11 @@ function heroProgress(d){
   for(const row of tpl.ex){ let p=null; try{ p=nextPrescription(row.exId,row); }catch(e){}
     if(p&&(p.kind==='return'||p.away)) back.push(exOf(row.exId).n);
     if(!hit&&p&&p.kind==='load'&&p.kg){ hit={n:exOf(row.exId).n,kg:p.kg,from:+(p.kg-p.inc).toFixed(2)}; } }
-  /* build 66: lifts back after two weeks or more come first, so it is no
+  /* build 66: lifts back after a break come first, so it is no
      surprise when the weights in the session are lighter */
   if(back.length){
     const names= back.length<=2? back.join(' and ') : back.slice(0,2).join(', ')+' and '+(back.length-2)+' more';
-    return `${names}: two weeks or more since you did ${back.length===1?'it':'them'}, so ${back.length===1?'it starts':'they start'} a little lighter today and build back.`;
+    return `${names}: back after a break, so ${back.length===1?'it starts':'they start'} a little lighter today and build back.`;
   }
   if(!hit) return '';
   if(readiness().level==='lower')
@@ -8228,8 +8228,8 @@ const repRangeFor=row=>{
 };
 /* what to aim for on this exercise next time, and why */
 /* ---------- coming back after a break (Review P1-10, rebuilt in build 66) ----------
-   Per movement: two weeks or more since you last did a lift (an easy week
-   counts as doing it) and it starts lighter, from what you actually lifted
+   Per movement: after a break (see "When it counts as a break" below; an
+   easy week counts as doing a lift) it starts lighter, from what you actually lifted
    last time, for the reps you did, and then climbs back to that weight.
    What the research says:
    · Maximal strength barely changes for about four weeks off (Bosquet and
@@ -8244,6 +8244,13 @@ const repRangeFor=row=>{
    · Losses are larger over 65 (Bosquet, 2013).
    · What is lost comes back faster than it was first built, in roughly half
      the time away (Ogasawara and colleagues, 2013; Taaffe and Marcus, 1997).
+   When it counts as a break (build 66, Feargal's call): the research is
+   about stopping training altogether. A lift that only comes round every 10
+   to 14 days because the split has more sessions than there are lifting
+   days, while the same muscles are trained by other lifts, is not that. So a
+   lift starts lighter only when there has been no lifting at all for two
+   weeks or more, or when that one lift has not been done for four weeks or
+   more (where, on the evidence above, even a one-rep max starts to drop).
    No study sets an exact return load, so the numbers are this app's rule of
    thumb on that timeline, and the app says so: 5% at two weeks, 10% at four,
    20% at eight or more, 5% more from 65; then back up in steps of about 5%
@@ -8251,7 +8258,7 @@ const repRangeFor=row=>{
    back in one session and a 20% cut in about four. */
 const RETURN_TIERS=[[56,0.20],[28,0.10],[14,0.05]], RETURN_OLDER_AGE=65, RETURN_OLDER_EXTRA=0.05, RETURN_STEP=0.05;
 /* said in the workout and in How the numbers are worked out, word for word */
-const RETURN_EVIDENCE='A one-rep max barely changes for about four weeks off: a meta-analysis of 103 studies found trivial losses up to 28 days, then losses that grow with the length of the break (Bosquet and colleagues, 2013), and trained lifters\' bench and squat maxes had not changed after 14 days off (Hortobágyi and colleagues, 1993). Strength over several reps, which is what a working set is, fades sooner than a single best lift (Bosquet, 2013), and two weeks off already lowers how fast force is produced while muscle size has not changed (Yılmaz and colleagues, 2026, elite powerlifters). Losses are larger over 65 (Bosquet, 2013). What is lost comes back faster than it was first built, in roughly half the time away (Ogasawara and colleagues, 2013; Taaffe and Marcus, 1997). No study sets an exact weight to come back at, so the steps are this app\'s rule of thumb on that timeline: 5% lighter at two weeks off, 10% at four, 20% at eight or more, 5% more from 65, then back up about 5% of your old weight each session that goes to plan. Under four weeks, using your old weight is a reasonable choice too.';
+const RETURN_EVIDENCE='A one-rep max barely changes for about four weeks off: a meta-analysis of 103 studies found trivial losses up to 28 days, then losses that grow with the length of the break (Bosquet and colleagues, 2013), and trained lifters\' bench and squat maxes had not changed after 14 days off (Hortobágyi and colleagues, 1993). Strength over several reps, which is what a working set is, fades sooner than a single best lift (Bosquet, 2013), and two weeks off already lowers how fast force is produced while muscle size has not changed (Yılmaz and colleagues, 2026, elite powerlifters). Losses are larger over 65 (Bosquet, 2013). What is lost comes back faster than it was first built, in roughly half the time away (Ogasawara and colleagues, 2013; Taaffe and Marcus, 1997). So a lift starts lighter when you have had two weeks or more off lifting altogether, or when that one lift has not been done for four weeks or more; one that comes round every week or two while you keep training is not a break, because the same muscles are still being worked. No study sets an exact weight to come back at, so the steps are this app\'s rule of thumb on that timeline: 5% lighter at two weeks off, 10% at four, 20% at eight or more, 5% more from 65, then back up about 5% of your old weight each session that goes to plan. Under four weeks, using your old weight is a reasonable choice too.';
 function gapDays(k){ return Math.round((dateOf(todayKey())-dateOf(k))/864e5); }
 function breakCut(gap,age){
   const t=RETURN_TIERS.find(([d])=>gap>=d); if(!t) return 0;
@@ -8270,11 +8277,30 @@ function topSetOf(entry){
   return {kg, reps:Math.max(...ws.filter(s=>+s.kg===kg).map(s=>+s.reps)), d:entry.d};
 }
 const profileAge=()=>+((S.profile||{}).age)||0;
+/* every day with any lifting logged: a session, or any movement's record */
+function liftingDays(){
+  const set=new Set((S.workouts||[]).map(w=>w.d).filter(Boolean));
+  Object.keys(S.lifts||{}).forEach(k=>(S.lifts[k]||[]).forEach(e=>{ if(e&&e.d) set.add(e.d); }));
+  return set;
+}
+const LIFT_ALONE_DAYS=28;
+/* Is this gap a break? No lifting at all in it and two weeks or more, or this
+   one lift away for four weeks or more. a and b are the days either side
+   (b defaults to today); between them, any lifting day counts. */
+function isBreak(a,b,days){
+  const end=b||todayKey(), g=Math.round((dateOf(end)-dateOf(a))/864e5);
+  if(g>=LIFT_ALONE_DAYS) return true;
+  if(g<14) return false;
+  const ds=days||liftingDays();
+  for(const d of ds) if(d>a&&d<end) return false;
+  return true;
+}
 function nextPrescription(exId,row){
   const rx=nextPrescriptionBase(exId,row);
   const h=exHistory(exId);
   if(!h.length) return rx;
-  const gap=gapDays(lastDoneOf(exId)||h[0].d), cut=breakCut(gap,profileAge());
+  const lastD=lastDoneOf(exId)||h[0].d, gap=gapDays(lastD);
+  const cut=isBreak(lastD)? breakCut(gap,profileAge()) : 0;
   if(cut){
     const was=topSetOf(h[0]);
     /* nothing to take off a bodyweight movement: it says how long it has
@@ -8293,19 +8319,19 @@ function nextPrescription(exId,row){
 }
 /* The sessions after a break: back up toward the weight from before it, a
    step at a time, each time every set reached the reps. Worked out from the
-   history alone (the break is the gap of two weeks or more between two
-   sessions), so it syncs and survives a reinstall like everything else. Once
+   history alone (the break is a gap between two sessions that isBreak
+   counts), so it syncs and survives a reinstall like everything else. Once
    the weight is back, or after the steps plus two sessions, ordinary double
    progression takes over. */
 function rebuildOf(exId,row,base){
   /* gaps are measured over everything done, easy weeks included, so the
      fortnight between two working sessions either side of an easy week is
      not mistaken for a break */
-  const any=exHistory(exId,{all:true}), work=e=>e&&!e.deload;
+  const any=exHistory(exId,{all:true}), work=e=>e&&!e.deload, days=liftingDays();
   if(any.length<2) return null;
   for(let i=0;i<Math.min(any.length-1,8);i++){
     const g=Math.round((dateOf(any[i].d)-dateOf(any[i+1].d))/864e5);
-    if(g<14) continue;
+    if(g<14||!isBreak(any[i+1].d,any[i].d,days)) continue;
     const since=any.slice(0,i+1).filter(work), earlier=any.slice(i+1).filter(work);
     if(!since.length||!earlier.length) return null;
     const before=topSetOf(earlier[0]), first=topSetOf(since[since.length-1]), last=topSetOf(since[0]);
@@ -8752,7 +8778,7 @@ function afterNote(){
   return `<div class="afternote"><b>After this:</b> ${per? 'about '+per+'g' : '20 to 40g'} of protein at your next meal or snack. The day's total matters more than the exact timing.</div>`;
 }
 /* ---------- back after a break, per lift (build 66) ----------
-   Every movement in today's session that has had two weeks or more off is
+   Every movement in today's session that is back after a break is
    named at the top, with what was lifted last time and when, what today
    starts at and why, and when it will be back. Up to four weeks off the
    research says a one-rep max has barely moved, so "Use my old weight" is
@@ -8763,7 +8789,7 @@ function returnNotice(away){
   const rows=GYM.ex.map((e,i)=>({e,i})).filter(({e})=>e.rx&&(e.rx.kind==='return'||e.rx.away));
   if(!rows.length) return '';
   const head= away>=14? `<b>Welcome back.</b> ${weeksText(away)} since your last session.`
-    : `<b>Back after a break.</b> ${rows.length===1? 'One lift has' : rows.length+' lifts have'} had two weeks or more off.`;
+    : `<b>Back after a break.</b> ${rows.length===1? 'One lift has' : rows.length+' lifts have'} not been done for four weeks or more.`;
   const list=rows.map(({e,i})=>{
     const x=exOf(e.exId), rx=e.rx, gap=rx.gap||rx.away, wk=weeksText(gap).toLowerCase();
     if(!rx.was) return `<div class="retrow"><div class="rn">${escHabit(x.n)}</div>
@@ -11406,7 +11432,7 @@ if(window.__G) Object.assign(window.__G,{nextUp,nextCandidates,nextCard,focusSig
    · Taking a goal off is the same: said plainly, kept, with Undo.
    · Training has a reset of its own that lists what changes, what is always
      kept (every weight and rep), and how each lift in the week will start,
-     lighter where it has had two weeks or more off.
+     lighter where it is back after a break.
    · One place lists everything that can be started over: You, Your plan,
      "Start something over". Every reset is logged there.
    Nothing here deletes a weigh in, a session or a lift, and the weight graph

@@ -253,7 +253,7 @@ function afterNote(){
   return `<div class="afternote"><b>After this:</b> ${per? 'about '+per+'g' : '20 to 40g'} of protein at your next meal or snack. The day's total matters more than the exact timing.</div>`;
 }
 /* ---------- back after a break, per lift (build 66) ----------
-   Every movement in today's session that has had two weeks or more off is
+   Every movement in today's session that is back after a break is
    named at the top, with what was lifted last time and when, what today
    starts at and why, and when it will be back. Up to four weeks off the
    research says a one-rep max has barely moved, so "Use my old weight" is
@@ -264,7 +264,7 @@ function returnNotice(away){
   const rows=GYM.ex.map((e,i)=>({e,i})).filter(({e})=>e.rx&&(e.rx.kind==='return'||e.rx.away));
   if(!rows.length) return '';
   const head= away>=14? `<b>Welcome back.</b> ${weeksText(away)} since your last session.`
-    : `<b>Back after a break.</b> ${rows.length===1? 'One lift has' : rows.length+' lifts have'} had two weeks or more off.`;
+    : `<b>Back after a break.</b> ${rows.length===1? 'One lift has' : rows.length+' lifts have'} not been done for four weeks or more.`;
   const list=rows.map(({e,i})=>{
     const x=exOf(e.exId), rx=e.rx, gap=rx.gap||rx.away, wk=weeksText(gap).toLowerCase();
     if(!rx.was) return `<div class="retrow"><div class="rn">${escHabit(x.n)}</div>

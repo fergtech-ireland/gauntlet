@@ -331,24 +331,6 @@ document.addEventListener('click',e=>{
     toast(alt? n+' stays out. '+alt.n+' trains the same thing if you want it in.'
             : n+' stays out. If it keeps up, that is a physio question.'); }
   if(e.target.closest('#setTarget')){ openTargetSheet(); return; }
-  const tk=e.target.closest('[data-targetkind]');
-  if(tk){ targetDraft.kind=tk.dataset.targetkind; drawTargetSheet(); return; }
-  const tw=e.target.closest('[data-targetweeks]');
-  if(tw){ targetDraft.weeks=+tw.dataset.targetweeks; drawTargetSheet(); return; }
-  if(e.target.closest('#targetSave')){
-    const v=+((document.getElementById('targetValue')||{}).value||0);
-    if(!v){ toast('Put a number on it'); return; }
-    const by=addDays(todayKey(),targetDraft.weeks*7);
-    const t=setTarget(targetDraft.kind,v,by,targetDraft.exId);
-    t.from=targetNow()!==null? targetNow() : 0;
-    S.targets=ownTargets(); save();
-    closeSheets(); renderAll();
-    const ct=t.kind==='weight'? calorieTarget() : null;
-    toast(ct&&ct.dir!=='hold'? v+'kg: eat '+num(ct.kcal)+' kcal'+(ct.capped?', capped to a safe rate':'') : v+' by '+prettyDate(by)); return; }
-  if(e.target.closest('#targetClear')){
-    const was=JSON.parse(JSON.stringify(S.target||null));
-    clearTarget(); S.targets=ownTargets(); save(); closeSheets(); renderAll();
-    toast('Target cleared','Undo',()=>{ S.target=was; save(); renderAll(); }); return; }
   if(e.target.closest('#todoWeigh')) openWeigh();
   if(e.target.closest('#todoDay')) openDay();
   if(e.target.closest('#todoCheck')) openWeek();

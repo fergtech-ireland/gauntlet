@@ -672,8 +672,6 @@ document.addEventListener('click',e=>{
       applyFoodTotals(k); save(); drawFood(); renderAll(); }); }
 });
 document.addEventListener('input',e=>{
-  if(e.target.id==='targetValue'){ const el=document.getElementById('targetKcal');
-    if(el){ const sp=el.querySelector('span'); if(sp) sp.textContent=targetKcalPreview(); } }
   /* Only the results redraw, so the input keeps its focus, its cursor and its
      composition state on its own. */
   if(e.target.id==='foodSearch'){ foodQuery=e.target.value; drawFoodList(); foodSearching(); }

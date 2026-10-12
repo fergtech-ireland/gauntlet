@@ -20,7 +20,8 @@ const SET_ICON={
   tempo:'<circle cx="12" cy="13" r="7"/><path d="M12 13V9M10 3h4"/>',
   nudge:'<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20h4"/>',
   account:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
-  how:'<circle cx="12" cy="12" r="9"/><path d="M12 17v-5M12 8v.5"/>'
+  how:'<circle cx="12" cy="12" r="9"/><path d="M12 17v-5M12 8v.5"/>',
+  reset:'<path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4"/>'
 };
 const TONE={
   marine:{bg:'var(--cyan-tint)',fg:'var(--cyan-text)'}, forest:{bg:'var(--green-tint)',fg:'var(--green-text)'},
@@ -69,6 +70,7 @@ function renderSettings(){
       setRow('pace','forest','Pace', paceOf().label+' · '+(dir==='lose'? (paceOf().lose*100)+'% of your weight a week' : (paceOf().gain*100)+'% a week')); })()}
     ${setRow('deload','marigold','Easy weeks', dl)}
     ${setRow('kit','grey','Kit you train with', kit)}
+    ${setRow('reset','oxblood','Start something over', 'Your goal or your training', 'Shows what changes first. Nothing logged is deleted.')}
   </div>`;
 
   more.innerHTML=`<div class="ysgroup"><div class="yshead">Your records</div>
@@ -145,6 +147,7 @@ document.addEventListener('click',e=>{
   else if(k==='account'){ openYou(); setTimeout(()=>{ const cp=document.getElementById('cloudPanel');
     if(cp&&cp.scrollIntoView) cp.scrollIntoView({block:'start',behavior:'smooth'}); },80); }
   else if(k==='how') openHow();
+  else if(k==='reset') openResetHub();
   /* 'nudge' is handled by its own existing handler, through id="nudgeBtn" */
 });
 /* the settings list redraws whenever the rest of the You screen does */

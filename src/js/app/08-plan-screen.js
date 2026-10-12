@@ -110,7 +110,8 @@ function renderPlan(){
     <div class="note">Every lifting day comes from a template. Change the sets, the rep range, the rest or the movements themselves and the plan follows.</div>
     <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
       <button class="mini" id="changeAim">Change aim</button>
-      <button class="mini" id="rebuild">Rebuild the week</button></div>
+      <button class="mini" id="rebuild">Rebuild the week</button>
+      <button class="mini reset" id="planReset">Reset training</button></div>
   </div>`;
 }
 /* ---------- changing a day (build 51) ----------

@@ -373,46 +373,7 @@ document.addEventListener('click',e=>{
     buildPlan(); save(); openDeloadSheet(); renderAll();
     toast(v==='auto'? 'Depth follows your check in' : DELOAD_TIERS[v].t+' easy weeks'); return; }
 });
-let targetDraft={kind:'weight',weeks:12,exId:null};
-/* Works the target out exactly as saving it would, without saving it. */
-function targetKcalPreview(){
-  const el=document.getElementById('targetValue');
-  const v=+(el&&el.value || (S.target&&S.target.kind==='weight'? S.target.value : 0));
-  if(!v) return 'Put a weight in and this shows the calories it takes to get there.';
-  const t={kind:'weight',value:v,by:addDays(todayKey(),targetDraft.weeks*7),hit:null};
-  const kg=currentKg();
-  const dir=v<kg-0.2?'lose':(v>kg+0.2?'gain':'hold');
-  const ct=calorieTarget({dir,target:t});
-  return ct? calorieLine(ct) : 'Add your age, height and weight in You first, so there is something to work from.';
-}
-function openTargetSheet(){
-  const cur=S.target;
-  targetDraft={kind:cur?cur.kind:(S.profile.aim==='endure'?'runkm':'weight'),
-    weeks:12, exId:cur?cur.exId:null};
-  drawTargetSheet(); openSheet('altSheet');
-}
-function drawTargetSheet(){
-  const k=targetDraft.kind, now=(()=>{ const save_=S.target; S.target={kind:k,exId:targetDraft.exId};
-    const v=targetNow(); S.target=save_; return v; })();
-  const by=addDays(todayKey(),targetDraft.weeks*7);
-  document.getElementById('altTitle').textContent='What are you actually after?';
-  document.getElementById('altSub').textContent='A number and a date. Everything else in here already knows how to count.';
-  document.getElementById('altBody').innerHTML=`
-    <div style="padding:0 14px 6px">
-      <div class="slab">What kind</div>
-      <div class="chips">${Object.keys(TARGET_KINDS).map(id=>`<button class="${k===id?'on':''}" data-targetkind="${id}">${TARGET_KINDS[id].t}</button>`).join('')}</div>
-      <div class="nf" style="margin:12px 0 10px"><label>${TARGET_KINDS[k].t} of</label>
-        <input id="targetValue" type="number" inputmode="decimal" step="0.1"
-          value="${S.target&&S.target.kind===k? S.target.value : ''}"
-          placeholder="${now!==null? now : ''}"></div>
-      <div class="slab">By when</div>
-      <div class="chips">${[6,12,16,26,52].map(n=>`<button class="${targetDraft.weeks===n?'on':''}" data-targetweeks="${n}">${n} weeks</button>`).join('')}</div>
-      <div class="note">${now!==null? 'Right now that reads '+now+' '+TARGET_KINDS[k].unit+'. ' : 'Nothing logged against this yet. '}That would put the date at ${prettyDate(by)}.</div>
-      ${k==='weight'? `<div class="method" id="targetKcal"><b>What that means for food</b><span>${targetKcalPreview()}</span></div>` : ''}
-      <button class="sheetcta" id="targetSave">Set it</button>
-      ${S.target? `<button class="skipbtn" id="targetClear">Take the target off</button>`:''}
-    </div>`;
-}
+/* The goal sheet moved to src/js/resets.js in build 66. */
 /* One habit on its own: how it is going, tick or untick today, or remove it.
    Removing used to mean finding the picker and a button that said "Put this
    one down for now" without saying which one. */

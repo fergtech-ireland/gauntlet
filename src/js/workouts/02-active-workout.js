@@ -252,13 +252,58 @@ function afterNote(){
   const per=(typeof perMealProtein==='function')? perMealProtein() : null;
   return `<div class="afternote"><b>After this:</b> ${per? 'about '+per+'g' : '20 to 40g'} of protein at your next meal or snack. The day's total matters more than the exact timing.</div>`;
 }
+/* ---------- back after a break, per lift (build 66) ----------
+   Every movement in today's session that has had two weeks or more off is
+   named at the top, with what was lifted last time and when, what today
+   starts at and why, and when it will be back. Up to four weeks off the
+   research says a one-rep max has barely moved, so "Use my old weight" is
+   offered and honoured; the cut is a cushion, not a ruling. An easy week has
+   its own prescription and its own banner, so this stays out of it. */
+function returnNotice(away){
+  if(!GYM||GYM.deload) return '';
+  const rows=GYM.ex.map((e,i)=>({e,i})).filter(({e})=>e.rx&&(e.rx.kind==='return'||e.rx.away));
+  if(!rows.length) return '';
+  const head= away>=14? `<b>Welcome back.</b> ${weeksText(away)} since your last session.`
+    : `<b>Back after a break.</b> ${rows.length===1? 'One lift has' : rows.length+' lifts have'} had two weeks or more off.`;
+  const list=rows.map(({e,i})=>{
+    const x=exOf(e.exId), rx=e.rx, gap=rx.gap||rx.away, wk=weeksText(gap).toLowerCase();
+    if(!rx.was) return `<div class="retrow"><div class="rn">${escHabit(x.n)}</div>
+      <div class="rd">${wk} off · nothing to take off a bodyweight movement: keep a rep or two in hand on the first set.</div></div>`;
+    const pct=Math.round((1-rx.kg/rx.was.kg)*100);
+    const full=!!e.retFull;
+    return `<div class="retrow${full?' full':''}"><div class="rn">${escHabit(x.n)}</div>
+      <div class="rd">${wk} off · last ${num(rx.was.kg)} kg × ${rx.was.reps} on ${prettyDate(rx.was.d)}</div>
+      <div class="rx">${full? `Today <b>${num(rx.was.kg)} kg × ${rx.reps}</b>, your old weight. If the first set feels heavy, drop back to ${num(rx.kg)} kg.`
+        : `Today <b>${num(rx.kg)} kg × ${rx.reps}</b>, ${pct}% lighter · back to ${num(rx.was.kg)} kg ${rx.steps>1? 'over about '+rx.steps+' sessions' : 'next time'}`}</div>
+      <button class="inlinebtn" data-retfull="${i}">${full? 'Start lighter after all' : 'Use my old '+num(rx.was.kg)+' kg'}</button></div>`;
+  }).join('');
+  return `<section class="retcard" id="retCard"><div class="rk">${head}</div>
+    <p class="rp">Strength holds well over a few weeks off and comes back faster than it was built, so ${rows.length===1? 'this starts a little lighter and climbs' : 'these start a little lighter and climb'} back as each session goes to plan.</p>
+    ${list}
+    <button class="inlinebtn" data-retwhy="1" aria-expanded="${GYM.retWhy?'true':'false'}">${GYM.retWhy? 'Hide the evidence' : 'Why lighter, and how much'}</button>
+    ${GYM.retWhy? `<div class="rwhy">${RETURN_EVIDENCE}</div>` : ''}</section>`;
+}
+document.addEventListener('click',e=>{
+  if(!GYM) return;
+  const w=e.target.closest('[data-retwhy]');
+  if(w){ GYM.retWhy=!GYM.retWhy; drawGym(); return; }
+  const f=e.target.closest('[data-retfull]'); if(!f) return;
+  const ex=GYM.ex[+f.dataset.retfull]; if(!ex||!ex.rx||!ex.rx.was) return;
+  ex.retFull=!ex.retFull;
+  const kg=ex.retFull? ex.rx.was.kg : ex.rx.kg;
+  /* only sets not yet done and not typed into: what you entered stands */
+  let n=0; ex.sets.forEach(s=>{ if(s.warm||s.done||s.touched) return; s.kg=kg; n++; });
+  drawGym();
+  toast(ex.retFull? n+' set'+(n===1?'':'s')+' at your old '+num(kg)+' kg' : 'Back to '+num(kg)+' kg to start');
+});
 function drawGym(){
   if(!GYM) return;
   $('gymName').textContent=GYM.name;
   $('gymSub').textContent=elapsed();
   const GI=groupInfo(GYM.ex);
   const lastW=(S.workouts||[]).find(w=>w.d<todayKey()), away=lastW? gapDays(lastW.d) : 0;
-  const backBanner= away>=14? `<div class="deloadbanner"><b>Welcome back.</b> ${weeksText(away)} since your last session. Anything you have not done in a while starts a little lighter today; the weights climb back quickly.</div>` : '';
+  const ret=returnNotice(away);
+  const backBanner= ret || (away>=14? `<div class="deloadbanner"><b>Welcome back.</b> ${weeksText(away)} since your last session. Anything you have not done in a while starts a little lighter today; the weights climb back quickly.</div>` : '');
   const RUNS=gymRuns(), runAt=k=>{ const x=RUNS.find(y=>y.key===k); return x? runCard(x) : ''; };
   const hifbHead=GYM.hifb? `<div class="focusnote gymfocus"><b>HIFB: run, lift, run</b><span>Rest about ${HIFB.rest} seconds between sets. After the last set of each block, go straight into the run: it starts timing itself when you tick that set. Type a time instead if you use a watch.${GYM.hifb.why? ' '+escHabit(GYM.hifb.why) : ''}</span></div>` : '';
   const SEQ=gymSeq(), NOW=gymNow(SEQ); drawSegs(SEQ,NOW);
@@ -269,7 +314,7 @@ function drawGym(){
       <div class="exh">${gi?`<span class="gbadge">${gi.letter}${gi.pos}</span>`:''}<div class="n">${x.n}</div>${exHasPR(e)?`<span class="pr" title="Personal record">PR</span>`:''}<button class="dots" data-exmenu="${i}" aria-label="Options">···</button></div>
       <div class="cue">${e.sets.length} × ${range.bottom===range.top? e.reps : range.bottom+' to '+range.top}${e.tempo&&showTempo()?' @ '+e.tempo:''} · rest ${e.rest}s${pre&&pre.heaviest?` · best ${pre.heaviest}kg`:''}</div>
       ${prev&&prev.length? `<div class="prevline">Last time <b>${prev.map(p2=>p2.kg+' × '+p2.reps).join(', ')}</b></div>`:''}
-      ${e.rx? `<div class="rxline"><b>${e.rx.kind==='load'?'Weight up today':(e.rx.kind==='first'?'First time':(e.rx.kind==='return'?'Welcome back':'Chase the reps'))}</b> ${e.rx.why}
+      ${e.rx? `<div class="rxline"><b>${e.rx.kind==='load'?'Weight up today':(e.rx.kind==='first'?'First time':(e.rx.kind==='return'?'Welcome back':(e.rx.kind==='rebuild'?'Building back':'Chase the reps')))}</b> ${e.rx.why}
         ${e.rx.lastTonnage? `<span class="tonn">Last time you moved ${num(Math.round(e.rx.lastTonnage))}kg on this. Today so far: ${num(Math.round(tonnageOf(e.sets)))}kg.</span>`:''}</div>`:''}
       ${e.tempo&&showTempo()&&tempoMatters(e.tempo)?`<div class="tempo">${tempoWords(e.tempo)}</div>`:''}
       ${e.note?`<div class="note">${e.note}</div>`:''}

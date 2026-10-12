@@ -711,9 +711,16 @@ function openReadiness(){
 function heroProgress(d){
   if(!d||!d.templateId||typeof nextPrescription!=='function') return '';
   const tpl=(S.templates||[]).find(t=>t.id===d.templateId); if(!tpl) return '';
-  let hit=null;
+  let hit=null; const back=[];
   for(const row of tpl.ex){ let p=null; try{ p=nextPrescription(row.exId,row); }catch(e){}
-    if(p&&p.kind==='load'&&p.kg){ hit={n:exOf(row.exId).n,kg:p.kg,from:+(p.kg-p.inc).toFixed(2)}; break; } }
+    if(p&&(p.kind==='return'||p.away)) back.push(exOf(row.exId).n);
+    if(!hit&&p&&p.kind==='load'&&p.kg){ hit={n:exOf(row.exId).n,kg:p.kg,from:+(p.kg-p.inc).toFixed(2)}; } }
+  /* build 66: lifts back after two weeks or more come first, so it is no
+     surprise when the weights in the session are lighter */
+  if(back.length){
+    const names= back.length<=2? back.join(' and ') : back.slice(0,2).join(', ')+' and '+(back.length-2)+' more';
+    return `${names}: two weeks or more since you did ${back.length===1?'it':'them'}, so ${back.length===1?'it starts':'they start'} a little lighter today and build back.`;
+  }
   if(!hit) return '';
   if(readiness().level==='lower')
     return `${hit.n} was due to go up to ${hit.kg} kg. On a lower day, keep ${hit.from} kg or stop a set early; how you feel once warmed up is the better guide.`;

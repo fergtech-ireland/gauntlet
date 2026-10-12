@@ -233,7 +233,7 @@ const upsert=(table,body,conflict)=>api(table+(conflict?'?on_conflict='+conflict
 function settingsRow(){
   const c=S.profile.consent||{};
   return {user_id:myId(),
-    body:{profile:S.profile, goal:S.goal||null, target:S.target||null, targets:S.targets||null},
+    body:{profile:S.profile, goal:S.goal||null, target:S.target||null, targets:S.targets||null, goalHistory:S.goalHistory||[]},
     birth_year: validBirthYear(S.profile.birthYear)? +S.profile.birthYear : null,
     health_consent_at:c.health||null, terms_version:c.version||null, terms_accepted_at:c.terms||null,
     rev:S.rev||0, updated_at:new Date().toISOString()};
@@ -257,6 +257,7 @@ async function pullSettings(){
   S.profile=Object.assign({},S.profile,b.profile);
   if(b.goal) S.goal=Object.assign({},S.goal,b.goal);
   if(b.target!==undefined) S.target=b.target;
+  if(Array.isArray(b.goalHistory)) S.goalHistory=b.goalHistory;
   if(b.targets) S.targets=b.targets;
   if(validBirthYear(row.birth_year)) S.profile.birthYear=row.birth_year;
   syncAge(S.profile);

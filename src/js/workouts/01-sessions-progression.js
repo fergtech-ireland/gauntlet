@@ -818,28 +818,105 @@ const repRangeFor=row=>{
   return {bottom,top};
 };
 /* what to aim for on this exercise next time, and why */
-/* ---------- coming back after a break (Review P1-10) ----------
-   Strength largely holds for about three weeks off; the meta-analysis on
-   training cessation (Bosquet and colleagues, 2013) finds real losses appear
-   between the third and fourth week and grow with the length of the break,
-   and what is lost comes back faster than it was first built. The research
-   says when losses start, not an exact load to return at, so the step down is
-   this app's rule of thumb built on that timeline: nothing under two weeks,
-   5% at two, 10% at four, 20% at eight or more. Normal progression then
-   rebuilds from there, usually within a couple of sessions. */
+/* ---------- coming back after a break (Review P1-10, rebuilt in build 66) ----------
+   Per movement: two weeks or more since you last did a lift (an easy week
+   counts as doing it) and it starts lighter, from what you actually lifted
+   last time, for the reps you did, and then climbs back to that weight.
+   What the research says:
+   · Maximal strength barely changes for about four weeks off (Bosquet and
+     colleagues, 2013, a meta-analysis of 103 studies: trivial effects up to
+     28 days, then losses that grow with the length of the break). After 14
+     days off, trained lifters' one-rep max on bench and squat had not changed
+     (Hortobágyi and colleagues, 1993).
+   · Strength over several reps (submaximal, what a working set is) falls
+     sooner and further than a one-rep max (Bosquet, 2013), and two weeks off
+     already lowers how fast force is produced while muscle size has not
+     moved (Yılmaz and colleagues, 2026, elite powerlifters).
+   · Losses are larger over 65 (Bosquet, 2013).
+   · What is lost comes back faster than it was first built, in roughly half
+     the time away (Ogasawara and colleagues, 2013; Taaffe and Marcus, 1997).
+   No study sets an exact return load, so the numbers are this app's rule of
+   thumb on that timeline, and the app says so: 5% at two weeks, 10% at four,
+   20% at eight or more, 5% more from 65; then back up in steps of about 5%
+   of the old weight each time every set reaches the reps, so a 5% cut is
+   back in one session and a 20% cut in about four. */
+const RETURN_TIERS=[[56,0.20],[28,0.10],[14,0.05]], RETURN_OLDER_AGE=65, RETURN_OLDER_EXTRA=0.05, RETURN_STEP=0.05;
+/* said in the workout and in How the numbers are worked out, word for word */
+const RETURN_EVIDENCE='A one-rep max barely changes for about four weeks off: a meta-analysis of 103 studies found trivial losses up to 28 days, then losses that grow with the length of the break (Bosquet and colleagues, 2013), and trained lifters\' bench and squat maxes had not changed after 14 days off (Hortobágyi and colleagues, 1993). Strength over several reps, which is what a working set is, fades sooner than a single best lift (Bosquet, 2013), and two weeks off already lowers how fast force is produced while muscle size has not changed (Yılmaz and colleagues, 2026, elite powerlifters). Losses are larger over 65 (Bosquet, 2013). What is lost comes back faster than it was first built, in roughly half the time away (Ogasawara and colleagues, 2013; Taaffe and Marcus, 1997). No study sets an exact weight to come back at, so the steps are this app\'s rule of thumb on that timeline: 5% lighter at two weeks off, 10% at four, 20% at eight or more, 5% more from 65, then back up about 5% of your old weight each session that goes to plan. Under four weeks, using your old weight is a reasonable choice too.';
 function gapDays(k){ return Math.round((dateOf(todayKey())-dateOf(k))/864e5); }
-function breakCut(gap){ return gap>=56? 0.20 : (gap>=28? 0.10 : (gap>=14? 0.05 : 0)); }
+function breakCut(gap,age){
+  const t=RETURN_TIERS.find(([d])=>gap>=d); if(!t) return 0;
+  return +(t[1]+((+age||0)>=RETURN_OLDER_AGE? RETURN_OLDER_EXTRA : 0)).toFixed(2);
+}
 function weeksText(gap){ const w=Math.round(gap/7); return w<=1? 'A week and a half' : w+' weeks'; }
+/* how many sessions back up to the old weight, at about 5% of it a time */
+const rampSteps=cut=>Math.max(1,Math.round((+cut||0)/RETURN_STEP));
+/* the last time a movement was done at all; an easy week counts */
+function lastDoneOf(exId){ const all=exHistory(exId,{all:true}); return all.length? all[0].d : null; }
+/* the heaviest working weight in a session, and the most reps done with it */
+function topSetOf(entry){
+  const ws=((entry&&entry.sets)||[]).filter(s=>!s.warm&&+s.kg>0&&s.reps!==''&&+s.reps>0);
+  if(!ws.length) return null;
+  const kg=Math.max(...ws.map(s=>+s.kg));
+  return {kg, reps:Math.max(...ws.filter(s=>+s.kg===kg).map(s=>+s.reps)), d:entry.d};
+}
+const profileAge=()=>+((S.profile||{}).age)||0;
 function nextPrescription(exId,row){
   const rx=nextPrescriptionBase(exId,row);
   const h=exHistory(exId);
-  if(!h.length||rx.kg===null||rx.kg===undefined||!(+rx.kg)) return rx;
-  const gap=gapDays(h[0].d), cut=breakCut(gap);
-  if(!cut) return rx;
-  const inc=rx.inc||incrementFor(exId)||2.5;
-  const kg=Math.max(inc,Math.round((+rx.kg)*(1-cut)/inc)*inc);
-  return Object.assign({},rx,{kg,kind:'return',gap,cut,
-    why:`${weeksText(gap)} since you last did this. Strength mostly holds for about three weeks and comes back quickly after that, so today starts ${Math.round(cut*100)}% lighter at ${kg}kg and builds back from there.`});
+  if(!h.length) return rx;
+  const gap=gapDays(lastDoneOf(exId)||h[0].d), cut=breakCut(gap,profileAge());
+  if(cut){
+    const was=topSetOf(h[0]);
+    /* nothing to take off a bodyweight movement: it says how long it has
+       been, and to keep a rep or two in hand on the first set */
+    if(!was) return Object.assign({},rx,{away:gap,
+      why:`${weeksText(gap)} since you last did this. Keep a rep or two in hand on the first set, then go by feel. `+rx.why});
+    const inc=rx.inc||incrementFor(exId)||2.5;
+    const kg=Math.max(inc,Math.round(was.kg*(1-cut)/inc)*inc);
+    const range=rx.range||repRangeFor(row);
+    const reps=Math.max(range.bottom,Math.min(range.top,was.reps));
+    const steps=rampSteps(cut);
+    return Object.assign({},rx,{kg,reps,kind:'return',gap,cut,was,steps,
+      why:`${weeksText(gap)} since you last did this. Strength mostly holds for about four weeks and comes back quickly after that, so today starts about ${Math.round(cut*100)}% lighter at ${kg}kg for ${reps}, then builds back to ${was.kg}kg${steps>1? ' over about '+steps+' sessions' : ' next time'}.`});
+  }
+  return rebuildOf(exId,row,rx)||rx;
+}
+/* The sessions after a break: back up toward the weight from before it, a
+   step at a time, each time every set reached the reps. Worked out from the
+   history alone (the break is the gap of two weeks or more between two
+   sessions), so it syncs and survives a reinstall like everything else. Once
+   the weight is back, or after the steps plus two sessions, ordinary double
+   progression takes over. */
+function rebuildOf(exId,row,base){
+  /* gaps are measured over everything done, easy weeks included, so the
+     fortnight between two working sessions either side of an easy week is
+     not mistaken for a break */
+  const any=exHistory(exId,{all:true}), work=e=>e&&!e.deload;
+  if(any.length<2) return null;
+  for(let i=0;i<Math.min(any.length-1,8);i++){
+    const g=Math.round((dateOf(any[i].d)-dateOf(any[i+1].d))/864e5);
+    if(g<14) continue;
+    const since=any.slice(0,i+1).filter(work), earlier=any.slice(i+1).filter(work);
+    if(!since.length||!earlier.length) return null;
+    const before=topSetOf(earlier[0]), first=topSetOf(since[since.length-1]), last=topSetOf(since[0]);
+    if(!before||!first||!last||last.kg>=before.kg) return null;
+    const steps=rampSteps(breakCut(g,profileAge())||RETURN_STEP);
+    if(since.length>steps+2) return null;
+    const all=since;
+    const inc=base.inc||incrementFor(exId)||2.5, range=base.range||repRangeFor(row);
+    const reps=Math.max(range.bottom,Math.min(range.top,before.reps));
+    const atLast=(all[0].sets||[]).filter(s=>!s.warm&&+s.kg===last.kg);
+    const made=atLast.length&&atLast.every(s=>+s.reps>=reps);
+    const off=weeksText(g).toLowerCase();
+    if(!made) return Object.assign({},base,{kg:last.kg,reps,kind:'rebuild',gap:g,was:before,
+      why:`Building back to ${before.kg}kg after ${off} off. Stay at ${last.kg}kg until every set gets ${reps} reps, then it steps up again.`});
+    const step=Math.max(inc,Math.ceil(((before.kg-first.kg)/steps)/inc)*inc);
+    const kg=Math.min(before.kg,+(last.kg+step).toFixed(2));
+    return Object.assign({},base,{kg,reps,kind:'rebuild',gap:g,was:before,
+      why:`Building back after ${off} off. Every set went to plan at ${last.kg}kg, so ${kg}kg today. ${kg>=before.kg? 'That is where you were before the break.' : 'Next stop '+before.kg+'kg, where you were before the break.'}`});
+  }
+  return null;
 }
 function nextPrescriptionBase(exId,row){
   const range=repRangeFor(row), inc=incrementFor(exId);

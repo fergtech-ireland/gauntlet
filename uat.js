@@ -1020,7 +1020,9 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     /* every row opens the right thing */
     const opens = {
       aim: () => d.getElementById('aimSheet').classList.contains('on'),
-      goal: () => /What are you actually after/.test(d.getElementById('altTitle').textContent),
+      /* build 66: with a goal set, the goal opens on the goal itself; nothing saves from there */
+      goal: () => /What are you actually after|^Your goal$/.test(d.getElementById('altTitle').textContent),
+      reset: () => d.getElementById('altTitle').textContent === 'Start something over',
       body: () => d.getElementById('detailsSheet').classList.contains('on'),
       steps: () => d.getElementById('detailsSheet').classList.contains('on') && !!d.querySelector('[data-range="stepTarget"]'),
       habits: () => d.getElementById('altTitle').textContent === 'Habits',
@@ -5281,7 +5283,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
     /* Feargal's week from the screenshots: first weigh in 116, and a goal that kept 114.8 (a scale reading) as its start */
     S.weights = [116, 115.6, 114.8, 114.8, 114.6, 114.5, 114.5, 116].map((kg, i) => ({ d: G.addDays(k, i - 7), kg }));
-    S.target = { kind: 'weight', value: 105, by: G.addDays(k, 80), from: 114.8, set: G.addDays(k, -5), hit: null };
+    /* build 66: the goal was set the day of that first weigh in (Feargal's call: the start is the trend on the day the goal was set) */
+    S.target = { kind: 'weight', value: 105, by: G.addDays(k, 80), from: 114.8, set: G.addDays(k, -7), hit: null };
     G.save();
     const chart63 = (() => { G.go('progress'); G.renderAll(); return d.getElementById('dash').querySelector('svg.wchart').outerHTML; })();
     /* the bug: Today is drawn at startup, before the chart's script loaded, so it fell back to the scale */
@@ -5290,12 +5293,15 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const first = txt(again.d.querySelector('#todayView .wline'));
     t('70 · the first draw of Today, straight after opening, shows the trend, not the scale', /115\.2 kg · 7%/.test(first) && /Start 116/.test(first) && /10\.2 kg to go/.test(first) && /scale 116/.test(first), first);
     const wp = G.weightProgress();
-    t('70 · the start is the first weigh in, where the graph\'s trend starts, not the saved 114.8 or the trend the day the goal was saved', wp.start === 116 && wp.now === 115.2 && wp.moved === -0.8 && wp.pct === 7, JSON.stringify(wp));
+    t('70 · the start is the trend on the day the goal was set, not the saved 114.8', wp.start === 116 && wp.now === 115.2 && wp.moved === -0.8 && wp.pct === 7, JSON.stringify(wp));
     G.go('today'); G.renderAll();
     const wl = d.querySelector('#todayView .wline');
     t('70 · so the bar fills', wl.querySelector('.ybar i').style.width === '7%' && /Start 116/.test(txt(wl)));
     S.target.set = G.addDays(k, -20); G.save();
-    t('70 · whenever the goal was saved', G.weightStart() === 116 && G.weightProgress().pct === 7);
+    t('70 · a goal set before the first weigh in starts at that weigh in', G.weightStart() === 116 && G.weightProgress().pct === 7);
+    S.target.set = G.addDays(k, -5); G.save();
+    t('70 · a goal set later starts at the trend that day (build 66)', G.weightStart() === +G.trendOn(G.addDays(k, -5)).toFixed(1) && G.weightStart() < 116);
+    S.target.set = G.addDays(k, -7); G.save();
     G.renderAll();
     /* at the chart's 0.55 kg a week, 105 by 30 Dec (0.89 a week needed) is out of reach: red, as Feargal's is today */
     const or = G.weightOutlook();
@@ -5326,6 +5332,179 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('70 · a goal date gone by is red', G.weightOutlook().status === 'red' && /Goal date passed/.test(txt(d.querySelector('#todayView .wlook'))));
     S.target.hit = k; G.save(); G.renderAll();
     t('70 · a goal met needs no forecast', !d.querySelector('#todayView .wlook') && /Goal met/.test(txt(d.querySelector('#todayView .wline'))));
+  }
+
+  /* ---------------------------------------------------------- 71 */
+  journey(71, 'Build 66: a goal that cannot be reset by accident, resets that say what they do, and lifts that come back after a break');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G, { weight: 116 });
+    const S = G.S, k = G.todayKey(), day = n => G.addDays(k, -n);
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const click = el => el && el.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    const q = sel => d.querySelector('#altSheet ' + sel);
+    /* Feargal: first weigh in 116 on the day the goal was set, then down */
+    S.weights = [116, 115.6, 115.2, 114.8, 114.8, 114.6, 114.5, 114.4, 114.2].map((kg, i) => ({ d: day(16 - i * 2), kg }));
+    S.target = { kind: 'weight', value: 105, by: G.addDays(k, 79), set: day(16), hit: null, from: 116 };
+    G.save(); G.renderAll();
+    t('71 · the start is the trend on the day the goal was set', G.weightStart() === 116);
+    S.target.set = day(6); G.save();
+    t('71 · and moves with that day, read off the graph\'s trend', G.weightStart() === +G.trendOn(day(6)).toFixed(1) && G.weightStart() < 116, String(G.weightStart()));
+    S.target.set = G.addDays(day(16), -10); G.save();
+    t('71 · a goal set before the first weigh in starts at that weigh in', G.weightStart() === 116);
+    S.target.set = day(16); G.save();
+
+    /* opening the goal changes nothing */
+    const before = JSON.stringify(S.target);
+    G.openTargetSheet();
+    t('71 · opening the goal shows it, with where it counts from', /Your goal/.test(txt(d.getElementById('altTitle'))) && /Counting from 116 kg, the trend on/.test(txt(q('.gcard'))), txt(q('.gcard')));
+    t('71 · and there is no save button on that screen', !q('#goalSave') && !q('#targetSave'));
+    t('71 · it lists edit, a new goal and taking it off, the last two marked as resets', !!q('[data-goalmode="edit"]') && q('[data-goalmode="new"]').classList.contains('reset') && q('[data-goalmode="remove"]').classList.contains('reset'));
+    click(q('[data-goalmode="edit"]'));
+    t('71 · edit opens on the goal as it is: same weight, keep the date, same start', q('#targetValue').value === '105' && q('[data-goalby="keep"]').classList.contains('on') && q('[data-goalfrom="' + day(16) + '"]').classList.contains('on'));
+    click(q('#goalSave'));
+    t('71 · saving an edit with nothing changed saves nothing', JSON.stringify(S.target) === before && /Nothing changed/.test(txt(d.getElementById('toast'))));
+    G.openTargetSheet('edit'); click(q('[data-goalby="16"]')); click(q('#goalSave'));
+    t('71 · changing only the date keeps the start and the progress', S.target.set === day(16) && S.target.by === G.addDays(k, 112) && G.weightStart() === 116, JSON.stringify(S.target));
+    click(d.getElementById('toastAct'));
+    t('71 · and Undo puts the date back', JSON.stringify(S.target) === before);
+
+    /* Feargal's accident, and putting it right */
+    S.target.set = day(2); G.save();
+    const moved = G.weightStart();
+    G.openTargetSheet('edit');
+    t('71 · Counting from offers the first weigh in, the day it was set and today', !!q('[data-goalfrom="' + day(16) + '"]') && !!q('[data-goalfrom="' + day(2) + '"]') && !!q('[data-goalfrom="' + k + '"]'));
+    click(q('[data-goalfrom="' + day(16) + '"]'));
+    t('71 · picking the first weigh in shows the start it gives before saving', /Starts at 116 kg, the trend on/.test(txt(q('#altBody'))));
+    click(q('#goalSave'));
+    t('71 · and saving puts the start back to 116', moved < 116 && S.target.set === day(16) && G.weightStart() === 116 && S.target.value === 105, moved + ' ' + JSON.stringify(S.target));
+    G.openTargetSheet('edit');
+    const fromBox = q('#goalFrom'); fromBox.value = G.addDays(day(16), -30); fromBox.dispatchEvent(new w.Event('change', { bubbles: true }));
+    t('71 · a day before the first weigh in is held at the first weigh in', G.goalDraft.from === day(16));
+    G.closeSheets();
+
+    /* a new goal is plainly a replacement, keeps the old one, and offers dates from your own data */
+    G.openTargetSheet(); click(q('[data-goalmode="new"]'));
+    const warn = txt(q('.resetwarn'));
+    t('71 · a new goal says in so many words that it replaces the current one', /You are replacing your goal/.test(warn) && /105 kg by/.test(warn) && /counting from 116 kg/.test(warn) && /kept in Earlier goals/.test(warn) && /weight graph do not change/.test(warn), warn);
+    t('71 · its button says what it does, in the reset colour', txt(q('#goalSave')) === 'Replace my goal' && q('#goalSave').classList.contains('danger'));
+    t('71 · and it offers editing instead', !!q('.resetwarn [data-goalmode="edit"]'));
+    const val = q('#targetValue'); val.value = '110'; val.dispatchEvent(new w.Event('input', { bubbles: true }));
+    const guide = txt(q('#goalGuide'));
+    t('71 · guidance from your own weigh ins: the trend and its rate', /Your trend is [\d.]+ kg, down [\d.]+ kg a week over the last \d+ days/.test(guide), guide);
+    t('71 · and when the typed weight comes at that rate and at your pace', /At that rate 110 kg is about \d+ weeks away/.test(guide) && /pace it is around/.test(guide), guide);
+    t('71 · both dates are offered as choices', !!q('[data-goalby="trend"]') && !!q('[data-goalby="pace"]'));
+    click(q('[data-goalby="trend"]'));
+    t('71 · choosing your trend\'s date sets it', /That puts the date at/.test(txt(q('#goalBy'))) && q('[data-goalby="trend"]').classList.contains('on'));
+    const eta = G.trendEta(110), oldGoal = JSON.parse(JSON.stringify(S.target));
+    click(q('#goalSave'));
+    const h0 = S.goalHistory[0];
+    t('71 · the new goal counts from today, on today\'s trend', S.target.value === 110 && S.target.set === k && S.target.by === eta && G.weightStart() === +G.trendOn(k).toFixed(1), JSON.stringify(S.target));
+    t('71 · the old one is kept with how far it got', !!h0 && h0.how === 'replaced' && h0.value === 105 && h0.start === 116 && h0.end === +G.weightNow().toFixed(1) && h0.pct > 0 && h0.set === day(16), JSON.stringify(h0));
+    t('71 · and the reset is logged', () => S.resetLog[0].what === 'goal' && /Goal replaced/.test(S.resetLog[0].note));
+    t('71 · the toast says where the old one went, with Undo', /Earlier goals/.test(txt(d.getElementById('toast'))) && txt(d.getElementById('toastAct')) === 'Undo');
+    click(d.getElementById('toastAct'));
+    t('71 · Undo brings the old goal back and forgets the new one', JSON.stringify(S.target) === JSON.stringify(oldGoal) && S.goalHistory.length === 0 && S.resetLog.length === 0);
+
+    /* taking it off is a reset too */
+    G.openTargetSheet(); click(q('[data-goalmode="remove"]'));
+    t('71 · taking the goal off says what happens first', /Removing: 105 kg by/.test(txt(q('.resetwarn'))) && /Calories go back to your aim/.test(txt(q('.resetwarn'))) && !!q('#targetClear') && !!q('[data-goalmode="overview"]'));
+    click(q('#targetClear'));
+    t('71 · and keeps it', () => S.target === null && S.goalHistory[0].how === 'removed' && S.resetLog[0].what === 'goal');
+    click(d.getElementById('toastAct'));
+    t('71 · Undo puts it back', S.target && S.target.value === 105 && S.goalHistory.length === 0);
+
+    /* a goal that was met becomes the last goal, not a reset */
+    S.target.hit = day(1); G.save(); G.openTargetSheet();
+    t('71 · a met goal offers the next one', /GOAL MET/.test(txt(q('.gcard'))) && !!q('.sheetcta[data-goalmode="new"]'));
+    click(q('.sheetcta[data-goalmode="new"]'));
+    t('71 · with no replacing warning', !q('.resetwarn') && txt(q('#goalSave')) === 'Set my goal');
+    const v2 = q('#targetValue'); v2.value = '108'; v2.dispatchEvent(new w.Event('input', { bubbles: true })); click(q('#goalSave'));
+    t('71 · and the met one is kept as met, with no reset logged', () => S.goalHistory[0].how === 'met' && S.resetLog.length === 0 && S.target.value === 108);
+    G.openTargetSheet();
+    t('71 · earlier goals are listed under the goal', /Earlier goals/.test(txt(q('#altBody'))) && /105 kg by/.test(txt(q('.ghist'))) && /met/.test(txt(q('.ghist'))));
+    G.closeSheets();
+
+    /* coming back after a break, per lift */
+    t('71 · from 65 each step is 5% more', G.breakCut(14, 70) === 0.1 && G.breakCut(28, 65) === 0.15 && G.breakCut(56, 80) === 0.25 && G.breakCut(13, 80) === 0);
+    const row = { exId: 'bench', sets: 3, reps: 8, repMin: 5 };
+    const sets = (kg, reps) => [0, 1, 2].map(() => ({ kg, reps }));
+    S.lifts.bench = [{ d: day(21), sets: sets(80, 8) }];
+    const r1 = G.nextPrescription('bench', row);
+    t('71 · three weeks off: from what was lifted, 5% lighter on a real plate step, same reps', r1.kind === 'return' && r1.kg === 75 && r1.reps === 8 && r1.was.kg === 80 && r1.steps === 1, JSON.stringify(r1));
+    t('71 · and it says when it is back', /back to 80kg next time/.test(r1.why), r1.why);
+    S.lifts.bench = [{ d: day(5), deload: true, sets: sets(70, 6) }, { d: day(21), sets: sets(80, 8) }];
+    t('71 · an easy week counts as doing it', G.nextPrescription('bench', row).kind !== 'return');
+    /* building back: 100 before, 37 days off (10%: two steps), 80 on the return */
+    S.lifts.bench = [{ d: day(3), sets: sets(80, 8) }, { d: day(40), sets: sets(100, 8) }];
+    const r2 = G.nextPrescription('bench', row);
+    t('71 · after the return session it steps back up toward the old weight', r2.kind === 'rebuild' && r2.kg === 90 && /Next stop 100kg/.test(r2.why), JSON.stringify(r2));
+    S.lifts.bench.unshift({ d: day(1), sets: sets(90, 8) });
+    const r3 = G.nextPrescription('bench', row);
+    t('71 · and then reaches it', r3.kind === 'rebuild' && r3.kg === 100 && /where you were before the break/.test(r3.why), JSON.stringify(r3));
+    S.lifts.bench[0].sets[2].reps = 6;
+    const r4 = G.nextPrescription('bench', row);
+    t('71 · a set short of the reps holds the weight until it is made', r4.kind === 'rebuild' && r4.kg === 90 && /Stay at 90kg/.test(r4.why), JSON.stringify(r4));
+    S.lifts.bench = [{ d: day(2), sets: sets(100, 8) }, { d: day(40), sets: sets(100, 8) }];
+    t('71 · back at the old weight, ordinary progression takes over', G.nextPrescription('bench', row).kind !== 'rebuild');
+    S.lifts.bench = [{ d: day(15), sets: sets(80, 8) }, { d: day(30), sets: sets(80, 8) }];
+    S.lifts.ohp = [{ d: day(2), sets: sets(40, 8) }];
+    S.lifts.dip = [{ d: day(20), sets: sets(0, 10) }];
+    S.workouts = [{ id: 'w1', d: day(2), name: 'Push', minutes: 50, volume: 4200, sets: 12, ex: [] }];
+    const tpl = S.templates.find(x => x.id === 't_push');
+    G.startWorkout('t_push');
+    const rc = d.getElementById('retCard');
+    t('71 · the workout names each lift back after a break, with last time and today', !!rc && /Back after a break/.test(txt(rc)) && /Bench press/i.test(txt(rc)) && /2 weeks off · last 80 kg × 8 on/.test(txt(rc)) && /Today 75 kg × 8, 6% lighter · back to 80 kg next time/.test(txt(rc)), txt(rc));
+    t('71 · a lift done two days ago is not in it', !/Overhead press/i.test(txt(rc)));
+    t('71 · a bodyweight one says there is nothing to take off', /Dip[^·]*· nothing to take off a bodyweight movement/.test(txt(rc)) || !tpl.ex.some(r => r.exId === 'dip'), txt(rc));
+    const bi = G.GYM.ex.findIndex(e => e.exId === 'bench');
+    t('71 · the bench sets start at 75', G.GYM.ex[bi].sets.filter(s2 => !s2.warm).every(s2 => s2.kg === 75));
+    G.GYM.ex[bi].sets.filter(s2 => !s2.warm)[0].done = true;
+    click(d.querySelector('#retCard [data-retfull="' + bi + '"]'));
+    t('71 · "Use my old 80 kg" moves the sets not done to 80, and leaves a done one alone', (() => { const k2 = G.GYM.ex[bi].sets.filter(s2 => !s2.warm).map(s2 => s2.kg); return k2[0] === 75 && k2.slice(1).every(x => x === 80); })() && /your old weight/.test(txt(d.getElementById('retCard'))), G.GYM.ex[bi].sets.map(s2 => s2.kg).join());
+    click(d.querySelector('#retCard [data-retfull="' + bi + '"]'));
+    t('71 · and can be undone', G.GYM.ex[bi].sets.filter(s2 => !s2.warm).every(s2 => s2.kg === 75));
+    click(d.querySelector('#retCard [data-retwhy]'));
+    t('71 · the evidence is one tap away, and says what is a rule of thumb', /Bosquet/.test(txt(d.getElementById('retCard'))) && /Hortobágyi/.test(txt(d.getElementById('retCard'))) && /rule of thumb/.test(txt(d.getElementById('retCard'))));
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+    S.plan.days[G.dowIdx()] = Object.assign({}, S.plan.days[G.dowIdx()], { templateId: 't_push', type: 'workout', slot: 't_push', label: 'Push' });
+    S.workouts = []; G.save(); G.go('today'); G.renderAll();
+    t('71 · Today says it before the session starts', /Bench press( and Tricep dip)?: two weeks or more since you did (it|them), so (it starts|they start) a little lighter today/i.test(txt(d.getElementById('todayView'))), txt(d.querySelector('#todayView .hero')));
+
+    /* training reset */
+    const push = S.templates.find(x => x.id === 't_push'); push.ex[0].sets = 6; push.ex = push.ex.slice(0, 4);
+    const own = { id: 'mine1', name: 'My arms', ex: [{ exId: 'dbcurl', sets: 3, reps: 12, rest: 60 }] }; S.templates.push(own);
+    const liftsBefore = JSON.stringify(S.lifts);
+    G.go('plan'); G.renderAll();
+    t('71 · Plan has a reset for training, in the reset colour', !!d.getElementById('planReset') && d.getElementById('planReset').classList.contains('reset'));
+    click(d.getElementById('planReset'));
+    const body = () => txt(q('#altBody'));
+    t('71 · it says plainly it is a reset', /Reset your training/.test(txt(d.getElementById('altTitle'))) && /You are resetting your training/.test(txt(q('.resetwarn'))) && /start your programme over/.test(txt(d.getElementById('altSub'))));
+    t('71 · it names the templates that change and that your own are not touched', /1 of the starting templates has been changed \(Push\)/.test(body()) && /Your own template is not touched/.test(body()), body());
+    t('71 · it says every weight and rep is kept', /Always kept/.test(body()) && /Every weight and rep you have lifted/.test(body()));
+    t('71 · and how each lift starts: after a break, with the cut and the way back', /After a break/.test(body()) && /Bench press/i.test(txt(q('.trgroup.brk'))) && /5% lighter, back to 80 kg next time/.test(txt(q('.trgroup.brk'))), txt(q('.trgroup.brk')));
+    t('71 · or picking up where it left off', /Picks up where you left off/.test(body()) && /Overhead press/i.test(txt(q('details.trgroup'))));
+    ['week', 'templates'].forEach(p => click(q('[data-trpart="' + p + '"]')));
+    t('71 · with nothing ticked it does nothing', q('#trainResetGo').disabled && txt(q('#trainResetGo')) === 'Pick something to reset');
+    ['week', 'templates', 'easy'].forEach(p => click(q('[data-trpart="' + p + '"]')));
+    t('71 · each part is a checkbox that says so', q('[data-trpart="easy"]').getAttribute('aria-checked') === 'true');
+    click(q('#trainResetGo'));
+    const push2 = S.templates.find(x => x.id === 't_push');
+    t('71 · the starting template is back as it began', push2.ex.length === 6 && push2.ex[0].sets !== 6, JSON.stringify(push2.ex.map(r => r.sets)));
+    t('71 · your own template is untouched, and every lift is kept', S.templates.some(x => x.id === 'mine1') && JSON.stringify(S.lifts) === liftsBefore);
+    t('71 · the easy week count starts again this week', S.deloadWeeks[G.mondayKey()] === 'skipped');
+    t('71 · the reset is logged and Undo is offered', () => S.resetLog[0].what === 'training' && /templates/.test(S.resetLog[0].note) && txt(d.getElementById('toastAct')) === 'Undo');
+    click(d.getElementById('toastAct'));
+    t('71 · Undo puts the changed template back', S.templates.find(x => x.id === 't_push').ex.length === 4 && !S.deloadWeeks[G.mondayKey()] && S.resetLog.length === 0);
+
+    /* one place for all of it */
+    G.renderSettings();
+    t('71 · You lists "Start something over"', !!d.querySelector('[data-setting="reset"]'));
+    click(d.querySelector('[data-setting="reset"]'));
+    t('71 · which offers the goal and training, each saying what it keeps', /Start something over/.test(txt(d.getElementById('altTitle'))) && !!q('[data-resetopen="goal"]') && /Every weight and rep is kept/.test(txt(q('[data-resetopen="training"]'))));
+    click(q('[data-resetopen="training"]'));
+    t('71 · and opens each one', /Reset your training/.test(txt(d.getElementById('altTitle'))));
+    G.closeSheets();
   }
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);

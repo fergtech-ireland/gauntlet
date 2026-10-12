@@ -336,7 +336,7 @@ function bodyFatPct(p,kg){
      trendSeries()    the trend line, one point per weigh in
      weightScale()    the latest weigh in (what the scale said)
      weightNow()      the trend now; else the weight in your details
-     weightStart()    your first weigh in (where the graph's trend starts)
+     weightStart()    the trend on the day the goal was set (build 66)
      trendRate()      kg a day, worked out as the chart's three month view
      weightProgress() start, now, scale, goal, how far along, how much to go
      weightOutlook()  where the trend lands on the goal date, and whether
@@ -362,13 +362,26 @@ function weightNow(){
   return +S.profile.weight||null;
 }
 function weightStart(){
-  /* Build 65: the start is your first weigh in, which is also where the
-     weight graph's trend line begins (its first point is that weigh in).
-     Build 64 read the trend on the day the goal was saved, which gave
-     Feargal 115.4 when he started at 116. A saved or typed number is only
-     used before there are any weigh ins. */
-  const t=S.target&&S.target.kind==='weight'? S.target : null, w=weighIns();
-  if(w.length) return +(+w[0].kg).toFixed(1);
+  /* Build 66: the start is the trend on the day the goal was set, read off
+     the same line the weight graph draws. Feargal's call. Build 65 had moved
+     it to the first weigh in because his start showed 115.4 when he began at
+     116: the real cause was that saving the goal sheet again had quietly
+     moved the goal's start date to that day (see goalStartFor and the goal
+     sheet, which now keep the start unless you choose to change it). A goal
+     set on or before the first weigh in starts at that first weigh in, which
+     is the trend's first point. A saved or typed number is only used before
+     there are any weigh ins. */
+  const t=S.target&&S.target.kind==='weight'? S.target : null;
+  return goalStartFor(t);
+}
+/* The trend on the day a goal counts from: what weightStart() reads for the
+   current goal, and what the goal sheet shows before anything is saved. */
+function goalStartFor(t,day){
+  const w=weighIns(), k=day||(t&&t.set)||null;
+  if(w.length){
+    if(k&&k>w[0].d){ const v=trendOn(k); if(v!==null) return +(+v).toFixed(1); }
+    return +(+w[0].kg).toFixed(1);
+  }
   if(t&&+t.from>0) return +t.from;
   return +S.profile.weight||null;
 }

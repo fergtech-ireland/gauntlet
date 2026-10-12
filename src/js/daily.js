@@ -546,7 +546,7 @@ renderProgress();
 Object.assign(window.__G,{TRAIN_DAYS,DEFAULT_TARGETS,ownTargets,allMovements,drawWeekStep,
   lastNDays,avg,steers,coachBrief,slotLetter,splitFit,STYLES,styleOf,hyroxDaysOf,openStyleSheet,HYROX_ORDER,weekIndex,MOVES,moveOf,kitOK,itemText,fitItem,niceAmt,hyroxSession,hyroxWeek,crossfitSession,crossfitWeek,ensureStyleWeek,sessionsWanted,CF_BENCH,HYROX_RACE,HYROX_ORDER,weekIndex,proteinPaceText,readiness,readinessPanel,painAdvice,painMorningDue,painPattern,PAIN_FLAGS,priorities,prioritiesRow,confidence,sleepStats,sleepTarget,openSleep,lightsOut,realSleep,isTeen,tooYoung,canHaveAccount,SUPPORT_TEEN,TEEN_MIN,PACE,paceOf,openPaceSheet,isMinorAge,ADULT_AGE,eatingPlan,nextEating,openEating,openEatTimes,dayDone,mealsList,ringsRow,driverLine,quickTiles,heroProgress,openReadiness,saveDayRecord,saveInlineCheckin,perMealProtein,mealSlots,timingStats,MEAL_NAMES,proteinBasis,hhmmToMin,minToHhmm,todayTrains,activeHabits,habitCount,habitRoom,HABIT_MAX,slotForNew,habitSlotOf,trainingList,trainingText,plannedTraining,loggedTraining,TRAIN_DAYS,plannedCardioKcalPerDay,openDay,openWeek,
   HABITS,habitOf,currentHabit,startHabit,retireHabit,toggleHabitDay,habitWeek,habitStreak,habitRate,suggestHabit,openHabitSheet,habitRow,habitRowFor,habitApplies,habitSlots,addOwnHabit,ownHabits,escHabit,OWN_MAX,colophonText,
-  TARGET_KINDS,setTarget,clearTarget,targetNow,targetProgress,openTargetSheet,targetLine,
+  TARGET_KINDS,setTarget,clearTarget,targetNow,targetProgress,targetLine,
   nudgeState,nextNudgeAt,scheduleNudge,enableNudges,disableNudges,fireNudge,nudgeHelp,onIOS,installed,NUDGE_KEY,
 
   get dayDraft(){return dayDraft}, get weekDraft(){return weekDraft}});

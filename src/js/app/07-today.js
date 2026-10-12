@@ -243,11 +243,12 @@ function priorities(){
   const t=S.targets||{};
   if(!teen&&t.protein){
     const fc=confidence('food'), pr=Math.round(foodTotals(k).protein||0);
-    const expected=Math.round(t.protein*Math.min(1,Math.max(0,(hour-7)/13)));
+    const aimP=(typeof proteinAim==='function'&&proteinAim())||t.protein;
+    const expected=Math.round(aimP*Math.min(1,Math.max(0,(hour-7)/13)));
     if(dayFood(k).length===0&&hour>=13&&fc.n>=3&&!((S.days[k]||{}).skipped||[]).length)
       add(60,'food','Log what you have eaten so far','Nothing logged yet today, and the rest of the week relies on it. Same as yesterday is one tap.','<button class="mini go" data-glance="food">Log food</button>');
     else if(dayFood(k).length&&pr<expected-25)
-      add(50,'protein',...proteinPaceText(pr,expected,t.protein),'<button class="mini" data-glance="food">Log food</button>');
+      add(50,'protein',...proteinPaceText(pr,expected,aimP),'<button class="mini" data-glance="food">Log food</button>');
     else if(dayFood(k).length&&pr>=expected)
       add(10,'proteinok','Protein is on track','Nothing to fix here today, so put the effort elsewhere.','');
   }
@@ -667,9 +668,11 @@ function proteinRing(){
   if(!t.protein) return ringHtml('protein',0,'coral',pr+'g','PROTEIN','no target','Protein '+pr+' grams today. Tap to open Eat.','data-go="eat"','sm');
   const c=(typeof dayClock==='function')? dayClock() : null;
   const pace=c? Math.min(1,Math.max(0,(c.n-60)/Math.max(60,c.bed-240))) : 1;
-  const behind=dayFood(k).length>0&&pr<t.protein*pace-20;
-  return ringHtml('protein',pr/t.protein,behind?'amber':'coral',pr+'g','PROTEIN',pr>=t.protein? 'target hit' : (behind? 'behind, of '+t.protein+'g' : 'of '+t.protein+'g'),
-    `Protein ${pr} of ${t.protein} grams${behind?', behind for the time of day':''}. Tap to open Eat.`,'data-go="eat"','sm'+(behind?' behind':''));
+  /* build 68: a protein step from the week in review is this week's aim */
+  const aim=(typeof proteinAim==='function'&&proteinAim())||t.protein, step=aim<t.protein;
+  const behind=dayFood(k).length>0&&pr<aim*pace-20;
+  return ringHtml('protein',pr/aim,behind?'amber':'coral',pr+'g','PROTEIN',pr>=aim? (step? 'step hit' : 'target hit') : (behind? 'behind, of '+aim+'g' : 'of '+aim+'g'+(step?' step':'')),
+    `Protein ${pr} of ${aim} grams${step?', this week\'s step on the way to '+t.protein:''}${behind?', behind for the time of day':''}. Tap to open Eat.`,'data-go="eat"','sm'+(behind?' behind':''));
 }
 function stepsRing(){
   const k=todayKey(), auto=stepsToday(), typed=(S.days[k]||{}).steps, st=auto!==null? auto : (typeof typed==='number'? typed : null), tg=stepTarget();

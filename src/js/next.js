@@ -231,8 +231,9 @@ function focusSignals(at){
   if(!teen&&t.protein&&typeof foodTotals==='function'){
     const food=dayFood(k).length, pr=Math.round(foodTotals(k).protein||0);
     const frac=Math.min(1,Math.max(0,(c.n-60)/Math.max(60,c.bed-180-60)));
-    const expected=Math.round(t.protein*frac);
-    if(food&&pr<expected-15) add('protein',Math.min(1,(expected-pr)/t.protein*1.6),`<button class="pill off" data-go="eat">Protein ${pr}/${t.protein}g · behind for now</button>`);
+    const aim=(typeof proteinAim==='function'&&proteinAim())||t.protein;
+    const expected=Math.round(aim*frac);
+    if(food&&pr<expected-15) add('protein',Math.min(1,(expected-pr)/aim*1.6),`<button class="pill off" data-go="eat">Protein ${pr}/${aim}g · behind for now</button>`);
     else if(!food&&c.n>=6*60) add('protein',0.5,`<button class="pill off" data-go="eat">Nothing logged to eat yet</button>`);
     else if(food&&pr>=expected) add('protein',0,`<button class="pill ok" data-go="eat">Protein on pace</button>`);
   }

@@ -116,8 +116,8 @@ renderProgress=function(){
   _renderProgressTop();
   const dash=document.getElementById('dash'); if(!dash) return;
   const h=document.getElementById('youHandle'); if(h) h.textContent=S.profile&&S.profile.onboarded&&S.profile.handle? '@'+S.profile.handle : '';
-  ['yTop','yLook'].forEach(id=>{ const old=document.getElementById(id); if(old) old.remove(); });
-  dash.insertAdjacentHTML('afterbegin',`<div id="yTop">${weightGoalCard()}${weekGridCard()}${readinessHistoryCard()}</div>`);
+  ['yTop','yLook','yReview'].forEach(id=>{ const old=document.getElementById(id); if(old) old.remove(); });
+  dash.insertAdjacentHTML('afterbegin',`<div id="yTop">${weightGoalCard()}${weekGridCard()}${readinessHistoryCard()}</div>${typeof reviewEntry==='function'? reviewEntry() : ''}`);
   dash.insertAdjacentHTML('beforeend',appearanceCard());
 };
 try{ Object.assign(window.__G,{readinessOn,foodStateOn,trainedOn,weightGoalCard,weekGridCard,readinessHistoryCard,appearanceCard}); }catch(e){}

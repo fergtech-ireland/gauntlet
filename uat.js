@@ -1196,7 +1196,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     onboard(G);
     const S = G.S;
     const starts = G.HABITS.filter(h => h.kind === 'start'), stops = G.HABITS.filter(h => h.kind === 'stop');
-    t('22 · there are habits to start', starts.length === 12, String(starts.length));
+    t('22 · there are habits to start', starts.length === 14, String(starts.length));
     t('22 · and habits to stop', stops.length === 8, String(stops.length));
     t('22 · nothing that restricts eating or encourages skipping meals',
       !stops.some(h => /snack|carb|skip|fast|eat less|after [0-9]+ ?pm.*eat|no food/i.test(h.t + ' ' + h.s)));
@@ -5574,7 +5574,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     G.renderAll();
     const card = home().querySelector('.daycoach .nextcard');
     const line = card && card.querySelector('.nthen');
-    t('72 · the coach card on Today shows the Then line', !!line && /^Then: .+ at \d\d:\d\d/.test(txt(line)), txt(line));
+    t('72 · the coach card on Today shows the Then line', !!line && /^Then: .+(at|due) \d\d:\d\d/.test(txt(line)), txt(line));
     t('72 · and it has no button of its own (one prompt at a time)', !!line && !line.querySelector('button'));
     /* ---- nothing due now: the card stays, slim, and says what is next ---- */
     const quiet = G.coachCard({ top: { id: 'clear' }, then: 'Dinner at 19:30', list: [] }, [], at(15, 0));
@@ -5585,6 +5585,162 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     /* ---- the evidence is in How the numbers are worked out ---- */
     const built = require('fs').readFileSync(require('path').join(__dirname, 'index.html'), 'utf8');
     t('72 · the method sheet cites the evidence', /<b>Up next, and then<\/b>/.test(built) && /Gollwitzer and Sheeran, 2006/.test(built) && /Klasnja and colleagues, 2019/.test(built));
+  }
+
+  /* ---------------------------------------------------------- 73 */
+  journey(73, 'Build 68: a week in review after the check-in: two futures from your own logs, fat and muscle, what each habit is worth, a protein ladder, your own evidence');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G, { weight: 116 });
+    const S = G.S, today = G.todayKey();
+    const FOODS = w.eval('FOODS');
+    const row = (id, q, meal, k) => { const f = FOODS.find(x => x.id === id);
+      return { id: f.id, n: f.n, u: f.u, q, meal, kcal: f.kcal, p: f.p, c: f.c, f: f.f, fb: f.fb, at: G.dateOf(k).getTime() + ({ b: 8, l: 13, s: 16, d: 19 })[meal] * 3600e3 }; };
+    S.weights = [];
+    for (let i = 27; i >= 0; i--) {
+      const k = G.addDays(today, -i); S.days[k] = {};
+      const good = i % 3 === 0;
+      S.days[k].food = [row(good ? 'egg' : 'oats', good ? 3 : 1, 'b', k), row('chicken', 1, 'l', k), row(good ? 'steak' : 'chickenthigh', 1, 'd', k)].concat(good ? [] : [row('croissant', 2, 's', k)]);
+      w.applyFoodTotals(k);
+      S.days[k].sleep = i % 4 === 0 ? 5.8 : 7.4; S.days[k].sleepManual = true;
+      S.days[k].steps = 5000 + (i % 5) * 1500;
+      if (i % 2 === 0) S.weights.push({ d: k, kg: +(116 - (27 - i) * 0.07).toFixed(1) });
+    }
+    S.target = { kind: 'weight', value: 105, by: G.addDays(today, 90), set: G.addDays(today, -27) };
+    G.save(); G.buildPlan(); G.renderAll();
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const rv = () => d.getElementById('review');
+
+    /* ---- it opens when the check-in is sent, not before ---- */
+    G.openWeek(); const send = d.getElementById('saveWeek');
+    send.click();
+    t('73 · moving a step on in the check-in does not open the review', !rv() || !rv().classList.contains('on'));
+    send.click(); const n0 = S.checkins.length; send.click();
+    t('73 · sending the check-in saves it and opens the week in review', S.checkins.length === n0 + 1 && rv() && rv().classList.contains('on'));
+    t('73 · Plan is underneath, as before', d.getElementById('s-plan').classList.contains('on'));
+    t('73 · the check-in keeps what the review said, for next week', !!S.checkins[0].review && S.checkins[0].review.end === today);
+    const R = G.reviewNow;
+
+    /* ---- the ledger is the logs, nothing invented ---- */
+    const keys = G.weekLedger().keys, fed = keys.filter(k => G.dayFood(k).length);
+    const avgP = fed.reduce((a, k) => a + Math.round(G.foodTotals(k).protein), 0) / fed.length;
+    t('73 · the week is the last seven days, ending today', keys.length === 7 && keys[6] === today);
+    t('73 · protein a day is the average of the logged days', Math.abs(R.L.protein.avg - avgP) < 0.01, R.L.protein.avg + ' vs ' + avgP);
+    const top3 = fed.map(k => Math.round(G.foodTotals(k).protein)).sort((a, b) => b - a).slice(0, 3);
+    t('73 · your better days are your own best three', Math.abs(R.L.best.protein - (top3[0] + top3[1] + top3[2]) / 3) < 0.01);
+
+    /* ---- two futures, in fat and muscle ---- */
+    t('73 · two futures twelve weeks out', R.fork && R.now.line.length === 13 && R.better.line.length === 13);
+    t('73 · each future is split into fat and muscle that add up to the change', [R.now, R.better].every(p => Math.abs(p.fat + p.lean - p.change) < 0.15), JSON.stringify([R.now.fat, R.now.lean, R.now.change]));
+    t('73 · the better days keep more muscle', R.better.lean > R.now.lean);
+    const steady = G.projectWeeks({ kcal: 1500, maint: 2600, proteinRatio: 1, lifts: 3, sleep: 7.5, steps: null, stepsExtra: 0 }, 12);
+    const first = steady.line[0] - steady.line[1], last = steady.line[11] - steady.line[12];
+    t('73 · the loss slows as the body gets lighter (Hall), not a straight line', first > last && last > 0, first.toFixed(3) + ' then ' + last.toFixed(3));
+    const ls = h => G.leanShare(Object.assign({ dir: -1, lifts: 0, proteinRatio: 0.6, sleep: 7.5, ratePct: 0.6 }, h));
+    t('73 · lifting lowers the muscle share of what is lost', ls({ lifts: 3 }) < ls({}));
+    t('73 · protein at target lowers it', ls({ proteinRatio: 1 }) < ls({}));
+    t('73 · short sleep raises it', ls({ sleep: 5.5 }) > ls({}));
+    t('73 · losing faster than 1% a week raises it', ls({ ratePct: 1.4 }) > ls({}));
+    t('73 · it stays within its bounds', ls({ lifts: 3, proteinRatio: 1 }) >= G.LEAN.min && ls({ sleep: 4, ratePct: 2, proteinRatio: 0 }) <= G.LEAN.max);
+    t('73 · the screen draws both lines and both splits', !!rv().querySelector('svg.rvfork .rvnow') && !!rv().querySelector('svg.rvfork .rvbetter') && rv().querySelectorAll('.rvcomp').length === 2);
+    t('73 · and says the split is a model, not a measurement', /a direction, not a measurement/.test(txt(rv())));
+
+    /* ---- what each one is worth, and where it leads ---- */
+    const rows = [...rv().querySelectorAll('.rvlever')].map(x => x.id.slice(4));
+    t('73 · a row for protein, calories, training, sleep and steps', rows.join() === 'protein,kcal,lift,sleep,steps', rows.join());
+    t('73 · every row says what happens if it carries on, good and bad', [...rv().querySelectorAll('.rvlever')].every(x => /Keep it up/.test(txt(x)) && /If it slips/.test(txt(x))));
+    t('73 · every row shows the week as seven days', [...rv().querySelectorAll('.rvlever .rvdots')].every(x => x.children.length === 7));
+    t('73 · levers are ranked by what they move', R.levers.every((x, i) => i === 0 || x.score <= R.levers[i - 1].score));
+    t('73 · the headline is the lever that moves most', R.top && /The one that moves most/.test(txt(rv().querySelector('.rvverdict'))) && txt(rv().querySelector('.rvverdict')).toLowerCase().indexOf(R.top.name.toLowerCase()) > 0);
+    /* overdoing it is said where there is such a thing */
+    const big = Object.assign({}, R.L, { protein: Object.assign({}, R.L.protein, { avg: 300 }) });
+    t('73 · protein far over target says the extra builds nothing and costs calories', /Morton/.test(G.leverStory('protein', big, 116).over) && /kcal a day/.test(G.leverStory('protein', big, 116).over));
+    const fast = Object.assign({}, R.L, { kcal: Object.assign({}, R.L.kcal, { avg: 600, maint: 3000 }) });
+    t('73 · eating far under says losing too fast costs muscle', /Garthe/.test(G.leverStory('kcal', fast, 116).over));
+
+    /* ---- protein, week after week ---- */
+    t('73 · four weeks under 85% of target are counted as a run', R.protein.run.under === 4, JSON.stringify(R.protein.run));
+    t('73 · the meal with the biggest gap is found (breakfast)', R.protein.gaps.weakest.m === 'b');
+    t('73 · at target, same calories, the muscle it would keep is shown', !!rv().querySelector('#rvProtein') && /kg more muscle/.test(txt(rv().querySelector('#rvProtein'))));
+    t('73 · the best day is named, with what was in it', /Your best day was/.test(txt(rv().querySelector('#rvProtein'))));
+    t('73 · the step is halfway to target, at least 10g up, never above it', G.proteinStepFor(100, 160) === 130 && G.proteinStepFor(150, 160) === null && G.proteinStepFor(120, 152) === 135 && G.proteinStepFor(60, 68) === 68);
+    const stepBtn = rv().querySelector('[data-rvstep]');
+    t('73 · two weeks or more under: a step is offered', !!stepBtn && +stepBtn.dataset.rvstep === R.protein.step);
+    stepBtn.click();
+    t('73 · taking it sets this week\'s aim', S.proteinStep && S.proteinStep.g === R.protein.step && G.proteinAim() === R.protein.step);
+    G.renderAll();
+    const ring = d.querySelector('#todayView .ring[data-ring="protein"]') || d.querySelector('#todayView [data-ring="protein"]');
+    t('73 · the Protein ring on Today works to the step', !!ring && new RegExp('of ' + R.protein.step + '( grams|g)').test(ring.getAttribute('aria-label') || txt(ring)), ring && (ring.getAttribute('aria-label') || txt(ring)));
+    t('73 · while the target itself is unchanged', S.targets.protein > R.protein.step);
+    /* a step reached moves on; two weeks at target ends it */
+    const L2 = Object.assign({}, R.L, { protein: { avg: R.protein.step + 2 }, t: S.targets });
+    t('73 · a step reached moves halfway again', G.reviewProteinStep(L2) === 'up' && S.proteinStep.g > R.protein.step);
+    S.proteinStep = { g: S.targets.protein, set: today };
+    t('73 · a step at the target is the target, and ends', G.reviewProteinStep(L2) === 'done' && S.proteinStep === null);
+
+    /* ---- one thing for next week ---- */
+    const one = G.oneThing(Object.assign({}, R, { top: { id: 'protein' } }));
+    t('73 · the one thing for protein names the weakest meal, as a when-then', /^When breakfast comes round/.test(one.t) && one.habit === 'protein_am');
+    const pick = rv().querySelector('#rvPick');
+    t('73 · one button puts it in the week', !!pick && !pick.disabled);
+    const habitsBefore = G.activeHabits().length; pick.click();
+    t('73 · and the pick is kept with the check-in', !!S.checkins[0].review.pick && S.checkins[0].review.pick.lever === G.oneThing(R).lever);
+    t('73 · the button then says it is done', rv().querySelector('#rvPick').disabled);
+    if (G.oneThing(R).habit) t('73 · a habit pick adds the habit', G.activeHabits().length >= habitsBefore && !!G.habitSlotOf(G.oneThing(R).habit));
+
+    /* ---- your own evidence ---- */
+    const ev = G.ownEvidence();
+    t('73 · three patterns from your own logs', ev.map(e => e.id).join() === 'sleepfood,breakfast,sleeplift');
+    t('73 · each says how much more it needs when there is not enough', ev.filter(e => !e.ready).every(e => /Needs/.test(e.s) && /So far/.test(e.s)));
+    /* make short nights come with more food, as the research says */
+    for (let i = 1; i <= 27; i++) { const k = G.addDays(today, -i); if (S.days[k].sleep < 6.5) { S.days[k].food.push(row('croissant', 2, 's', k)); w.applyFoodTotals(k); } }
+    const sf = G.ownEvidence().find(e => e.id === 'sleepfood');
+    t('73 · after short nights, how much more you ate, against the research average', sf.ready && sf.diff > 300 && /385/.test(sf.s), JSON.stringify(sf));
+
+    /* ---- next week: what you picked, and how it went ---- */
+    G.closeReview();
+    t('73 · Done closes it', !rv().classList.contains('on'));
+    const prev = { at: Date.now() - 7 * 864e5, weekOf: G.addDays(G.mondayKey(), -7), recovery: 7, motivation: 7, pain: [],
+      review: { end: G.addDays(today, -7), perWeek: -0.5, pick: { lever: 'protein', habit: 'protein_am', t: 'When breakfast comes round, start with the protein' } } };
+    S.checkins = [prev];
+    if (!G.habitSlotOf('protein_am')) G.startHabit('protein_am');
+    const h = G.currentHabit(G.habitSlotOf('protein_am')); h.started = G.addDays(today, -8); h.days = {};
+    [1, 2, 4, 5].forEach(n => { h.days[G.addDays(today, -7 + n)] = true; });
+    const R2 = G.buildReview();
+    t('73 · the next review remembers the pick and counts the days it was kept', R2.last && R2.last.pick.lever === 'protein' && R2.last.kept && R2.last.kept.n === 4 && R2.last.kept.of === 7, JSON.stringify(R2.last));
+    t('73 · and holds last week\'s forecast against the trend', R2.last.expected === -0.5 && R2.last.actual !== null);
+
+    /* ---- on You any time, without saving anything ---- */
+    G.go('progress'); G.renderAll();
+    const entry = d.getElementById('yReview');
+    t('73 · You has the week in review', !!entry);
+    const nC = S.checkins.length, snap = JSON.stringify(S.checkins);
+    entry.click();
+    t('73 · opening it from You shows it and saves nothing', rv().classList.contains('on') && S.checkins.length === nC && JSON.stringify(S.checkins) === snap);
+    const esc = new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }); d.dispatchEvent(esc);
+    t('73 · Escape closes it', !rv().classList.contains('on'));
+
+    /* ---- not enough food logged: says what it needs ---- */
+    { const b = await boot(); allErrs.push(...b.errs); onboard(b.G);
+      b.G.openReview({ store: false });
+      const tx = txt(b.d.getElementById('review'));
+      t('73 · with under three days of food, no futures, and it says what it needs', !b.G.reviewNow.fork && /Log food on three days/.test(tx)); }
+    /* ---- under 18: habits, never weight, calories or muscle ---- */
+    { const b = await boot(); allErrs.push(...b.errs);
+      b.G.startOnboarding(); Object.assign(b.G.onbDraft, { handle: 'kid', aim: 'hold', sex: 'f', age: 15, birthYear: new Date().getFullYear() - 15, height: 160, weight: 50, activity: 'mod', liftDays: 2, cardioDays: 1, checkinDay: 6, kit: b.G.ALL_KIT.slice() });
+      b.G.finishOnboarding();
+      const k = b.G.todayKey(); b.G.S.days[k] = { food: [row('chicken', 1, 'l', k)] };
+      b.G.openReview({ store: false });
+      const tx = txt(b.d.getElementById('review'));
+      t('73 · a teenager gets no futures, no protein ladder and no calories', !b.G.reviewNow.fork && !b.d.getElementById('rvProtein') && !/kcal/.test(tx), tx);
+      t('73 · and nothing about weight, fat or muscle lost', !/muscle lost|fat lost|weight|Fat and muscle|kcal/i.test(tx), tx.slice(0, 400));
+      t('73 · their rows are training, sleep and steps, with guidance for their age', [...b.d.querySelectorAll('#review .rvlever')].map(x => x.id.slice(4)).join() === 'lift,sleep,steps' && /World Health Organization/.test(tx)); }
+
+    /* ---- the evidence is on the screen and in the method sheet ---- */
+    const built = require('fs').readFileSync(require('path').join(__dirname, 'index.html'), 'utf8');
+    t('73 · the method sheet has the week in review and its sources', /<b>Week in review<\/b>/.test(built) && /Nedeltcheva and colleagues, 2010/.test(built) && /Sardeli and colleagues, 2018/.test(built) && /Wycherley and colleagues, 2012/.test(built));
+    const src = require('fs').readFileSync(require('path').join(__dirname, 'src/js/review.js'), 'utf8');
+    t('73 · no em dashes', src.indexOf('—') < 0);
   }
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);

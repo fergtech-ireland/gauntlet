@@ -9,7 +9,7 @@
 const HUE={run:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},workout:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},
   fast:{deep:'var(--amber-text)',tint:'var(--amber-tint)'},meal:{deep:'var(--coral-text)',tint:'var(--coral-tint)'},any:{deep:'var(--ink)',tint:'var(--track)'},
   walk:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},rest:{deep:'var(--mute)',tint:'var(--track)'},checkin:{deep:'var(--green-text)',tint:'var(--green-tint)'}};
-const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='67';
+const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='68';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -28,6 +28,8 @@ const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
    did not undo it (Lally and colleagues, 2010). */
 const HABITS=[
   {id:'protein_am', kind:'start', t:'Protein at breakfast', s:'Thirty grams before you leave the house', tag:'food'},
+  {id:'protein_lunch', kind:'start', t:'Protein first at lunch', s:'A palm of meat, fish, eggs, tofu or Greek yoghurt before anything else', tag:'food'},
+  {id:'protein_snack', kind:'start', t:'A protein snack', s:'Yoghurt, milk, cheese, a shake: twenty grams between meals', tag:'food'},
   {id:'veg_lunch',  kind:'start', t:'Something green at lunch', s:'Any vegetable, any amount', tag:'food'},
   {id:'water_am',   kind:'start', t:'A pint of water on waking', s:'Before the coffee', tag:'food'},
   {id:'lunch_prep', kind:'start', t:"Make tomorrow's lunch tonight", s:'So the easy option is the one you made', tag:'food'},

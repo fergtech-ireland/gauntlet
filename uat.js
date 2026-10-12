@@ -3296,7 +3296,9 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     /* the morning after */
     S.painLog = [{ exId: 'bench', d: day(1), during: 4, flags: [], outcome: 'lighter', morning: null }];
     G.go('today'); G.renderAll();
-    t('P1-11 · the next morning it asks how it is', !!d.querySelector('.prio.p-pain') && /How is it this morning/.test(txt(d.querySelector('.prio.p-pain'))));
+    /* in the first hours awake the Up next card asks it (build 59) and the list then leaves it out, so it is in one place or the other, never both */
+    t('P1-11 · the next morning it asks how it is', (() => { const p = d.querySelector('.prio.p-pain'), c = d.querySelector('.daycoach[data-next="pain"]');
+      return !!p !== !!c && /How is it this morning/.test(txt(p || c)); })(), txt(d.querySelector('.daycoach')).slice(0, 160));
     d.querySelector('[data-painmorning="0:still"]').click();
     t('P1-11 · not settled once: go lighter or swap next time', /go lighter or swap it next time/.test(txt(d.getElementById('toast'))));
     S.painLog.unshift({ exId: 'bench', d: day(1), during: 5, flags: [], outcome: 'lighter', morning: null });
@@ -4944,7 +4946,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     S.profile.checkinDay = i; S.checkins = []; G.renderAll();
     t('65 · on its day, the weekly check in leads the morning and the evening', G.nextUp(at(11, 30)).top.id === 'checkin' && G.nextUp(at(21)).top.id === 'checkin');
     t('65 · though half an hour before training the session comes first', G.nextUp(at(17, 30)).top.id === 'session');
-    t('65 · and the priorities do not repeat what the card shows', !home().querySelector('.prio.p-checkin') && !!home().querySelector('.daycoach[data-next="checkin"]'));
+    /* which leads depends on the real time of day the suite runs; either way it shows once */
+    t('65 · and the priorities do not repeat what the card shows', !!home().querySelector('.prio.p-checkin') !== !!home().querySelector('.daycoach[data-next="checkin"]'));
     S.checkins = [{ weekOf: G.mondayKey() }]; G.renderAll();
 
     /* ---- the line under the rings follows the data ---- */
@@ -5285,14 +5288,14 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const again = await boot({ before: w2 => { for (const x of Object.keys(w.localStorage)) w2.localStorage.setItem(x, w.localStorage.getItem(x)); } });
     allErrs.push(...again.errs);
     const first = txt(again.d.querySelector('#todayView .wline'));
-    t('70 · the first draw of Today, straight after opening, shows the trend, not the scale', /115\.2 kg · 4%/.test(first) && /10\.2 kg to go/.test(first) && /scale 116/.test(first), first);
+    t('70 · the first draw of Today, straight after opening, shows the trend, not the scale', /115\.2 kg · 7%/.test(first) && /Start 116/.test(first) && /10\.2 kg to go/.test(first) && /scale 116/.test(first), first);
     const wp = G.weightProgress();
-    t('70 · the start is read off the trend on the day the goal was set, not the saved 114.8', wp.start === 115.6 && wp.now === 115.2 && wp.moved === -0.4 && wp.pct === 4, JSON.stringify(wp));
+    t('70 · the start is the first weigh in, where the graph\'s trend starts, not the saved 114.8 or the trend the day the goal was saved', wp.start === 116 && wp.now === 115.2 && wp.moved === -0.8 && wp.pct === 7, JSON.stringify(wp));
     G.go('today'); G.renderAll();
     const wl = d.querySelector('#todayView .wline');
-    t('70 · so the bar fills', wl.querySelector('.ybar i').style.width === '4%' && /Start 115\.6/.test(txt(wl)));
+    t('70 · so the bar fills', wl.querySelector('.ybar i').style.width === '7%' && /Start 116/.test(txt(wl)));
     S.target.set = G.addDays(k, -20); G.save();
-    t('70 · a goal set before the first weigh in starts where the chart\'s trend starts', G.weightStart() === 116 && G.weightProgress().pct === 7);
+    t('70 · whenever the goal was saved', G.weightStart() === 116 && G.weightProgress().pct === 7);
     G.renderAll();
     /* at the chart's 0.55 kg a week, 105 by 30 Dec (0.89 a week needed) is out of reach: red, as Feargal's is today */
     const or = G.weightOutlook();

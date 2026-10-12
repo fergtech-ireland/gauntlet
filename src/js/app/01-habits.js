@@ -9,7 +9,7 @@
 const HUE={run:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},workout:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},
   fast:{deep:'var(--amber-text)',tint:'var(--amber-tint)'},meal:{deep:'var(--coral-text)',tint:'var(--coral-tint)'},any:{deep:'var(--ink)',tint:'var(--track)'},
   walk:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},rest:{deep:'var(--mute)',tint:'var(--track)'},checkin:{deep:'var(--green-text)',tint:'var(--green-tint)'}};
-const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='68';
+const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='69';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -121,6 +121,7 @@ function habitSlotOf(id){
   const h=habitSlots();
   return HABIT_SLOTS.find(s=>h[s]&&h[s].id===id&&!h[s].retired)||null;
 }
+const habitKindOfSlot=slot=>{ const h=currentHabit(slot); return h? (habitOf(h.id)||{}).kind||null : null; };
 function retireHabit(slot){ const h=habitSlots()[slot||'start']; if(h) h.retired=true; save(); }
 /* does this habit count on this day? */
 function habitApplies(meta,k){ return !meta||!meta.days||meta.days.indexOf(dateOf(k).getDay())>=0; }
@@ -128,7 +129,10 @@ function toggleHabitDay(k,slot){
   const h=currentHabit(slot); if(!h) return;
   if(!habitApplies(habitOf(h.id),k)) return;
   h.days=h.days||{};
-  if(h.days[k]) delete h.days[k]; else h.days[k]=true;
+  /* build 69: a tick the food log put there ('auto') is taken off as 0, so
+     the log does not put it straight back; 'tiny' and true come off as usual */
+  if(h.days[k]==='auto') h.days[k]=0;
+  else if(h.days[k]) delete h.days[k]; else h.days[k]=true;
   save();
 }
 /* Seven dots, oldest on the left, today on the right. */

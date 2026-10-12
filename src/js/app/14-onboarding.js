@@ -568,22 +568,7 @@ document.addEventListener('click',e=>{
   const pat=painPattern(p.exId), name=exOf(p.exId).n;
   toast(state==='settled'? 'Good. Carry on as normal.' : (pat.unsettled>=2? name+' has not settled twice now. Worth seeing a physio.' : 'Not settled, so go lighter or swap it next time.'));
 });
-function openHabitOne(slot){
-  const h=currentHabit(slot); if(!h) return;
-  const meta=habitOf(h.id), week=habitWeek(slot), today=week[week.length-1], stop=meta.kind==='stop';
-  const streak=habitStreak(slot), kept=Object.keys(h.days||{}).length;
-  document.getElementById('altTitle').textContent=(stop?'Stop: ':'')+meta.t;
-  document.getElementById('altSub').textContent='Since '+prettyDate(h.started)+'. '
-    +(stop? streak+' day'+(streak===1?'':'s')+' without in a row, '+kept+' in all.'
-          : streak+' day'+(streak===1?'':'s')+' running, '+kept+' in all.');
-  document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 6px">
-    ${today.off? `<div class="note">Today is not one of its days.</div>`
-      : `<button class="sheetcta" data-habittoggle="${slot}" style="margin:0 0 10px;width:100%">${today.done? 'Untick today' : (stop? 'Mark today: went without' : 'Mark today done')}</button>`}
-    <button class="sheetcta" data-habitretire="${slot}" style="margin:0 0 10px;width:100%;background:var(--coral-text)">Remove this habit</button>
-    <div class="note">Removing it keeps nothing hidden: the days you kept stay in your history, and Undo brings it straight back.</div>
-  </div>`;
-  openSheet('altSheet');
-}
+/* openHabitOne is in routine.js (build 69): strength, cue, tiny version, your numbers. */
 function openHabitSheet(){
   const s=suggestHabit();
   document.getElementById('altTitle').textContent='Habits';

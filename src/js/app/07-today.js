@@ -870,7 +870,7 @@ function renderToday(){
          not already a ring (stress, sessions behind, a stale weigh in)
        training, then meals (build 67: always in that order)
        weigh in and the check-in
-       the goal, then the week
+       the goal, then your routine (build 69: habits on the day's own clock)
      Gone: the readiness sentence under the rings (it is in the Ready ring's
      sheet), the pills that repeated the rings, a separate priorities list,
      and the Next up list (the week strip already opens every day). */
@@ -890,30 +890,26 @@ function renderToday(){
   ${hero}${mealsList()}
   ${quickTiles()}
   ${S.target&&S.target.kind==='weight'&&typeof weightLine==='function'? '' : `<div class="goalrow">${targetLine()}</div>`}
-  <div class="sechead"><h2>This week</h2><button data-go="plan">The whole week</button></div>
-  <div class="weekstrip">${plan.days.map((x,n)=>`<button data-planday="${n}" class="${n===i?'today':''} ${n<i?'past':''}" aria-label="${DAYS[n]}: ${dayLabel(x)||'Rest'}${dayDone(n)?', done':''}">
-      <span class="d">${DAYS[n][0]}</span>
-      <span class="dot ${x.kind==='rest'||!x.type?'off':''} ${dayDone(n)?'done':''}"></span>
-    </button>`).join('')}</div>
-  <div class="note weekline">${weekLine()}</div>
-  <div class="rowcard">
-  ${healthOn()
-    ? `<div class="todo auto"><span class="ic" style="background:var(--cyan-tint);color:var(--cyan-text)">⌚</span>
+  ${typeof routineBlock==='function'? routineBlock() : ''}
+  ${(()=>{ /* build 69: the week strip, the week line and the weekly check in
+       row are gone from here (Plan has the week; the coach card asks for the
+       check in on its day). What is left is only what is not said anywhere
+       else: connecting a tracker in the first week, and a lift waiting to be
+       put back after pain. */
+    const rows=[];
+    if(healthOn()) rows.push(`<div class="todo auto"><span class="ic" style="background:var(--cyan-tint);color:var(--cyan-text)">⌚</span>
         <span class="t"><b>Steps and sleep</b><span>${st!==null?num(st)+' steps':'no data yet'}${logged&&logged.auto?' · '+logged.auto.sleep+'h sleep':''} · demo data, not ${sourceName()} yet</span></span>
-        <span class="autotag">automatic</span></div>`
-    : (inFirstWeek()? `<button class="todo" id="connectBtn"><span class="ic" style="background:var(--cyan-tint);color:var(--cyan-text)">⌚</span>
+        <span class="autotag">automatic</span></div>`);
+    else if(inFirstWeek()) rows.push(`<button class="todo" id="connectBtn"><span class="ic" style="background:var(--cyan-tint);color:var(--cyan-text)">⌚</span>
         <span class="t"><b>Connect your watch or phone</b><span>Steps and sleep fill themselves in. You never log them.</span></span>
-        <span class="chev">›</span></button>` : '')}
-  ${activeHabits().map(h=>habitRowFor(h.slot)).join('')||habitRow()}
-  ${habitCount()&&habitRoom()? `<button class="addhabit" data-habitadd="1">Add another habit<span>${habitCount()} of ${HABIT_MAX}</span></button>`:''}
-  ${checkinRow()}
-  ${(typeof painToReview==='function'? painToReview() : []).map(n=>`<div class="todo">
+        <span class="chev">›</span></button>`);
+    (typeof painToReview==='function'? painToReview() : []).forEach(n=>rows.push(`<div class="todo">
       <span class="ic" style="background:var(--amber-tint);color:var(--amber-text)">?</span>
       <span class="t"><b>Is ${n} alright now?</b><span>out for two weeks. Nothing puts it back until you say so</span></span>
       <span style="display:flex;gap:6px">
         <button class="mini go" data-painok="${n}">Fine now</button>
-        <button class="mini" data-painsore="${n}">Still sore</button></span></div>`).join('')}
-  </div>
+        <button class="mini" data-painsore="${n}">Still sore</button></span></div>`));
+    return rows.length? `<div class="rowcard">${rows.join('')}</div>` : ''; })()}
 `;
 }
 document.addEventListener('click',e=>{

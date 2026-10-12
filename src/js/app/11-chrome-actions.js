@@ -262,12 +262,15 @@ document.addEventListener('click',e=>{
     toast(was? 'Unticked' : 'Ticked'); return; }
   const ht=e.target.closest('[data-habittoggle]');
   if(ht){
-    const slot=ht.dataset.habittoggle==='stop'? 'stop' : 'start';
+    /* build 69: every slot, not just the first two (a third habit's tick toggled the first one) */
+    const slot=HABIT_SLOTS.indexOf(ht.dataset.habittoggle)>=0? ht.dataset.habittoggle : 'start';
     const wk=habitWeek(slot); if(!wk.length) return;
     const before=wk[wk.length-1].done;
     toggleHabitDay(todayKey(),slot); renderAll();
-    const n=habitStreak(slot);
-    toast(before? 'Unmarked' : (slot==='stop'? (n>1? n+' days without' : 'Marked: went without') : (n>1? n+' days running' : 'Marked')));
+    const n=habitStreak(slot), isStop=habitKindOfSlot(slot)==='stop';
+    const L=(typeof habitLedger==='function'&&currentHabit(slot))? habitLedger(currentHabit(slot),habitOf(currentHabit(slot).id)) : null;
+    const strength=L? ' · strength '+Math.round(L.strength*100)+'%' : '';
+    toast(before? 'Unmarked' : (isStop? (n>1? n+' days without' : 'Marked: went without')+strength : (n>1? n+' days running' : 'Marked')+strength));
     return; }
   const hc=e.target.closest('[data-habitchoose]');
   if(hc){ const beforeH=JSON.parse(JSON.stringify(habitSlots()));

@@ -336,7 +336,7 @@ setTimeout(() => {
   // ---- pass E ----
   S.habit = null; S.target = null;
   t('a habit is suggested before one is picked', !!G.suggestHabit());
-  t('today offers the pick', /data-habitpick/.test(w.document.getElementById('todayView').innerHTML));
+  t('today offers the pick', /class="rt-sug" data-habitchoose=/.test(w.document.getElementById('todayView').innerHTML));
   t('starting a habit sets it', (() => { G.startHabit('walk_after');
     /* the app only lets you tick today; to simulate history the start date is moved back */
     G.S.habits.start.started = G.addDays(G.todayKey(), -10);

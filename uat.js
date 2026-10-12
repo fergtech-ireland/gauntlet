@@ -173,7 +173,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
   {
     const { d, G, errs } = await boot(); allErrs.push(...errs);
     onboard(G);
-    t('6 · Today invites them to pick one', /data-habitpick/.test(d.getElementById('todayView').innerHTML));
+    t('6 · Today invites them to pick one', /class="rt-sug" data-habitchoose=/.test(d.getElementById('todayView').innerHTML));
     G.startHabit('walk_after');
     G.S.habits.start.started = G.addDays(G.todayKey(), -10);   // simulate a habit begun earlier
     for (let i = 4; i >= 0; i--) G.toggleHabitDay(G.addDays(G.todayKey(), -i));
@@ -1213,8 +1213,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('22 · one to start and one to stop at the same time', G.currentHabit('start').id === 'walk_after' && G.currentHabit('stop').id === 'no_sugary_drinks');
     G.go('today'); G.renderAll();
     const tv = d.getElementById('todayView');
-    t('22 · both show on Today', tv.querySelectorAll('.todo.habit').length === 2);
-    t('22 · the stop one is marked as a stop', /Stop: No sugary drinks/.test(tv.textContent) && !!tv.querySelector('.todo.habit.stop'));
+    t('22 · both show on Today', tv.querySelectorAll('.routine .rt-item').length === 2);
+    t('22 · the stop one is marked as a stop', /Stop: No sugary drinks/.test(tv.textContent) && !!tv.querySelector('.rt-item.stop'));
     G.openHabitSheet(); d.querySelector('[data-habitchoose="stairs"]').click();
     t('22 · choosing another to start adds it and leaves the stop alone',
       G.activeHabits().some(h => h.id === 'stairs') && G.currentHabit('stop').id === 'no_sugary_drinks');
@@ -1248,7 +1248,12 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const btn = d.querySelector('[data-habittoggle="stop"]');
     t('22 · today\'s tick is ' + (todayOff ? 'disabled, it is not a weeknight' : 'available, it is a weeknight'),
       todayOff ? (btn.disabled && /Not one of its days/.test(btn.getAttribute('aria-label'))) : !btn.disabled);
-    t('22 · days that do not count look different in the dots', d.querySelectorAll('.habit.stop .habitdots i.off').length === [...Array(7)].map((_, i) => G.addDays(G.todayKey(), -i)).filter(k => ![1, 2, 3, 4].includes(weekdayOf(k))).length);
+    /* build 69: the dots moved into the habit's own sheet, eight weeks of them */
+    G.openHabitOne('stop');
+    t('22 · days that do not count look different in the grid', (() => { const L = G.habitLedger(h, meta);
+      const offs = L.days.filter(x => x.st === 'off').map(x => x.k);
+      return offs.length > 0 && offs.every(k => ![1, 2, 3, 4].includes(weekdayOf(k))) && d.querySelectorAll('#altBody .rt-grid i.g-off').length === offs.filter(k => k >= G.addDays(G.todayKey(), -55)).length; })());
+    G.closeSheets();
 
     const brief = G.coachBrief();
     t('22 · the brief carries both habits', /Habit: Stairs, not the lift/.test(brief) && /Habit to stop: No alcohol on weeknights/.test(brief));
@@ -1608,8 +1613,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     d.getElementById('todayViewEdit').click();
     t('25 · which opens today\'s card on the plan', d.getElementById('s-plan').classList.contains('on') && cards()[ti].classList.contains('open'));
     G.go('today');
-    d.querySelector('.weekstrip [data-planday="' + ti + '"]').click();
-    t('25 · the day sheet from the week strip has Edit this workout too', !!d.querySelector('#dayDetail [data-tpledit]'));
+    d.querySelector('#todayView [data-ring="train"]').click();
+    t('25 · the day sheet from the Train ring has Edit this workout too', !!d.querySelector('#dayDetail [data-tpledit]'));
     G.closeSheets();
 
     /* ================= a finished session in full ================= */
@@ -2047,20 +2052,24 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('31 · with a row for the two things worth logging', d.querySelectorAll('.quicks .quick').length === 2);
 
     /* the week, once, not twice */
-    t('31 · the week appears once, as a strip', d.querySelectorAll('.weekstrip').length === 1 && !home().querySelector('.ribbon'));
-    t('31 · the strip is seven days and each one opens', d.querySelectorAll('.weekstrip button[data-planday]').length === 7);
+    /* build 69: the week lives on Plan, one tap away; Today keeps the Train ring's count */
+    t('31 · the week is not repeated on Today', !home().querySelector('.weekstrip') && !home().querySelector('.ribbon'));
+    t('31 · the Train ring counts the week and Plan has every day', /\d+ of \d+ this week/.test(txt(home().querySelector('[data-ring="train"]'))) && (G.go('plan'), G.renderAll(), d.querySelectorAll('#planView [data-planopen]').length === 7) && (G.go('today'), G.renderAll(), true));
     t('31 · the old row of day cards is gone', !/Quick bits/.test(txt(home())));
     t('31 · next up is two days, not a repeat of the whole week',
       home().innerHTML.match(/class="pday"/g) === null || home().innerHTML.match(/class="pday"/g).length <= 2);
 
     /* it tells you whether it is working */
-    t('31 · the week line counts sessions done', /of \d+ sessions done/.test(txt(home())), txt(home()).slice(0, 200));
+    t('31 · the week\'s sessions done are counted on Today', /\d+ of \d+ this week/.test(txt(home())), txt(home()).slice(0, 200));
     for (let i = 0; i < 6; i++) { const k = G.addDays(G.todayKey(), -i); S.days[k] = { wb: 7, kcal: 2100 }; }
     S.weights = [{ d: G.addDays(G.todayKey(), -14), kg: 95 }, { d: G.todayKey(), kg: 93.6 }];
     G.renderAll();
-    const line = txt(home());
-    t('31 · and days logged, which is the habit that matters', /of the last 7 days logged/.test(line));
+    /* build 69: days logged and the trend moved off Today with the week line; You carries both */
+    G.go('progress'); G.renderAll();
+    const line = txt(d.getElementById('s-progress'));
+    t('31 · and days logged, which is the habit that matters', /days logged/.test(line), line.slice(0, 300));
     t('31 · and the weight trend once there is one', /kg a week/.test(line), line.slice(0, 220));
+    G.go('today'); G.renderAll();
 
     /* logging from the home screen */
     const tap = id => { G.go('today'); G.renderAll(); const b = d.querySelector('[data-glance="' + id + '"]'); if (b) b.click(); return !!b; };
@@ -2343,16 +2352,16 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('35 · three at once is the cap', G.HABIT_MAX === 3);
     G.startHabit('walk_after');
     G.go('today'); G.renderAll();
-    t('35 · with one going, the app offers another', /Add another habit/.test(txt(d.getElementById('todayView')))
-      && /1 of 3/.test(txt(d.querySelector('.addhabit'))));
+    t('35 · with one going, the app offers another', /Add a habit/.test(txt(d.querySelector('#todayView .sechead [data-habitadd]')))
+      && /1 building/.test(txt(d.querySelector('.rt-top'))));
     G.startHabit('no_sugary_drinks');
     t('35 · a second one does not replace the first', G.habitCount() === 2
       && G.activeHabits().map(h => h.id).sort().join() === 'no_sugary_drinks,walk_after');
     G.startHabit('water_am');
     t('35 · a third goes in its own slot', G.habitCount() === 3 && G.habitRoom() === 0);
     G.go('today'); G.renderAll();
-    t('35 · all three show on Today', d.querySelectorAll('#todayView .habitdots').length === 3);
-    t('35 · and the invitation disappears at the cap', !/Add another habit/.test(txt(d.getElementById('todayView'))));
+    t('35 · all three show on Today', d.querySelectorAll('#todayView .rt-item').length === 3);
+    t('35 · and the invitation disappears at the cap', !/Add a habit/.test(txt(d.getElementById('todayView'))));
     t('35 · each keeps its own days', (() => {
       const slots = G.activeHabits().map(h => h.slot);
       G.toggleHabitDay(G.todayKey(), slots[0]);
@@ -2649,8 +2658,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
     G.go('today'); G.renderAll();
     const order = [...d.querySelectorAll('#todayView > *')].map(e => e.classList.contains('mealscard') ? 'meals'
-      : e.classList.contains('ringset') ? 'numbers' : e.classList.contains('quicks') ? 'quick' : e.classList.contains('weekstrip') ? 'week' : '').filter(Boolean);
-    t('39 · meals sit under the numbers they feed, with the quick tiles, above the week', order.join(',') === 'numbers,meals,quick,week', order.join(','));
+      : e.classList.contains('ringset') ? 'numbers' : e.classList.contains('quicks') ? 'quick' : e.classList.contains('routine') ? 'routine' : '').filter(Boolean);
+    t('39 · meals sit under the numbers they feed, with the quick tiles, above the routine', order.join(',') === 'numbers,meals,quick,routine', order.join(','));
     t('39 · the per meal mark is 0.4 g per kg of the protein bodyweight basis',
       G.perMealProtein() === Math.round(0.4 * G.proteinBasis(S.profile).kg));
     const keepBody = { h: S.profile.height, w: S.profile.weight };
@@ -5187,17 +5196,17 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
 
     /* ---- nothing said twice ---- */
     t('67 · the readiness sentence and the pills that repeated the rings are gone', !home().querySelector('.driver'));
-    t('67 · the Next up list is gone (the week strip opens every day)', !home().querySelector('.pday') && home().querySelectorAll('.weekstrip [data-planday]').length === 7);
+    t('67 · the Next up list is gone (build 69: the week is on Plan)', !home().querySelector('.pday') && !home().querySelector('.weekstrip'));
     t('67 · priorities live in the coach card, not as a second list', !home().querySelector('#todayView > .prios') && [...home().querySelectorAll('.prios')].every(p => p.closest('.daycoach')));
     t('67 · the coach card never shows a pill for something already a ring', (() => { const c = home().querySelector('.daycoach'); return !c || !/kcal over|Protein \d|Slept|steps/.test(txt(c.querySelector('.watch'))); })());
     /* nothing to say: no empty card */
     S.days[k] = { sleep: 8, checkedIn: Date.now() };
     const quiet = G.coachCard({ top: { id: 'clear' }, then: '', list: [] }, [], 14 * 60);
     t('67 · with nothing to say there is no card at all', quiet === '' || /alsohead|watch/.test(quiet));
-    t('67 · the order is rings, coach, training and meals, the two quick logs, the goal, the week', (() => {
-      G.renderAll(); const k2 = [...home().children].map(e => e.className.split(' ')[0]).filter(c => ['ringset', 'daycoach', 'hero', 'mealscard', 'quicks', 'goalrow', 'weekstrip'].includes(c));
+    t('67 · the order is rings, coach, training and meals, the two quick logs, the goal, the routine', (() => {
+      G.renderAll(); const k2 = [...home().children].map(e => e.className.split(' ')[0]).filter(c => ['ringset', 'daycoach', 'hero', 'mealscard', 'quicks', 'goalrow', 'routine'].includes(c));
       const want = ['ringset'].concat(k2.includes('daycoach') ? ['daycoach'] : []);
-      return k2.slice(0, want.length).join() === want.join() && k2.indexOf('quicks') > Math.max(k2.indexOf('hero'), k2.indexOf('mealscard')) && k2.indexOf('weekstrip') === k2.length - 1; })(),
+      return k2.slice(0, want.length).join() === want.join() && k2.indexOf('quicks') > Math.max(k2.indexOf('hero'), k2.indexOf('mealscard')) && k2.indexOf('routine') === k2.length - 1; })(),
       [...home().children].map(e => e.className.split(' ')[0]).join());
   }
 
@@ -5742,6 +5751,145 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const src = require('fs').readFileSync(require('path').join(__dirname, 'src/js/review.js'), 'utf8');
     t('73 · no em dashes', src.indexOf('—') < 0);
   }
+
+  /* ---------------------------------------------------------- 74 */
+  journey(74, 'Build 69: your routine: habits on the day\'s own clock, strength not streaks, rest days, tiny versions, ticks from the food log, automaticity checks and second nature');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G); const S = G.S, T = G.todayKey(), A = n => G.addDays(T, n);
+    const tv = () => d.getElementById('todayView'), txt = e => (e ? e.textContent.replace(/\s+/g, ' ').trim() : '');
+    S.profile.wakeTime = '07:00'; S.profile.bedtime = '23:00'; G.save(); G.renderAll();
+
+    /* ---- nothing yet: a routine to start, one tap each, in the order of the day ---- */
+    t('74 · with no habits Today offers a routine to start', !!tv().querySelector('.routine.rt-empty') && tv().querySelectorAll('.rt-sug[data-habitchoose]').length === 3);
+    const sugTimes = [...tv().querySelectorAll('.rt-sugc')].map(e => (txt(e).match(/(\d\d):(\d\d)/) || []).slice(1).map(Number)).map(x => x.length ? ((x[0] * 60 + x[1] - 420) % 1440 + 1440) % 1440 : 9e9);
+    t('74 · the suggestions run in the order of the day', sugTimes.every((v, i) => !i || v >= sugTimes[i - 1]), sugTimes.join());
+    t('74 · the week strip, the week line and the weekly check in row are gone', !tv().querySelector('.weekstrip') && !tv().querySelector('.weekline') && !/Check in is|Checked in/.test(txt(tv())));
+    const first = tv().querySelector('.rt-sug').dataset.habitchoose;
+    tv().querySelector('.rt-sug').click();
+    t('74 · one tap starts it', G.activeHabits().some(h => h.id === first));
+
+    /* ---- three habits, laid out by when they happen ---- */
+    G.retireHabit(G.habitSlotOf(first));
+    G.startHabit('phone_out'); G.startHabit('water_am'); G.startHabit('walk_after'); G.renderAll();
+    const names = [...tv().querySelectorAll('.rt-item b')].map(txt);
+    t('74 · ordered by the day: waking, after dinner, bed', names.join('|') === 'A pint of water on waking|Ten minutes after dinner|Phone out of the bedroom', names.join('|'));
+    t('74 · each says its moment and its time from your own day', /On waking · 07:00/.test(txt(tv())) && /Before bed · 22:30/.test(txt(tv())));
+    t('74 · morning and evening are separate parts', !!tv().querySelector('.rt-part.rt-am') && !!tv().querySelector('.rt-part.rt-pm'));
+    const slotOf = id => G.habitSlotOf(id);
+    const wslot = slotOf('walk_after');
+    tv().querySelector('[data-habittoggle="' + wslot + '"]').click();
+    t('74 · the third habit ticks itself, not the first one', S.habits[wslot].days[T] === true && !S.habits.start.days[T], wslot);
+    t('74 · and the count at the top moves', /1 of 3 today/.test(txt(tv().querySelector('.rt-top'))));
+
+    /* ---- the ledger: rest days, strength, never back to zero ---- */
+    const ws = slotOf('water_am'), wh = S.habits[ws], meta = G.habitOf('water_am');
+    wh.started = A(-70); wh.days = {};
+    for (let i = 1; i <= 66; i++) wh.days[A(-i)] = true;
+    let L = G.habitLedger(wh, meta);
+    t('74 · 66 days kept in a row is about 95% strength', Math.abs(L.strength - 0.95) < 0.02, L.strength.toFixed(3));
+    /* a week with three misses: two are rest days, the third is a miss */
+    const mon = (() => { let k = A(-21); while (G.dateOf(k).getDay() !== 1) k = G.addDays(k, -1); return k; })();
+    [0, 2, 4].forEach(n => { delete wh.days[G.addDays(mon, n)]; });
+    L = G.habitLedger(wh, meta);
+    const st = n => L.days.find(x => x.k === G.addDays(mon, n)).st;
+    t('74 · the first two misses in a week are rest days, the third is a miss', st(0) === 'rest' && st(2) === 'rest' && st(4) === 'miss', [st(0), st(2), st(4)].join());
+    const before = L.days.find(x => x.k === G.addDays(mon, 3)).s, after = L.days.find(x => x.k === G.addDays(mon, 4)).s;
+    t('74 · a miss dips strength a little and never resets it', after < before && after > before * 0.9, before.toFixed(3) + ' > ' + after.toFixed(3));
+    const restDay = L.days.find(x => x.k === G.addDays(mon, 0)), prior = L.days.find(x => x.k === G.addDays(mon, -1));
+    t('74 · a rest day costs nothing', Math.abs(restDay.s - prior.s) < 1e-9);
+    t('74 · habits on four days a week get one rest day', G.restDaysFor(G.habitOf('no_alcohol_wk')) === 1 && G.restDaysFor(meta) === 2);
+    t('74 · nothing on Today says a streak was lost', !/streak (lost|broken)|lost your streak/i.test(txt(tv())));
+
+    /* ---- the tiny version: after a miss, and on a lower day ---- */
+    wh.days = {}; wh.started = A(-10); for (let i = 2; i <= 10; i++) wh.days[A(-i)] = true;
+    G.renderAll();
+    const tiny = tv().querySelector('[data-habittiny="' + ws + '"]');
+    t('74 · the day after a miss the tiny version is offered', !!tiny && /A glass, not a pint/.test(txt(tiny)));
+    tiny.click();
+    t('74 · and it counts', wh.days[T] === 'tiny' && /Tiny version done/.test(txt(tv())));
+    const Lt = G.habitLedger(wh, meta), sY = Lt.days[Lt.days.length - 2].s, sT = Lt.days[Lt.days.length - 1].s;
+    t('74 · a bit less than the full thing', Math.abs((sT - sY) - G.RT_TINY * G.RT_K * (1 - sY)) < 1e-9);
+    G.toggleHabitDay(T, ws); wh.days[A(-1)] = true; G.renderAll();
+    t('74 · with yesterday kept, no tiny offer', !tv().querySelector('[data-habittiny="' + ws + '"]'));
+    const realR = w.readiness; w.readiness = () => ({ level: 'lower', drivers: [], text: 'Lower than your usual' }); G.renderAll();
+    t('74 · on a lower readiness day it is offered again', /Lower day: the tiny version counts/.test(txt(tv())));
+    w.readiness = realR; G.renderAll();
+
+    /* ---- ticks from the food log ---- */
+    G.retireHabit(slotOf('walk_after')); G.startHabit('protein_am');
+    const ps = slotOf('protein_am'); S.habits[ps].started = A(-3);
+    const egg = q => ({ id: 'eggs_t', n: 'Eggs', u: '2 eggs', q, meal: 'b', kcal: 150, p: 13, c: 1, f: 10, at: Date.now() });
+    S.days[T] = Object.assign({}, S.days[T], { food: [egg(1)] }); G.renderAll();
+    t('74 · under the mark at breakfast, no tick', !S.habits[ps].days[T]);
+    S.days[T].food = [egg(3)]; G.renderAll();
+    t('74 · 39 g at breakfast ticks protein at breakfast by itself', S.habits[ps].days[T] === 'auto' && /Ticked from your food log · 39 g/.test(txt(tv())));
+    tv().querySelector('[data-habittoggle="' + ps + '"]').click();
+    t('74 · taking it off by hand keeps it off', S.habits[ps].days[T] === 0 && (G.renderAll(), S.habits[ps].days[T] === 0));
+    S.habits[ps].days[A(-1)] = 'auto'; S.days[A(-1)] = { food: [] }; G.renderAll();
+    t('74 · an auto tick goes when the food behind it goes', S.habits[ps].days[A(-1)] === undefined);
+
+    /* ---- your own numbers ---- */
+    const po = slotOf('phone_out'), ph = S.habits[po]; ph.started = A(-20); ph.days = {};
+    for (let i = 1; i <= 14; i++) { const k = A(-i); if (i % 2) ph.days[k] = true; S.days[G.addDays(k, 1)] = Object.assign({}, S.days[G.addDays(k, 1)], { sleep: i % 2 ? 7.6 : 6.4 }); }
+    const eff = G.habitEffect(ph, G.habitOf('phone_out'));
+    t('74 · your numbers hold that night\'s sleep against the other nights', eff.ready && eff.better && Math.abs(eff.a - 7.6) < 1e-6 && Math.abs(eff.b - 6.4) < 1e-6, JSON.stringify(eff).slice(0, 200));
+    const fresh = G.habitEffect({ id: 'stairs', started: A(-2), days: { [A(-1)]: true } }, G.habitOf('stairs'));
+    t('74 · with too few days it says what it needs', !fresh.ready && /needs 4 kept and 3 others/.test(fresh.text));
+
+    /* ---- the habit, opened ---- */
+    tv().querySelector('[data-habitopen="' + po + '"]').click();
+    const alt = d.getElementById('altBody');
+    t('74 · opening it shows strength, the curve, eight weeks and your numbers', /strength/.test(txt(alt)) && !!alt.querySelector('.rt-chart') && alt.querySelectorAll('.rt-gw').length === 8 && /Sleep that night/.test(txt(alt)));
+    alt.querySelector('[data-habitcue="' + po + ':evening"]').click();
+    t('74 · its moment can be changed', ph.cue === 'evening' && /Evening · 20:00/.test(txt(tv())));
+    G.openHabitOne(ws); d.getElementById('tiny_' + ws).value = 'Half a glass'; d.querySelector('[data-habittinysave="' + ws + '"]').click();
+    t('74 · and its tiny version written in your own words', G.tinyOf(wh, meta) === 'Half a glass');
+    G.closeSheets();
+
+    /* ---- is it automatic yet? ---- */
+    wh.started = A(-10); G.renderAll();
+    t('74 · no automaticity check before day 14', !G.checkDue(wh, false));
+    wh.started = A(-30); wh.days = {}; for (let i = 0; i <= 30; i++) wh.days[A(-i)] = true;
+    ph.started = A(-5); S.habits[ps].started = A(-3); G.renderAll();
+    t('74 · from day 14 it is asked, folded until wanted', !!d.querySelector('#rtCheck.folded') && /A pint of water on waking/.test(txt(d.getElementById('rtCheck'))));
+    d.querySelector('[data-autoopen]').click();
+    t('74 · four statements, seven points each', d.querySelectorAll('#rtCheck .rt-scale').length === 4 && d.querySelectorAll('#rtCheck [data-autoq]').length === 28);
+    t('74 · save waits for all four', d.querySelector('[data-autosave]').disabled);
+    [0, 1, 2, 3].forEach(i => d.querySelector('[data-autoq="' + i + ':6"]').click());
+    d.querySelector('[data-autosave]').click();
+    t('74 · the answers are kept with the habit', wh.checks.length === 1 && wh.checks[0].score === 6 && !d.getElementById('rtCheck'));
+    t('74 · one good check is not enough to graduate', !G.canGraduate(wh, G.habitLedger(wh, meta)));
+    wh.checks.unshift({ d: A(-7), a: [6, 5, 6, 6], score: 5.75 }); G.renderAll();
+    t('74 · two in a row a week apart, after day 21: it can graduate', G.canGraduate(wh, G.habitLedger(wh, meta)) && !!tv().querySelector('.rt-grad [data-habitgrad]'));
+    const nBefore = G.habitCount();
+    tv().querySelector('.rt-grad [data-habitgrad]').click();
+    t('74 · graduating frees its place and keeps it in the routine', G.habitCount() === nBefore - 1 && G.secondNature().some(x => x.id === 'water_am') && /Second nature since/.test(txt(tv())));
+    t('74 · its history comes with it', Object.keys(G.secondNature()[0].days).length >= 30);
+    d.getElementById('toast').querySelector('button') && d.getElementById('toast').querySelector('button').click();
+    t('74 · Undo puts it back', G.activeHabits().some(h => h.id === 'water_am') && !G.secondNature().length);
+    G.graduateHabit(slotOf('water_am')); G.renderAll();
+    const sn = G.secondNature()[0]; delete sn.days[T]; G.renderAll();
+    tv().querySelector('[data-sntoggle="water_am"]').click();
+    t('74 · second nature can still be ticked, no pressure', sn.days[T] === true);
+    t('74 · its check comes every four weeks', !G.checkDue(sn, true) && (sn.grad = A(-28), sn.checks.forEach((c, i) => { c.d = A(-36 + i * 7); }), G.checkDue(sn, true)));
+    G.renderAll(); d.querySelector('[data-autoopen]').click();
+    [0, 1, 2, 3].forEach(i => d.querySelector('[data-autoq="' + i + ':2"]').click());
+    d.querySelector('[data-autosave]').click();
+    t('74 · if it has slipped it offers training again', /Bring it back into training/.test(txt(d.getElementById('altBody'))));
+    d.querySelector('[data-snback="water_am"]').click();
+    t('74 · back in training with its days', G.activeHabits().some(h => h.id === 'water_am') && Object.keys(G.currentHabit(slotOf('water_am')).days).length >= 30 && !G.secondNature().length);
+
+    /* ---- what stays: pain and the first-week tracker row ---- */
+    { const real = w.painToReview; w.painToReview = () => ['Back squat']; G.renderAll();
+      t('74 · a lift waiting after pain still asks on Today', !!tv().querySelector('.rowcard [data-painok="Back squat"]'));
+      w.painToReview = real; G.renderAll(); }
+    const built = require('fs').readFileSync(require('path').join(__dirname, 'index.html'), 'utf8');
+    t('74 · the method sheet has the routine and its sources', /<b>Your routine<\/b>/.test(built) && /Stawarz, Cox and Blandford, 2015/.test(built) && /Sharif and Shu, 2021/.test(built) && /Gardner and colleagues, 2012/.test(built));
+    const src = require('fs').readFileSync(require('path').join(__dirname, 'src/js/routine.js'), 'utf8');
+    t('74 · no em dashes', src.indexOf('—') < 0);
+  }
+
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);
 })();

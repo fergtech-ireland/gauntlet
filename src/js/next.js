@@ -88,7 +88,7 @@ function nextCandidates(at){
       .map(x=>({x,off:c.rel(x.min)-c.n})).filter(y=>y.off<=45&&y.off>=-90).sort((a,b)=>Math.abs(a.off)-Math.abs(b.off))[0];
     if(due){
       const name=NAMES[due.x.role];
-      add(due.off<=0? 76 : 68,{id:'meal',tone:'coral',kick:due.off>0? 'Around '+due.x.time : 'Due '+due.x.time,title:'Log '+name.toLowerCase(),
+      add(due.off<=0? 76 : 68,{id:'meal',role:due.x.role,tone:'coral',kick:due.off>0? 'Around '+due.x.time : 'Due '+due.x.time,title:'Log '+name.toLowerCase(),
         why: teen? 'Regular meals keep you going through the day.' : (perMealProtein()? 'About '+perMealProtein()+'g of protein makes it count.' : 'Tap it from a list, one tap each.'),
         act:`<button class="cta" data-nextfood="${due.x.role}">Log ${name.toLowerCase()}</button><button class="mini" data-nextskip="${due.x.role}">I skipped it</button>`});
     }
@@ -122,24 +122,61 @@ function nextCandidates(at){
   }
   return out.sort((a,b)=>b.score-a.score);
 }
-/* What comes after the card, in a few words, so the day has a shape. */
-function thenLine(list,top){
-  const rest=list.filter(x=>x!==top&&x.id!==top.id&&x.score>=40);
-  if(rest.length) return rest[0].title.replace(/<[^>]+>/g,'');
-  return '';
+/* ---------- build 67: what comes after, with its time ----------
+   Since build 60 the coach card showed only what is due now: the "Then" line
+   was switched off inside it, and when nothing was due the card disappeared,
+   so Today never said what was coming. Evidence for putting it back, kept to
+   one line:
+     - a prompt works best when it names when and what, an if-then plan
+       (Gollwitzer and Sheeran 2006, 94 studies, d = 0.65), so it carries a
+       clock time, not just a name;
+     - prompts lose their pull with repetition (HeartSteps: the effect of a
+       suggestion fell day by day over six weeks, Klasnja and colleagues), so
+       there is still one prompt with a button, and the preview has none;
+     - people can only plan their next step when they can see where things
+       stand (Nielsen's first heuristic).
+   So: Up next keeps its one action; under it, one quiet line names the next
+   fixed point of the day after it and when. Built from the day's own clock
+   (the session, meals not yet eaten or skipped, the weekly and daily
+   check-ins, lights out), not from what is already due, so it can look hours
+   ahead. Nothing is said for a thing that is done, skipped or past. */
+function laterToday(at){
+  const c=dayClock(at), k=todayKey(), day=S.days[k]||{}, i=dowIdx(), out=[];
+  const d=(typeof todayPlan==='function')? todayPlan() : null;
+  /* grace: a meal or the session whose time has just gone is still due (the
+     same windows the card uses: 90 minutes for a meal, 2 hours for training) */
+  const add=(id,abs,title,role,grace)=>{ const m=((abs%1440)+1440)%1440, rel=c.rel(m);
+    if(rel>c.n||(grace&&rel>=c.n-grace)) out.push({id,rel,time:minToHhmm(m),title,role,due:rel<=c.n}); };
+  const live=typeof liveSession==='function'&&liveSession();
+  if(d&&d.type&&d.slot!=='walk'&&d.slot!=='rest'&&!dayDone(i)&&!live) add('session',c.trainAbs,dayLabel(d).replace(/<[^>]+>/g,''),null,120);
+  if(typeof mealSlots==='function'&&typeof dayFood==='function'){
+    let slots=[]; try{ slots=mealSlots(k).slots; }catch(e){}
+    const food=dayFood(k), skipped=day.skipped||[], NAMES={b:'Breakfast',l:'Lunch',d:'Dinner'};
+    slots.filter(x=>x.role&&NAMES[x.role]&&!x.skipped&&skipped.indexOf(x.role)<0&&!food.some(f=>(f.meal||'s')===x.role))
+      .forEach(x=>add('meal',x.min,NAMES[x.role],x.role,90));
+  }
+  const ciDay=(S.profile&&S.profile.checkinDay!==undefined)? +S.profile.checkinDay : 6;
+  if(i===ciDay&&typeof checkinDone==='function'&&!checkinDone()) add('checkin',c.bedAbs-300,'Weekly check in');
+  if(!day.checkedIn) add('daycheck',c.bedAbs-210,"Today's check-in");
+  if(typeof lightsOut==='function'){ const lo=hhmmToMin(lightsOut()); if(lo!==null) add('bed',lo,'Lights out'); }
+  return out.sort((a,b)=>a.rel-b.rel);
+}
+/* The one line after the card: the first thing later today that is not the
+   card itself (a meal card only rules out that same meal). */
+function thenAfter(top,at){
+  const c=dayClock(at);
+  const role=top&&top.id==='meal'&&top.role;
+  const x=laterToday(at).find(y=>!(top&&y.id===top.id&&(y.id!=='meal'||y.role===role)));
+  if(!x) return '';
+  if(x.due) return x.title+', due '+x.time;
+  const inMin=x.rel-c.n;
+  return x.title+' at '+x.time+(inMin<=180? ', in about '+fmtIn(inMin) : '');
 }
 function nextUp(at){
   const list=nextCandidates(at);
-  if(list.length) return {top:list[0],then:thenLine(list,list[0]),list};
-  /* nothing due: say what is coming, so the card is never empty */
-  const c=dayClock(at), d=(typeof todayPlan==='function')? todayPlan() : null, i=dowIdx();
-  let why='Nothing to do right now.';
-  if(d&&d.type&&d.slot!=='walk'&&d.slot!=='rest'&&!dayDone(i)&&c.train>c.n) why='Next: '+dayLabel(d)+' at '+minToHhmm(c.trainAbs)+'.';
-  /* the eating plan also lists the training slot and the last coffee; only a
-     meal counts here, so a finished session is never offered as next */
-  else if(typeof nextEating==='function'){ try{ const now=c.now, ne=nextEating().plan.items.find(x=>!['train','coffee'].includes(x.tag)&&hhmmToMin(x.time)>=now);
-    if(ne) why='Next: '+ne.what.toLowerCase().replace(/,.*$/,'')+' around '+ne.time+'.'; }catch(e){} }
-  return {top:{id:'clear',tone:'green',kick:'All caught up',title:'Nothing due right now',why,act:''},then:'',list};
+  if(list.length) return {top:list[0],then:thenAfter(list[0],at),list};
+  /* nothing due now: the card still says what is coming, from the same line */
+  return {top:{id:'clear',tone:'green',kick:'All caught up',title:'Nothing due right now',why:'',act:''},then:thenAfter(null,at),list};
 }
 /* Build 60: the coach card. Up next, then up to two more things that matter
    today (the same priorities as before, in the same rows), then anything
@@ -151,12 +188,13 @@ function coachCard(nx,prios,at){
   const watch=focusSignals(at).filter(x=>RING_SIGNALS.indexOf(x.id)<0&&x.id!==NEXT_SAME[nx.top.id]&&x.sev>=0.15)
     .sort((a,b)=>b.sev-a.sev).slice(0,2).map(x=>x.html).join('');
   const clear=nx.top.id==='clear';
-  if(clear&&!also.length&&!watch) return '';
+  if(clear&&!also.length&&!watch&&!nx.then) return '';
   const alsoHtml= also.length? `<div class="alsohead">${clear? 'What matters today' : 'Also today'}</div>
     <div class="prios">${also.map((x,n)=>{ const tone=PRIO_TONE[x.id]||'green';
       return `<div class="prio p-${x.id}"><div class="pn" style="background:var(--${tone}-tint);color:var(--${tone}-text)">${n+1}</div>
       <div class="pt"><b>${x.t}</b><span>${x.why}</span>${x.conf? confChip(x.conf) : ''}${x.action? `<div class="pa">${x.action}</div>` : ''}</div></div>`; }).join('')}</div>` : '';
-  const head= clear? '' : nextCard(nx,true);
+  /* build 67: with nothing due, a slim line still says what is next */
+  const head= clear? (nx.then? `<div class="nextcard clear" data-next="clear"><div class="nk"><span class="ndot" aria-hidden="true"></span>All caught up</div><div class="nthen first">Next: ${escHabit(nx.then)}</div></div>` : '') : nextCard(nx,true);
   return `<section class="daycoach ${clear?'t-green':'t-'+nx.top.tone}" ${clear? '' : `data-next="${nx.top.id}"`} aria-label="Your day">${head}${alsoHtml}
     ${watch? `<div class="pills watch" aria-label="Worth watching">${watch}</div>` : ''}</section>`;
 }
@@ -168,7 +206,7 @@ function nextCard(nx,inner){
     <div class="nt">${x.title}</div>
     <div class="nw">${x.why}</div>
     ${x.act? `<div class="na">${x.act}</div>` : ''}
-    ${nx.then&&!inner? `<div class="nthen">Then: ${escHabit(nx.then)}</div>` : ''}
+    ${nx.then? `<div class="nthen">Then: ${escHabit(nx.then)}</div>` : ''}
   </${inner?'div':'section'}>`;
 }
 /* ---------- what to watch today ----------

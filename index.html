@@ -1396,6 +1396,8 @@ body[data-screen="progress"] #profHandle{display:none}
 .nextcard .sleepq{display:flex;flex-wrap:wrap;gap:6px}
 .nextcard .sleepq .mini{min-width:52px;justify-content:center;font-size:14px}
 .nextcard .nthen{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:12.5px;color:var(--mute);font-weight:600}
+.nextcard.clear .nk{color:var(--green-text)}
+.nextcard .nthen.first{margin-top:4px;padding-top:0;border-top:0;font-size:14px;color:var(--sub)}
 /* what to watch */
 .pill.off{border-color:var(--amber);color:var(--amber-text);background:var(--amber-tint)}
 .pill.ok{border-color:var(--green-tint);color:var(--green-text);background:var(--green-tint)}
@@ -1813,7 +1815,7 @@ body.has-live .toast:not(.top){bottom:140px}
 const HUE={run:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},workout:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},
   fast:{deep:'var(--amber-text)',tint:'var(--amber-tint)'},meal:{deep:'var(--coral-text)',tint:'var(--coral-tint)'},any:{deep:'var(--ink)',tint:'var(--track)'},
   walk:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},rest:{deep:'var(--mute)',tint:'var(--track)'},checkin:{deep:'var(--green-text)',tint:'var(--green-tint)'}};
-const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='66';
+const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='67';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -4570,7 +4572,7 @@ function renderToday(){
        the coach card: the next thing for this time of day, then up to two
          more things that matter today, then anything worth watching that is
          not already a ring (stress, sessions behind, a stale weigh in)
-       training and meals, in the order the day reaches them
+       training, then meals (build 67: always in that order)
        weigh in and the check-in
        the goal, then the week
      Gone: the readiness sentence under the rings (it is in the Ready ring's
@@ -4580,15 +4582,16 @@ function renderToday(){
   const SAME={checkin:'checkin',pain:'pain',meal:'food',weigh:'weigh',sleep:'sleep',bed:'sleep'};
   const prios=priorities().filter(p=>!nx||SAME[nx.top.id]!==p.id);
   const hero=heroCard(plan,d,i);
-  const sessFirst=(()=>{ if(!d.type||d.slot==='rest'||d.slot==='walk'||dayDone(i)) return false;
-    try{ const c=dayClock(), ms=mealSlots().slots.filter(x=>x.role&&!x.skipped).map(x=>c.rel(x.min)).filter(m=>m>=c.n-60);
-      return !ms.length||c.train<=Math.min(...ms)+60; }catch(e){ return true; } })();
+  /* Build 67 (Feargal): the day's training always sits above the meals. It
+     used to swap places with the meals by the time of day, so the session card
+     was never in the same spot twice; a fixed place is quicker to find, and
+     the coach card above already says which of the two is due first. */
   const coach=(typeof coachCard==='function')? coachCard(nx,prios) : '';
   $('todayView').innerHTML=`
   ${ringsRow()}
   ${typeof weightLine==='function'? weightLine() : ''}
   ${coach}
-  ${sessFirst? hero+mealsList() : mealsList()+hero}
+  ${hero}${mealsList()}
   ${quickTiles()}
   ${S.target&&S.target.kind==='weight'&&typeof weightLine==='function'? '' : `<div class="goalrow">${targetLine()}</div>`}
   <div class="sechead"><h2>This week</h2><button data-go="plan">The whole week</button></div>
@@ -10967,7 +10970,7 @@ function nextCandidates(at){
       .map(x=>({x,off:c.rel(x.min)-c.n})).filter(y=>y.off<=45&&y.off>=-90).sort((a,b)=>Math.abs(a.off)-Math.abs(b.off))[0];
     if(due){
       const name=NAMES[due.x.role];
-      add(due.off<=0? 76 : 68,{id:'meal',tone:'coral',kick:due.off>0? 'Around '+due.x.time : 'Due '+due.x.time,title:'Log '+name.toLowerCase(),
+      add(due.off<=0? 76 : 68,{id:'meal',role:due.x.role,tone:'coral',kick:due.off>0? 'Around '+due.x.time : 'Due '+due.x.time,title:'Log '+name.toLowerCase(),
         why: teen? 'Regular meals keep you going through the day.' : (perMealProtein()? 'About '+perMealProtein()+'g of protein makes it count.' : 'Tap it from a list, one tap each.'),
         act:`<button class="cta" data-nextfood="${due.x.role}">Log ${name.toLowerCase()}</button><button class="mini" data-nextskip="${due.x.role}">I skipped it</button>`});
     }
@@ -11001,24 +11004,61 @@ function nextCandidates(at){
   }
   return out.sort((a,b)=>b.score-a.score);
 }
-/* What comes after the card, in a few words, so the day has a shape. */
-function thenLine(list,top){
-  const rest=list.filter(x=>x!==top&&x.id!==top.id&&x.score>=40);
-  if(rest.length) return rest[0].title.replace(/<[^>]+>/g,'');
-  return '';
+/* ---------- build 67: what comes after, with its time ----------
+   Since build 60 the coach card showed only what is due now: the "Then" line
+   was switched off inside it, and when nothing was due the card disappeared,
+   so Today never said what was coming. Evidence for putting it back, kept to
+   one line:
+     - a prompt works best when it names when and what, an if-then plan
+       (Gollwitzer and Sheeran 2006, 94 studies, d = 0.65), so it carries a
+       clock time, not just a name;
+     - prompts lose their pull with repetition (HeartSteps: the effect of a
+       suggestion fell day by day over six weeks, Klasnja and colleagues), so
+       there is still one prompt with a button, and the preview has none;
+     - people can only plan their next step when they can see where things
+       stand (Nielsen's first heuristic).
+   So: Up next keeps its one action; under it, one quiet line names the next
+   fixed point of the day after it and when. Built from the day's own clock
+   (the session, meals not yet eaten or skipped, the weekly and daily
+   check-ins, lights out), not from what is already due, so it can look hours
+   ahead. Nothing is said for a thing that is done, skipped or past. */
+function laterToday(at){
+  const c=dayClock(at), k=todayKey(), day=S.days[k]||{}, i=dowIdx(), out=[];
+  const d=(typeof todayPlan==='function')? todayPlan() : null;
+  /* grace: a meal or the session whose time has just gone is still due (the
+     same windows the card uses: 90 minutes for a meal, 2 hours for training) */
+  const add=(id,abs,title,role,grace)=>{ const m=((abs%1440)+1440)%1440, rel=c.rel(m);
+    if(rel>c.n||(grace&&rel>=c.n-grace)) out.push({id,rel,time:minToHhmm(m),title,role,due:rel<=c.n}); };
+  const live=typeof liveSession==='function'&&liveSession();
+  if(d&&d.type&&d.slot!=='walk'&&d.slot!=='rest'&&!dayDone(i)&&!live) add('session',c.trainAbs,dayLabel(d).replace(/<[^>]+>/g,''),null,120);
+  if(typeof mealSlots==='function'&&typeof dayFood==='function'){
+    let slots=[]; try{ slots=mealSlots(k).slots; }catch(e){}
+    const food=dayFood(k), skipped=day.skipped||[], NAMES={b:'Breakfast',l:'Lunch',d:'Dinner'};
+    slots.filter(x=>x.role&&NAMES[x.role]&&!x.skipped&&skipped.indexOf(x.role)<0&&!food.some(f=>(f.meal||'s')===x.role))
+      .forEach(x=>add('meal',x.min,NAMES[x.role],x.role,90));
+  }
+  const ciDay=(S.profile&&S.profile.checkinDay!==undefined)? +S.profile.checkinDay : 6;
+  if(i===ciDay&&typeof checkinDone==='function'&&!checkinDone()) add('checkin',c.bedAbs-300,'Weekly check in');
+  if(!day.checkedIn) add('daycheck',c.bedAbs-210,"Today's check-in");
+  if(typeof lightsOut==='function'){ const lo=hhmmToMin(lightsOut()); if(lo!==null) add('bed',lo,'Lights out'); }
+  return out.sort((a,b)=>a.rel-b.rel);
+}
+/* The one line after the card: the first thing later today that is not the
+   card itself (a meal card only rules out that same meal). */
+function thenAfter(top,at){
+  const c=dayClock(at);
+  const role=top&&top.id==='meal'&&top.role;
+  const x=laterToday(at).find(y=>!(top&&y.id===top.id&&(y.id!=='meal'||y.role===role)));
+  if(!x) return '';
+  if(x.due) return x.title+', due '+x.time;
+  const inMin=x.rel-c.n;
+  return x.title+' at '+x.time+(inMin<=180? ', in about '+fmtIn(inMin) : '');
 }
 function nextUp(at){
   const list=nextCandidates(at);
-  if(list.length) return {top:list[0],then:thenLine(list,list[0]),list};
-  /* nothing due: say what is coming, so the card is never empty */
-  const c=dayClock(at), d=(typeof todayPlan==='function')? todayPlan() : null, i=dowIdx();
-  let why='Nothing to do right now.';
-  if(d&&d.type&&d.slot!=='walk'&&d.slot!=='rest'&&!dayDone(i)&&c.train>c.n) why='Next: '+dayLabel(d)+' at '+minToHhmm(c.trainAbs)+'.';
-  /* the eating plan also lists the training slot and the last coffee; only a
-     meal counts here, so a finished session is never offered as next */
-  else if(typeof nextEating==='function'){ try{ const now=c.now, ne=nextEating().plan.items.find(x=>!['train','coffee'].includes(x.tag)&&hhmmToMin(x.time)>=now);
-    if(ne) why='Next: '+ne.what.toLowerCase().replace(/,.*$/,'')+' around '+ne.time+'.'; }catch(e){} }
-  return {top:{id:'clear',tone:'green',kick:'All caught up',title:'Nothing due right now',why,act:''},then:'',list};
+  if(list.length) return {top:list[0],then:thenAfter(list[0],at),list};
+  /* nothing due now: the card still says what is coming, from the same line */
+  return {top:{id:'clear',tone:'green',kick:'All caught up',title:'Nothing due right now',why:'',act:''},then:thenAfter(null,at),list};
 }
 /* Build 60: the coach card. Up next, then up to two more things that matter
    today (the same priorities as before, in the same rows), then anything
@@ -11030,12 +11070,13 @@ function coachCard(nx,prios,at){
   const watch=focusSignals(at).filter(x=>RING_SIGNALS.indexOf(x.id)<0&&x.id!==NEXT_SAME[nx.top.id]&&x.sev>=0.15)
     .sort((a,b)=>b.sev-a.sev).slice(0,2).map(x=>x.html).join('');
   const clear=nx.top.id==='clear';
-  if(clear&&!also.length&&!watch) return '';
+  if(clear&&!also.length&&!watch&&!nx.then) return '';
   const alsoHtml= also.length? `<div class="alsohead">${clear? 'What matters today' : 'Also today'}</div>
     <div class="prios">${also.map((x,n)=>{ const tone=PRIO_TONE[x.id]||'green';
       return `<div class="prio p-${x.id}"><div class="pn" style="background:var(--${tone}-tint);color:var(--${tone}-text)">${n+1}</div>
       <div class="pt"><b>${x.t}</b><span>${x.why}</span>${x.conf? confChip(x.conf) : ''}${x.action? `<div class="pa">${x.action}</div>` : ''}</div></div>`; }).join('')}</div>` : '';
-  const head= clear? '' : nextCard(nx,true);
+  /* build 67: with nothing due, a slim line still says what is next */
+  const head= clear? (nx.then? `<div class="nextcard clear" data-next="clear"><div class="nk"><span class="ndot" aria-hidden="true"></span>All caught up</div><div class="nthen first">Next: ${escHabit(nx.then)}</div></div>` : '') : nextCard(nx,true);
   return `<section class="daycoach ${clear?'t-green':'t-'+nx.top.tone}" ${clear? '' : `data-next="${nx.top.id}"`} aria-label="Your day">${head}${alsoHtml}
     ${watch? `<div class="pills watch" aria-label="Worth watching">${watch}</div>` : ''}</section>`;
 }
@@ -11047,7 +11088,7 @@ function nextCard(nx,inner){
     <div class="nt">${x.title}</div>
     <div class="nw">${x.why}</div>
     ${x.act? `<div class="na">${x.act}</div>` : ''}
-    ${nx.then&&!inner? `<div class="nthen">Then: ${escHabit(nx.then)}</div>` : ''}
+    ${nx.then? `<div class="nthen">Then: ${escHabit(nx.then)}</div>` : ''}
   </${inner?'div':'section'}>`;
 }
 /* ---------- what to watch today ----------
@@ -11408,7 +11449,7 @@ document.addEventListener('click',e=>{
     if(dy>80) minimiseGym(); y0=null; dy=0; },{passive:true});
 })();
 /* for the tests */
-if(window.__G) Object.assign(window.__G,{nextUp,nextCandidates,nextCard,focusSignals,focusPills,dayClock,openSleepLog,saveSleep,hoursBetween,
+if(window.__G) Object.assign(window.__G,{nextUp,nextCandidates,laterToday,thenAfter,nextCard,focusSignals,focusPills,dayClock,openSleepLog,saveSleep,hoursBetween,
   sleepNightLabel,openCheckin,realAuto,warmFor,firstWarm,rememberWarmups,liveSession,gymHasWork,minimiseGym,resumeLive,endLive,restoreLive,
   persistLive,liveGuard,drawLiveBar,liveSummary,isSearchBox,searchToTop,priorities,heroCard,clockOf,realSleep,openDay,coachCard,weighIns,weightNow,weightScale,weightStart,weightProgress,weightOutlook,outlookLine,trendRate,trendOn,tidyWeights,LIVE_KEY});
 /* ---------- goals, and starting things over (build 66) ----------
@@ -12618,6 +12659,7 @@ function openHow(){
     <div class="method"><b>Readiness</b><span>Built only from what you log, sleep, stress and how your day went, compared with your own last four weeks, never a universal score. A systematic review of 56 studies (Saw and colleagues, 2016) found that self-reported measures like these track the response to training more sensitively than objective markers such as heart rate; those studies were in athletes. It says better, about usual or lower, and what is driving it, rather than a number more precise than it can be.</span></div>
     <div class="method"><b>Coming back after a break</b><span>${typeof RETURN_EVIDENCE==='string'? RETURN_EVIDENCE : ''}</span></div>
     <div class="method"><b>When something hurts</b><span>In a session, "This one hurts" asks for a 0 to 10 rating and a few warning signs. It follows the pain-monitoring model from a randomised trial in Achilles tendon pain (Silbernagel and colleagues, 2007): up to 5 out of 10 is generally fine to train with if it settles by the next morning and does not build week to week, and people who trained that way did as well as those who rested. It was tested in tendon pain, so treat it as a guide. Sharp or sudden pain, swelling, numbness or weakness, pain after a knock, or pain at rest are not for monitoring: stop, and see a GP or physio. The app asks how it is the next morning, and says so plainly if something keeps not settling.</span></div>
+    <div class="method"><b>Up next, and then</b><span>Today leads with one thing to do now, with its button on it, timed from your own wake, training and bed times, and one quiet line saying what comes after it and at what time. A plan that names when and what, an if-then plan, makes people more likely to follow through than a goal alone: a meta-analysis of 94 studies found a medium to large effect (Gollwitzer and Sheeran, 2006). Prompts also lose their pull the more of them there are: in the HeartSteps trial a suggestion's effect on walking fell steadily over six weeks (Klasnja and colleagues, 2019). So there is one prompt at a time, and the line after it has no button. Showing one next step and one after it is this app's choice, not a tested number.</span></div>
     <div class="method"><b>What matters today</b><span>At most three things, ranked, each saying what changed and why. It only raises sleep once there are three nights logged in a week, food once you have been logging it, and always says how much it has to go on: nothing yet, building your baseline, or based on so many of the last fourteen days.</span></div>
     <div class="method"><b>When the plan suggests easing off</b><span>Sleep under 6.5 hours, recovery of 5 or less, or stress of 7 or more are this app's rules of thumb for suggesting an easier day or week. They are prompts to check in with yourself, not validated predictions of injury or burnout, and how you actually feel matters more than the number.</span></div>
     <div class="method"><b>Easy weeks</b><span>Every ${+S.profile.deloadEvery||DELOAD_EVERY} weeks by default, from the 4 to 8 week range in Bell and colleagues' 2025 recommendations and the roughly five and a half week gap reported by 246 competitive lifters (Rogerson and colleagues, 2024). About 10% lighter and 25 to 90% less work depending on recovery. Easy-week sessions never set your next weights. It is a sensible rule of thumb, not a requirement: you can change how often, move them, or add one early, and how you feel should win over the calendar.</span></div>

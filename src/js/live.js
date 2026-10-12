@@ -129,6 +129,6 @@ document.addEventListener('click',e=>{
     if(dy>80) minimiseGym(); y0=null; dy=0; },{passive:true});
 })();
 /* for the tests */
-if(window.__G) Object.assign(window.__G,{nextUp,nextCandidates,nextCard,focusSignals,focusPills,dayClock,openSleepLog,saveSleep,hoursBetween,
+if(window.__G) Object.assign(window.__G,{nextUp,nextCandidates,laterToday,thenAfter,nextCard,focusSignals,focusPills,dayClock,openSleepLog,saveSleep,hoursBetween,
   sleepNightLabel,openCheckin,realAuto,warmFor,firstWarm,rememberWarmups,liveSession,gymHasWork,minimiseGym,resumeLive,endLive,restoreLive,
   persistLive,liveGuard,drawLiveBar,liveSummary,isSearchBox,searchToTop,priorities,heroCard,clockOf,realSleep,openDay,coachCard,weighIns,weightNow,weightScale,weightStart,weightProgress,weightOutlook,outlookLine,trendRate,trendOn,tidyWeights,LIVE_KEY});

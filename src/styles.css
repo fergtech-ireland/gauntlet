@@ -1366,6 +1366,8 @@ body[data-screen="progress"] #profHandle{display:none}
 .nextcard .sleepq{display:flex;flex-wrap:wrap;gap:6px}
 .nextcard .sleepq .mini{min-width:52px;justify-content:center;font-size:14px}
 .nextcard .nthen{margin-top:10px;padding-top:8px;border-top:1px solid var(--line);font-size:12.5px;color:var(--mute);font-weight:600}
+.nextcard.clear .nk{color:var(--green-text)}
+.nextcard .nthen.first{margin-top:4px;padding-top:0;border-top:0;font-size:14px;color:var(--sub)}
 /* what to watch */
 .pill.off{border-color:var(--amber);color:var(--amber-text);background:var(--amber-tint)}
 .pill.ok{border-color:var(--green-tint);color:var(--green-text);background:var(--green-tint)}

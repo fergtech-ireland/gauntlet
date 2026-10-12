@@ -865,7 +865,7 @@ function renderToday(){
        the coach card: the next thing for this time of day, then up to two
          more things that matter today, then anything worth watching that is
          not already a ring (stress, sessions behind, a stale weigh in)
-       training and meals, in the order the day reaches them
+       training, then meals (build 67: always in that order)
        weigh in and the check-in
        the goal, then the week
      Gone: the readiness sentence under the rings (it is in the Ready ring's
@@ -875,15 +875,16 @@ function renderToday(){
   const SAME={checkin:'checkin',pain:'pain',meal:'food',weigh:'weigh',sleep:'sleep',bed:'sleep'};
   const prios=priorities().filter(p=>!nx||SAME[nx.top.id]!==p.id);
   const hero=heroCard(plan,d,i);
-  const sessFirst=(()=>{ if(!d.type||d.slot==='rest'||d.slot==='walk'||dayDone(i)) return false;
-    try{ const c=dayClock(), ms=mealSlots().slots.filter(x=>x.role&&!x.skipped).map(x=>c.rel(x.min)).filter(m=>m>=c.n-60);
-      return !ms.length||c.train<=Math.min(...ms)+60; }catch(e){ return true; } })();
+  /* Build 67 (Feargal): the day's training always sits above the meals. It
+     used to swap places with the meals by the time of day, so the session card
+     was never in the same spot twice; a fixed place is quicker to find, and
+     the coach card above already says which of the two is due first. */
   const coach=(typeof coachCard==='function')? coachCard(nx,prios) : '';
   $('todayView').innerHTML=`
   ${ringsRow()}
   ${typeof weightLine==='function'? weightLine() : ''}
   ${coach}
-  ${sessFirst? hero+mealsList() : mealsList()+hero}
+  ${hero}${mealsList()}
   ${quickTiles()}
   ${S.target&&S.target.kind==='weight'&&typeof weightLine==='function'? '' : `<div class="goalrow">${targetLine()}</div>`}
   <div class="sechead"><h2>This week</h2><button data-go="plan">The whole week</button></div>

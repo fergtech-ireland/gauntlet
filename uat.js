@@ -5513,6 +5513,79 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('71 · and opens each one', /Reset your training/.test(txt(d.getElementById('altTitle'))));
     G.closeSheets();
   }
+
+  /* ---------------------------------------------------------- 72 */
+  journey(72, 'Build 67: the workout always sits above the meals; Up next says what comes after it, and when');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S, k = G.todayKey(), i = G.dowIdx();
+    S.profile.checkinDay = (i + 3) % 7;
+    S.profile.wakeTime = '07:00'; S.profile.bedtime = '23:00'; S.profile.trainTime = '18:00';
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const home = () => d.getElementById('todayView');
+    const at = (h, m) => h * 60 + (m || 0);
+    const lift = S.plan.days.find(x => x.templateId);
+    S.plan.days[i] = Object.assign({}, lift, { dow: i }); S.week[i] = { done: [] };
+    G.save(); G.go('today'); G.renderAll();
+    const pos = () => { const ks = [...home().children].map(e => e.classList.contains('hero') ? 'hero' : (e.classList.contains('mealscard') ? 'meals' : '')).filter(Boolean); return ks.join(); };
+
+    /* ---- the workout above the food, whatever the time or state ---- */
+    t('72 · a training day: the session card is above the meals', pos() === 'hero,meals', pos());
+    G.addFood('chicken', 1, 'b'); G.addFood('chicken', 1, 'l'); G.renderAll();
+    t('72 · still above them with the morning meals eaten', pos() === 'hero,meals', pos());
+    S.week[i] = { done: [0] }; G.save(); G.renderAll();
+    const doneNow = G.dayDone(i);
+    t('72 · and once the session is done', doneNow && pos() === 'hero,meals', pos() + ' ' + doneNow);
+    const restBefore = S.plan.days[i];
+    S.plan.days[i] = { dow: i, kind: 'rest', slot: 'rest', type: null }; S.week[i] = { done: [] }; G.save(); G.renderAll();
+    t('72 · on a rest day the day card is above the meals too', pos() === 'hero,meals' && !!home().querySelector('.hero.restday'), pos());
+    S.plan.days[i] = restBefore; delete S.days[k]; S.week[i] = { done: [] }; G.save(); G.renderAll();
+
+    /* ---- the line after Up next names the next thing and its time ---- */
+    const morning = G.nextUp(at(7, 30));
+    const bSlot = G.mealSlots(k).slots.find(x => x.role === 'b');
+    t('72 · first thing in the morning (sleep), then breakfast with its time', morning.top.id === 'sleep' && /^Breakfast(, due| at) \d\d:\d\d/.test(morning.then) && morning.then.indexOf(G.minToHhmm(bSlot.min)) > 0, morning.then);
+    t('72 · a meal whose time has just gone is still next, as due', G.thenAfter({ id: 'sleep' }, bSlot.min + 30) === 'Breakfast, due ' + G.minToHhmm(bSlot.min), G.thenAfter({ id: 'sleep' }, bSlot.min + 30));
+    t('72 · but not once its window has passed', !/^Breakfast/.test(G.thenAfter({ id: 'sleep' }, bSlot.min + 100)));
+    const pre = G.nextUp(at(17, 30));
+    const sessName = G.dayLabel(S.plan.days[i]).replace(/<[^>]+>/g, '');
+    t('72 · half an hour before the session, the line looks past it', pre.top.id === 'session' && pre.then !== '' && pre.then.indexOf(sessName + ' at') !== 0, pre.then);
+    t('72 · and gives a clock time and how long until it, when it is near', /at \d\d:\d\d/.test(pre.then));
+    const lunchSlot = G.mealSlots(k).slots.find(x => x.role === 'l');
+    const atLunch = G.nextUp(lunchSlot.min + 5);
+    t('72 · when lunch is due, the line is not lunch again', atLunch.top.id === 'meal' && !/^Lunch/.test(atLunch.then), atLunch.then);
+    t('72 · the line can look hours ahead (the session at 18:00 from lunch)', G.laterToday(lunchSlot.min + 5).some(x => x.id === 'session' && x.time === '18:00'));
+    /* nothing that is done, skipped or gone is offered */
+    G.addFood('chicken', 1, 'b');
+    t('72 · a meal already eaten is never next', !G.laterToday(at(7, 1)).some(x => x.id === 'meal' && x.role === 'b'));
+    S.days[k] = Object.assign({}, S.days[k], { skipped: ['l'] });
+    t('72 · nor a skipped one', !G.laterToday(at(7, 1)).some(x => x.id === 'meal' && x.role === 'l'));
+    S.week[i] = { done: [0] };
+    t('72 · nor a session already done', !G.laterToday(at(9, 0)).some(x => x.id === 'session'));
+    S.week[i] = { done: [] };
+    t('72 · nor anything already past, beyond a meal\'s or the session\'s own window', G.laterToday(at(21, 0)).every(x => x.rel > G.dayClock(at(21, 0)).n || (x.id === 'meal' && x.rel >= G.dayClock(at(21, 0)).n - 90)));
+    S.days[k].checkedIn = Date.now();
+    t('72 · nor a check-in already done', !G.laterToday(at(9, 0)).some(x => x.id === 'daycheck'));
+    delete S.days[k].checkedIn;
+    t('72 · in time order', (() => { const l = G.laterToday(at(9, 0)); return l.every((x, n) => n === 0 || x.rel >= l[n - 1].rel); })());
+
+    /* ---- it is on the screen, quiet, with no button ---- */
+    G.renderAll();
+    const card = home().querySelector('.daycoach .nextcard');
+    const line = card && card.querySelector('.nthen');
+    t('72 · the coach card on Today shows the Then line', !!line && /^Then: .+ at \d\d:\d\d/.test(txt(line)), txt(line));
+    t('72 · and it has no button of its own (one prompt at a time)', !!line && !line.querySelector('button'));
+    /* ---- nothing due now: the card stays, slim, and says what is next ---- */
+    const quiet = G.coachCard({ top: { id: 'clear' }, then: 'Dinner at 19:30', list: [] }, [], at(15, 0));
+    t('72 · with nothing due it still says what is next', /All caught up/.test(quiet) && /Next: Dinner at 19:30/.test(quiet) && !/<button/.test(quiet.replace(/<button class="pill[^]*?<\/button>/g, '')));
+    const none = G.coachCard({ top: { id: 'clear' }, then: '', list: [] }, [], at(15, 0));
+    t('72 · and with nothing due and nothing coming, no card', none === '' || /alsohead|watch/.test(none));
+    t('72 · nextUp with nothing due fills the line from the day', (() => { const nx = G.nextUp(at(15, 0)); return nx.top.id !== 'clear' || typeof nx.then === 'string'; })());
+    /* ---- the evidence is in How the numbers are worked out ---- */
+    const built = require('fs').readFileSync(require('path').join(__dirname, 'index.html'), 'utf8');
+    t('72 · the method sheet cites the evidence', /<b>Up next, and then<\/b>/.test(built) && /Gollwitzer and Sheeran, 2006/.test(built) && /Klasnja and colleagues, 2019/.test(built));
+  }
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);
 })();

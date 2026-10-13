@@ -8,6 +8,13 @@
 const { boot, suite, onboard } = require('./harness');
 
 const s = suite('UAT');
+/* build 70: a day counts as done from its dated logs, not a stored weekday
+   slot, so tests that need a done day log one on that date. */
+const markDone = (G, n) => { const k = G.addDays(G.mondayKey(), n);
+  G.S.mine.unshift({ id: 'fx' + n + '_' + Math.random().toString(16).slice(2, 6), d: k, by: 'me', mine: true, kind: 'workout', when: '0m',
+    title: 'Test session', unit: 'logged', chips: [], cap: 'Done and logged.', origin: null, baseTries: 0, fixture: true }); };
+const clearDone = (G, n) => { const k = n === undefined ? null : G.addDays(G.mondayKey(), n);
+  G.S.mine = G.S.mine.filter(p => !(p.fixture && (k === null || p.d === k))); };
 const t = s.t;
 const allErrs = [];
 
@@ -4761,7 +4768,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     G.closeSheets();
     const lift = S.plan.days.findIndex(x => x.templateId);
     S.plan.days[ti] = Object.assign({}, S.plan.days[lift], { dow: ti });
-    S.week[ti].done = ['x']; G.save(); G.renderPlan();
+    markDone(G, ti); G.save(); G.renderPlan();
     t('62 · a done day shows a tick instead of Change', !!cards()[ti].querySelector('.dtick') && !cards()[ti].querySelector('.dchg'));
     t('62 · and the summary counts it', /1 of \d+ done/.test(txt(pv.querySelector('.wsum'))));
     t('62 · opening a done day still offers Change day and Do it again', !!cards()[ti].querySelector('.dcb [data-swap]') && /Do it again/.test(txt(cards()[ti].querySelector('.dcb'))));
@@ -5148,14 +5155,14 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const plannedSoFar = S.plan.days.slice(0, i).filter(x => x.templateId).length;
     S.week = S.week.map((x, n) => ({ done: [] }));
     /* every session done, but each on the day after the one it was planned for */
-    let moved = 0; for (let n = 0; n <= i && moved < plannedSoFar; n++) if (n % 2 === 1 || n === i) { S.week[n] = { done: ['workout'] }; moved++; }
+    let moved = 0; for (let n = 0; n <= i && moved < plannedSoFar; n++) if (n % 2 === 1 || n === i) { markDone(G, n); moved++; }
     for (let n = 1; n <= 10; n++) S.days[G.addDays(k, -n)] = { sleep: 7.5 };
     G.save(); G.go('today'); G.renderAll();
     const behind = () => G.focusSignals().find(x => x.id === 'train');
     t('67 · sessions done on a different day from the plan are not counted as missed', plannedSoFar === 0 || !behind(), behind() && behind().html);
-    S.week = S.week.map(() => ({ done: [] })); G.renderAll();
+    clearDone(G); G.renderAll();
     t('67 · sessions genuinely not done still are', plannedSoFar === 0 || (!!behind() && new RegExp(plannedSoFar + ' sessions? behind').test(behind().html)), plannedSoFar + ' ' + (behind() && behind().html));
-    t('67 · a finished session is never offered as next', (() => { S.plan.days[i] = Object.assign({}, sess, { dow: i }); S.week[i] = { done: ['workout'] };
+    t('67 · a finished session is never offered as next', (() => { S.plan.days[i] = Object.assign({}, sess, { dow: i }); markDone(G, i);
       const n = G.nextUp(17 * 60 + 54); return !(n.top.id === 'clear' && /train/i.test(n.top.why)) && n.top.id !== 'session'; })());
 
     /* ---- six rings ---- */
@@ -5543,11 +5550,11 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('72 · a training day: the session card is above the meals', pos() === 'hero,meals', pos());
     G.addFood('chicken', 1, 'b'); G.addFood('chicken', 1, 'l'); G.renderAll();
     t('72 · still above them with the morning meals eaten', pos() === 'hero,meals', pos());
-    S.week[i] = { done: [0] }; G.save(); G.renderAll();
+    markDone(G, i); G.save(); G.renderAll();
     const doneNow = G.dayDone(i);
     t('72 · and once the session is done', doneNow && pos() === 'hero,meals', pos() + ' ' + doneNow);
     const restBefore = S.plan.days[i];
-    S.plan.days[i] = { dow: i, kind: 'rest', slot: 'rest', type: null }; S.week[i] = { done: [] }; G.save(); G.renderAll();
+    S.plan.days[i] = { dow: i, kind: 'rest', slot: 'rest', type: null }; clearDone(G, i); G.save(); G.renderAll();
     t('72 · on a rest day the day card is above the meals too', pos() === 'hero,meals' && !!home().querySelector('.hero.restday'), pos());
     S.plan.days[i] = restBefore; delete S.days[k]; S.week[i] = { done: [] }; G.save(); G.renderAll();
 
@@ -5570,9 +5577,9 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('72 · a meal already eaten is never next', !G.laterToday(at(7, 1)).some(x => x.id === 'meal' && x.role === 'b'));
     S.days[k] = Object.assign({}, S.days[k], { skipped: ['l'] });
     t('72 · nor a skipped one', !G.laterToday(at(7, 1)).some(x => x.id === 'meal' && x.role === 'l'));
-    S.week[i] = { done: [0] };
+    markDone(G, i);
     t('72 · nor a session already done', !G.laterToday(at(9, 0)).some(x => x.id === 'session'));
-    S.week[i] = { done: [] };
+    clearDone(G, i);
     t('72 · nor anything already past, beyond a meal\'s or the session\'s own window', G.laterToday(at(21, 0)).every(x => x.rel > G.dayClock(at(21, 0)).n || (x.id === 'meal' && x.rel >= G.dayClock(at(21, 0)).n - 90)));
     S.days[k].checkedIn = Date.now();
     t('72 · nor a check-in already done', !G.laterToday(at(9, 0)).some(x => x.id === 'daycheck'));
@@ -5888,6 +5895,41 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('74 · the method sheet has the routine and its sources', /<b>Your routine<\/b>/.test(built) && /Stawarz, Cox and Blandford, 2015/.test(built) && /Sharif and Shu, 2021/.test(built) && /Gardner and colleagues, 2012/.test(built));
     const src = require('fs').readFileSync(require('path').join(__dirname, 'src/js/routine.js'), 'utf8');
     t('74 · no em dashes', src.indexOf('—') < 0);
+  }
+
+  /* ---------------------------------------------------------- 75 */
+  journey(75, 'Build 70: last week\'s session does not show as done this week');
+  {
+    const { d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G); const S = G.S, T = G.todayKey(), i = G.dowIdx(), A = n => G.addDays(T, n);
+    const tv = () => d.getElementById('todayView'), txt = e => (e ? e.textContent.replace(/\s+/g, ' ').trim() : '');
+    /* Feargal's phone: the same weekday last week had a session, and the
+       stored slot for that weekday still held it. Nothing done today. Today is a lifting day, as his was. */
+    { const lift = S.plan.days.find(x => x.templateId); S.plan.days[i] = Object.assign({}, lift, { dow: i }); }
+    G.logSession({ title: 'Lower day', type: 'workout', adds: 1, steps: [] }); S.mine[0].d = A(-7);
+    S.workouts.push({ id: 'wold', d: A(-7), name: 'Lower day', sets: [], volume: 1000, minutes: 50 });
+    S.week[i].done = ['workout']; S.week[(i + 1) % 7].done = ['workout'];
+    S.weekOf = A(-7); G.save(); G.renderAll();
+    t('75 · a session done this weekday last week is not done today', !G.dayDone(i));
+    t('75 · the stored slots are cleared of last week', S.week.every((x, n) => n > i ? !x.done.length : true) && !S.week[i].done.length);
+    t('75 · Today does not say Done today', !/DONE TODAY/i.test(txt(tv())));
+    const ring = tv().querySelector('.ring[data-ring="train"]');
+    t('75 · the Train ring does not say Done', !!ring && !/\bDone\b/.test(txt(ring)), txt(ring));
+    t('75 · the week count leaves last week out', G.weekStats().done === 0, String(G.weekStats().done));
+    /* earlier this week still counts */
+    if (i > 0) {
+      G.logSession({ title: 'Upper day', type: 'workout', adds: 1, steps: [] }); S.mine[0].d = A(-1);
+      G.renderAll();
+      t('75 · a session earlier this week still counts', G.dayDone(i - 1) && G.weekStats().done === 1);
+    } else t('75 · a session earlier this week still counts (Monday: nothing earlier)', true);
+    /* logging today marks today */
+    G.logSession({ title: 'Lower day', type: 'workout', adds: 1, steps: [] }); G.renderAll();
+    t('75 · logging a session today marks today done', G.dayDone(i) && /DONE TODAY/i.test(txt(tv())));
+    /* the check-in's training answer counts for its own day only */
+    S.days[A(-7)] = Object.assign(S.days[A(-7)] || {}, { training: ['cardio'] });
+    t('75 · a check-in from last week does not mark this week', G.doneKindsOn(T).indexOf('run') < 0);
+    const src = require('fs').readFileSync(require('path').join(__dirname, 'src/js/app/07-today.js'), 'utf8');
+    t('75 · no em dashes', src.indexOf('—') < 0);
   }
 
   const r = s.report(allErrs);

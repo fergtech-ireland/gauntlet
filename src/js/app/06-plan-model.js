@@ -655,7 +655,7 @@ function daySub(d){
 const todayPlan=()=>{ ensurePlan(); return S.plan.days[dowIdx()]; };
 function weekStats(){
   const planned=S.plan? S.plan.days.filter(d=>d.type&&d.slot!=='walk').length : 0;
-  const done=S.week.filter(d=>d.done.length).length;
+  let done=0; for(let n=0;n<7;n++) if(dayDone(n)) done++;
   const lifted=S.workouts? S.workouts.filter(w=>w.d>=mondayKey()).length : 0;
   const vol=S.workouts? S.workouts.filter(w=>w.d>=mondayKey()).reduce((a,w)=>a+w.volume,0) : 0;
   /* This is the WEEK's change. It used to be every kilo since the first ever

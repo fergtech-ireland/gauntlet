@@ -224,7 +224,7 @@ window.__G={
   buildPlan,ensurePlan,adaptPlan,composePlan,previewPlan,planDiff,todayPlan,startPlanDay,slotFor,openSwap,setAim,
   pushPlanDay,dropPlanDay,openRestChoice,absorberFor,nextSlots,dayCounts,weekPattern,AIM_DEFAULTS,
   deloadDue,weeksTraining,DELOAD_EVERY,DELOAD_RANGE,DELOAD_TIERS,deloadSchedule,deloadInfo,nextDeload,setDeloadMark,deloadTier,deloadPrescription,painAlternative,painToReview,painSince,clearPain,proteinBasis,openDeloadSheet,
-  weekStats,openRunSwap,checkinDone,checkinDayName,healthOn,connectHealth,disconnectHealth,healthSync,stubDay,sourceName,openConnect,openDayDetail,dayLabel,daySub,showSeg,walkDone,stepsToday,
+  weekStats,dayDone,doneKindsOn,syncWeek,openRunSwap,checkinDone,checkinDayName,healthOn,connectHealth,disconnectHealth,healthSync,stubDay,sourceName,openConnect,openDayDetail,dayLabel,daySub,showSeg,walkDone,stepsToday,
   SOURCES,STEP_TARGET,
   toggleFollow,startSessionFromPost,startSession,nextStep,prevStep,finishSession,closePlayer,
   logSession,openWeigh,openDetails,renderAll,renderToday,renderPlan,renderProgress,renderFeed,renderPeople,

@@ -1,5 +1,25 @@
 /* ===================== today ===================== */
-function dayDone(i){ return (S.week[i]&&S.week[i].done.length>0); }
+/* build 70: S.week is seven slots, Monday to Sunday, that never knew which
+   week they belonged to and were never cleared. A session logged last
+   Tuesday still filled Tuesday's slot this week, so Today said "Done today"
+   and the Train ring counted it before anything was done. What was done on
+   a day is now read from the dated logs (sessions and posts, lifting
+   records, the check-in's training answer), and the stored slots are
+   rebuilt from them, so an old week can never leak into this one. */
+function doneKindsOn(k){
+  const kinds=[], add=x=>{ if(x&&kinds.indexOf(x)<0) kinds.push(x); };
+  (S.mine||[]).forEach(p=>{ if(p&&p.d===k) add(p.kind); });
+  (S.workouts||[]).forEach(w=>{ if(w&&w.d===k) add(w.kind==='circuit'?'circuit':'workout'); });
+  const t=S.days&&S.days[k]&&S.days[k].training;
+  (Array.isArray(t)? t : (t? [t] : [])).forEach(x=>{ if(x&&x!=='rest') add(x==='cardio'?'run':'workout'); });
+  return kinds;
+}
+function syncWeek(){
+  const wk=mondayKey();
+  (S.week||[]).forEach((d,i)=>{ d.done=doneKindsOn(addDays(wk,i)); d.today= i===dowIdx(); });
+  S.weekOf=wk;
+}
+function dayDone(i){ return i>=0&&i<7&&doneKindsOn(addDays(mondayKey(),i)).length>0; }
 function walkDone(){ const st=stepsToday(); return st!==null && st>=stepTarget(); }
 const checkinDone=()=>!!S.checkins.find(c=>c.weekOf===mondayKey());
 const checkinDayName=()=>DAYS[S.profile.checkinDay===undefined?6:S.profile.checkinDay];

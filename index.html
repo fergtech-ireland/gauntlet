@@ -1965,7 +1965,7 @@ body.has-live .toast:not(.top){bottom:140px}
 const HUE={run:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},workout:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},
   fast:{deep:'var(--amber-text)',tint:'var(--amber-tint)'},meal:{deep:'var(--coral-text)',tint:'var(--coral-tint)'},any:{deep:'var(--ink)',tint:'var(--track)'},
   walk:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},rest:{deep:'var(--mute)',tint:'var(--track)'},checkin:{deep:'var(--green-text)',tint:'var(--green-tint)'}};
-const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='69';
+const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='70';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -3758,7 +3758,7 @@ function daySub(d){
 const todayPlan=()=>{ ensurePlan(); return S.plan.days[dowIdx()]; };
 function weekStats(){
   const planned=S.plan? S.plan.days.filter(d=>d.type&&d.slot!=='walk').length : 0;
-  const done=S.week.filter(d=>d.done.length).length;
+  let done=0; for(let n=0;n<7;n++) if(dayDone(n)) done++;
   const lifted=S.workouts? S.workouts.filter(w=>w.d>=mondayKey()).length : 0;
   const vol=S.workouts? S.workouts.filter(w=>w.d>=mondayKey()).reduce((a,w)=>a+w.volume,0) : 0;
   /* This is the WEEK's change. It used to be every kilo since the first ever
@@ -3862,7 +3862,27 @@ function startPlanDay(day){
 }
 
 /* ===================== today ===================== */
-function dayDone(i){ return (S.week[i]&&S.week[i].done.length>0); }
+/* build 70: S.week is seven slots, Monday to Sunday, that never knew which
+   week they belonged to and were never cleared. A session logged last
+   Tuesday still filled Tuesday's slot this week, so Today said "Done today"
+   and the Train ring counted it before anything was done. What was done on
+   a day is now read from the dated logs (sessions and posts, lifting
+   records, the check-in's training answer), and the stored slots are
+   rebuilt from them, so an old week can never leak into this one. */
+function doneKindsOn(k){
+  const kinds=[], add=x=>{ if(x&&kinds.indexOf(x)<0) kinds.push(x); };
+  (S.mine||[]).forEach(p=>{ if(p&&p.d===k) add(p.kind); });
+  (S.workouts||[]).forEach(w=>{ if(w&&w.d===k) add(w.kind==='circuit'?'circuit':'workout'); });
+  const t=S.days&&S.days[k]&&S.days[k].training;
+  (Array.isArray(t)? t : (t? [t] : [])).forEach(x=>{ if(x&&x!=='rest') add(x==='cardio'?'run':'workout'); });
+  return kinds;
+}
+function syncWeek(){
+  const wk=mondayKey();
+  (S.week||[]).forEach((d,i)=>{ d.done=doneKindsOn(addDays(wk,i)); d.today= i===dowIdx(); });
+  S.weekOf=wk;
+}
+function dayDone(i){ return i>=0&&i<7&&doneKindsOn(addDays(mondayKey(),i)).length>0; }
 function walkDone(){ const st=stepsToday(); return st!==null && st>=stepTarget(); }
 const checkinDone=()=>!!S.checkins.find(c=>c.weekOf===mondayKey());
 const checkinDayName=()=>DAYS[S.profile.checkinDay===undefined?6:S.profile.checkinDay];
@@ -5223,7 +5243,7 @@ function renderPeople(){
     ? 'Nobody else has signed in yet. You are first.'
     : 'Make an account and anyone else using your copy of Gauntlet shows up here.'}</div>`;
 }
-function renderAll(){ renderToday(); renderPlan(); renderFeed(); renderPeople(); renderProgress();
+function renderAll(){ syncWeek(); renderToday(); renderPlan(); renderFeed(); renderPeople(); renderProgress();
   if(typeof renderEat==='function') renderEat();
   if(typeof mountColophons==='function') mountColophons(); }
 
@@ -6932,7 +6952,7 @@ window.__G={
   buildPlan,ensurePlan,adaptPlan,composePlan,previewPlan,planDiff,todayPlan,startPlanDay,slotFor,openSwap,setAim,
   pushPlanDay,dropPlanDay,openRestChoice,absorberFor,nextSlots,dayCounts,weekPattern,AIM_DEFAULTS,
   deloadDue,weeksTraining,DELOAD_EVERY,DELOAD_RANGE,DELOAD_TIERS,deloadSchedule,deloadInfo,nextDeload,setDeloadMark,deloadTier,deloadPrescription,painAlternative,painToReview,painSince,clearPain,proteinBasis,openDeloadSheet,
-  weekStats,openRunSwap,checkinDone,checkinDayName,healthOn,connectHealth,disconnectHealth,healthSync,stubDay,sourceName,openConnect,openDayDetail,dayLabel,daySub,showSeg,walkDone,stepsToday,
+  weekStats,dayDone,doneKindsOn,syncWeek,openRunSwap,checkinDone,checkinDayName,healthOn,connectHealth,disconnectHealth,healthSync,stubDay,sourceName,openConnect,openDayDetail,dayLabel,daySub,showSeg,walkDone,stepsToday,
   SOURCES,STEP_TARGET,
   toggleFollow,startSessionFromPost,startSession,nextStep,prevStep,finishSession,closePlayer,
   logSession,openWeigh,openDetails,renderAll,renderToday,renderPlan,renderProgress,renderFeed,renderPeople,
@@ -12607,7 +12627,7 @@ Object.defineProperty(window.__G,'rtCheck',{get:()=>rtCheck,set:v=>{rtCheck=v},c
 if(S.profile.onboarded){ ME.n=S.profile.handle; ME.full=S.profile.handle.replace(/[._]/g,' '); }
 if(typeof applyTheme==='function') applyTheme();
 if(typeof scheduleNudge==='function') scheduleNudge();
-S.week.forEach((d,i)=>{ d.today = i===dowIdx(); });
+syncWeek();
 ensurePlan();
 mountColophons();
 renderAll();

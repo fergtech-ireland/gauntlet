@@ -33,7 +33,7 @@ function renderPeople(){
     ? 'Nobody else has signed in yet. You are first.'
     : 'Make an account and anyone else using your copy of Gauntlet shows up here.'}</div>`;
 }
-function renderAll(){ renderToday(); renderPlan(); renderFeed(); renderPeople(); renderProgress();
+function renderAll(){ syncWeek(); renderToday(); renderPlan(); renderFeed(); renderPeople(); renderProgress();
   if(typeof renderEat==='function') renderEat();
   if(typeof mountColophons==='function') mountColophons(); }
 

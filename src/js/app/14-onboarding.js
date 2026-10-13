@@ -3,11 +3,53 @@ let step=0, onbDraft=null;
 const cloudAvailable=()=>{ try{ return typeof cloudReady==='function'? !!cloudReady() : !!(window.__CLOUD&&window.__CLOUD.cloudReady()); }catch(e){ return false; } };
 const stepCount=()=>cloudAvailable()?6:5;
 const sameKit=(a,b)=>!!a&&a.length===b.length&&b.every(x=>a.indexOf(x)>=0);
-function startOnboarding(){ onbDraft={handle:S.profile.handle,aim:S.profile.aim,checkinDay:6,sex:'',cycle:false,lastPeriod:'',born:S.profile.birthYear||null,bday:S.profile.bday||null,age:ageFromBirth(S.profile.birthYear,S.profile.bday),height:null,weight:null,activity:'mod',kit:ALL_KIT.slice()}; step=0; $('onb').classList.add('on'); onbRender(); }
+/* Build 72: nothing is picked for the person on the first run. The aim, how
+   they train, their kit and (for women) cycle tracking start unanswered, so a
+   quick tap on Next cannot carry a default they never saw into their week. */
+function startOnboarding(){ onbDraft={handle:S.profile.handle,aim:null,style:null,checkinDay:6,sex:'',cycle:null,lastPeriod:'',born:S.profile.birthYear||null,bday:S.profile.bday||null,age:ageFromBirth(S.profile.birthYear,S.profile.bday),height:null,weight:null,activity:'mod',kit:null}; step=0; onbShown=-1; $('onb').classList.add('on'); onbRender(); }
+/* Build 72: what each step still needs before Next opens, in the order it
+   appears on the page. Each item names the section it lives in, so the list
+   under the page can take the person straight there. Optional things (goal
+   weight, body fat, the period date) are never on it. */
+let onbShown=-1;
+function onbMissing(){
+  const d=onbDraft, m=[]; if(!d) return m;
+  const add=(sec,t)=>m.push({sec,t});
+  if(step===0){ if((d.handle||'').length<3) add('handle','a handle'); }
+  if(step===1){
+    if(!d.aim) add('aim','what you are after');
+    if(!d.style&&!d.disc) add('style','how you like to train');
+    else if((d.liftDays||0)+(d.cardioDays||0)>6) add('days','six days or fewer');
+    if(!(d.kit&&d.kit.length)) add('kit','what you train with');
+  }
+  if(step===2&&!tooYoung(d.age)){
+    const teen=isTeen({age:d.age});
+    if(!d.age||(d.born&&!validBirthYear(d.born))) add('you','the year you were born');
+    else if(birthdayMatters(d.born)&&!(d.bday&&d.bday.y===new Date().getFullYear())) add('you','whether your birthday has been');
+    if(!teen){
+      if(!d.sex) add('sex','sex');
+      if(!d.height) add('you','height');
+      if(!d.weight) add('you','weight');
+      if(d.age&&d.height&&d.weight&&!plausibleBody({age:d.age,height:d.height,weight:d.weight})) add('you','a height and weight that look right');
+      if(!validSteps(d.steps)) add('steps','a step target');
+    }
+    if(d.sex==='f'&&d.cycle===null) add('cycle','cycle tracking, yes or not now');
+  }
+  return m;
+}
+const onbNeed=sec=>onbMissing().some(x=>x.sec===sec)? ' <span class="need">Needed</span>' : '';
+function onbJump(sec){
+  const el=document.querySelector('#onbBody [data-onbsec="'+sec+'"]'); if(!el) return;
+  if(typeof el.scrollIntoView==='function') el.scrollIntoView({behavior:'smooth',block:'start'});
+  el.classList.remove('onbflash'); void el.offsetWidth; el.classList.add('onbflash');
+  setTimeout(()=>el.classList.remove('onbflash'),1600);
+}
 function onbRender(){
   const b=$('onbBody');
   $('onbDots').innerHTML=Array.from({length:stepCount()},(_,i)=>`<i class="${i<=step?'on':''}"></i>`).join('');
   $('onbBack').style.visibility=step===0?'hidden':'visible';
+  /* a new step always opens at its top, not where the last one was scrolled to */
+  if(onbShown!==step){ b.scrollTop=0; onbShown=step; }
   if(step===0){
     b.innerHTML=`<h2>Pick a handle.</h2><p class="lead">That is the whole sign up. No email, no password, nothing to verify.</p>
       <div class="handle"><span>@</span><input id="handleIn" value="${onbDraft.handle}" placeholder="yourname" autocomplete="off" spellcheck="false"></div>
@@ -22,26 +64,31 @@ function onbRender(){
     if(onbDraft.liftDays===undefined||onbDraft.liftDays===null) onbDraft.liftDays=d.lift;
     if(onbDraft.cardioDays===undefined||onbDraft.cardioDays===null) onbDraft.cardioDays=d.cardio;
     const total=onbDraft.liftDays+onbDraft.cardioDays;
-    b.innerHTML=`<h2>What are you after?</h2><p class="lead">This builds your first week. Every day in it can be changed, and it rebuilds itself from your check ins.</p>`+
-      AIMS.map(a=>`<button class="opt ${onbDraft.aim===a.id?'on':''}" data-onbaim="${a.id}">
+    /* build 72: the days and the split only show once a way of training is
+       picked, so the page grows as it is answered rather than starting long */
+    const styleOn=!!(onbDraft.style||onbDraft.disc), st=onbDraft.style||'gym', kit=onbDraft.kit||[];
+    b.innerHTML=`<h2>What are you after?</h2><p class="lead">This builds your first week. Four things to answer on this page; every day in the week can be changed later, and it rebuilds itself from your check ins.</p>
+      <div data-onbsec="aim"><div class="slab">Your aim${onbNeed('aim')}</div>`+
+      AIMS.map(a=>`<button class="opt ${onbDraft.aim===a.id?'on':''}" data-onbaim="${a.id}" aria-pressed="${onbDraft.aim===a.id}">
         <div class="txt"><div class="t">${a.t}</div><div class="s">${a.s}</div></div><div class="rad"></div></button>`).join('')+
-      (()=>{ const f=LIFT_FOCUS[AIM_FOCUS[onbDraft.aim]||'muscle'];
+      (onbDraft.aim? (()=>{ const f=LIFT_FOCUS[AIM_FOCUS[onbDraft.aim]||'muscle'];
         const heavy=f.rx.heavy, iso=f.rx.isolation;
         return `<div class="focusnote"><b>Your lifting: ${f.t.toLowerCase()}</b>
-          <span>Big lifts ${heavy.repMin} to ${heavy.reps} reps, smaller ones ${iso.repMin} to ${iso.reps}. ${f.effort} You can change this any time.</span></div>`; })()+
-      `<div class="slab">How you like to train</div>
-       <div class="splitopts styleopts">${Object.keys(STYLES).map(id=>`<button class="splitopt ${!onbDraft.disc&&(onbDraft.style||'gym')===id?'on':''}" data-onbstyle="${id}" aria-pressed="${!onbDraft.disc&&(onbDraft.style||'gym')===id}">
-         <b>${STYLES[id].t}</b><span>${STYLES[id].s}</span></button>`).join('')}${typeof ONB_DISCS!=='undefined'? ONB_DISCS.map(id=>{ const D=discById(id);
+          <span>Big lifts ${heavy.repMin} to ${heavy.reps} reps, smaller ones ${iso.repMin} to ${iso.reps}. ${f.effort} You can change this any time.</span></div>`; })() : '')+
+      `</div><div data-onbsec="style"><div class="slab">How you like to train${onbNeed('style')}</div>
+       <div class="splitopts styleopts">${Object.keys(STYLES).map(id=>{ const on=!onbDraft.disc&&onbDraft.style===id;
+         return `<button class="splitopt ${on?'on':''}" data-onbstyle="${id}" aria-pressed="${on}"><b>${STYLES[id].t}</b><span>${STYLES[id].s}</span></button>`; }).join('')}${typeof ONB_DISCS!=='undefined'? ONB_DISCS.map(id=>{ const D=discById(id);
          return `<button class="splitopt ${onbDraft.disc===id?'on':''}" data-onbdisc="${id}" aria-pressed="${onbDraft.disc===id}"><b>${D.t}</b><span>${D.s}</span></button>`; }).join('') : ''}</div>`+
-      (typeof onbProgBlock==='function'? onbProgBlock() : '')+
-      (onbDraft.prog? '' : (onbDraft.style||'gym')!=='gym'? `<div class="slab">Sessions a week</div>
+      (styleOn&&typeof onbProgBlock==='function'? onbProgBlock() : '')+`</div>`+
+      `<div data-onbsec="days">`+
+      (!styleOn||onbDraft.prog? '' : st!=='gym'? `<div class="slab">Sessions a week${onbNeed('days')}</div>
        <div class="field" style="margin-bottom:12px"><div class="fl"><div class="k">Sessions</div><div class="v">${onbDraft.liftDays}</div></div>
          <div class="chips">${[2,3,4,5,6].map(n=>`<button class="${onbDraft.liftDays===n?'on':''}" data-onbsess="${n}">${n}</button>`).join('')}</div></div>
        ${onbDraft.style==='hybrid'&&onbDraft.liftDays>=2? `<div class="field" style="margin-bottom:12px"><div class="fl"><div class="k">HYROX days in the mix</div><div class="v">${hyroxMixDraft()} HYROX, ${onbDraft.liftDays-hyroxMixDraft()} CrossFit</div></div>
          <div class="chips">${Array.from({length:onbDraft.liftDays-1},(_,i)=>i+1).map(n=>`<button class="${hyroxMixDraft()===n?'on':''}" data-onbhx="${n}">${n}</button>`).join('')}</div></div>` : ''}
        ${onbDraft.style==='hifb'? `<div class="note" style="margin-bottom:14px">Four is the classic HIFB week: chest and triceps, back and biceps, a day off, shoulders and abs, legs. Every block ends with a 400m run, and every set and every run is logged. Movements are fitted to your equipment.</div>`
-         : `<div class="note" style="margin-bottom:14px">A fresh set of sessions every week, fitted to the equipment you said you have. You can change any part of any session: the movement, the reps, the weight.</div>`}` : '')+
-      (!onbDraft.prog&&(onbDraft.style||'gym')==='gym'? `<div class="slab">How many days a week</div>
+         : `<div class="note" style="margin-bottom:14px">A fresh set of sessions every week, fitted to the equipment you said you have. You can change any part of any session: the movement, the reps, the weight.</div>`}`
+      : `<div class="slab">How many days a week${onbNeed('days')}</div>
        <div class="field" style="margin-bottom:12px"><div class="fl"><div class="k">Lifting</div><div class="v">${onbDraft.liftDays}</div></div>
          <div class="chips">${[0,1,2,3,4,5,6].map(n=>`<button class="${onbDraft.liftDays===n?'on':''}" data-onblift="${n}">${n}</button>`).join('')}</div></div>
        <div class="field"><div class="fl"><div class="k">Cardio</div><div class="v">${onbDraft.cardioDays}</div></div>
@@ -50,14 +97,14 @@ function onbRender(){
        <div class="splitopts">${Object.keys(SPLITS).filter(id=>id!=='pplul'||onbDraft.liftDays>=5).map(id=>`<button class="splitopt ${(onbDraft.split||'auto')===id?'on':''}" data-onbsplit="${id}">
          <b>${SPLITS[id].t}</b><span>${id==='auto'? 'For '+onbDraft.liftDays+' day'+(onbDraft.liftDays===1?'':'s')+': '+SPLITS[autoSplit(onbDraft.liftDays)].t.toLowerCase() : SPLITS[id].s}</span>
          ${id!=='auto'? `<small>${splitFit(id,onbDraft.liftDays)}</small>` : ''}</button>`).join('')}</div>
-       <div class="note" style="margin-bottom:14px">Research finds full body and splits build strength and muscle equally when the weekly work is the same, so pick the one you will enjoy and stick to.</div>` : ''}` : '')+`
-       <div class="slab">What have you got to train with?</div>
-       <div class="chips" style="margin-bottom:10px">${KIT_PRESETS.map(pre=>`<button class="${sameKit(onbDraft.kit,pre.kit)?'on':''}" data-onbkitpre="${pre.id}">${pre.t}</button>`).join('')}</div>
-       <div class="chips">${KIT.map(k=>`<button class="${(onbDraft.kit||ALL_KIT).indexOf(k.id)>=0?'on':''}" data-onbkit="${k.id}">${k.t}</button>`).join('')}</div>
-       <div class="note" style="margin-bottom:14px">${(onbDraft.kit||ALL_KIT).length? 'Every movement in your week will be something you can actually do. You can change this later and the plan follows.' : 'Pick at least one, or there is nothing to build a week out of.'}</div>
-       <div class="note">${total>6? 'That is '+total+' days into six slots, so the last ones will not fit. Drop one.'
+       <div class="note" style="margin-bottom:14px">Research finds full body and splits build strength and muscle equally when the weekly work is the same, so pick the one you will enjoy and stick to.</div>` : ''}`)+
+      (styleOn? `<div class="note">${total>6? 'That is '+total+' days into six slots, so the last ones will not fit. Drop one.'
          : (total===0? 'Nothing scheduled. You can still log whatever you do.'
-         : 'Six days to fill, plus your check in. '+(6-total)+' left as rest.')}</div>`;
+         : 'Six days to fill, plus your check in. '+(6-total)+' left as rest.')}</div>` : '')+`</div>
+       <div data-onbsec="kit"><div class="slab">What have you got to train with?${onbNeed('kit')}</div>
+       <div class="chips" style="margin-bottom:10px">${KIT_PRESETS.map(pre=>`<button class="${sameKit(kit,pre.kit)?'on':''}" data-onbkitpre="${pre.id}">${pre.t}</button>`).join('')}</div>
+       <div class="chips">${KIT.map(k=>`<button class="${kit.indexOf(k.id)>=0?'on':''}" data-onbkit="${k.id}">${k.t}</button>`).join('')}</div>
+       <div class="note" style="margin-bottom:14px">${kit.length? 'Every movement in your week will be something you can actually do. You can change this later and the plan follows.' : 'Tap a set above or pick each thing you have. Every movement in your week is fitted to it.'}</div></div>`;
   }
   if(step===2){
     const sex=onbDraft.sex||'';
@@ -87,14 +134,14 @@ function onbRender(){
       return ct? Object.assign(ct,{split:stepSplit(ct,pm,p)}) : null;
     },{fresh:true,target: goal? {kind:'weight',value:goal,by:null,from:+p.weight} : null});
     b.innerHTML=`<h2>Your numbers.</h2>
-      <p class="lead">Used for one thing: working out roughly what you burn in a day, so the calorie and protein targets are yours rather than somebody else's. Skip any of it and fill it in later.</p>
-      <div class="slab">Sex</div>
+      <p class="lead">Used for one thing: working out roughly what you burn in a day, so the calorie and protein targets are yours rather than somebody else's. Anything marked optional can be left blank and filled in later.</p>
+      <div data-onbsec="sex"><div class="slab">Sex${onbNeed('sex')}</div>
       <div class="pair" style="margin-bottom:8px">
         <button class="big-pick ${sex==='f'?'on':''}" data-onbsex="f">Female</button>
         <button class="big-pick ${sex==='m'?'on':''}" data-onbsex="m">Male</button></div>
       <button class="big-pick ${sex==='x'?'on':''}" data-onbsex="x" style="width:100%">Rather not say</button>
-      <div class="note" style="margin-top:6px">The resting burn equation differs by about 166 kcal between the two. Rather not say uses the average, which is less precise.</div>
-      <div class="slab">You</div>
+      <div class="note" style="margin-top:6px">The resting burn equation differs by about 166 kcal between the two. Rather not say uses the average, which is less precise.</div></div>
+      <div data-onbsec="you"><div class="slab">You${onbNeed('you')}</div>
       <div class="twoup" style="gap:10px">
         <div class="nf"><label>Year you were born</label><input id="onbBorn" type="number" inputmode="numeric" min="${new Date().getFullYear()-110}" max="${new Date().getFullYear()}" value="${onbDraft.born||''}" placeholder="1990"></div>
         <div class="nf"><label>Height, cm</label><input id="onbHeight" type="number" inputmode="numeric" value="${onbDraft.height||''}" placeholder="178"></div></div>
@@ -102,8 +149,8 @@ function onbRender(){
         <div class="chips"><button class="${onbDraft.bday&&onbDraft.bday.passed===true?'on':''}" data-onbbday="1">Yes</button><button class="${onbDraft.bday&&onbDraft.bday.passed===false?'on':''}" data-onbbday="0">Not yet</button></div></div>` : ''}
       <div class="twoup" style="gap:10px;margin-top:10px">
         <div class="nf"><label>${isTeen({age:onbDraft.age})?'Weight, kg (optional)':'Weight now, kg'}</label><input id="onbWeight" type="number" inputmode="decimal" step="0.1" value="${onbDraft.weight||''}" placeholder="82"></div>
-        <div class="nf" style="${isTeen({age:onbDraft.age})?'display:none':''}"><label>Goal weight, kg</label><input id="onbGoal" type="number" inputmode="decimal" step="0.1" value="${onbDraft.goal||''}" placeholder="optional"></div></div>
-      <div class="nf" style="margin-top:10px;${isTeen({age:onbDraft.age})?'display:none':''}"><label>Body fat %, if you know it</label>
+        <div class="nf" style="${isTeen({age:onbDraft.age})?'display:none':''}"><label>Goal weight, kg (optional)</label><input id="onbGoal" type="number" inputmode="decimal" step="0.1" value="${onbDraft.goal||''}" placeholder="optional"></div></div>
+      <div class="nf" style="margin-top:10px;${isTeen({age:onbDraft.age})?'display:none':''}"><label>Body fat %, if you know it (optional)</label>
         <input id="onbBf" type="number" inputmode="decimal" step="0.1" value="${onbDraft.bf||''}" placeholder="optional, from a scan or scale"></div>
       ${onbDraft.bf&&!validBodyFat(onbDraft.bf)? `<div class="warn" style="margin-top:8px">Body fat should be between 3 and 70%. Leave it blank and it will be estimated.</div>`:''}
       ${onbDraft.born&&String(onbDraft.born).length>=4&&!validBirthYear(onbDraft.born)? `<div class="warn" style="margin-top:10px">That year does not look right. Four digits, like 1990.</div>` : ''}
@@ -114,8 +161,8 @@ function onbRender(){
             <span>Weight is optional here. Leave it blank if you would rather.</span>
             ${onbDraft.aim==='lose'? `<span>You picked losing fat, so your plan will focus on getting fitter and feeling better instead. That is what actually helps.</span>`:''}
           </div>`
-        : (entered&&!ready? `<div class="warn" style="margin-top:10px">One of those does not look like a real number yet. Keep going.</div>`:'')}
-      <div class="slab">Daily step target</div>
+        : (entered&&!ready? `<div class="warn" style="margin-top:10px">One of those does not look like a real number yet. Keep going.</div>`:'')}</div>
+      <div data-onbsec="steps"><div class="slab">Daily step target${onbNeed('steps')}</div>
       <div class="nf"><label>Steps a day you are aiming for</label>
         <input id="onbSteps" type="number" inputmode="numeric" step="500" min="1000" max="40000" value="${onbDraft.steps||''}" placeholder="8000"></div>
       <div class="chips" style="margin-top:8px">${STEP_BANDS.map(b=>`<button class="${+onbDraft.steps===b.n?'on':''}" data-onbsteps="${b.n}">${num(b.n)}</button>`).join('')}</div>
@@ -123,7 +170,7 @@ function onbRender(){
         ? (()=>{ const b=STEP_BANDS.slice().reverse().find(x=>+onbDraft.steps>=x.n);
             return (b? b.t+' ('+b.s+'), one of the standard descriptive bands, not a health threshold. ' : 'Under 5,000 is described as sedentary. ')
               +'Count everything your phone or watch would, runs included. This sets your calories, so aim for what you will actually do rather than what you would like to do.'; })()
-        : 'Somewhere between 1,000 and 40,000.'}</div>
+        : 'Somewhere between 1,000 and 40,000.'}</div></div>
       ${ready? `<div class="revday" style="margin-top:14px"><div class="revhead">What that gives you <span>an estimate</span></div>
         <div class="revrow" style="pointer-events:none"><div class="txt"><div class="t">${num(kcal)} kcal a day to stay where you are</div>
           <div class="s">Resting burn ${num(pt.rmr)}${sex==='x'?' (midpoint of the male and female equations)':''}, a sedentary day ${num(pt.base)}, plus ${num(pt.walk)} for ${num(pt.steps)} steps${pt.cardio?', '+num(pt.cardio)+' for cardio a step count misses':''} and ${num(pt.lift)} for your lifting. Each 1,000 steps is about ${pt.per1000} kcal for you. Replaced by your own numbers once you have logged about three weeks.</div></div></div>
@@ -134,13 +181,13 @@ function onbRender(){
         <div class="revrow" style="pointer-events:none"><div class="txt"><div class="t">${pro}g protein a day</div>
           <div class="s">1.8g per kilo, mid range of what the research supports.</div></div></div></div>`
         : `<div class="note" style="margin-top:14px">Fill those in and I will show you what they work out to.</div>`}
-      ${sex==='f'? `<div class="revday" style="margin-top:12px">
-        <div class="revhead">Cycle tracking <span>optional</span></div>
+      ${sex==='f'? `<div class="revday" style="margin-top:12px" data-onbsec="cycle">
+        <div class="revhead">Cycle tracking${onbNeed('cycle')} <span>your choice</span></div>
         <div class="revrow" style="pointer-events:none"><div class="txt"><div class="s">It widens the weight forecast where fluid retention peaks, about half a kilo on average, so water is not read as fat. It never changes your training on its own.</div></div></div>
         <div class="pair" style="padding:12px">
           <button class="big-pick ${onbDraft.cycle?'on':''}" data-onbcycle="on">Track it</button>
-          <button class="big-pick ${!onbDraft.cycle?'on':''}" data-onbcycle="off">Not for now</button></div>
-        ${onbDraft.cycle? `<div style="padding:0 12px 14px"><div class="nf"><label>First day of your last period</label>
+          <button class="big-pick ${onbDraft.cycle===false?'on':''}" data-onbcycle="off">Not for now</button></div>
+        ${onbDraft.cycle? `<div style="padding:0 12px 14px"><div class="nf"><label>First day of your last period (optional)</label>
           <input id="onbPeriod" type="date" value="${onbDraft.lastPeriod||''}"></div></div>`:''}
       </div>`:''}`;
   }
@@ -156,14 +203,26 @@ function onbRender(){
     const week=weekPattern();
     S.profile=Object.assign({},S.profile,saved);
     if(onbDraft.runSwaps) Object.keys(onbDraft.runSwaps).forEach(i=>{ week[+i]=onbDraft.runSwaps[i]; });
+    /* build 72: one short row per day, so the whole week fits on a screen
+       and nothing is buried at the bottom. Tap a day for its movements and
+       to change it; one day is open at a time. */
+    const open=onbDraft.openDay===undefined? -1 : onbDraft.openDay;
     b.innerHTML=`<h2>Here is your week.</h2>
-      <p class="lead">This is a starting point, not a prescription. It is built from what tends to work, but nobody knows your week, your body or your gym better than you do. Change anything: the session on a day, the movements in it, the sets and reps, or take a day out entirely.</p>
+      <p class="lead">A starting point, not a prescription. Nobody knows your week, your body or your gym better than you do. Tap any day to see what is in it and change anything: the session, the movements, the sets and reps, or take the day out.</p>
       ${week.map((code,i)=>{
         const d=slotFor(code), t=d.templateId? (S.templates||[]).find(x=>x.id===d.templateId):null;
-        const r=d.runId? runPlan(d.runId):null;
-        return `<div class="revday">
-          <div class="revhead">${DAYS[i]} · ${dayLabel(d)} <span>${d.mins?d.mins+' min':''}</span></div>
-          ${t? `<button class="revrow" data-onbedit="${t.id}"><div class="txt"><div class="t">Edit sets, reps and rest</div>
+        const r=d.runId? runPlan(d.runId):null, c=d.circuitId? circuitOf(d.circuitId) : null;
+        const names=t? t.ex.map(row=>exOf(row.exId).n) : null;
+        const gist= names? (names.slice(0,3).join(', ')+(names.length>3? ' and '+(names.length-3)+' more' : ''))
+          : r? r.sub : c? c.sub
+          : code==='walk'? 'Counted by your tracker. Nothing to press.' : code==='cook'? 'Cook something with protein in it.'
+          : code==='rest'? 'Nothing owed. Rest is part of it.' : 'Two minutes. Next week is built from it.';
+        const isOpen=open===i, more=!!(t||r||c)||code!=='checkin';
+        return `<div class="revday ${isOpen?'open':''}">
+          <button class="revhead revtap" ${more? `data-onbopen="${i}" aria-expanded="${isOpen}"` : 'disabled'}><span class="rd">${DAYS[i]} · ${dayLabel(d)}</span>
+            <span>${d.mins?d.mins+' min':''}${more? `<i class="revchev">${isOpen?'Close':'Open'}</i>` : ''}</span></button>
+          ${isOpen? '' : `<div class="revgist">${escHabit(gist)}</div>`}
+          ${!isOpen? '' : (t? `<button class="revrow" data-onbedit="${t.id}"><div class="txt"><div class="t">Edit sets, reps and rest</div>
             <div class="s">Or add and remove movements</div></div><span class="chg">Edit</span></button>`+
           t.ex.map(row=>`<button class="revrow" data-onbswap="${row.exId}">
               <div class="txt"><div class="t">${exOf(row.exId).n}</div>
@@ -175,17 +234,13 @@ function onbRender(){
                   <div class="txt"><div class="t">${st.n}</div><div class="s">${st.r}</div></div></div>`).join('')}
                 <div class="revrow" style="background:var(--bg)"><div class="txt"><div class="s">${r.why}</div></div></div>
                 `
-            : d.circuitId? `<div class="revrow" style="pointer-events:none;background:var(--bg)"><div class="txt"><div class="t">${circuitOf(d.circuitId).sub}</div>
-                  <div class="s">${circuitOf(d.circuitId).why}</div></div></div>
-                ${(circuitOf(d.circuitId).items||[]).map(it=>`<div class="revrow" style="pointer-events:none">
+            : c? `<div class="revrow" style="pointer-events:none;background:var(--bg)"><div class="txt"><div class="t">${c.sub}</div>
+                  <div class="s">${c.why}</div></div></div>
+                ${(c.items||[]).map(it=>`<div class="revrow" style="pointer-events:none">
                   <div class="txt"><div class="t">${it.label}</div><div class="s">${it.sub||it.t}</div></div></div>`).join('')}`
-            : `<div class="revrow"><div class="txt"><div class="s">${
-                code==='walk'? 'Counted by your tracker. Nothing to press.' :
-                code==='cook'? 'Cook something with protein in it.' :
-                code==='rest'? 'Nothing owed. Rest is part of it.' :
-                'Two minutes. Next week is built from it.'}</div></div></div>`}
-          ${code==='checkin'? '' : `<button class="revrow" data-onbrun="${i}:${code}"><div class="txt"><div class="t">Change this day</div>
-              <div class="s">A different session, a walk, or nothing</div></div><span class="chg">Change</span></button>`}
+            : `<div class="revrow"><div class="txt"><div class="s">${gist}</div></div></div>`)+
+          (code==='checkin'? '' : `<button class="revrow" data-onbrun="${i}:${code}"><div class="txt"><div class="t">Change this day</div>
+              <div class="s">A different session, a walk, or nothing</div></div><span class="chg">Change</span></button>`)}
         </div>`}).join('')}
       <button class="logrow" id="tempoHelp" style="border-top:1px solid var(--line)">
         <div class="txt"><div class="t">What do the four numbers mean?</div>
@@ -227,17 +282,24 @@ function onbRender(){
 const onbBackedUp=()=>{ const CL=window.__CLOUD; return !!(CL&&CL.signedIn()&&CL.hasConsent()); };
 const onbAccountLabel=()=>onbBackedUp()? 'Start' : 'Back up and start';
 function onbCta(){
-  $('onbNext').disabled = (step===0 && onbDraft.handle.length<3) || tooYoung(onbDraft.age);
+  const miss=onbMissing();
+  /* build 72: Next waits for every answer the step needs, not only some */
+  $('onbNext').disabled = miss.length>0 || tooYoung(onbDraft.age);
   if(step===5&&canHaveAccount({age:onbDraft.age})){
     $('onbNext').textContent = onbAccountLabel();
     const ag=onbDraft.agree||{};
     $('onbNext').disabled = !onbBackedUp()&&!(ag.health&&ag.terms);
   }
-  if(step===2) $('onbNext').disabled = (!onbDraft.sex&&!isTeen({age:onbDraft.age})) || tooYoung(onbDraft.age) || (!isTeen({age:onbDraft.age})&&!onbDraft.age)
-    || (birthdayMatters(onbDraft.born)&&!(onbDraft.bday&&onbDraft.bday.y===new Date().getFullYear()));
-  if(step===1) $('onbNext').disabled = (onbDraft.liftDays+onbDraft.cardioDays)>6
-    || !(onbDraft.kit&&onbDraft.kit.length);
+  /* and says what is left, each one a tap that goes to it on the page */
+  const ml=$('onbMiss'); if(!ml) return;
+  if(!miss.length||tooYoung(onbDraft.age)){ ml.innerHTML=''; ml.hidden=true; return; }
+  ml.hidden=false;
+  ml.innerHTML=`<span>Still to answer:</span> `+miss.map(x=>`<button type="button" data-onbgo="${x.sec}">${x.t}</button>`).join('<i>·</i>');
 }
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-onbgo]'); if(!g||!onbDraft) return;
+  onbJump(g.dataset.onbgo);
+});
 /* Grouped, because a list of nineteen sessions is no use. */
 function cardioGroups(){
   const out=[];
@@ -658,7 +720,7 @@ document.addEventListener('click',e=>{
   if(kp){ const pre=KIT_PRESETS.find(x=>x.id===kp.dataset.onbkitpre);
     if(pre){ onbDraft.kit=pre.kit.slice(); onbRender(); } }
   const kk=e.target.closest('[data-onbkit]');
-  if(kk){ const id=kk.dataset.onbkit, cur=(onbDraft.kit||ALL_KIT).slice();
+  if(kk){ const id=kk.dataset.onbkit, cur=(onbDraft.kit||[]).slice();
     onbDraft.kit = cur.indexOf(id)>=0? cur.filter(x=>x!==id) : cur.concat([id]);
     onbRender(); }
   const osp=e.target.closest('[data-onbsplit]');
@@ -675,6 +737,8 @@ document.addEventListener('click',e=>{
   if(cd){ onbDraft.cardioDays=+cd.dataset.onbcardio; onbRender(); }
   const ob=e.target.closest('[data-onbbday]');
   if(ob){ onbDraft.bday={y:new Date().getFullYear(),passed:ob.dataset.onbbday==='1'}; onbDraft.age=ageFromBirth(onbDraft.born,onbDraft.bday); onbRender(); return; }
+  const odp=e.target.closest('[data-onbopen]');
+  if(odp){ const i=+odp.dataset.onbopen; onbDraft.openDay= onbDraft.openDay===i? -1 : i; onbRender(); return; }
   const dd=e.target.closest('[data-onbday]');
   if(dd){ onbDraft.checkinDay=+dd.dataset.onbday; onbRender(); }
   const os=e.target.closest('[data-onbswap]');

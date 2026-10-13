@@ -204,6 +204,7 @@ document.addEventListener('input',e=>{
     onbDraft[k]= e.target.value===''? null : +e.target.value;
     /* the year is what is asked; the age is worked out from it (build 53) */
     if(k==='born'){ if(!birthdayMatters(onbDraft.born)) onbDraft.bday=null; onbDraft.age=ageFromBirth(onbDraft.born,onbDraft.bday); }
+    onbCta(); /* build 72: the still-to-answer list follows the typing, not 600ms behind it */
     clearTimeout(onbDraft._t);
     onbDraft._t=setTimeout(()=>{ const a=document.activeElement&&document.activeElement.id;
       onbRender(); const el=a&&document.getElementById(a);

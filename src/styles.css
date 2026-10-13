@@ -667,6 +667,22 @@ input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radiu
 .onb-foot{padding:10px 16px calc(16px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
 .onbcta{width:100%;height:46px;border-radius:8px;background:var(--cta);color:var(--cta-ink);font-weight:700;font-size:14px}
 .onbcta[disabled]{background:var(--track);color:var(--mute)}
+.onbmiss{font-size:12.5px;line-height:1.5;color:var(--mute);margin:0 0 8px}
+.onbmiss span{font-weight:700;color:var(--ink)}
+.onbmiss i{font-style:normal;margin:0 4px}
+.onbmiss button{font:inherit;font-weight:700;color:var(--amber-text);text-decoration:underline;text-underline-offset:2px;padding:4px 0}
+.slab .need{color:var(--amber-text);letter-spacing:.02em;margin-left:6px}
+.revhead .need{color:var(--amber-text);font-size:11.5px;margin-left:6px;font-weight:700}
+.onbflash{animation:onbflash 1.6s ease-out}
+@keyframes onbflash{0%,40%{box-shadow:0 0 0 3px var(--amber)}100%{box-shadow:0 0 0 3px transparent}}
+@media (prefers-reduced-motion:reduce){.onbflash{animation:none;box-shadow:0 0 0 3px var(--amber)}}
+[data-onbsec]{border-radius:10px;scroll-margin-top:8px}
+.revtap{width:100%;text-align:left;border-bottom:0;gap:8px}
+.revtap .rd{flex:1;min-width:0}
+.revtap .revchev{font-style:normal;font-weight:700;font-size:12.5px;color:var(--green-text);margin-left:10px}
+.revtap[disabled]{opacity:1;color:inherit}
+.revday.open .revtap{border-bottom:1px solid var(--line)}
+.revgist{padding:0 12px 11px;background:var(--bg);font-size:12.5px;color:var(--mute)}
 .onb h2{font-family:var(--font-ui);font-weight:800;font-size:27px;letter-spacing:-.01em;line-height:1.03;margin:16px 0 6px}
 .onb p.lead{color:var(--mute);font-size:13.5px;margin:0 0 20px}
 .handle{display:flex;align-items:center;gap:2px;border-bottom:1.5px solid var(--ink);padding:4px 0 10px;font-size:21px;font-weight:700}

@@ -3499,7 +3499,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
 
     /* onboarding and existing users */
     const b2 = await boot(); allErrs.push(...b2.errs);
-    b2.G.startOnboarding(); let found = false;
+    /* build 72: the split shows once a way of training is picked, so pick the gym first */
+    b2.G.startOnboarding(); b2.G.onbDraft.style = 'gym'; let found = false;
     for (let s2 = 0; s2 < 8 && !found; s2++) { b2.G.step = s2; b2.G.onbRender(); found = !!b2.d.querySelector('[data-onbsplit]'); }
     t('splits · onboarding offers the choice', found);
     t('splits · with "let Gauntlet choose" as an option', !!b2.d.querySelector('[data-onbsplit="auto"]'));
@@ -4174,7 +4175,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
       const db3 = fakeSupabase();
       const N = await boot({ fetch: db3.fetch, before: live }); allErrs.push(...N.errs);
       N.G.startOnboarding();
-      Object.assign(N.G.onbDraft, { handle: 'nia', aim: 'lose', sex: 'f', age: 30, height: 165, weight: 70, liftDays: 3, cardioDays: 2, checkinDay: 6, kit: N.G.ALL_KIT.slice() });
+      Object.assign(N.G.onbDraft, { handle: 'nia', aim: 'lose', style: 'gym', cycle: false, sex: 'f', age: 30, height: 165, weight: 70, liftDays: 3, cardioDays: 2, checkinDay: 6, kit: N.G.ALL_KIT.slice() });
       type(N.w, N.d.getElementById('handleIn'), 'nia');
       for (let i = 0; i < 8 && !N.d.getElementById('onbHealth'); i++) { N.d.getElementById('onbNext').click(); await tick(20); }
       const next = N.d.getElementById('onbNext');
@@ -4199,7 +4200,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
       const db4 = fakeSupabase();
       const K = await boot({ fetch: db4.fetch, before: live }); allErrs.push(...K.errs);
       K.G.startOnboarding();
-      Object.assign(K.G.onbDraft, { handle: 'kev', aim: 'lose', sex: 'm', age: 30, height: 180, weight: 80, liftDays: 3, cardioDays: 2, checkinDay: 6, kit: K.G.ALL_KIT.slice() });
+      Object.assign(K.G.onbDraft, { handle: 'kev', aim: 'lose', style: 'gym', sex: 'm', age: 30, height: 180, weight: 80, liftDays: 3, cardioDays: 2, checkinDay: 6, kit: K.G.ALL_KIT.slice() });
       type(K.w, K.d.getElementById('handleIn'), 'kev');
       for (let i = 0; i < 8 && !K.d.getElementById('onbSkipBackup'); i++) { K.d.getElementById('onbNext').click(); await tick(20); }
       K.d.getElementById('onbSkipBackup').click(); await tick(100);
@@ -4211,7 +4212,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     journey(56, 'Build 53: year of birth, backing up without an email, privacy and terms, handles, and the prompt to add an email');
     const Y = new Date().getFullYear();
     const toStep2 = async (X, draft) => {
-      X.G.startOnboarding(); Object.assign(X.G.onbDraft, draft);
+      X.G.startOnboarding(); Object.assign(X.G.onbDraft, { style: 'gym' }, draft);
       type(X.w, X.d.getElementById('handleIn'), draft.handle || 'yob');
       X.d.getElementById('onbNext').click(); X.d.getElementById('onbNext').click(); await tick(20);
     };
@@ -6105,6 +6106,89 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     }
   }
 
+
+  /* ---------------------------------------------------------- 77 */
+  journey(77, 'Build 72: onboarding cannot be skipped past, and says what is still to answer');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const type = (id, v) => { const el = d.getElementById(id); el.value = String(v); el.dispatchEvent(new w.Event('input', { bubbles: true })); };
+    const ob = () => d.getElementById('onbBody'), next = () => d.getElementById('onbNext'), miss = () => d.getElementById('onbMiss');
+    const gos = () => [...miss().querySelectorAll('[data-onbgo]')].map(b => b.dataset.onbgo).join();
+    G.startOnboarding();
+    t('77 · the handle step names what it needs', next().disabled && !miss().hidden && gos() === 'handle');
+    type('handleIn', 'ferg');
+    t('77 · and opens once it has it, the list gone', !next().disabled && miss().hidden && !miss().innerHTML);
+    next().click();
+    /* step 1: nothing chosen for them */
+    t('77 · no aim, no way of training and no kit are picked for them', !ob().querySelector('[data-onbaim].on') && !ob().querySelector('[data-onbstyle].on') && !ob().querySelector('[data-onbdisc].on') && !ob().querySelector('[data-onbkit].on'));
+    t('77 · so Next waits, and says all three', next().disabled && gos() === 'aim,style,kit', gos());
+    t('77 · each needed section is marked on the page', ob().querySelectorAll('.slab .need').length === 3);
+    t('77 · the days do not show before a way of training is picked', !ob().querySelector('[data-onblift]') && !ob().querySelector('[data-onbsess]'));
+    t('77 · tapping one in the list takes you to it', (() => { miss().querySelector('[data-onbgo="kit"]').click(); return ob().querySelector('[data-onbsec="kit"]').classList.contains('onbflash'); })());
+    ob().querySelector('[data-onbaim="build"]').click();
+    t('77 · answering one takes it off the list', next().disabled && gos() === 'style,kit', gos());
+    ob().querySelector('[data-onbstyle="gym"]').click();
+    t('77 · picking the gym shows the days and the split', !!ob().querySelector('[data-onblift]') && !!ob().querySelector('[data-onbsplit]') && gos() === 'kit');
+    ob().querySelector('[data-onbkitpre]').click();
+    t('77 · all answered: Next opens', !next().disabled && miss().hidden);
+    ob().querySelector('[data-onblift="6"]').click(); ob().querySelector('[data-onbcardio="3"]').click();
+    t('77 · more than six days stops it again, and says why', next().disabled && gos() === 'days' && /six days or fewer/.test(txt(miss())));
+    ob().querySelector('[data-onbcardio="0"]').click();
+    t('77 · and back', !next().disabled);
+    ob().querySelector('[data-onbkit="bodyweight"]').click();
+    const kitLeft = G.onbDraft.kit.length;
+    G.onbDraft.kit.slice().forEach(k => { const b = ob().querySelector('[data-onbkit="' + k + '"]'); if (b) b.click(); });
+    t('77 · taking all the kit away stops it', kitLeft > 0 && G.onbDraft.kit.length === 0 && next().disabled && gos() === 'kit');
+    ob().querySelector('[data-onbkitpre]').click();
+    next().click();
+    /* step 2 */
+    t('77 · step 2 opens on its own (a new step starts at the top)', G.step === 2 && /Your numbers/.test(txt(ob())));
+    t('77 · adults need sex, year, height, weight', next().disabled && /sex/.test(gos()) && /you/.test(gos()) && /the year you were born/.test(txt(miss())) && /height/.test(txt(miss())) && /weight/.test(txt(miss())));
+    t('77 · goal weight and body fat are labelled optional and never on the list', /Goal weight, kg \(optional\)/.test(txt(ob())) && /Body fat %, if you know it \(optional\)/.test(txt(ob())) && !/goal|body fat/i.test(txt(miss())));
+    ob().querySelector('[data-onbsex="f"]').click();
+    type('onbBorn', new w.Date().getFullYear() - 40); type('onbHeight', 168);
+    t('77 · the list follows the typing straight away', /weight/.test(txt(miss())) && !/height/.test(txt(miss())) && !/year you were born/.test(txt(miss())));
+    type('onbWeight', 70); G.onbRender();
+    t('77 · for women, cycle tracking is a choice, not a default', !ob().querySelector('[data-onbcycle].on') && next().disabled && gos() === 'cycle');
+    ob().querySelector('[data-onbcycle="off"]').click();
+    t('77 · answered either way, Next opens', !next().disabled && G.onbDraft.cycle === false);
+    type('onbSteps', ''); 
+    t('77 · a cleared step target is asked for', next().disabled && gos() === 'steps');
+    ob().querySelector('[data-onbsteps]').click();
+    t('77 · a band fills it', !next().disabled);
+    type('onbHeight', 30); G.onbRender();
+    t('77 · numbers that do not look right hold it', next().disabled && /look right/.test(txt(miss())));
+    type('onbHeight', 168); G.onbRender();
+    next().click();
+    /* step 3: the week fits on a screen */
+    const heads = ob().querySelectorAll('.revday');
+    t('77 · the week is one short row a day, all closed', heads.length === 7 && !ob().querySelector('.revday.open') && !ob().querySelector('[data-onbswap]'));
+    t('77 · each closed day still says what is in it', ob().querySelectorAll('.revgist').length === 7);
+    const firstLift = ob().querySelector('[data-onbopen]');
+    firstLift.click();
+    t('77 · tapping a day opens it with its movements and Change', ob().querySelectorAll('.revday.open').length === 1 && !!ob().querySelector('[data-onbrun]'));
+    const second = [...ob().querySelectorAll('[data-onbopen]')].find(b => b.getAttribute('aria-expanded') === 'false');
+    second.click();
+    t('77 · one day open at a time', ob().querySelectorAll('.revday.open').length === 1 && second.dataset.onbopen == G.onbDraft.openDay);
+    t('77 · nothing to answer on the week, so Next is open', !next().disabled);
+    next().click();
+    t('77 · the check in day is chosen already and Next is open', G.step === 4 && !!ob().querySelector('[data-onbday].on') && !next().disabled);
+    for (let i = 0; i < 3 && d.getElementById('onb').classList.contains('on') && G.step < 5; i++) { next().click(); await new Promise(r => setTimeout(r, 20)); }
+    if (d.getElementById('onb').classList.contains('on') && d.getElementById('onbSkipBackup')) d.getElementById('onbSkipBackup').click();
+    t('77 · it finishes with what was picked, not a default', G.S.profile.onboarded && G.S.profile.aim === 'build' && G.S.profile.sex === 'f' && G.S.profile.height === 168 && G.S.profile.weight === 70);
+    const src = require('fs').readFileSync(require('path').join(__dirname, 'src/js/app/14-onboarding.js'), 'utf8');
+    t('77 · no em dashes', src.indexOf('—') < 0);
+  }
+  {
+    /* a teen still needs only the year: sex, height and weight stay optional for them */
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    const type = (id, v) => { const el = d.getElementById(id); el.value = String(v); el.dispatchEvent(new w.Event('input', { bubbles: true })); };
+    G.startOnboarding(); Object.assign(G.onbDraft, { handle: 'kid', aim: 'hold', style: 'gym', kit: G.ALL_KIT.slice() }); G.step = 2; G.onbRender();
+    type('onbBorn', new w.Date().getFullYear() - 15); G.onbRender();
+    const bd = d.querySelector('[data-onbbday="1"]'); if (bd) bd.click();
+    t('77 · teen: nothing more is needed', !d.getElementById('onbNext').disabled && G.onbMissing().length === 0, JSON.stringify(G.onbMissing()));
+  }
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);
 })();

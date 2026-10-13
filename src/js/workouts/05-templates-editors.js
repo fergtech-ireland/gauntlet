@@ -9,7 +9,8 @@ function tplFamily(t){
   if(isHifb(t)) return 'HIFB';
   if(!t.seeded) return 'Yours';
   if(t.id==='t_mobility') return 'Mobility';
-  const k=['full','ul','ppl','bro'].find(k2=>SPLITS[k2].order.indexOf(t.id)>=0);
+  if(t.prog&&typeof PROGRAMMES!=='undefined'&&PROGRAMMES[t.prog]) return PROGRAMMES[t.prog].t;
+  const k=['full','ul','ppl','bro','pplab','arnold','pp'].find(k2=>SPLITS[k2].order.indexOf(t.id)>=0);
   return k? SPLITS[k].t : 'More lifting';
 }
 const lastDone=(match)=>{ const w=(S.workouts||[]).find(match); return w? w.d : null; };
@@ -253,9 +254,11 @@ function drawTplEdit(){
   const t=tplDraft, uses=(S.plan&&S.plan.days||[]).filter(d=>d.templateId===t.id).length;
   const errs=tplDraft.__showErrors? tplErrors(t) : [];
   const errAt=(i,k)=>errs.some(e=>e.i===i&&e.k===k);
-  const offRows=t.hifb? 0 : t.ex.filter(r=>!rowMatches(r)).length;
+  const offRows=(t.hifb||t.method)? 0 : t.ex.filter(r=>!rowMatches(r)).length;
+  const PG=t.method&&typeof PROGRAMMES!=='undefined'? PROGRAMMES[t.prog] : null;
   $('tplEditBody').innerHTML=`
-    ${t.hifb? '' : `<div class="focusnote" style="margin:0 0 12px"><b>Lifting focus: ${LIFT_FOCUS[liftFocus()].t.toLowerCase()}</b>
+    ${PG? `<div class="focusnote" style="margin:0 0 12px"><b>From ${escHabit(PG.t)}</b><span>The programme sets these numbers. Change anything you like; it is your copy.</span></div>` : ''}
+    ${(t.hifb||t.method)? '' : `<div class="focusnote" style="margin:0 0 12px"><b>Lifting focus: ${LIFT_FOCUS[liftFocus()].t.toLowerCase()}</b>
       <span>${LIFT_FOCUS[liftFocus()].effort}${offRows? ` ${offRows} movement${offRows>1?'s':''} here ${offRows>1?'are':'is'} set differently.` : ''}</span>
       ${offRows? `<button class="inlinebtn" id="tplRecAll">Set them all to the recommendation</button>` : ''}</div>`}
     <div class="note" style="margin:0 0 12px">Changes apply to every ${escHabit(t.name||'')} day from now on${uses? ', including '+uses+' this week' : ''}. Sessions you have already done stay exactly as they were.</div>
@@ -275,13 +278,15 @@ function drawTplEdit(){
       return `${tgi&&tgi.first? groupHead(t.ex,tgi) : ''}<div class="tcard ${tgi?'ingroup':''}">
         <div class="tch"><span class="tcn">${i+1}</span>
           <div class="tt"><b>${escHabit(x.n)}</b><span>${rxClass(r.exId)}${x.eq? ' · '+(EQUIP[x.eq]||x.eq).toLowerCase() : ''}</span></div></div>
-        ${(()=>{ const rec=recommendedFor(r.exId); if(t.hifb) return `<div class="recline ok">Set by the HIFB method: four sets, short rests</div>`; if(rowMatches(r)) return `<div class="recline ok">Matches your focus: ${LIFT_FOCUS[liftFocus()].t.toLowerCase()}</div>`;
+        ${(()=>{ const rec=recommendedFor(r.exId); if(t.hifb) return `<div class="recline ok">Set by the HIFB method: four sets, short rests</div>`;
+          if(r.scheme) return `<div class="recline ok">Percentages this week: ${escHabit(repText(r))} <button class="inlinebtn" data-tplunscheme="${i}">Use a rep range instead</button></div>`;
+          if(t.method) return `<div class="recline ok">Set by the programme</div>`; if(rowMatches(r)) return `<div class="recline ok">Matches your focus: ${LIFT_FOCUS[liftFocus()].t.toLowerCase()}</div>`;
           return `<div class="recline">Recommended for ${LIFT_FOCUS[liftFocus()].t.toLowerCase()}: ${rec.sets} × ${hold? rec.repMin+' to '+rec.reps+'s' : rec.repMin+' to '+rec.reps}, rest ${rec.rest}s
             <button class="inlinebtn" data-tplrec="${i}">Use it</button></div>`; })()}
         <div class="tfields">
-          ${field('sets','Sets',r.sets,1,10)}
+          ${r.scheme? '' : `${field('sets','Sets',r.sets,1,10)}
           ${field('repMin',hold?'Seconds from':'Reps from',r.repMin!=null? r.repMin : Math.max(1,(r.reps||2)-2),1,hold?300:100)}
-          ${field('reps','to',r.reps,1,hold?300:100)}
+          ${field('reps','to',r.reps,1,hold?300:100)}`}
           ${field('rest','Rest, s',r.rest,0,600)}
           ${t.hifb? `<label class="tf ${errAt(i,'run')?'bad':''}"><span>Run after, m</span><input type="number" inputmode="numeric" min="0" max="5000" step="100" value="${r.run? r.run.m : 0}" data-tplrun="${i}" aria-label="${escHabit(x.n)}: run after it, in metres"></label>` : ''}
         </div>
@@ -317,6 +322,10 @@ document.addEventListener('input',e=>{
 });
 /* duplicate a template, or delete one of your own */
 document.addEventListener('click',e=>{
+  /* build 71: a percentage row turned into an ordinary rep range, from this week's sets */
+  const us=e.target.closest('[data-tplunscheme]');
+  if(us&&tplDraft){ const r=tplDraft.ex[+us.dataset.tplunscheme]; if(r&&r.scheme){
+      const ss=schemeSets(r)||[]; r.sets=ss.length||r.sets; delete r.scheme; delete r.rot; drawTplEdit(); } return; }
   if(e.target.closest('#tplDup')&&tplDraft){
     const src=S.templates.find(x=>x.id===tplDraft.id)||tplDraft;
     const copy=JSON.parse(JSON.stringify(src)); delete copy.__showErrors;

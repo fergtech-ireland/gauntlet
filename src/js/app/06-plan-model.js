@@ -33,7 +33,11 @@ const SPLITS={
   ul:{t:'Upper and lower',s:'Upper body one day, legs the next',best:[4],order:['t_upperA','t_lower','t_upperB','t_lowerB']},
   ppl:{t:'Push, pull, legs',s:'Chest and shoulders, then back, then legs',best:[3,6],order:['t_push','t_pull','t_legs']},
   bro:{t:'Body part',s:'Chest day, back day, legs, shoulders, arms. Each muscle once a week, with more sets that day',best:[5],order:['t_chest','t_back','t_legs','t_shoulders','t_arms']},
-  pplul:{t:'Push, pull, legs, upper, lower',s:'Five days, each muscle twice',best:[5],order:['t_push','t_pull','t_legs','t_upperA','t_lower']}
+  pplul:{t:'Push, pull, legs, upper, lower',s:'Five days, each muscle twice',best:[5],order:['t_push','t_pull','t_legs','t_upperA','t_lower']},
+  /* build 71 */
+  pplab:{t:'Push, pull, legs, A and B',s:'Six days: two versions of each, so every muscle gets two different sessions',best:[6],order:['t_push','t_pull','t_legs','t_pushB','t_pullB','t_legsB']},
+  arnold:{t:'Arnold split',s:'Chest and back together as supersets, then shoulders and arms, then legs',best:[3,6],order:['t_chestback','t_shoulderarms','t_legs']},
+  pp:{t:'Push and pull',s:'No separate leg day: squats on push days, hinges on pull days',best:[2,4],order:['t_pushq','t_pullh']}
 };
 function autoSplit(days){ return days<=3? 'full' : (days===4? 'ul' : (days===5? 'pplul' : 'ppl')); }
 function splitOf(){

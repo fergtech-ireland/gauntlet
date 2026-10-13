@@ -244,10 +244,13 @@ document.addEventListener('click',e=>{
     const beforeSwap=snapshotPlan();
     const old=S.plan.days[+n];
     S.plan.days[+n]=Object.assign(slotFor(code),{dow:+n,checkin:!!old.checkin,exclude:old.exclude,setDelta:old.setDelta});
+    /* build 71: a day fixed to repeat every week keeps the new choice */
+    const pinsWas=(S.profile.pins&&S.profile.pins[+n]!==undefined)? Object.assign({},S.profile.pins) : null;
+    if(pinsWas) S.profile.pins[+n]=code;
     S.goal.target=S.plan.days.filter(d=>d.type&&d.slot!=='walk').length;
     S.goal.label='Move '+S.goal.target+' times';
     save(); closeSheets(); renderAll();
-    toast(DAYS[+n]+' is now '+S.plan.days[+n].label,'Undo',()=>restorePlan(beforeSwap,DAYS[+n]+' put back')); }
+    toast(DAYS[+n]+' is now '+S.plan.days[+n].label+(pinsWas? ', every week' : ''),'Undo',()=>{ if(pinsWas) S.profile.pins=pinsWas; restorePlan(beforeSwap,DAYS[+n]+' put back'); }); }
   if(e.target.closest('#rebuild')){ buildPlan(); save(); renderAll(); toast('Week rebuilt from your last check in'); }
   if(e.target.closest('#changeAim')){ drawAimSheet(); openSheet('aimSheet'); }
   const am=e.target.closest('[data-aim]');

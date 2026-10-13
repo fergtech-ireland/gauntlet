@@ -215,7 +215,11 @@ const EX_POSE={
   ohp:'ohp', dbpress:'ohp', arnold:'ohp', lateral:'lateral', hammer:'curl', curl:'curl',
   pushdown:'pushdown', skull:'pushdown', calf:'calf', hamcurl:'hamcurl', legext:'legext',
   plank:'plank', sidplank:'plank', deadbug:'crunch', crunch:'crunch', paloff:'paloff',
-  catcow:'mobility', '90_90':'mobility', carry:'carry', farmers:'carry'
+  catcow:'mobility', '90_90':'mobility', carry:'carry', farmers:'carry',
+  /* build 71 */
+  snatchpull:'deadlift', cleanpull:'deadlift', pushjerk:'ohp', splitjerk:'ohp', hspu:'ohp', handstand:'ohp',
+  ringdip:'pushup', pppushup:'pushup', pausebench:'bench', boardpress:'bench', speedbench:'bench',
+  muscleup:'chin', tuckfl:'hanging', lsit:'hanging', hollowrock:'crunch', sandbagcarry:'carry'
 };
 function poseKeyFor(exId){
   if(MOVE_POSES[exId]) return exId;

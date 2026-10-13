@@ -275,7 +275,44 @@ const LIBRARY=[
   {id:"stepups_cond",n:"Weighted Step Up Intervals",g:"Conditioning",p:"full body",eq:"dumbbell",m:"Quads, Glutes",s:"Calves",t:"2010",d:2,c:"A stair climber you can load."},
   {id:"kbcomplex",n:"Kettlebell Complex",g:"Conditioning",p:"full body",eq:"kettlebell",m:"Full body",s:"Core",t:"2010",d:3,c:"Swing, clean, press, squat. No rest between."},
   {id:"dbcomplex",n:"Dumbbell Complex",g:"Conditioning",p:"full body",eq:"dumbbell",m:"Full body",s:"Core",t:"2010",d:3,c:"Pick one weight and do not put it down."},
-  {id:"jumprope_dbl",n:"Double Unders",g:"Conditioning",p:"cardio",eq:"other",m:"Calves",s:"Shoulders",t:"10X0",d:3,c:"Relax the arms. Rope speed, not jump height."}
+  {id:"jumprope_dbl",n:"Double Unders",g:"Conditioning",p:"cardio",eq:"other",m:"Calves",s:"Shoulders",t:"10X0",d:3,c:"Relax the arms. Rope speed, not jump height."},
+  /* build 71: what the programme library needs. Olympic lifts, the
+     powerlifting variations, calisthenics skills and jumps and throws. Each
+     uses a pattern already in the library, so a stand in can always be found
+     for kit that is not there, and every one has a drawing. */
+  {id:"bbsnatch",n:"Snatch",g:"Olympic",p:"full body",eq:"barbell",m:"Full body",s:"Traps, Shoulders, Quads",t:"10X0",d:3,c:"Bar close, finish the pull, then get under it."},
+  {id:"hangsnatch",n:"Hang Snatch",g:"Olympic",p:"full body",eq:"barbell",m:"Full body",s:"Traps, Shoulders",t:"10X0",d:3,c:"From just above the knee. Hips through, then under."},
+  {id:"powersnatch",n:"Power Snatch",g:"Olympic",p:"full body",eq:"barbell",m:"Full body",s:"Traps, Shoulders",t:"10X0",d:3,c:"Caught above parallel. Speed under the bar."},
+  {id:"snatchpull",n:"Snatch Pull",g:"Olympic",p:"hinge",eq:"barbell",m:"Erectors, Traps",s:"Glutes, Hamstrings",t:"20X0",d:2,c:"Same positions as the snatch, finish tall and stop."},
+  {id:"snatchbal",n:"Snatch Balance",g:"Olympic",p:"squat",eq:"barbell",m:"Quads, Shoulders",s:"Core",t:"10X1",d:3,c:"Drive under fast and lock out at the bottom."},
+  {id:"ohsquat",n:"Overhead Squat",g:"Olympic",p:"squat",eq:"barbell",m:"Quads, Shoulders",s:"Core, Upper back",t:"3110",d:3,c:"Arms locked, bar over the middle of the foot."},
+  {id:"bbclean",n:"Clean",g:"Olympic",p:"full body",eq:"barbell",m:"Full body",s:"Traps, Quads",t:"10X0",d:3,c:"Elbows fast round into the front rack."},
+  {id:"hangclean",n:"Hang Clean",g:"Olympic",p:"full body",eq:"barbell",m:"Full body",s:"Traps, Quads",t:"10X0",d:3,c:"From just above the knee. Jump, shrug, elbows through."},
+  {id:"blockclean",n:"Block Clean",g:"Olympic",p:"full body",eq:"barbell",m:"Full body",s:"Traps, Quads",t:"10X0",d:3,c:"From blocks at the knee. Teaches the second pull."},
+  {id:"cleanpull",n:"Clean Pull",g:"Olympic",p:"hinge",eq:"barbell",m:"Erectors, Traps",s:"Glutes, Hamstrings",t:"20X0",d:2,c:"Heavier than your clean. Finish tall, no arm bend."},
+  {id:"bbcleanjerk",n:"Clean and Jerk",g:"Olympic",p:"full body",eq:"barbell",m:"Full body",s:"Shoulders, Quads",t:"10X0",d:3,c:"Stand the clean up, reset the feet, then dip and drive."},
+  {id:"pushjerk",n:"Push Jerk",g:"Olympic",p:"vertical push",eq:"barbell",m:"Front delts, Quads",s:"Triceps",t:"10X1",d:3,c:"Straight dip, hard drive, catch with bent knees."},
+  {id:"splitjerk",n:"Split Jerk",g:"Olympic",p:"vertical push",eq:"barbell",m:"Front delts, Quads",s:"Triceps, Glutes",t:"10X1",d:3,c:"Front shin vertical, back knee soft."},
+  {id:"pausebench",n:"Paused Bench Press",g:"Chest",p:"horizontal push",eq:"barbell",m:"Pectorals",s:"Triceps, Front delts",t:"3110",d:2,c:"A still second on the chest, as in competition."},
+  {id:"boardpress",n:"Board Press",g:"Chest",p:"horizontal push",eq:"barbell",m:"Triceps",s:"Pectorals",t:"2110",d:2,c:"Touch the board, pause, press. Builds the lockout."},
+  {id:"speedbench",n:"Speed Bench",g:"Chest",p:"horizontal push",eq:"barbell",m:"Pectorals",s:"Triceps",t:"10X0",d:2,c:"Light and fast. Every rep as quick as you can."},
+  {id:"speedsquat",n:"Speed Box Squat",g:"Legs",p:"squat",eq:"barbell",m:"Glutes, Quads",s:"Erectors",t:"11X0",d:2,c:"Sit to the box, then explode. Bands if you have them."},
+  {id:"hspu",n:"Handstand Press Up",g:"Shoulders",p:"vertical push",eq:"bodyweight",m:"Front delts",s:"Triceps, Upper back",t:"3010",d:3,c:"Against a wall. Pike press ups first if these are not there yet."},
+  {id:"handstand",n:"Handstand Hold",g:"Shoulders",p:"vertical push",eq:"bodyweight",m:"Shoulders",s:"Core, Wrists",t:"hold",d:3,c:"Chest to the wall to learn a straight line."},
+  {id:"ringdip",n:"Ring Dip",g:"Chest",p:"horizontal push",eq:"bodyweight",m:"Lower pectorals",s:"Triceps",t:"3010",d:3,c:"Turn the rings out at the top. Bar dips are fine."},
+  {id:"pppushup",n:"Pseudo Planche Press Up",g:"Chest",p:"horizontal push",eq:"bodyweight",m:"Front delts, Pectorals",s:"Triceps, Core",t:"3010",d:3,c:"Hands by the hips, lean forward over them."},
+  {id:"planchelean",n:"Planche Lean",g:"Shoulders",p:"vertical push",eq:"bodyweight",m:"Front delts",s:"Core, Wrists",t:"hold",d:2,c:"Arms straight, shoulders past the hands."},
+  {id:"tuckfl",n:"Tuck Front Lever",g:"Back",p:"vertical pull",eq:"bodyweight",m:"Lats",s:"Core",t:"hold",d:3,c:"Knees to chest, back flat, arms straight."},
+  {id:"muscleup",n:"Muscle Up",g:"Back",p:"vertical pull",eq:"bodyweight",m:"Lats, Triceps",s:"Chest, Core",t:"10X0",d:3,c:"High pull, fast turn over the bar. Bands to learn it."},
+  {id:"lsit",n:"L Sit",g:"Core",p:"anti-extension",eq:"bodyweight",m:"Abdominals, Hip flexors",s:"Triceps",t:"hold",d:2,c:"On parallettes or the floor. Tuck the knees to start."},
+  {id:"hollowrock",n:"Hollow Rock",g:"Core",p:"anti-extension",eq:"bodyweight",m:"Abdominals",s:"Hip flexors",t:"hold",d:2,c:"Hold the hollow shape and rock from it."},
+  {id:"shrimp",n:"Shrimp Squat",g:"Legs",p:"lunge",eq:"bodyweight",m:"Quads, Glutes",s:"Core",t:"3010",d:3,c:"Hold the back foot, knee down to the floor softly."},
+  {id:"medslam",n:"Med Ball Slam",g:"Conditioning",p:"full body",eq:"other",m:"Lats, Core",s:"Shoulders",t:"10X0",d:1,c:"Reach tall, slam hard, catch it on the bounce."},
+  {id:"medthrow",n:"Med Ball Rotational Throw",g:"Conditioning",p:"full body",eq:"other",m:"Obliques, Hips",s:"Shoulders",t:"10X0",d:2,c:"Turn from the back hip into a wall."},
+  {id:"broadjump",n:"Broad Jump",g:"Conditioning",p:"full body",eq:"bodyweight",m:"Glutes, Quads",s:"Calves",t:"10X0",d:2,c:"Swing the arms, land soft and stick it."},
+  {id:"latbound",n:"Lateral Bound",g:"Conditioning",p:"full body",eq:"bodyweight",m:"Glutes, Adductors",s:"Calves",t:"10X0",d:2,c:"Push sideways off one leg, hold the landing."},
+  {id:"trapjump",n:"Trap Bar Jump",g:"Legs",p:"squat",eq:"barbell",m:"Quads, Glutes",s:"Calves",t:"10X0",d:2,c:"Light. A jump with a little load, not a heavy lift."},
+  {id:"sandbagcarry",n:"Sandbag Carry",g:"Back",p:"carry",eq:"other",m:"Upper back, Core",s:"Glutes, Grip",t:"hold",d:2,c:"Hug it high on the chest and walk tall."}
 ];
 const TEMPO_FALLBACK={Chest:'3010',Shoulders:'2011',Arms:'2011',Back:'2011',Legs:'3010',Core:'2111',Mobility:'3030'};
 function tempoOf(exId){
@@ -610,7 +647,9 @@ function applyFocusToTemplates(focus){
   const snap=JSON.parse(JSON.stringify(S.templates||[]));
   let changed=0;
   /* HIFB sessions keep the method's own four sets and short rests */
-  (S.templates||[]).filter(t=>!isHifb(t)).forEach(t=>t.ex.forEach(r=>{
+  /* HIFB sessions keep the method's own four sets and short rests, and a
+     programme's sessions keep the programme's numbers (build 71) */
+  (S.templates||[]).filter(t=>!isHifb(t)&&!t.method).forEach(t=>t.ex.forEach(r=>{
     if(rowMatches(r,focus)) return;
     Object.assign(r,recommendedFor(r.exId,focus)); changed++;
   }));
@@ -618,7 +657,8 @@ function applyFocusToTemplates(focus){
   return {changed,snap};
 }
 const HEAVY_PATTERNS=['squat','hinge','horizontal push','vertical push','horizontal pull','vertical pull','lunge'];
-const HOLD_MOVES=['plank','sidplank','hollow','deadbug','birddog','copenhagen','suitcase_hold','bearcrawl','90_90','catcow'];
+const HOLD_MOVES=['plank','sidplank','hollow','deadbug','birddog','copenhagen','suitcase_hold','bearcrawl','90_90','catcow',
+  'handstand','planchelean','tuckfl','lsit','hollowrock'];
 /* what class a movement falls into, from the library's own pattern and kit */
 function rxClass(exId){
   const x=exOf(exId); if(!x) return 'compound';
@@ -640,6 +680,13 @@ function prescribe(exId,over,focus){
 /* How a range reads wherever sets and reps are printed. */
 function repText(row){
   if(!row) return '';
+  /* build 71: a percentage row says this week's sets, for example 5, 3, 1+ at 75 to 95% */
+  const ss=row.scheme&&typeof schemeSets==='function'? schemeSets(row) : null;
+  if(ss&&ss.length){
+    const same=ss.every(x=>x.r===ss[0].r&&!!x.plus===!!ss[0].plus), ps=ss.map(x=>Math.round(x.p*1000)/10);
+    const lo=Math.min(...ps), hi=Math.max(...ps);
+    return (same? ss.length+' × '+ss[0].r+(ss[0].plus?'+':'') : ss.map(x=>x.r+(x.plus?'+':'')).join(', '))+' at '+(lo===hi? lo : lo+' to '+hi)+'%';
+  }
   const top=+row.reps||0, bottom=+row.repMin||0;
   if(rxClass(row.exId)==='hold') return row.sets+' × '+top+'s';
   return row.sets+' × '+(bottom&&bottom<top? bottom+' to '+top : top);
@@ -647,6 +694,8 @@ function repText(row){
 function seedTemplates(){
   const mk=(id,name,rows)=>({id,name,seeded:true,
     ex:rows.map(([exId,note])=>prescribe(exId,{note:note||''}))});
+  /* pairs done back to back as supersets: same number, same pair; -1 on its own */
+  const grp=(t,g)=>{ t.ex.forEach((r,i)=>{ if(g[i]>=0) r.group=t.id+'_g'+g[i]; }); return t; };
   return [
     mk('t_push','Push',[['bench','Control it. No bouncing off the chest.'],
       ['incline','Thirty degrees. Any steeper and it becomes a shoulder press.'],
@@ -682,6 +731,22 @@ function seedTemplates(){
       ['cablelateral',''],['rear',''],['facepull','Rope to the forehead, elbows high.']]),
     mk('t_arms','Arms',[['ezcurl',''],['skull','Elbows still.'],['hammer','Five degrees of swing, no more.'],
       ['pushdown',''],['inclinecurl',''],['ohtri','']]),
+    /* build 71: the B days of a six-day push, pull, legs, the Arnold split and
+       the four-day push and pull with the legs folded in */
+    mk('t_pushB','Push B',[['ohp','No leg drive.'],['dbincline',''],['chestdip','Lean forward. Stop when the shoulder feels stretched.'],
+      ['cablelateral',''],['fly','Squeeze, do not clap.'],['ohtri','Elbows point at the ceiling.']]),
+    mk('t_pullB','Pull B',[['pullup','Overhand, hands outside the shoulders.'],['tbar',''],['csrow','Pinch at the top.'],
+      ['straightarm','Arms long, pull with the lats.'],['rear',''],['inclinecurl','']]),
+    mk('t_legsB','Legs B',[['frontsquat','Elbows high.'],['hipthrust','Pause at the top.'],['hack',''],
+      ['seatedham',''],['lunge','Tall torso.'],['seatedcalf','Pause in the stretch.']]),
+    grp(mk('t_chestback','Chest and back',[['incline','Thirty degrees.'],['pullup','Overhand, hands outside the shoulders.'],
+      ['bench','Control it. No bouncing off the chest.'],['bbrow','Torso at forty five degrees.'],['dbfly','Stop at chest level.'],['dbpullover','Ribs stay down.']]),[0,0,1,1,2,2]),
+    grp(mk('t_shoulderarms','Shoulders and arms',[['arnold',''],['lateral',''],
+      ['ezcurl',''],['skull','Elbows still.'],['inclinecurl',''],['ropeoh','']]),[-1,-1,0,0,1,1]),
+    mk('t_pushq','Push: quads, chest, shoulders',[['squat','Depth you can hold position at.'],['bench','Control it. No bouncing off the chest.'],
+      ['ohp','No leg drive.'],['legext',''],['lateral',''],['pushdown','']]),
+    mk('t_pullh','Pull: hamstrings, back, biceps',[['rdl','Stop before the back rounds.'],['bbrow','Torso at forty five degrees.'],
+      ['chin','Control over swing.'],['hamcurl','Hips stay down.'],['rear',''],['curl','']]),
     mk('t_mobility','Mobility and core',[['catcow','Slow, no forcing it.'],
       ['deadbug',''],['paloff',''],['90_90',''],['sidplank','Thirty seconds a side.']]),
     hifbTpl('t_hifb_chest','HIFB chest and triceps','push','Fast',['Sustained effort'],[
@@ -760,7 +825,7 @@ function exerciseStats(exId){
    part of your weight (press ups, planks, sit ups) count the added weight only.
    So the weight box on those movements means EXTRA weight, is left empty by
    default, and reads BW. */
-const BW_FULL=['chin','pullup','chinup','dip','hanging','legraise','muscleup','pullover_bw','invrow','chinneutral'];
+const BW_FULL=['chin','pullup','chinup','dip','hanging','legraise','muscleup','pullover_bw','invrow','chinneutral','hspu','ringdip'];
 const isBwFull=exId=>BW_FULL.indexOf(exId)>=0;
 /* Plenty of movements are listed with dumbbells but are perfectly normal to do
    with nothing at all: split squats, lunges, step ups, goblet squats, calf
@@ -886,12 +951,69 @@ function isBreak(a,b,days){
   for(const d of ds) if(d>a&&d<end) return false;
   return true;
 }
+/* ---------- percentage rows (build 71) ----------
+   Strength programmes (5/3/1, daily undulating, conjugate, the power days of
+   PHUL and PHAT, Olympic lifting) prescribe a lift as a percentage of a
+   maximum, often a different one each set and each week, rather than a rep
+   range to climb. A template row carries that as `scheme`:
+     {of:'tm'|'max', weeks:[[{p,r,plus}...], ...]}
+   one list of sets per week of the wave. The maximum is estimated from what
+   was actually lifted (the best estimated one rep max, Epley, across the last
+   six working sessions of that lift), so it moves up as the lifting does and
+   nothing has to be tested or typed in. 'tm' is the training max, 90% of it,
+   as 5/3/1 is written. A set marked plus is as many good reps as possible. */
+const SCHEME_LOOKBACK=6, TM_SHARE=0.9;
+function estMax(exId){
+  const h=exHistory(exId).slice(0,SCHEME_LOOKBACK);
+  let best=0;
+  h.forEach(e=>(e.sets||[]).forEach(s=>{ if(s.warm) return; const kg=+s.kg||0, r=+s.reps||0;
+    if(kg>0&&r>0&&r<=12){ const v=kg*(1+r/30); if(v>best) best=v; } }));
+  return best||null;
+}
+/* the week of the programme, so a wave knows where it is; counted from when
+   the programme was picked, or the calendar week when there is none */
+function schemeWeek(){
+  const st=S.profile&&S.profile.progStart;
+  if(st&&/^\d{4}-\d{2}-\d{2}$/.test(st)) return Math.max(0,Math.round((dateOf(mondayKey())-dateOf(st))/(7*864e5)));
+  return weekIndex();
+}
+function schemeSets(row){
+  const sc=row&&row.scheme; if(!sc||!Array.isArray(sc.weeks)||!sc.weeks.length) return null;
+  return sc.weeks[schemeWeek()%sc.weeks.length];
+}
+function schemeRx(exId,row){
+  const sets=schemeSets(row); if(!sets) return null;
+  const inc=incrementFor(exId)||2.5, range=repRangeFor(row), mx=estMax(exId);
+  const top=sets.reduce((a,s)=>s.p>a.p? s : a,sets[0]);
+  const shape=sets.map(s=>s.r+(s.plus?'+':'')).join(', ');
+  if(!mx) return {kg:null,reps:top.r,range,inc,kind:'first',scheme:true,
+    why:`Percentages need a starting point. Work up to a set of ${top.r} you could do two more of; your numbers come from that next time.`};
+  const base=(row.scheme.of==='tm'? TM_SHARE : 1)*mx;
+  const eq=exOf(exId).eq;
+  const plan=sets.map(s=>{ let kg=Math.max(inc,Math.round(base*s.p/inc)*inc); if(eq==='barbell'&&kg<BAR_KG) kg=BAR_KG;
+    return {kg:+kg.toFixed(2),reps:s.r,plus:!!s.plus}; });
+  const hi=plan.reduce((a,s)=>s.kg>a.kg? s : a,plan[0]);
+  const word=row.scheme.of==='tm'? 'training max' : 'best estimated single';
+  return {kg:hi.kg,reps:hi.reps,range,inc,plan,kind:'scheme',scheme:true,max:Math.round(mx),
+    why:`${plan.length} sets (${shape}) at ${sets.map(s=>Math.round(s.p*100)).filter((v,i,a)=>a.indexOf(v)===i).join(', ')}% of your ${word}, ${Math.round(base)}kg, worked out from your recent sets.`
+      +(plan.some(s=>s.plus)? ' The last set is as many good reps as you can: it moves the numbers for next time.' : '')};
+}
 function nextPrescription(exId,row){
-  const rx=nextPrescriptionBase(exId,row);
+  const sch=row&&row.scheme? schemeRx(exId,row) : null;
+  const rx=sch||nextPrescriptionBase(exId,row);
   const h=exHistory(exId);
   if(!h.length) return rx;
   const lastD=lastDoneOf(exId)||h[0].d, gap=gapDays(lastD);
   const cut=isBreak(lastD)? breakCut(gap,profileAge()) : 0;
+  /* a percentage row after a break: every set comes down by the same share */
+  if(sch&&sch.plan){
+    if(!cut) return sch;
+    const inc=sch.inc||2.5, plan=sch.plan.map(s=>Object.assign({},s,{kg:Math.max(inc,Math.round(s.kg*(1-cut)/inc)*inc)}));
+    const hi=plan.reduce((a,s)=>s.kg>a.kg? s : a,plan[0]);
+    return Object.assign({},sch,{plan,kg:hi.kg,reps:hi.reps,kind:'return',gap,cut,was:topSetOf(h[0])||{kg:hi.kg,reps:hi.reps},steps:1,
+      why:`${weeksText(gap)} since you last did this, so every set is about ${Math.round(cut*100)}% lighter today. The percentages pick back up from what you lift.`});
+  }
+  if(sch) return sch;
   if(cut){
     const was=topSetOf(h[0]);
     /* nothing to take off a bodyweight movement: it says how long it has
@@ -965,6 +1087,17 @@ function nextPrescriptionBase(exId,row){
         : `Bodyweight last time, best set ${best}. Aim for ${Math.min(range.top,best+1)} on the first set.`};
   }
   const topWeight=Math.max(...working.map(s2=>+s2.kg));
+  /* build 71: last time was a different kind of day for this lift (heavy
+     triples before a day of eights, or the other way round, as a programme
+     with heavy and lighter days does). Climbing from those sets would be wrong
+     either way, so the weight comes from the best set's estimated single. */
+  const repsDone=working.map(s2=>+s2.reps);
+  if(topWeight>0&&(Math.max(...repsDone)<range.bottom*0.6||Math.min(...repsDone)>range.top*1.7)){
+    const mx=Math.max(...working.map(s2=>(+s2.kg)*(1+(+s2.reps)/30)));
+    const kg=Math.max(inc,Math.floor(mx/(1+range.bottom/30)*0.95/inc)*inc);
+    return {kg:+kg.toFixed(2),reps:range.bottom,range,inc,lastTonnage:working.reduce((a,s2)=>a+setVolume(s2,exId),0),kind:'zone',
+      why:`Last time was sets of ${Math.min(...repsDone)===Math.max(...repsDone)? repsDone[0] : Math.min(...repsDone)+' to '+Math.max(...repsDone)} at ${topWeight}kg, a different kind of day. For ${range.bottom} reps that works out at about ${+kg.toFixed(2)}kg; climb from there.`};
+  }
   const atTop=working.filter(s2=>+s2.kg===topWeight);
   const allHitTop=atTop.every(s2=>+s2.reps>=range.top);
   const lastSet=atTop[atTop.length-1];

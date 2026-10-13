@@ -11,7 +11,7 @@ let planOpen=null;                                   /* null: today */
 const planOpenIndex=()=>planOpen===null? dowIdx() : planOpen;
 function dayMovesHTML(d){
   const tpl=d.templateId? (S.templates||[]).find(t=>t.id===d.templateId) : null;
-  if(tpl) return `<div class="dmoves">${tpl.ex.filter(r=>!(d.exclude||[]).includes(exOf(r.exId).n)).map(r=>`<div class="dmove">
+  if(tpl) return `<div class="dmoves">${tpl.ex.map(r=>typeof rowThisWeek==='function'? rowThisWeek(r) : r).filter(r=>!(d.exclude||[]).includes(exOf(r.exId).n)).map(r=>`<div class="dmove">
       <span class="dmn">${escHabit(exOf(r.exId).n)}</span>
       <span class="dmr">${d.deload&&typeof deloadPrescription==='function'
         ? (p=>p.sets+' × '+p.reps+(p.kg!==null?' at '+num(p.kg)+' kg':''))(deloadPrescription(r.exId,r,DELOAD_TIERS[d.deload]))
@@ -52,7 +52,8 @@ function dayCard(n,d,isToday,open){
   const done=dayDone(n)&&!!d.type, flag=!!(d.exclude&&d.exclude.length);
   const sub=[isToday? 'Today' : '', daySub(d),
     flag? 'minus '+d.exclude.length+' movement'+(d.exclude.length>1?'s':'') : '',
-    d.deload? 'easy week' : (d.setDelta? 'one set lighter' : '')].filter(Boolean).join(' · ');
+    d.deload? 'easy week' : (d.setDelta? 'one set lighter' : ''),
+    (typeof pinsOf==='function'&&pinsOf()[n]!==undefined)? 'every week' : ''].filter(Boolean).join(' · ');
   return `<div class="daycard ${isToday?'today':''} ${open?'open':''} ${done?'done':''}">
     <div class="dcrow">
     <button class="dch" data-planopen="${n}" aria-expanded="${open?'true':'false'}">
@@ -89,7 +90,7 @@ function renderPlan(){
   $('planView').innerHTML=`
   <div class="sect weeksect">
     <h2>This week</h2>
-    <p class="wsum">${[st? st.t : '', wc.planned? wc.planned+' session'+(wc.planned===1?'':'s') : 'nothing planned', wc.planned? wc.done+' of '+wc.planned+' done' : ''].filter(Boolean).join(' · ')}</p>
+    <p class="wsum">${[typeof activeProg==='function'&&activeProg()? activeProg().t : (st? st.t : ''), wc.planned? wc.planned+' session'+(wc.planned===1?'':'s') : 'nothing planned', wc.planned? wc.done+' of '+wc.planned+' done' : ''].filter(Boolean).join(' · ')}</p>
   </div>
   <div class="daycards">${plan.days.map((d,n)=>dayCard(n,d,n===i,n===planOpenIndex())).join('')}</div>
   <div class="sect weeksect weekwhy">
@@ -97,8 +98,9 @@ function renderPlan(){
     <div class="note">Tap a day to see the whole session and start, edit or change it.</div>
   </div>
   <div class="ptiles">
+    <button class="ptile wide" data-setting="programme"><b>Programme</b><span>${typeof progLabel==='function'? escHabit(progLabel()) : ''}${typeof trainDaysOf==='function'&&trainDaysOf()&&trainDaysOf().length? ' · your days' : ''}${typeof pinsOf==='function'&&Object.keys(pinsOf()).length? ' · '+Object.keys(pinsOf()).length+' fixed' : ''}. Pick from ${typeof PROGRAMMES!=='undefined'? Object.keys(PROGRAMMES).length : ''} named weeks, choose your days</span></button>
     <button class="ptile" data-tplopen="1"><b>Templates and runs</b><span>All workouts, including ones not in this week</span></button>
-    <button class="ptile" data-setting="style"><b>Training style</b><span>${st? escHabit(st.t) : 'Gym'}${styleOf()==='hybrid'? ' · '+hyroxDaysOf(sessionsWanted())+' HYROX, '+(sessionsWanted()-hyroxDaysOf(sessionsWanted()))+' CrossFit' : ''}${styleOf()==='gym'&&typeof splitOf==='function'&&splitOf()? ', '+escHabit(SPLITS[splitOf()].t.toLowerCase()) : ''}, your kit</span></button>
+    <button class="ptile" data-setting="style"><b>Training style</b><span>${st? escHabit(st.t) : 'Gym'}${styleOf()==='hybrid'? ' · '+hyroxDaysOf(sessionsWanted())+' HYROX, '+(sessionsWanted()-hyroxDaysOf(sessionsWanted()))+' CrossFit' : ''}${styleOf()==='gym'&&typeof splitOf==='function'&&splitOf()&&!(typeof activeProg==='function'&&activeProg()&&!activeProg().split)? ', '+escHabit(SPLITS[splitOf()].t.toLowerCase()) : ''}, your kit</span></button>
   </div>
   <div class="sect psettings">
     <div class="numline"><div>Aim <b>${aim.t}</b></div><div>Training days <b>${plan.days.filter(d=>d.type&&d.slot!=='walk').length}</b></div></div>
@@ -127,6 +129,7 @@ function swapSuggest(n){
   const st=styleOf(), sp=splitOf();
   let pool= st==='hifb'? HIFB_ORDER.slice()
     : circStyle(st)? ((S.styleWeek&&S.styleWeek.ids)||[]).slice()
+    : (typeof activeProg==='function'&&activeProg()&&activeProg().order)? activeProg().order.filter(c=>!SLOTS[c])
     : (sp? SPLITS[sp].order : LIFT_ORDER).slice();
   pool=pool.concat((CARDIO_BY_AIM[S.profile.aim]||CARDIO_BY_AIM.lose).filter(x=>x!=='walk'));
   const cur=d.templateId||d.circuitId||d.runId;
@@ -189,6 +192,7 @@ function openSwap(n,keep){
   $('swapBody').innerHTML=`
     <div class="swapnow"><div class="txt"><div class="k">${DAYS[n]} is</div><div class="t">${escHabit(dayLabel(d)||'Rest')}</div>${curX? `<div class="s">${escHabit(curX.sub)}</div>` : ''}</div>
       ${curX&&curX.kind!=='run'? `<button class="mini" ${curX.kind==='circuit'? `data-circedit="${curX.id}"` : `data-tpledit="${curX.id}"`}>Edit</button>` : ''}</div>
+    ${typeof pinRowHtml==='function'? pinRowHtml(n,d) : ''}
     <div class="swapquick" role="group" aria-label="Quick change">${quick.map(([c,l])=>`<button class="${d.slot===c?'on':''}" data-swapto="${n}:${c}" ${d.slot===c?'aria-pressed="true"':''}>${l}</button>`).join('')}</div>
     <div class="search tsearch"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       <input id="swapQ" type="search" placeholder="Name or movement: squat, chest, run" aria-label="Search sessions" value="${escHabit(swapView.q)}"></div>

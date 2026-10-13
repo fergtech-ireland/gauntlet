@@ -82,6 +82,16 @@ function newExEntryBase(row){
   /* planSets is fixed here, when the session starts. Counting it at the end
      from whatever sets were left made "planned" silently match "done" as soon
      as a set was added, removed or marked as a warm up. */
+  /* build 71: a percentage row brings its own sets, each with its weight and reps */
+  if(rx&&Array.isArray(rx.plan)&&rx.plan.length)
+    return {exId:row.exId, group:row.group||undefined, tempo:row.tempo||tempoOf(row.exId), reps:row.reps||rx.reps, repMin:row.repMin, rx, rest, note:row.note||'',
+      run:runOf(row.run,false), planSets:rx.plan.length-Math.max(0,Math.min(rx.plan.length-1,+row.schemeDrop||0)),
+      /* a lighter week takes the first, lightest sets off, keeping the top ones */
+      sets:rx.plan.slice(Math.max(0,Math.min(rx.plan.length-1,+row.schemeDrop||0))).map(p=>({kg:p.kg, reps:p.reps, plus:!!p.plus||undefined, warm:false, done:false}))};
+  if(rx&&rx.scheme&&!rx.plan){ const n=(schemeSets(row)||[]).length||row.sets||3;
+    return {exId:row.exId, group:row.group||undefined, tempo:row.tempo||tempoOf(row.exId), reps:row.reps||12, repMin:row.repMin, rx, rest, note:row.note||'',
+      run:runOf(row.run,false), planSets:n,
+      sets:Array.from({length:n},()=>({kg:'', reps:'', warm:false, done:false}))}; }
   return {exId:row.exId, group:row.group||undefined, tempo:row.tempo||tempoOf(row.exId), reps:row.reps||12, repMin:row.repMin, rx, rest, note:row.note||'',
     run:runOf(row.run,GYM&&GYM.deload), planSets:row.sets||3,
     sets:Array.from({length:row.sets||3},(_,i)=>({
@@ -92,9 +102,10 @@ function newExEntryBase(row){
 function startWorkout(templateId,opts){
   opts=opts||{};
   const tpl=S.templates.find(t=>t.id===templateId)||null;
-  let rows=tpl? tpl.ex.slice() : [];
+  /* build 71: a max effort row takes this week's variation */
+  let rows=tpl? tpl.ex.map(r=>typeof rowThisWeek==='function'? rowThisWeek(r) : r) : [];
   if(opts.exclude&&opts.exclude.length) rows=rows.filter(r=>!opts.exclude.includes(exOf(r.exId).n));
-  if(opts.setDelta&&!opts.deload) rows=rows.map(r=>Object.assign({},r,{sets:Math.max(1,(r.sets||3)+opts.setDelta)}));
+  if(opts.setDelta&&!opts.deload) rows=rows.map(r=>Object.assign({},r,{sets:Math.max(1,(r.sets||3)+opts.setDelta)},r.scheme? {schemeDrop:-opts.setDelta} : {}));
   const T=opts.deload? (DELOAD_TIERS[opts.deload]||deloadTier()) : null;
   if(T&&T.dropAccessories){
     const keep=rows.filter(r=>['isolation','core','hold'].indexOf(rxClass(r.exId))<0);
@@ -312,16 +323,16 @@ function drawGym(){
     const range=repRangeFor({reps:e.reps,repMin:e.repMin});
     return `${i===0? `<div class="focusnote gymfocus"><b>${LIFT_FOCUS[liftFocus()].t}</b><span>${LIFT_FOCUS[liftFocus()].effort}</span></div>` : ''}${gi&&gi.first? groupHead(GYM.ex,gi) : ''}<div class="exc ${gi?'ingroup':''} ${gi&&gi.last?'grouplast':''}" data-ex="${i}">
       <div class="exh">${gi?`<span class="gbadge">${gi.letter}${gi.pos}</span>`:''}<div class="n">${x.n}</div>${exHasPR(e)?`<span class="pr" title="Personal record">PR</span>`:''}<button class="dots" data-exmenu="${i}" aria-label="Options">···</button></div>
-      <div class="cue">${e.sets.length} × ${range.bottom===range.top? e.reps : range.bottom+' to '+range.top}${e.tempo&&showTempo()?' @ '+e.tempo:''} · rest ${e.rest}s${pre&&pre.heaviest?` · best ${pre.heaviest}kg`:''}</div>
+      <div class="cue">${e.rx&&e.rx.plan? e.rx.plan.map(p2=>p2.reps+(p2.plus?'+':'')).join(', ')+' reps' : e.sets.length+' × '+(range.bottom===range.top? e.reps : range.bottom+' to '+range.top)}${e.tempo&&showTempo()?' @ '+e.tempo:''} · rest ${e.rest}s${pre&&pre.heaviest?` · best ${pre.heaviest}kg`:''}</div>
       ${prev&&prev.length? `<div class="prevline">Last time <b>${prev.map(p2=>p2.kg+' × '+p2.reps).join(', ')}</b></div>`:''}
-      ${e.rx? `<div class="rxline"><b>${e.rx.kind==='load'?'Weight up today':(e.rx.kind==='first'?'First time':(e.rx.kind==='return'?'Welcome back':(e.rx.kind==='rebuild'?'Building back':'Chase the reps')))}</b> ${e.rx.why}
+      ${e.rx? `<div class="rxline"><b>${e.rx.kind==='load'?'Weight up today':(e.rx.kind==='first'?'First time':(e.rx.kind==='return'?'Welcome back':(e.rx.kind==='rebuild'?'Building back':(e.rx.kind==='scheme'?'Today\'s percentages':(e.rx.kind==='zone'?'A different day':'Chase the reps')))))}</b> ${e.rx.why}
         ${e.rx.lastTonnage? `<span class="tonn">Last time you moved ${num(Math.round(e.rx.lastTonnage))}kg on this. Today so far: ${num(Math.round(tonnageOf(e.sets)))}kg.</span>`:''}</div>`:''}
       ${e.tempo&&showTempo()&&tempoMatters(e.tempo)?`<div class="tempo">${tempoWords(e.tempo)}</div>`:''}
       ${e.note?`<div class="note">${e.note}</div>`:''}
       <div class="sethead"><div>Set</div><div>${isBodyweight(e.exId)?'+kg':'kg'}</div><div>Reps</div><div></div></div>
       ${(()=>{ const pi=prIndex(e); return e.sets.map((s,j)=>{ const pr=j===pi; const short=!pr&&setShort(e,s); const inc=incrementFor(e.exId);
-        return `<div class="setline ${s.done?'done':''} ${pr?'ispr':''} ${short?'short':''} ${s.warm?'warm':''} ${NOW&&!NOW.run&&NOW.i===i&&NOW.j===j?'now':''}">
-        <div class="sn">${s.warm?'W':workingIndex(e,j)}</div>
+        return `<div class="setline ${s.done?'done':''} ${pr?'ispr':''} ${short?'short':''} ${s.warm?'warm':''} ${s.plus?'plus':''} ${NOW&&!NOW.run&&NOW.i===i&&NOW.j===j?'now':''}">
+        <div class="sn">${s.warm?'W':workingIndex(e,j)}${s.plus?'<i class="plusmark" title="As many good reps as you can">+</i>':''}</div>
         <div class="stepper">
           <button class="step" data-step="${i}:${j}:kg:-${inc}" aria-label="Less weight">−</button>
           <input type="number" inputmode="decimal" step="${inc}" value="${s.kg}" data-set="${i}:${j}:kg" placeholder="${prev&&prev[j]?prev[j].kg:'kg'}" aria-label="Weight">

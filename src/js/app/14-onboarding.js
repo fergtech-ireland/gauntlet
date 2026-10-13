@@ -30,16 +30,18 @@ function onbRender(){
         return `<div class="focusnote"><b>Your lifting: ${f.t.toLowerCase()}</b>
           <span>Big lifts ${heavy.repMin} to ${heavy.reps} reps, smaller ones ${iso.repMin} to ${iso.reps}. ${f.effort} You can change this any time.</span></div>`; })()+
       `<div class="slab">How you like to train</div>
-       <div class="splitopts">${Object.keys(STYLES).map(id=>`<button class="splitopt ${(onbDraft.style||'gym')===id?'on':''}" data-onbstyle="${id}" aria-pressed="${(onbDraft.style||'gym')===id}">
-         <b>${STYLES[id].t}</b><span>${STYLES[id].s}</span></button>`).join('')}</div>`+
-      ((onbDraft.style||'gym')!=='gym'? `<div class="slab">Sessions a week</div>
+       <div class="splitopts styleopts">${Object.keys(STYLES).map(id=>`<button class="splitopt ${!onbDraft.disc&&(onbDraft.style||'gym')===id?'on':''}" data-onbstyle="${id}" aria-pressed="${!onbDraft.disc&&(onbDraft.style||'gym')===id}">
+         <b>${STYLES[id].t}</b><span>${STYLES[id].s}</span></button>`).join('')}${typeof ONB_DISCS!=='undefined'? ONB_DISCS.map(id=>{ const D=discById(id);
+         return `<button class="splitopt ${onbDraft.disc===id?'on':''}" data-onbdisc="${id}" aria-pressed="${onbDraft.disc===id}"><b>${D.t}</b><span>${D.s}</span></button>`; }).join('') : ''}</div>`+
+      (typeof onbProgBlock==='function'? onbProgBlock() : '')+
+      (onbDraft.prog? '' : (onbDraft.style||'gym')!=='gym'? `<div class="slab">Sessions a week</div>
        <div class="field" style="margin-bottom:12px"><div class="fl"><div class="k">Sessions</div><div class="v">${onbDraft.liftDays}</div></div>
          <div class="chips">${[2,3,4,5,6].map(n=>`<button class="${onbDraft.liftDays===n?'on':''}" data-onbsess="${n}">${n}</button>`).join('')}</div></div>
        ${onbDraft.style==='hybrid'&&onbDraft.liftDays>=2? `<div class="field" style="margin-bottom:12px"><div class="fl"><div class="k">HYROX days in the mix</div><div class="v">${hyroxMixDraft()} HYROX, ${onbDraft.liftDays-hyroxMixDraft()} CrossFit</div></div>
          <div class="chips">${Array.from({length:onbDraft.liftDays-1},(_,i)=>i+1).map(n=>`<button class="${hyroxMixDraft()===n?'on':''}" data-onbhx="${n}">${n}</button>`).join('')}</div></div>` : ''}
        ${onbDraft.style==='hifb'? `<div class="note" style="margin-bottom:14px">Four is the classic HIFB week: chest and triceps, back and biceps, a day off, shoulders and abs, legs. Every block ends with a 400m run, and every set and every run is logged. Movements are fitted to your equipment.</div>`
          : `<div class="note" style="margin-bottom:14px">A fresh set of sessions every week, fitted to the equipment you said you have. You can change any part of any session: the movement, the reps, the weight.</div>`}` : '')+
-      ((onbDraft.style||'gym')==='gym'? `<div class="slab">How many days a week</div>
+      (!onbDraft.prog&&(onbDraft.style||'gym')==='gym'? `<div class="slab">How many days a week</div>
        <div class="field" style="margin-bottom:12px"><div class="fl"><div class="k">Lifting</div><div class="v">${onbDraft.liftDays}</div></div>
          <div class="chips">${[0,1,2,3,4,5,6].map(n=>`<button class="${onbDraft.liftDays===n?'on':''}" data-onblift="${n}">${n}</button>`).join('')}</div></div>
        <div class="field"><div class="fl"><div class="k">Cardio</div><div class="v">${onbDraft.cardioDays}</div></div>
@@ -143,9 +145,14 @@ function onbRender(){
       </div>`:''}`;
   }
   if(step===3){
-    const saved={aim:S.profile.aim,checkinDay:S.profile.checkinDay,liftDays:S.profile.liftDays,cardioDays:S.profile.cardioDays};
+    const saved={aim:S.profile.aim,checkinDay:S.profile.checkinDay,liftDays:S.profile.liftDays,cardioDays:S.profile.cardioDays,
+      programme:S.profile.programme||null,progDays:S.profile.progDays||null,progStart:S.profile.progStart||null,split:S.profile.split};
+    /* build 71: a programme picked a step ago shows here as the week it will be */
+    const onbP=onbDraft.prog&&typeof PROGRAMMES!=='undefined'&&PROGRAMMES[onbDraft.prog];
+    if(onbP&&PROG_TPLS[onbDraft.prog]) ensureProgTemplates(onbDraft.prog);
     S.profile=Object.assign({},S.profile,{aim:onbDraft.aim,checkinDay:onbDraft.checkinDay,
-      liftDays:onbDraft.liftDays,cardioDays:onbDraft.cardioDays});
+      liftDays:onbDraft.liftDays,cardioDays:onbDraft.cardioDays},
+      onbP? {programme:onbDraft.prog,progDays:onbDraft.progDays||onbP.def,progStart:S.profile.progStart||mondayKey(),split:onbP.split||S.profile.split} : {});
     const week=weekPattern();
     S.profile=Object.assign({},S.profile,saved);
     if(onbDraft.runSwaps) Object.keys(onbDraft.runSwaps).forEach(i=>{ week[+i]=onbDraft.runSwaps[i]; });
@@ -381,7 +388,7 @@ document.addEventListener('click',e=>{
    follow. Nothing changes silently: templates only move if asked, with Undo. */
 function openFocusSheet(){
   const cur=liftFocus(), fromAim=!S.profile.liftFocus;
-  const off=(S.templates||[]).reduce((a,t)=>a+t.ex.filter(r=>!rowMatches(r,cur)).length,0);
+  const off=(S.templates||[]).filter(t=>!t.method).reduce((a,t)=>a+t.ex.filter(r=>!rowMatches(r,cur)).length,0);
   document.getElementById('altTitle').textContent='Lifting focus';
   document.getElementById('altSub').textContent='How many reps, how heavy and how long to rest, set by what you are after.';
   document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 6px">
@@ -424,7 +431,11 @@ function openStyleSheet(){
 }
 document.addEventListener('click',e=>{
   const s=e.target.closest('[data-setstyle]');
-  if(s){ S.profile.style=s.dataset.setstyle; if(S.profile.style!=='gym'&&sessionsWanted()<2){ S.profile.liftDays=3; }
+  if(s){ S.profile.style=s.dataset.setstyle;
+    /* build 71: picking a style here is picking that style's own week, so a named programme steps aside */
+    if(S.profile.programme&&typeof applyProgramme==='function') applyProgramme(null,{quiet:true,style:s.dataset.setstyle,disc:null});
+    S.profile.disc=null;
+    if(S.profile.style!=='gym'&&sessionsWanted()<2){ S.profile.liftDays=3; }
     if(S.profile.style==='hifb'&&!S.profile.hifbSet){ S.profile.liftDays=4; S.profile.cardioDays=0; S.profile.hifbSet=true; }
     S.styleWeek=null; S.plan=buildPlan(); save(); renderAll();
     if(S.profile.style==='hybrid') openStyleSheet(); else closeSheets();
@@ -445,6 +456,8 @@ function openSplitSheet(){
 }
 document.addEventListener('click',e=>{
   const sb=e.target.closest('[data-split]'); if(!sb) return;
+  /* build 71: a split picked here replaces a named programme's week */
+  if(S.profile.programme&&typeof applyProgramme==='function') applyProgramme(null,{quiet:true,style:'gym',disc:'gym'});
   S.profile.split=sb.dataset.split; S.plan=buildPlan(); save(); closeSheets(); renderAll();
   toast('Split: '+SPLITS[sb.dataset.split].t+'. This week has been rebuilt.');
 });
@@ -651,7 +664,7 @@ document.addEventListener('click',e=>{
   const osp=e.target.closest('[data-onbsplit]');
   if(osp){ onbDraft.split=osp.dataset.onbsplit; onbRender(); return; }
   const ostyle=e.target.closest('[data-onbstyle]');
-  if(ostyle){ onbDraft.style=ostyle.dataset.onbstyle; if(onbDraft.style!=='gym'){ onbDraft.liftDays=onbDraft.style==='hifb'? 4 : Math.max(2,Math.min(6,(onbDraft.liftDays||0)+(onbDraft.cardioDays||0)||4)); onbDraft.cardioDays=0; } onbRender(); return; }
+  if(ostyle){ onbDraft.style=ostyle.dataset.onbstyle; onbDraft.disc=null; onbDraft.prog=null; if(onbDraft.style!=='gym'){ onbDraft.liftDays=onbDraft.style==='hifb'? 4 : Math.max(2,Math.min(6,(onbDraft.liftDays||0)+(onbDraft.cardioDays||0)||4)); onbDraft.cardioDays=0; } onbRender(); return; }
   const ons=e.target.closest('[data-onbsess]');
   if(ons){ onbDraft.liftDays=+ons.dataset.onbsess; onbDraft.cardioDays=0; if(onbDraft.hyroxDays>=onbDraft.liftDays) onbDraft.hyroxDays=null; onbRender(); return; }
   const ohx=e.target.closest('[data-onbhx]');
@@ -718,6 +731,12 @@ function finishOnboarding(keepOpen){
   }
   if(typeof ownTargets==='function') S.targets=ownTargets();
   if(onbDraft.cycle){ S.cycle=Object.assign({},S.cycle,{tracking:true,lastPeriod:onbDraft.lastPeriod||S.cycle.lastPeriod}); }
+  /* build 71: a named programme, unless it is one for adults and they are not */
+  if(typeof applyProgramme==='function'){
+    const P=onbDraft.prog&&PROGRAMMES[onbDraft.prog];
+    if(P&&!(P.adult&&isTeen({age:onbDraft.age}))){ S.profile.progStart=null; applyProgramme(onbDraft.prog,{days:onbDraft.progDays,quiet:true}); }
+    else { S.profile.programme=null; if(onbDraft.disc) S.profile.disc=onbDraft.disc; }
+  }
   /* The seeded templates are built to the focus the aim implies. */
   if(typeof applyFocusToTemplates==='function') applyFocusToTemplates(liftFocus());
   /* Fit the templates to the room before the week is built from them. */

@@ -5932,6 +5932,179 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('75 · no em dashes', src.indexOf('—') < 0);
   }
 
+
+  /* ---------------------------------------------------------- 76 */
+  journey(76, 'Build 71: a programme for every kind of training, in onboarding and the week, all still changeable');
+  {
+    const { d, G, errs } = await boot(); allErrs.push(...errs);
+    const ids = new Set(G.LIBRARY.map(x => x.id)), P = G.PROGRAMMES;
+    /* the library: the 25 structures (bodybuilding splits included), and more */
+    const want = ['bb_ppl6','bb_ul4','bb_arnold','bb_bro','bb_pplul','pl_dup','pl_conj','pl_531','pb_phat','pb_phul','oly_4','oly_6',
+      'cf_3on1','cf_comp5','hx_4','hx_3','cal_ul','cal_ppl','cal_wt','gen_full3','gen_full2','hyb_tac','hyb_ultra','bb_pp4','ath_4'];
+    t('76 · all 25 structures are programmes', want.every(id => !!P[id]), want.filter(id => !P[id]).join(','));
+    t('76 · and more were added (beginner strength, strength and balance, no kit, runners)', ['pl_start','gen_sb','cal_home','hyb_run'].every(id => !!P[id]));
+    t('76 · every kind of training has at least one', G.DISCIPLINES.every(dd => Object.keys(P).some(id => P[id].disc === dd.id) || ['mixed','hifb'].indexOf(dd.id) >= 0));
+    const badEx = []; Object.keys(G.PROG_TPLS).forEach(k => G.PROG_TPLS[k]().forEach(tp => tp.ex.forEach(r => { if (!ids.has(r.exId)) badEx.push(k + ':' + r.exId); (r.rot || []).forEach(x => { if (!ids.has(x)) badEx.push(k + ':' + x); }); })));
+    t('76 · every movement in every programme is in the library', !badEx.length, badEx.join(','));
+    t('76 · every new movement has a drawing', G.LIBRARY.every(x => !!G.poseFor(x.id)));
+    const badPos = Object.keys(P).filter(id => P[id].pos && Object.keys(P[id].pos).some(n => P[id].pos[n].length !== +n || P[id].pos[n].some(x => x < 0 || x > 6)));
+    t('76 · every programme puts its sessions on real days', !badPos.length, badPos.join(','));
+    const badRef = Object.keys(P).filter(id => (P[id].order || []).some(c => !G.SLOTS[c] && !/^r_/.test(c) && !G.PROG_TPLS[id]().some(tp => tp.id === c)));
+    t('76 · every session a programme names exists', !badRef.length, badRef.join(','));
+
+    /* onboarding: the families are on the first training screen */
+    G.startOnboarding(); G.onbDraft.handle = 'ferg'; G.step = 1; G.onbRender();
+    const ob = () => d.getElementById('onbBody');
+    t('76 · onboarding shows the training styles and the new families', ob().querySelectorAll('[data-onbstyle]').length === 5 && ob().querySelectorAll('[data-onbdisc]').length === 7);
+    ob().querySelector('[data-onbdisc="strength"]').click();
+    t('76 · picking powerlifting lists its programmes', !!ob().querySelector('[data-onbprog="pl_531"]') && !!ob().querySelector('[data-onbprog="pl_dup"]'));
+    t('76 · the days and split pickers step aside for a programme', !ob().querySelector('[data-onbsplit]') && !ob().querySelector('[data-onblift]'));
+    ob().querySelector('[data-onbprog="pl_531"]').click();
+    t('76 · a programme shows its week before it is chosen', /Mon 5\/3\/1 bench/.test(ob().textContent));
+    Object.assign(G.onbDraft, { sex: 'm', age: 34, height: 178, weight: 92, activity: 'mod' });
+    G.finishOnboarding();
+    let plan = G.ensurePlan();
+    t('76 · onboarding finishes on 5/3/1', G.S.profile.programme === 'pl_531');
+    t('76 · four days, Monday, Tuesday, Thursday, Friday', [0,1,3,4].every(i => /^t_531_/.test(plan.days[i].templateId || '')) && [2,5,6].every(i => !plan.days[i].templateId),
+      plan.days.map(x => x.label).join('|'));
+    t('76 · its own light week replaces the app\'s easy weeks, kept to put back', G.S.profile.deload === false && G.S.profile.deloadWas && G.S.profile.deloadWas.on === true);
+
+    /* percentages from what was lifted, a different set each week */
+    G.S.lifts.bench = [{ d: G.addDays(G.todayKey(), -3), sets: [{ kg: 100, reps: 5 }, { kg: 100, reps: 5 }] }];
+    const row = G.S.templates.find(x => x.id === 't_531_bench').ex[0];
+    let rx = G.nextPrescription('bench', row);
+    t('76 · week one: 5, 5, 5+ at 65, 75, 85% of a 105kg training max', rx.kind === 'scheme' && rx.plan.map(x => x.kg).join() === '67.5,80,90' && rx.plan[2].plus, JSON.stringify(rx.plan));
+    G.S.profile.progStart = G.addDays(G.mondayKey(), -7);
+    rx = G.nextPrescription('bench', row);
+    t('76 · week two: threes, the last as many as you can', rx.plan.map(x => x.reps + (x.plus ? '+' : '')).join() === '3,3,3+', JSON.stringify(rx.plan));
+    G.S.profile.progStart = G.mondayKey();
+    G.startWorkout('t_531_bench');
+    const e0 = G.GYM.ex[0], ws = e0.sets.filter(s => !s.warm);
+    t('76 · the session opens with each set\'s own weight and reps', ws.map(s => s.kg + 'x' + s.reps).join() === '67.5x5,80x5,90x5' && ws[2].plus, JSON.stringify(ws));
+    t('76 · the as-many-as-you-can set is marked', /plusmark/.test(d.getElementById('gym').innerHTML));
+    ws.forEach((s, j) => { s.done = true; if (j === 2) s.reps = 12; });
+    G.finishWorkout(); d.getElementById('gym').classList.remove('on'); G.closeSheets();
+    rx = G.nextPrescription('bench', row);
+    t('76 · a strong last set moves the numbers up', rx.plan[2].kg > 90, JSON.stringify(rx.plan));
+    G.startWorkout('t_531_bench', { setDelta: -1 });
+    t('76 · a lighter week takes the lightest set off and keeps the top one', G.GYM.ex[0].sets.filter(s => !s.warm).length === 2 && G.GYM.ex[0].sets.filter(s => !s.warm)[1].plus);
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+    t('76 · rows read as this week\'s sets', /^5, 5, 5\+ at 65 to 85%$/.test(G.repText(row)), G.repText(row));
+
+    /* a different kind of day for the same lift does not climb from the wrong sets */
+    G.S.lifts.squat = [{ d: G.addDays(G.todayKey(), -2), sets: [{ kg: 140, reps: 3 }, { kg: 140, reps: 3 }] }];
+    const z = G.nextPrescription('squat', { exId: 'squat', sets: 3, repMin: 8, reps: 12, rest: 90 });
+    t('76 · heavy triples last time: eights start lighter, from the estimated single', z.kind === 'zone' && z.kg < 140 && z.kg >= 100 && z.reps === 8, z.kg + ' ' + z.why);
+
+    /* the programme sheet from Plan: browse, use, undo */
+    G.go('plan'); G.renderPlan();
+    const tile = d.querySelector('#planView [data-setting="programme"]');
+    t('76 · Plan has a Programme tile naming the programme', !!tile && /5\/3\/1/.test(tile.textContent));
+    tile.click();
+    const ab = () => d.getElementById('altBody');
+    t('76 · it opens on the kinds of training', ab().querySelectorAll('[data-progdisc]').length === G.DISCIPLINES.length);
+    ab().querySelector('[data-progdisc="power"]').click(); ab().querySelector('[data-progpeek="pb_phul"]').click();
+    t('76 · a programme opens to its week and reasons before use', /Mon Upper power/.test(ab().textContent) && !!ab().querySelector('[data-proguse="pb_phul"]'));
+    const before = JSON.stringify(G.S.plan.days.map(x => x.label));
+    ab().querySelector('[data-proguse="pb_phul"]').click();
+    t('76 · using it rebuilds the week', G.S.profile.programme === 'pb_phul' && /Upper power/.test(G.S.plan.days[0].label));
+    t('76 · leaving 5/3/1 gives the easy weeks back', G.S.profile.deload === true && G.S.profile.deloadWas === undefined);
+    const tb = d.querySelector('.toast button, #toast button'); if (tb) tb.click();
+    t('76 · Undo puts the old programme back', G.S.profile.programme === 'pl_531' && JSON.stringify(G.S.plan.days.map(x => x.label)) === before);
+    G.applyProgramme('pb_phul'); G.renderAll();
+
+    /* which days: the person's own */
+    G.openProgSheet();
+    [1, 3].forEach(i => ab().querySelector('[data-trainday="' + i + '"]').click());
+    [2, 6].forEach(i => ab().querySelector('[data-trainday="' + i + '"]').click());
+    t('76 · four days picked for four sessions', !!ab().querySelector('[data-trainsave]') && !ab().querySelector('[data-trainsave]').disabled);
+    ab().querySelector('[data-trainsave]').click();
+    plan = G.ensurePlan();
+    t('76 · the sessions move to Monday, Wednesday, Friday and Sunday in order', [0,2,4,6].map(i => plan.days[i].label).join('|') === 'Upper power day|Lower power day|Upper hypertrophy day|Lower hypertrophy day',
+      plan.days.map(x => x.label).join('|'));
+    G.openProgSheet(); ab().querySelector('[data-trainday="5"]').click();
+    t('76 · five days for four sessions cannot be saved', ab().querySelector('[data-trainsave]').disabled);
+
+    /* fixed days: every week */
+    G.closeSheets(); G.openSwap(5);
+    t('76 · Change this day offers Every week', !!d.querySelector('#swapBody [data-pinday="5"]'));
+    d.querySelector('#swapBody [data-pinday="5"]').click();
+    t('76 · Saturday fixed as it is', G.S.profile.pins[5] === 'rest');
+    d.querySelector('#swapBody [data-swapto="5:walk"]').click();
+    t('76 · changing a fixed day keeps the new choice every week', G.S.profile.pins[5] === 'walk' && G.ensurePlan().days[5].slot === 'walk');
+    G.S.styleWeek = null; G.buildPlan();
+    t('76 · a rebuilt week keeps the fixed day', G.S.plan.days[5].slot === 'walk');
+    G.renderPlan();
+    t('76 · the Plan row says every week', /every week/.test(d.querySelector('#planView .daycards').textContent));
+    G.openProgSheet(); ab().querySelector('[data-unpin="5"]').click();
+    t('76 · unfixing it gives the day back to the programme', !G.S.profile.pins[5] && G.ensurePlan().days[5].slot !== 'walk');
+
+    /* still completely changeable */
+    const tpl = G.S.templates.find(x => x.id === 't_phul_up');
+    G.openTplEdit('t_phul_up'); G.tplDraft.ex[0].sets = 5; G.tplDraft.ex[0].rest = 200;
+    d.getElementById('tplSave') && d.getElementById('tplSave').click();
+    const saved = G.S.templates.find(x => x.id === 't_phul_up');
+    t('76 · a programme session edits like any other', saved.ex[0].sets === 5 && saved.ex[0].rest === 200, JSON.stringify(saved.ex[0]));
+    G.applyFocusToTemplates('endurance');
+    t('76 · changing the lifting focus leaves a programme\'s numbers alone', G.S.templates.find(x => x.id === 't_phul_up').ex[0].sets === 5);
+    G.applyProgramme('pl_dup'); G.openTplEdit('t_dup_hyp');
+    t('76 · a percentage row says so in the editor, with a way out', !!d.querySelector('#tplEditBody [data-tplunscheme="0"]'));
+    d.querySelector('#tplEditBody [data-tplunscheme="0"]').click();
+    t('76 · and becomes an ordinary rep range', !G.tplDraft.ex[0].scheme && !!d.querySelector('#tplEditBody [data-tpl="0:sets"]'));
+    G.closeSheets();
+    G.openSwap(0); d.querySelector('#swapBody [data-swapto="0:rest"]').click();
+    t('76 · Change this day still changes a programme day for this week', G.S.plan.days[0].slot === 'rest');
+    d.querySelector('[data-setting="split"]') ; G.openSplitSheet(); d.querySelector('#altBody [data-split="ppl"]').click();
+    t('76 · picking a split from Training split steps out of the programme', !G.S.profile.programme && G.S.profile.split === 'ppl');
+
+    /* conjugate rotates its max effort lift week to week */
+    G.applyProgramme('pl_conj'); const me = G.S.templates.find(x => x.id === 't_cj_meu').ex[0], seen = new Set();
+    [0, 7, 14].forEach(n => { G.S.profile.progStart = G.addDays(G.mondayKey(), -n); seen.add(G.rowThisWeek(me).exId); });
+    t('76 · the max effort variation changes each week', seen.size === 3, [...seen].join());
+
+    /* HYROX and CrossFit weeks */
+    G.applyProgramme('hx_4'); plan = G.ensurePlan();
+    t('76 · days the person picked carry over to a programme with as many sessions', [0,2,4,6].every(i => !!plan.days[i].circuitId));
+    G.S.profile.trainDays = null; G.S.styleWeek = null; plan = G.buildPlan();
+    t('76 · HYROX simulation: four sessions on Mon, Tue, Thu, Sat', [0,1,3,5].every(i => !!plan.days[i].circuitId) && plan.days.filter(x => x.circuitId).length === 4);
+    G.applyProgramme('cf_3on1'); G.S.profile.progStart = G.mondayKey(); plan = G.ensurePlan();
+    const on0 = plan.days.map((x, i) => x.circuitId ? i : -1).filter(i => i >= 0);
+    G.S.profile.progStart = G.addDays(G.mondayKey(), -1); G.S.styleWeek = null; G.buildPlan();
+    const on1 = G.S.plan.days.map((x, i) => x.circuitId ? i : -1).filter(i => i >= 0);
+    t('76 · three on, one off: five or six sessions, and the rest day moves', [5, 6].indexOf(on0.length) >= 0 && on0.join() !== on1.join(), on0 + ' / ' + on1);
+    G.applyProgramme('cf_comp5'); plan = G.ensurePlan();
+    t('76 · the competitor week has its own kinds and an easy day', plan.days[3].slot === 'walk' && /Strength, then a metcon/.test(plan.days[0].label));
+
+    /* lifting and running: the short run after the heavy lower day */
+    G.applyProgramme('hyb_ultra'); G.startWorkout('t_hyb_lower');
+    t('76 · the heavy lower day ends with a run to time', !!G.GYM.ex[G.GYM.ex.length - 1].run && G.GYM.ex[G.GYM.ex.length - 1].run.m === 2000);
+    G.GYM = null; d.getElementById('gym').classList.remove('on');
+
+    /* kit: an Olympic programme without a barbell is fitted to what is there */
+    G.S.profile.kit = ['bodyweight', 'dumbbell']; G.applyProgramme('oly_4');
+    const olyRows = G.S.templates.filter(x => x.prog === 'oly_4').flatMap(x => x.ex);
+    t('76 · no barbell movements when there is no barbell', olyRows.every(r => G.exOf(r.exId).eq !== 'barbell'), olyRows.map(r => r.exId).join());
+    G.S.profile.kit = G.ALL_KIT.slice();
+
+    /* no programme: the week is exactly what it was */
+    G.applyProgramme(null, { style: 'gym' }); G.S.profile.trainDays = null; G.S.profile.pins = {};
+    t('76 · with no programme the week is the one the app always built', JSON.stringify(G.weekPattern()) === JSON.stringify((() => { const p = G.S.profile.programme; return G.weekPattern(); })()));
+    t('76 · the training reset keeps programme sessions', (() => { G.applyProgramme('pb_phul'); const f = G.freshSeeded(); return f.some(x => x.id === 't_phul_up'); })());
+    const src = require('fs').readFileSync(require('path').join(__dirname, 'src/js/programmes.js'), 'utf8');
+    t('76 · no em dashes', src.indexOf('—') < 0);
+  }
+  {
+    /* under 18: the heaviest programmes are not offered */
+    const { d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G, { age: 15 }); G.S.profile.age = 15; G.S.profile.birthYear = new Date().getFullYear() - 15;
+    t('76 · teen: the harness made a teen', G.isTeen());
+    {
+      G.openProgSheet('strength');
+      t('76 · teen: 5/3/1, conjugate and daily undulating are not offered', !/data-progpeek="pl_531"|data-progpeek="pl_conj"|data-progpeek="pl_dup"/.test(d.getElementById('altBody').innerHTML));
+      t('76 · teen: beginner strength still is', /data-progpeek="pl_start"/.test(d.getElementById('altBody').innerHTML));
+    }
+  }
+
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);
 })();

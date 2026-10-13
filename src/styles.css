@@ -1636,3 +1636,40 @@ body.has-live .toast:not(.top){bottom:140px}
 .rt-eff span{font-size:12.5px;color:var(--sub)}
 .rt-check.folded{display:flex;align-items:center;gap:12px}
 .rt-check.folded .rt-ch{flex:1;min-width:0}
+
+/* ---------- build 71: programmes ---------- */
+.styleopts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.styleopts .splitopt{min-height:72px;justify-content:flex-start}
+@media (max-width:340px){.styleopts{grid-template-columns:1fr}}
+.ptile.wide{grid-column:1 / -1}
+.progsheet .pnow{display:flex;align-items:baseline;gap:8px;padding:10px 12px;border-radius:12px;background:var(--track);margin-bottom:10px}
+.progsheet .pnow span{font-size:11px;font-weight:700;color:var(--mute);text-transform:uppercase;letter-spacing:.08em}
+.progsheet .pnow b{font-size:15px}
+.progdiscs{margin-bottom:0}
+.progdiscs button{min-height:40px}
+.progcard{border:1px solid var(--line);border-radius:12px;background:var(--surface);margin-bottom:8px;overflow:hidden}
+.progcard.on{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink) inset}
+.progh{display:flex;flex-direction:column;gap:2px;width:100%;text-align:left;padding:12px;min-height:48px}
+.progh .pt{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.progh .pt b{font-size:14.5px}
+.progh .ps{font-size:12.5px;color:var(--mute);font-weight:600}
+.progh .pm{font-size:11.5px;color:var(--mute)}
+.inuse{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:var(--cta);color:var(--cta-ink)}
+.progb{padding:0 12px 12px}
+.progb p{font-size:13px;line-height:1.45;margin:8px 0 0}
+.progb .pweek{font-size:12.5px;font-weight:700;padding:8px 10px;border-radius:8px;background:var(--track);line-height:1.5}
+.progb .sheetcta{margin:12px 0 4px}
+.weekpick{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.weekpick button{min-height:44px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-weight:700;font-size:12.5px;color:var(--ink)}
+.weekpick button.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.progsheet .setbtns{flex-wrap:wrap}
+.progsheet .setbtns button{min-height:40px;height:auto;padding:8px 12px}
+.progsheet .setbtns .go{background:var(--cta);color:var(--cta-ink)}
+.progsheet .setbtns button:disabled{opacity:.45}
+.pinrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.pinrow b{margin-right:6px}
+.pinrow .mini{min-height:40px}
+.pinopt{margin:0 14px 10px;width:auto;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.plusmark{font-style:normal;font-weight:800;color:var(--green-text);margin-left:1px}
+.progsheet details.method summary{cursor:pointer;min-height:40px;display:flex;align-items:center;gap:6px}
+.progsheet details.method summary b{display:inline;margin:0}

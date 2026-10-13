@@ -6,6 +6,7 @@
    own settings sit at the bottom, where people look for them in every app. */
 const SET_ICON={
   aim:'<path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="8"/>',
+  programme:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4M8 14h3M8 17h6"/>',
   goal:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.8"/>',
   body:'<path d="M5 20l2-8h10l2 8M9 12V8a3 3 0 0 1 6 0v4"/>',
   steps:'<path d="M8 20c-2 0-3-2-2-5l1-4c1-3 5-3 5 1 0 3-2 8-4 8zM16 13c-2 0-3-2-2-5l1-3c1-2 4-2 4 1 0 3-1 7-3 7z"/>',
@@ -63,6 +64,7 @@ function renderSettings(){
     ${setRow('body','burnt','Calories and body', p.detailsSet&&ct? 'Eat '+num(ct.kcal)+' kcal · maintenance '+num(ct.maintenance) : 'Add your details to work these out')}
     ${setRow('steps','marine','Daily steps', num(stepTarget())+' a day')}
     ${setRow('habits','forest','Habits', habits.length? habits.join('<br>') : 'None yet. One to start, one to stop')}
+    ${typeof progLabel==='function'? setRow('programme','marine','Programme', escHabit(progLabel())+(trainDaysOf()&&trainDaysOf().length? ' · '+trainDaysOf().map(i=>DAYS[i]).join(', ') : ''), Object.keys(pinsOf()).length? Object.keys(pinsOf()).length+' day'+(Object.keys(pinsOf()).length===1?'':'s')+' fixed every week' : '') : ''}
     ${setRow('style','burnt','Training style', STYLES[styleOf()].t+(styleOf()==='hybrid'? ' · '+hyroxDaysOf(sessionsWanted())+' HYROX, '+(sessionsWanted()-hyroxDaysOf(sessionsWanted()))+' CrossFit' : ''))}
     ${styleOf()!=='gym'? '' : setRow('split','marine','Training split', (()=>{ const sp=splitOf(); return sp? SPLITS[(S.profile.split||'auto')].t+(S.profile.split==='auto'? ' ('+SPLITS[sp].t.toLowerCase()+')' : '') : 'Push, lower, pull (the original week)'; })())})}
     ${setRow('focus','burnt','Lifting focus', LIFT_FOCUS[liftFocus()].t+' · '+(()=>{ const r=LIFT_FOCUS[liftFocus()].rx.heavy; return 'big lifts '+r.repMin+' to '+r.reps+' reps'; })()+(S.profile.liftFocus?'':' (from your aim)'))}
@@ -136,6 +138,7 @@ document.addEventListener('click',e=>{
   else if(k==='split') openSplitSheet();
   else if(k==='pace') openPaceSheet();
   else if(k==='style') openStyleSheet();
+  else if(k==='programme') openProgSheet();
   else if(k==='kit') openKitSheet();
   else if(k==='cycle') openCycle();
   else if(k==='records') openYou();

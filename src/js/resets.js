@@ -352,7 +352,9 @@ function freshSeeded(){
   const keep=S.templates, mo=memoryOnly;
   memoryOnly=true;
   try{
-    S.templates=seedTemplates();
+    /* build 71: a programme's own sessions go back to how the programme writes them too */
+    S.templates=seedTemplates().concat(typeof PROG_TPLS!=='undefined'
+      ? Object.keys(PROG_TPLS).flatMap(id=>keep.some(t=>t.prog===id&&t.seeded)? PROG_TPLS[id]() : []) : []);
     if(typeof applyFocusToTemplates==='function') applyFocusToTemplates(liftFocus());
     if(typeof fitTemplatesToKit==='function') fitTemplatesToKit();
     return S.templates;

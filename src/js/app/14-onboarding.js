@@ -784,6 +784,8 @@ function finishOnboarding(keepOpen){
     detailsSet: !!(onbDraft.sex&&onbDraft.age&&onbDraft.height&&onbDraft.weight
       &&plausibleBody({age:onbDraft.age,height:onbDraft.height,weight:onbDraft.weight})) || S.profile.detailsSet,
     excluded:S.profile.excluded||[],onboarded:true,
+    /* build 74: someone new has nothing to catch up on */
+    seenVersion:APP_VERSION,
     firstWeek:S.profile.firstWeek||mondayKey()});
   /* the goal weight becomes a weight target, dated by the healthy rate */
   if(+onbDraft.goal&&S.profile.detailsSet){

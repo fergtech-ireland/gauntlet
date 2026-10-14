@@ -6330,6 +6330,66 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('78 · no em dashes', src.indexOf('—') < 0);
   }
 
+  /* ---------------------------------------------------------- 79 */
+  journey(79, 'Build 74: what is new, shown once after an update, only what affects you');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const sheetOn = () => d.getElementById('altSheet').classList.contains('on') && /What's new/.test(txt(d.getElementById('altTitle')));
+    const S = G.S;
+    t('79 · not shown before sign up is finished', !G.maybeWhatsNew(0) && !sheetOn());
+    onboard(G);
+    t('79 · someone new has nothing to catch up on', S.profile.seenVersion === w.eval('APP_VERSION') && G.unseenNotes().length === 0 && !G.maybeWhatsNew(0));
+    t('79 · every note is written plainly, without em dashes', G.RELEASE_NOTES.every(n => n.v && n.date && n.items.length && n.items.every(it => it.t && it.d && (it.t + it.d).indexOf('—') < 0)));
+    t('79 · the newest note is this build', G.RELEASE_NOTES.some(n => n.v === w.eval('APP_VERSION')));
+    /* someone who used the app before notes existed */
+    delete S.profile.seenVersion; G.closeSheets();
+    t('79 · they are taken as having seen build 72', G.seenVersion() === '72' && G.unseenNotes().map(n => n.v).join(',') === '74,73');
+    t('79 · it shows', G.maybeWhatsNew(0) && sheetOn());
+    const body = txt(d.getElementById('altBody'));
+    t('79 · newest first, with what changed', body.indexOf('What is new, when it is new') < body.indexOf('Thousands more foods') && /to the gram/.test(body));
+    t('79 · and only builds they have not seen', !/Programmes for every kind/.test(body));
+    t('79 · it is marked seen as it shows', S.profile.seenVersion === w.eval('APP_VERSION'));
+    d.querySelector('[data-wnok]').click();
+    t('79 · Got it closes it', !d.getElementById('altSheet').classList.contains('on'));
+    t('79 · and it does not come back', !G.maybeWhatsNew(0) && !sheetOn());
+    /* a long gap: three builds at most, the rest one tap away */
+    S.profile.seenVersion = '66'; G.maybeWhatsNew(0);
+    t('79 · after a long gap, at most three builds', d.querySelectorAll('#altBody .wnbuild').length === 3 && /earlier update/.test(txt(d.querySelector('[data-wnall]'))));
+    d.querySelector('[data-wnall]').click();
+    t('79 · the rest are one tap away', d.querySelectorAll('#altBody .wnbuild').length > 3);
+    const goBtn = d.querySelector('[data-wngo="eat"]');
+    goBtn.click();
+    t('79 · a note can take you to what changed', !d.getElementById('altSheet').classList.contains('on') && d.body.dataset.screen === 'eat');
+    /* waits for the screen to be clear */
+    S.profile.seenVersion = '72';
+    G.openFood(false);
+    t('79 · never over something else that is open', !G.maybeWhatsNew(19) && !sheetOn() && d.getElementById('foodSheet').classList.contains('on'));
+    G.closeSheets();
+    /* teens: adult notes left out */
+    S.profile.age = 15; S.profile.birthYear = new w.Date().getFullYear() - 15;
+    S.profile.seenVersion = '67'; G.maybeWhatsNew(0);
+    d.querySelector('[data-wnall]') && d.querySelector('[data-wnall]').click();
+    t('79 · teens do not see notes about calories and weight', sheetOn() && !/Week in review|protein keeps/.test(txt(d.getElementById('altBody'))) && /Your routine/.test(txt(d.getElementById('altBody'))));
+    G.closeSheets(); S.profile.age = 34; S.profile.birthYear = new w.Date().getFullYear() - 34;
+    /* any time, from settings */
+    G.openAppSettings();
+    const row = d.querySelector('[data-setting="whatsnew"]');
+    t('79 · settings has What\'s new with the build', !!row && /Build 74/.test(txt(row)));
+    row.click();
+    t('79 · which shows every change', sheetOn() && d.querySelectorAll('#altBody .wnbuild').length === G.RELEASE_NOTES.length);
+    G.closeSheets();
+    /* on a real reopen, it appears by itself */
+    const saved = JSON.parse(JSON.stringify(S)); delete saved.profile.seenVersion;
+    const key = w.eval('STORE_KEY');
+    const b2 = await boot({ wait: 2000, before: w2 => w2.localStorage.setItem(key, JSON.stringify(saved)) });
+    allErrs.push(...b2.errs);
+    t('79 · reopening after an update shows it by itself', b2.d.getElementById('altSheet').classList.contains('on') && /Thousands more foods/.test(b2.d.getElementById('altBody').textContent));
+    const b3 = await boot({ wait: 2000, before: w2 => w2.localStorage.setItem(key, JSON.stringify(Object.assign({}, saved, { profile: Object.assign({}, saved.profile, { seenVersion: '74' }) }))) });
+    allErrs.push(...b3.errs);
+    t('79 · and not on an ordinary open', !b3.d.getElementById('altSheet').classList.contains('on'));
+  }
+
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);
 })();

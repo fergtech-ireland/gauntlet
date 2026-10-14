@@ -89,6 +89,7 @@ function renderSettings(){
     ${setRow('account','grey','Account and sync', signed? 'Signed in' : 'On this device only')}
     ${setRow('data','grey','Your data', 'Download it, or delete it')}
     ${setRow('how','grey','How the numbers are worked out', 'Every formula, and where it comes from')}
+    ${setRow('whatsnew','grey','What\'s new', 'Build '+APP_VERSION, 'Every change that affects you, newest first.')}
   </div>`;
 }
 let yTab='progress';

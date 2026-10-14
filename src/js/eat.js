@@ -106,10 +106,11 @@ function eatSections(k){
     const head=`<div class="ehead"><div class="eht"><b>${r.label}</b>${when? `<span class="ewhen">${when}</span>` : ''}</div>
       ${!teen&&r.items.length? `<span class="ek">${num(r.kcal)}</span>` : ''}
       <button class="eadd" data-eatadd="${r.m}" aria-label="Add to ${lower}">+</button></div>`;
-    const rows=r.items.map(x=>`<button class="eitem" data-eatitem="${r.m}" aria-label="${escHabit(x.n)}, ${qtyText(x.q)}${teen? '' : ', '+Math.round(x.kcal*x.q)+' kcal'}. Tap to change how much.">
-        <span class="eit"><span class="ein">${escHabit(x.n)}${x.q!==1? ` <span class="eiq">× ${qtyText(x.q)}</span>` : ''}</span>
-          <span class="eis">${x.quick? 'your numbers' : escHabit(x.u)}${teen? '' : ' · '+Math.round(x.p*x.q)+'g protein · '+foodSource(x)}</span></span>
-        ${teen? '' : `<span class="eik">${Math.round(x.kcal*x.q)}</span>`}</button>`).join('');
+    const rows=r.items.map(x=>{ const w=!x.quick&&weighed(x), amt=x.quick? qtyText(x.q) : amountText(x);
+      return `<button class="eitem" data-eatitem="${r.m}" aria-label="${escHabit(x.n)}, ${amt}${teen? '' : ', '+Math.round(x.kcal*x.q)+' kcal'}. Tap to change how much.">
+        <span class="eit"><span class="ein">${escHabit(x.n)}${w? ` <span class="eiq">${amt}</span>` : (x.q!==1? ` <span class="eiq">× ${amt}</span>` : '')}</span>
+          <span class="eis">${x.quick? 'your numbers' : (w? '' : escHabit(x.u))}${teen? '' : (w? '' : ' · ')+Math.round(x.p*x.q)+'g protein · '+foodSource(x)}</span></span>
+        ${teen? '' : `<span class="eik">${Math.round(x.kcal*x.q)}</span>`}</button>`; }).join('');
     let empty='';
     if(!r.items.length){
       if(r.skipped) empty=`<div class="eempty"><span>Skipped</span><button class="inlinebtn" data-eatunskip="${r.m}">Undo</button></div>`;

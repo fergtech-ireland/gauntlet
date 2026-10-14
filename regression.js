@@ -221,7 +221,7 @@ setTimeout(() => {
   t('entries carry their slot', G.dayFood(G.todayKey()).filter(x => x.meal === 'l').length === 2);
   t('a custom food can be added', (() => {
     G.addCustomFood({id:'cf_test', n:"Mam's brown bread", u:'slice', mine:true, kcal:180, p:6, c:30, f:2});
-    return !!G.foodOf('cf_test') && G.allFoods().length === G.FOODS.length + 1; })());
+    return !!G.foodOf('cf_test') && G.allFoods().length === G.FOODS.length + G.FOODS_DB.length + 1; })());
   t('a custom food logs like any other', (() => { G.addFood('cf_test', 1, 'b');
     return G.dayFood(G.todayKey()).some(x => x.id === 'cf_test'); })());
   t('a meal can be saved and re-added', (() => {

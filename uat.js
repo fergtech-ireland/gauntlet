@@ -4673,7 +4673,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('60 · tapping an item opens its meal, with the counter', d.getElementById('foodSheet').classList.contains('on')
       && txt([...d.querySelectorAll('#foodSheet [data-foodslot]')].find(b => b.classList.contains('on')).querySelector('span')) === 'Lunch');
     d.querySelector('#foodSheet [data-foodstep="chicken|l|1"]').click();
-    t('60 · one more is one tap, and Eat says × 2', G.dayFood().find(x => x.id === 'chicken').q === 2 && /Chicken[^×]*× 2/.test(txt(sec('l'))));
+    /* build 73: chicken is sold by weight, so + is half a portion more (150g to 225g) and Eat says the grams */
+    t('60 · one more is one tap, and Eat says how much', G.dayFood().find(x => x.id === 'chicken').q === 1.5 && /Chicken[^×]*225g/.test(txt(sec('l'))));
     G.closeSheets();
 
     sec('d').querySelector('[data-eatskip="d"]').click();
@@ -6189,6 +6190,146 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const bd = d.querySelector('[data-onbbday="1"]'); if (bd) bd.click();
     t('77 · teen: nothing more is needed', !d.getElementById('onbNext').disabled && G.onbMissing().length === 0, JSON.stringify(G.onbMissing()));
   }
+  /* ---------------------------------------------------------- 78 */
+  journey(78, 'Build 73: a verified food list of thousands, and every food to the gram or millilitre');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const row = (id, m) => G.dayFood(G.todayKey()).find(x => x.id === id && (x.meal || 's') === m);
+    const type = v => { const el = d.getElementById('amtIn'); el.value = String(v); el.dispatchEvent(new w.Event('input', { bubbles: true })); };
+    const DB = G.FOODS_DB, cats = new Set(G.FOOD_CATS.map(c => c[0]));
+
+    /* ---- the list ---- */
+    t('78 · thousands of USDA foods sit behind the everyday list', DB.length >= 2500, String(DB.length));
+    t('78 · each one per 100g or 100ml with energy, macros and fibre', DB.every(f => f.g === 100 && (f.m === 'g' || f.m === 'ml') && f.u === '100' + f.m
+      && [f.kcal, f.p, f.c, f.f, f.fb].every(v => typeof v === 'number' && v >= 0) && f.src === 'usda'));
+    t('78 · no id is used twice across both lists', new Set(G.FOODS.concat(DB).map(f => f.id)).size === G.FOODS.length + DB.length);
+    t('78 · every one sits in a category that exists', DB.every(f => cats.has(f.cat)), DB.filter(f => !cats.has(f.cat)).map(f => f.cat).slice(0, 5).join(','));
+    const energyOff = DB.filter(f => { const calc = f.p * 4 + (f.c + f.fb) * 4 + f.f * 9 + (f.alc || 0) * 7; return Math.abs(calc - f.kcal) > Math.max(30, f.kcal * 0.3); });
+    t('78 · energy agrees with the macros for nearly all (USDA uses food-specific factors)', energyOff.length <= DB.length * 0.03, energyOff.length + ': ' + energyOff.slice(0, 5).map(f => f.n).join('; '));
+    t('78 · no brands, shouting names or em dashes', DB.every(f => !/\b[A-Z]{3,}\b/.test(f.n) && f.n.indexOf('—') < 0));
+    t('78 · names are in Irish and UK English', !DB.some(f => /Zucchini|Eggplant|Cookies|Yogurt|flavor\b|Catsup|Cilantro|Shrimp/.test(f.n))
+      && DB.some(f => /^Courgette/.test(f.n)) && DB.some(f => /^Prawns/.test(f.n)) && DB.some(f => /^Yoghurt/.test(f.n)));
+    t('78 · drinks and milk are per 100ml', G.foodOf('u01077').m === 'ml' && G.foodOf('u14096').m === 'ml' && G.foodOf('u20045').m === 'g');
+    t('78 · alcohol is carried where there is some', G.foodOf('u14096').alc > 5 && !G.foodOf('u01077').alc);
+    t('78 · carbs are shown without fibre, as on labels', G.foodOf('u09040').c < 22 && G.foodOf('u09040').fb > 2);
+    t('78 · every everyday food has a portion weight', G.FOODS.every(f => f.g > 0 && (f.m === 'g' || f.m === 'ml')), G.FOODS.filter(f => !(f.g > 0)).map(f => f.id).join(','));
+    t('78 · and drinks there are in ml', ['milk', 'pint_stout', 'wine', 'cola', 'oj'].every(id => G.foodOf(id).m === 'ml') && G.foodOf('pint_stout').g === 568);
+    t('78 · the method sheet names the source', (() => { G.openHow(); const h = d.body.textContent; G.closeSheets(); return /USDA National Nutrient Database/.test(h) && /to the gram/.test(h); })());
+
+    /* ---- finding things ---- */
+    const names = q => G.findFoods(q).map(f => f.n);
+    t('78 · every word typed has to be there', names('chicken breast').every(n => /chicken/i.test(n) && /breast/i.test(n)) && names('chicken breast').length > 3);
+    t('78 · the everyday food comes before the USDA ones', G.findFoods('chicken breast')[0].src !== 'usda');
+    t('78 · a plural still finds it', names('eggs').some(n => /^Egg/.test(n)));
+    t('78 · something the old list never had', names('courgette').length > 0 && names('quinoa').length > 1 && names('lentils').length > 1);
+    S.days[G.addDays(G.todayKey(), -1)] = { food: [{ id: 'u20045', n: 'Rice', u: '100g', q: 1, meal: 'l', kcal: 130, p: 2.7, c: 28, f: 0.3, g: 100, m: 'g', src: 'usda' }] };
+    t('78 · what you ate recently comes first', G.findFoods('rice')[0].id === 'u20045');
+    delete S.days[G.addDays(G.todayKey(), -1)];
+
+    G.openFood(false);
+    d.querySelector('[data-foodslot="l"]').click();
+    d.querySelector('[data-foodcat="fish"]').click();
+    const fishRows = d.querySelectorAll('#foodList .frow').length;
+    t('78 · a big category shows the first 80, with Show all', fishRows === 80 && !!d.querySelector('[data-foodmore]'));
+    d.querySelector('[data-foodmore]').click();
+    t('78 · Show all shows all of them', d.querySelectorAll('#foodList .frow').length === G.allFoods().filter(f => f.cat === 'fish').length);
+    const box = d.getElementById('foodSearch');
+    box.value = 'rice white long grain cooked'; box.dispatchEvent(new w.Event('input', { bubbles: true }));
+    t('78 · a USDA row says per 100g and where it is from', /per 100g/.test(txt(d.querySelector('#foodList .frow'))) && /USDA/.test(txt(d.querySelector('#foodList .frow'))));
+    t('78 · every row with a weight has a g button beside ½ and +', !!d.querySelector('#foodList [data-foodamt="u20045"]') && txt(d.querySelector('#foodList [data-foodamt="u20045"]')) === 'g');
+
+    /* ---- Feargal's case: 100g, then 50g more ---- */
+    d.querySelector('#foodList [data-foodadd="u20045:1"]').click();
+    t('78 · + adds 100g', Math.abs(row('u20045', 'l').q - 1) < 1e-9 && G.amountText(row('u20045', 'l')) === '100g');
+    t('78 · the row now shows grams, not a count', txt(d.querySelector('#foodList .fstep .fq')) === '100g');
+    d.querySelector('#foodList [data-foodstep="u20045|l|1"]').click();
+    t('78 · + on it is 50g more: 150g', G.amountText(row('u20045', 'l')) === '150g', G.amountText(row('u20045', 'l')));
+    d.querySelector('#foodList [data-foodstep="u20045|l|-1"]').click();
+    d.querySelector('#foodList [data-foodstep="u20045|l|-1"]').click();
+    t('78 · − goes down 50g at a time', G.amountText(row('u20045', 'l')) === '50g');
+    t('78 · steps snap to the next half portion', G.stepQty(1.35, 1, true) === 1.5 && G.stepQty(1.35, -1, true) === 1 && G.stepQty(0.5, -1, true) === 0 && G.stepQty(1, 1, false) === 2 && G.stepQty(0.5, 1, false) === 1);
+
+    /* ---- to the gram ---- */
+    d.querySelector('#foodList .fstep [data-foodamt="u20045|l"]').click();
+    t('78 · tapping the amount opens the box on that amount', !!d.getElementById('amtIn') && d.getElementById('amtIn').value === '50' && /Save, 50g/.test(txt(d.getElementById('amtSave'))));
+    type(137);
+    t('78 · it works out what that is as you type', /178\b/.test(txt(d.getElementById('amtSum'))) && /Save, 137g/.test(txt(d.getElementById('amtSave'))), txt(d.getElementById('amtSum')));
+    d.querySelector('[data-amtstep="1"]').click(); d.querySelector('[data-amtstep="10"]').click(); d.querySelector('[data-amtstep="-1"]').click();
+    t('78 · nudges of 1 and 10', d.getElementById('amtIn').value === '147');
+    d.getElementById('amtSave').click();
+    t('78 · saved to the gram', Math.abs(row('u20045', 'l').q - 1.47) < 1e-9 && G.amountText(row('u20045', 'l')) === '147g');
+    t('78 · calories follow the grams', Math.round(G.foodTotals(G.todayKey()).kcal) === Math.round(130 * 1.47));
+    t('78 · and it says so', /now 147g/.test(txt(d.getElementById('toast'))));
+    d.querySelector('#foodList .fstep [data-foodamt="u20045|l"]').click();
+    for (let i = 0; i < 3; i++) d.querySelector('[data-amtstep="1"]').click();
+    d.getElementById('amtSave').click();
+    t('78 · single grams: 147g, three taps of +1, is 150g', G.amountText(row('u20045', 'l')) === '150g');
+    t('78 · last time is remembered', S.foodLast && S.foodLast.u20045 === 150);
+    { const b2 = d.getElementById('foodSearch'); b2.value = ''; b2.dispatchEvent(new w.Event('input', { bubbles: true })); }
+    G.drawFood();
+    t('78 · the plate shows 150g too', txt(d.querySelector('.plate [data-foodamt="u20045|l"]')) === '150g');
+
+    /* ---- millilitres ---- */
+    d.querySelector('[data-foodslot="b"]').click();
+    G.openFoodAmount('milk', 'b', false);
+    t('78 · milk is measured in ml', /ml/.test(txt(d.querySelector('.famtbox'))) && d.getElementById('amtIn').value === '200');
+    t('78 · with drink sizes as chips', !!d.querySelector('[data-amtset="250"]') && !!d.querySelector('[data-amtset="330"]'));
+    d.querySelector('[data-amtset="250"]').click();
+    t('78 · a chip sets the amount', d.getElementById('amtIn').value === '250' && d.querySelector('[data-amtset="250"]').classList.contains('on'));
+    d.getElementById('amtIn').dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    t('78 · Enter adds it', Math.abs(row('milk', 'b').q - 1.25) < 1e-9 && G.amountText(row('milk', 'b')) === '250ml');
+    G.openFoodAmount('milk', 'b', false);
+    t('78 · adding more of something already there says what it comes to', /Add 250ml, 500ml in breakfast/.test(txt(d.getElementById('amtSave'))), txt(d.getElementById('amtSave')));
+    t('78 · and offers last time as a chip', [...d.querySelectorAll('[data-amtset]')].some(c => /Last time · 250ml/.test(txt(c))));
+    G.openFoodAmount('pint_stout', 'b', false);
+    t('78 · a pint is a chip for beer', !!d.querySelector('[data-amtset="568"]'));
+    d.querySelector('[data-amtback]').click();
+    t('78 · Back returns to the list without adding', !row('pint_stout', 'b') && !!d.getElementById('foodSearch'));
+
+    /* ---- counted foods ---- */
+    G.openFoodAmount('egg', 'b', false);
+    t('78 · an egg offers itself as a chip', [...d.querySelectorAll('[data-amtset]')].some(c => /1 egg · 50g/.test(txt(c))));
+    type(75); d.getElementById('amtSave').click();
+    t('78 · 75g of egg is one and a half eggs', Math.abs(row('egg', 'b').q - 1.5) < 1e-9 && G.amountText(row('egg', 'b')) === '1½');
+    G.openFoodAmount('egg', 'b', true); type(60); d.getElementById('amtSave').click();
+    t('78 · an amount that is not a half shows in grams', G.amountText(row('egg', 'b')) === '60g');
+    G.drawFood();
+    d.querySelector('.plate [data-foodstep="egg|b|1"]').click();
+    t('78 · and + still counts eggs from there', Math.abs(row('egg', 'b').q - 2.2) < 1e-9);
+
+    /* ---- nothing silly ---- */
+    G.openFoodAmount('u20045', 'l', true);
+    type(0);
+    t('78 · nothing typed means nothing to save', d.getElementById('amtSave').disabled);
+    type('12,5');
+    t('78 · a comma works as a decimal point', /Save, 12.5g/.test(txt(d.getElementById('amtSave'))));
+    type(9000); d.getElementById('amtSave').click();
+    t('78 · over 5 kilos is checked, not saved', /over 5 kilos/.test(txt(d.getElementById('toast'))) && G.amountText(row('u20045', 'l')) === '150g');
+    d.querySelector('[data-amtremove]').click();
+    t('78 · Take it off removes it, with Undo', !row('u20045', 'l') && /Undo/.test(txt(d.getElementById('toast'))));
+    d.getElementById('toastAct').click();
+    t('78 · Undo puts it back', G.amountText(row('u20045', 'l')) === '150g');
+
+    /* ---- Eat shows it ---- */
+    G.closeSheets(); G.go('eat'); G.renderAll();
+    const lunch = d.querySelector('.eatmeal[data-eatmeal="l"]');
+    t('78 · Eat shows the grams', /150g/.test(txt(lunch)) && /USDA/.test(txt(lunch)));
+    t('78 · old logs without a weight still read', (() => {
+      S.days[G.todayKey()].food.push({ id: 'chicken', n: 'Chicken breast, cooked', u: '150g', q: 1, meal: 'd', kcal: 250, p: 47, c: 0, f: 6 });
+      return G.amountText(G.dayFood(G.todayKey()).find(x => x.id === 'chicken')) === '150g'; })());
+
+    /* ---- teens see no calories in the box ---- */
+    S.profile.age = 14; S.profile.birthYear = new w.Date().getFullYear() - 14;
+    G.openFood(false); G.openFoodAmount('u20045', 'l', true);
+    t('78 · teen: the box shows protein, not calories', !/kcal/.test(txt(d.querySelector('.famt'))) && /protein/.test(txt(d.getElementById('amtSum'))));
+    const src = require('fs').readFileSync(require('path').join(__dirname, 'src/js/workouts/03-food.js'), 'utf8')
+      + require('fs').readFileSync(require('path').join(__dirname, 'src/js/foods-db.js'), 'utf8');
+    t('78 · no em dashes', src.indexOf('—') < 0);
+  }
+
   const r = s.report(allErrs);
   if (require.main === module) process.exit(r.fail ? 1 : 0);
 })();

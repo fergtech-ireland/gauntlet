@@ -15,9 +15,9 @@
    pudding, soda and brown bread, potatoes every way they are eaten, chowder,
    stew, a pint, a bag of crisps.
    Categories exist so the list can be browsed rather than only searched. */
-const FOOD_CATS=[['common','Common foods'],['breakfast','Breakfast'],['meat','Meat and fish'],['sauces','Sauces and condiments'],
-  ['carbs','Bread, potatoes and grains'],['veg','Fruit and vegetables'],['dairy','Dairy and eggs'],
-  ['meals','Meals and takeaway'],['snacks','Snacks and sweets'],['drinks','Drinks']];
+const FOOD_CATS=[['common','Common foods'],['breakfast','Breakfast'],['meat','Meat'],['fish','Fish and seafood'],
+  ['carbs','Bread, potatoes and grains'],['veg','Fruit and vegetables'],['pulses','Beans, nuts and seeds'],['dairy','Dairy and eggs'],
+  ['meals','Meals and takeaway'],['snacks','Snacks and sweets'],['drinks','Drinks'],['sauces','Sauces, oils and spices']];
 const FOODS=[
   /* breakfast */
   {id:'egg',n:'Egg, large',u:'egg',kcal:78,p:6.3,c:0.6,f:5.3,cat:'breakfast'},
@@ -49,14 +49,14 @@ const FOODS=[
   {id:'lamb',n:'Lamb, cooked',u:'150g',kcal:390,p:44,c:0,f:24,cat:'meat'},
   {id:'ham',n:'Ham, sliced',u:'50g',kcal:60,p:9,c:1,f:2,cat:'meat'},
   {id:'bacon_med',n:'Bacon medallions',u:'2',kcal:70,p:12,c:0,f:2.5,cat:'meat'},
-  {id:'mackerel',n:'Mackerel, smoked',u:'100g',kcal:310,p:19,c:0,f:26,cat:'meat'},
-  {id:'salmon',n:'Salmon fillet, cooked',u:'130g',kcal:280,p:33,c:0,f:16,cat:'meat'},
-  {id:'smokedsalmon',n:'Smoked salmon',u:'50g',kcal:90,p:12,c:0,f:4.5,cat:'meat'},
-  {id:'cod',n:'Cod or hake, cooked',u:'150g',kcal:145,p:32,c:0,f:1.5,cat:'meat'},
-  {id:'tuna',n:'Tuna, tinned in water',u:'tin, 110g',kcal:120,p:27,c:0,f:1,cat:'meat'},
-  {id:'sardines',n:'Sardines, tinned',u:'tin',kcal:180,p:21,c:0,f:11,cat:'meat'},
-  {id:'prawns',n:'Prawns, cooked',u:'100g',kcal:100,p:22,c:0,f:1,cat:'meat'},
-  {id:'fishfingers',n:'Fish fingers, 4',u:'4',kcal:220,p:13,c:19,f:10,cat:'meat'},
+  {id:'mackerel',n:'Mackerel, smoked',u:'100g',kcal:310,p:19,c:0,f:26,cat:'fish'},
+  {id:'salmon',n:'Salmon fillet, cooked',u:'130g',kcal:280,p:33,c:0,f:16,cat:'fish'},
+  {id:'smokedsalmon',n:'Smoked salmon',u:'50g',kcal:90,p:12,c:0,f:4.5,cat:'fish'},
+  {id:'cod',n:'Cod or hake, cooked',u:'150g',kcal:145,p:32,c:0,f:1.5,cat:'fish'},
+  {id:'tuna',n:'Tuna, tinned in water',u:'tin, 110g',kcal:120,p:27,c:0,f:1,cat:'fish'},
+  {id:'sardines',n:'Sardines, tinned',u:'tin',kcal:180,p:21,c:0,f:11,cat:'fish'},
+  {id:'prawns',n:'Prawns, cooked',u:'100g',kcal:100,p:22,c:0,f:1,cat:'fish'},
+  {id:'fishfingers',n:'Fish fingers, 4',u:'4',kcal:220,p:13,c:19,f:10,cat:'fish'},
 
   /* Raw weights, because that is how meat is bought and how most people weigh
      it. Meat loses roughly a quarter of its weight cooking, mostly water, so
@@ -71,9 +71,9 @@ const FOODS=[
   {id:'steak_raw',n:'Steak, lean, raw',u:'100g',kcal:135,p:22,c:0,f:5,cat:'meat'},
   {id:'pork_raw',n:'Pork loin, raw',u:'100g',kcal:135,p:21,c:0,f:5.5,cat:'meat'},
   {id:'lamb_raw',n:'Lamb, raw',u:'100g',kcal:200,p:20,c:0,f:13,cat:'meat'},
-  {id:'salmon_raw',n:'Salmon fillet, raw',u:'100g',kcal:180,p:20,c:0,f:11,cat:'meat'},
-  {id:'cod_raw',n:'Cod or hake, raw',u:'100g',kcal:80,p:18,c:0,f:0.7,cat:'meat'},
-  {id:'prawns_raw',n:'Prawns, raw',u:'100g',kcal:75,p:17,c:0,f:0.6,cat:'meat'},
+  {id:'salmon_raw',n:'Salmon fillet, raw',u:'100g',kcal:180,p:20,c:0,f:11,cat:'fish'},
+  {id:'cod_raw',n:'Cod or hake, raw',u:'100g',kcal:80,p:18,c:0,f:0.7,cat:'fish'},
+  {id:'prawns_raw',n:'Prawns, raw',u:'100g',kcal:75,p:17,c:0,f:0.6,cat:'fish'},
   {id:'mince_turkey_raw',n:'Turkey mince, raw',u:'100g',kcal:150,p:20,c:0,f:7.5,cat:'meat'},
 
   /* bread, potatoes and grains */
@@ -218,6 +218,52 @@ const FOODS=[
   {id:'chocspread',n:'Chocolate spread',u:'tbsp',kcal:100,p:1,c:11,f:5.8,cat:'sauces'},
   {id:'salsa',n:'Salsa',u:'tbsp',kcal:8,p:0.3,c:1.6,f:0.1,cat:'sauces'}
 ];
+/* ---------- what each portion weighs (build 73) ----------
+   So every food can be logged to the gram, or the millilitre for drinks, the
+   portions above are given a weight. Single foods use the household weights
+   in the same tables (a large egg 50g, a slice of wholemeal 40g, a pint 568ml);
+   plates, takeaways and rolls are typical servings, a rule of thumb, and the
+   label or a kitchen scale beats them. Drinks, milk, cream, gravy and thin
+   sauces are in ml. */
+const PORTION_G={egg:50,eggwhite:100,oats:50,porridge_milk:300,weetabix:37.5,cornflakes:40,granola:50,muesli:50,fullirish:450,
+  rasher:25,sausage:45,blackpud:40,whitepud:40,beans:207,pancakes:120,croissant:60,
+  chicken:150,chickenthigh:100,chickenfillet_bd:140,turkey:100,mince5:150,mince20:150,steak:200,porkchop:150,lamb:150,ham:50,
+  bacon_med:50,mackerel:100,salmon:130,smokedsalmon:50,cod:150,tuna:110,sardines:90,prawns:100,fishfingers:112,
+  chicken_raw:100,chickenthigh_raw:100,turkey_raw:100,mince5_raw:100,mince20_raw:100,steak_raw:100,pork_raw:100,lamb_raw:100,
+  salmon_raw:100,cod_raw:100,prawns_raw:100,mince_turkey_raw:100,
+  brownbread:50,wholemeal:40,whitebread:38,sourdough:50,bagel:95,wrap:62,pitta:60,roll:75,potato:200,mash:200,roastspuds:150,
+  chips_oven:150,chips_bag:300,sweetpot:200,rice:180,ricebrown:180,pasta:200,noodles:200,couscous:150,quinoa:150,
+  banana:120,apple:150,orange:130,berries:100,grapes:100,pear:170,avocado:100,broccoli:100,carrots:100,cabbage:100,peas:100,
+  saladmix:75,tomato:100,mushrooms:100,onion:100,veg_mixed:150,beetroot:100,
+  skyr:150,greekyog:150,yoghurt_fruit:125,milk:200,milk_whole:200,cheddar:30,lowfatcheese:30,cottage:100,mozzarella:50,butter:10,
+  cream:30,whey:30,
+  chickencurry:550,stew:400,baconcabbage:500,chowder:350,shepherds:400,lasagne:400,spagbol:500,stirfry:450,chickensalad:350,
+  sandwich_chicken:200,sandwich_ham:180,toastie:200,soup:300,chickenroll:300,breakfastroll:320,pizza:280,burger_meal:450,
+  fishchips:550,chinese_curry:650,kebab:400,sushi:280,omelette:200,protein_bowl:450,
+  crisps:35,peanuts:30,almonds:30,peanutbutter:16,proteinbar:60,choc_bar:45,biscuits:30,scone:100,flapjack:75,muffin:110,
+  icecream:100,popcorn:25,ricecakes:18,hummus:50,olives:50,darkchoc:25,
+  tea:250,coffee_black:250,latte:350,cappuccino:300,oj:200,smoothie:250,proteinshake:400,cola:330,diet_drink:330,
+  sportsdrink:500,pint_stout:568,pint_lager:568,wine:175,spirit:35.5,water:250,
+  ketchup:15,mayo:15,mayo_light:15,brownsauce:15,mustard:5,bbqsauce:17,sweetchilli:15,soysauce:15,hotsauce:5,garlicsauce:15,
+  taco_sauce:15,saladcream:15,caesar:15,vinaigrette:15,pesto:15,gravy:50,currysauce:100,tartare:15,sourcream:15,oliveoil:14,
+  honey:7,jam:7,chocspread:15,salsa:15};
+const PORTION_ML=new Set(['milk','milk_whole','cream','tea','coffee_black','latte','cappuccino','oj','smoothie','proteinshake','cola',
+  'diet_drink','sportsdrink','pint_stout','pint_lager','wine','spirit','water','gravy','currysauce','soysauce','vinaigrette']);
+FOODS.forEach(f=>{ if(PORTION_G[f.id]){ f.g=PORTION_G[f.id]; f.m=PORTION_ML.has(f.id)? 'ml' : 'g'; } });
+/* ---------- the verified list (build 73) ----------
+   Everything above is the short everyday list, Irish staples included. Behind
+   it sit the 2,800 foods in foods-db.js, from the USDA's laboratory analysed
+   Standard Reference (SR Legacy), each per 100g or 100ml, with the household
+   weights USDA measured. They come up in search and in the categories, and
+   say where they are from. */
+const FOODS_DB=(typeof FOODS_DB_ROWS!=='undefined'? FOODS_DB_ROWS : []).map(r=>{
+  const f={id:r[0],n:r[1],cat:r[2],kcal:r[3],p:r[4],c:r[5],f:r[6],fb:r[7],m:r[8],g:100,u:'100'+r[8],src:'usda'};
+  if(r[9]&&r[9].length) f.por=r[9];
+  if(r[10]) f.alc=r[10];
+  return f;
+});
+const FOOD_IDX=new Map();
+FOODS.concat(FOODS_DB).forEach(f=>FOOD_IDX.set(f.id,f));
 /* The handful almost everyone taps, shown first before anything is logged. */
 const FOOD_COMMON=['egg','oats','chicken','rice','potato','brownbread','skyr','banana','milk','tea','whey','apple'];
 /* Your own things, saved as you go. The built in list is deliberately short,
@@ -225,7 +271,7 @@ const FOOD_COMMON=['egg','oats','chicken','rice','potato','brownbread','skyr','b
 const MEALS=[['b','Breakfast'],['l','Lunch'],['d','Dinner'],['s','Snacks']];
 const customFoods=()=>Array.isArray(S.customFoods)? S.customFoods : [];
 const savedMeals=()=>Array.isArray(S.savedMeals)? S.savedMeals : [];
-const allFoods=()=>FOODS.concat(customFoods());
+const allFoods=()=>FOODS.concat(FOODS_DB,customFoods());
 /* ---------- fibre (build 50) ----------
    Grams of dietary fibre per portion, as each food's portion is written. Most
    come from standard food composition tables (McCance and Widdowson, USDA
@@ -250,7 +296,7 @@ function fibreInfo(k){
   items.forEach(x=>{ const v=fibreOf(x); if(v===null) unknown++; else { g+=v*x.q; if(FIBRE_ROUGH.has(x.id)&&v>0) rough++; } });
   return {g:Math.round(g*10)/10, unknown, rough, n:items.length};
 }
-const foodOf=id=>allFoods().find(f=>f.id===id)||null;
+const foodOf=id=>FOOD_IDX.get(id)||customFoods().find(f=>f.id===id)||null;
 /* Which day the food sheet is adding to (build 57). Null means today, which is
    every way in except the Eat tab's date switcher: going back a day there and
    adding opens the sheet on that day, so a forgotten snack lands where it was
@@ -296,8 +342,15 @@ function addFood(id,q,meal){
   S.days[k]=S.days[k]||{};
   const list=(S.days[k].food||[]).slice();
   const same=list.find(x=>x.id===f.id&&(x.meal||'s')===m);
-  if(same) same.q=+(same.q+n).toFixed(2);
-  else { const row={id:f.id,n:f.n,u:f.u,q:n,meal:m,kcal:f.kcal,p:f.p,c:f.c,f:f.f,at:mealAtMs(k,m)}; if(typeof f.fb==='number') row.fb=f.fb; list.push(row); }
+  if(same){ same.q=+(same.q+n).toFixed(4); if(f.g&&!same.g){ same.g=f.g; same.m=f.m||'g'; } }
+  else { const row={id:f.id,n:f.n,u:f.u,q:+n.toFixed(4),meal:m,kcal:f.kcal,p:f.p,c:f.c,f:f.f,at:mealAtMs(k,m)};
+    if(typeof f.fb==='number') row.fb=f.fb;
+    /* build 73: the portion's weight travels with the row, so "150g" can be
+       shown and changed even if the list is ever updated */
+    if(f.g){ row.g=f.g; row.m=f.m||'g'; }
+    if(f.src) row.src=f.src;
+    if(f.alc) row.alc=f.alc;
+    list.push(row); }
   /* eating something in a meal marked skipped means it was not skipped */
   if(S.days[k].skipped&&S.days[k].skipped.indexOf(m)>=0) S.days[k].skipped=S.days[k].skipped.filter(x=>x!==m);
   S.days[k].food=list;
@@ -358,7 +411,7 @@ function setFoodQty(id,meal,q){
   const k=foodKey(), list=dayFood(k);
   const i=list.findIndex(x=>x.id===id&&(x.meal||'s')===meal);
   if(i<0) return null;
-  if(q<=0) list.splice(i,1); else list[i].q=+(+q).toFixed(2);
+  if(q<=0) list.splice(i,1); else list[i].q=+(+q).toFixed(4);
   applyFoodTotals(k); save();
   return list[i]||null;
 }
@@ -370,7 +423,7 @@ function mergeDayFood(k){
   r.food.forEach(x=>{
     const key=x.id+'|'+(x.meal||'s');
     if(x.id&&String(x.id).indexOf('quick:')!==0&&seen[key]){
-      seen[key].q=+(seen[key].q+(+x.q||1)).toFixed(2);
+      seen[key].q=+(seen[key].q+(+x.q||1)).toFixed(4);
       if(x.at&&(!seen[key].at||x.at<seen[key].at)) seen[key].at=x.at;
     } else { const c=Object.assign({},x); out.push(c); seen[key]=c; }
   });
@@ -425,7 +478,7 @@ let foodQuery='', foodCameFromLog=false, foodSlot=slotNow(), foodAdding=false;
    meal to open on; search, put the cursor in the search box. */
 function openFood(fromLog,opts){
   opts=opts||{};
-  foodQuery=''; foodCat=''; foodSlot=opts.slot||slotNow(); foodAdding=false; foodQuick=false;
+  foodQuery=''; foodCat=''; foodMore=false; foodAmt=null; foodSlot=opts.slot||slotNow(); foodAdding=false; foodQuick=false;
   foodCameFromLog=!!fromLog || document.getElementById('dayCheck').classList.contains('on');
   closeSheets();
   foodDay=(opts.day&&opts.day<todayKey())? opts.day : null;
@@ -444,16 +497,44 @@ function closeFood(){
    on a mid-range phone and fights a non-Latin keyboard. */
 /* With 138 foods a plain list is a scroll, so there are categories to browse
    and search across everything. Search always wins over a category. */
-let foodCat='';
+let foodCat='', foodMore=false;
+/* ---------- finding a food among 2,900 (build 73) ----------
+   Every word typed must appear (a trailing s is forgiven, so "eggs" finds
+   "Egg"). Then: your recent foods first, your own foods, the everyday list,
+   then the USDA list; a match at the start of the name or of a word beats one
+   in the middle, and shorter, plainer names beat long ones. */
+function findFoods(q){
+  const toks=String(q||'').toLowerCase().split(/[\s,]+/).filter(Boolean);
+  if(!toks.length) return [];
+  const rec=recentFoods(), out=[];
+  allFoods().forEach(f=>{
+    const n=f.n.toLowerCase(); let sc=0;
+    for(const t0 of toks){
+      let t=t0, i=n.indexOf(t);
+      if(i<0&&t.length>3&&/s$/.test(t)){ t=t.slice(0,-1); i=n.indexOf(t); }
+      if(i<0) return;
+      sc+= i===0? 40 : (/[\s,(\-\/]/.test(n[i-1])? 20 : 0);
+    }
+    if(f.mine) sc+=300; else if(f.src!=='usda') sc+=150;
+    const r=rec.indexOf(f.id); if(r>=0) sc+=400-r;
+    sc-= n.length/4 + (n.split(',').length-1)*6;
+    out.push([sc,f]);
+  });
+  return out.sort((a,b)=>b[0]-a[0]).slice(0,60).map(x=>x[1]);
+}
+const CAT_SHOW=80;
 function foodListHTML(){
   const q=foodQuery.trim().toLowerCase();
   const recents=recentFoods();
   const pool=allFoods();
   const mine=pool.filter(f=>f.mine);
-  let list;
-  if(q) list=pool.filter(f=>f.n.toLowerCase().includes(q)).slice(0,60);
+  let list, more=0;
+  if(q) list=findFoods(q);
   else if(foodCat==='mine') list=mine;
-  else if(foodCat) list=pool.filter(f=>f.cat===foodCat);
+  else if(foodCat){
+    const all=pool.filter(f=>f.cat===foodCat);
+    list= foodMore? all : all.slice(0,CAT_SHOW); more=all.length-list.length;
+  }
   else {
     /* nothing chosen: what they reach for, then the common ones */
     const first=recents.map(foodOf).filter(Boolean);
@@ -461,15 +542,18 @@ function foodListHTML(){
     list=first.concat(common, mine.filter(f=>first.indexOf(f)<0)).slice(0,24);
   }
   if(!list.length) return `<div class="note">Nothing matching.</div>
-    <button class="logrow" id="foodNew"><div class="txt"><div class="t">Add "${foodQuery.trim()}" yourself</div>
+    <button class="logrow" id="foodNew"><div class="txt"><div class="t">Add "${escHabit(foodQuery.trim())}" yourself</div>
       <div class="s">Once, and it is in your list from now on</div></div></button>`;
   const onPlate=id=>dayFood(foodKey()).find(x=>x.id===id&&(x.meal||'s')===foodSlot);
-  return list.map(f=>{ const p=onPlate(f.id);
+  return list.map(f=>{ const p=onPlate(f.id), w=portionG(f), u=unitOf(f), db=f.src==='usda';
+    const per= db? 'per 100'+u : escHabit(f.u)+(w&&!/^\d/.test(String(f.u))? ', '+amtNum(w)+u : '');
     return `<div class="frow ${p?'onplate':''}">
       <div class="txt"><div class="t">${escHabit(f.n)}${f.mine?' <span class="cichip">yours</span>':''}</div>
-        <div class="s">${escHabit(f.u)}${isTeen()? '' : ' · '+f.kcal+' kcal · '+f.p+'g protein'}${f.mine?' · from your label':''}${f.alc&&!isTeen()?' · '+f.alc+'g alcohol':''}</div></div>
-      ${p? foodStepper(p) : `<button class="fadd half" data-foodadd="${f.id}:0.5" aria-label="Add half a portion of ${escHabit(f.n)}">½</button>
-      <button class="fadd" data-foodadd="${f.id}:1" aria-label="Add ${escHabit(f.n)}">+</button>`}</div>`; }).join('')
+        <div class="s">${per}${isTeen()? '' : ' · '+f.kcal+' kcal · '+f.p+'g protein'}${f.mine?' · from your label':''}${db?' · USDA':''}${f.alc&&!isTeen()?' · '+f.alc+'g alcohol':''}</div></div>
+      ${p? foodStepper(p) : `${w? `<button class="fadd amt" data-foodamt="${escHabit(f.id)}" aria-label="Add ${escHabit(f.n)} by weight, in ${u==='ml'?'millilitres':'grams'}">${u}</button>` : ''}
+      <button class="fadd half" data-foodadd="${escHabit(f.id)}:0.5" aria-label="Add half${w? ', '+amtNum(w/2)+u+',' : ' a portion'} of ${escHabit(f.n)}">½</button>
+      <button class="fadd" data-foodadd="${escHabit(f.id)}:1" aria-label="Add ${w? amtNum(w)+u+' of ' : ''}${escHabit(f.n)}">+</button>`}</div>`; }).join('')
+    +(more? `<button class="mini foodmore" data-foodmore>Show all ${more+list.length} in ${escHabit((FOOD_CATS.find(c=>c[0]===foodCat)||[0,'this list'])[1].toLowerCase())}</button>` : '')
     +`<button class="logrow" id="foodNew"><div class="txt"><div class="t">Something not on the list</div>
       <div class="s">Add it once and it stays in your list</div></div></button>`;
 }
@@ -480,15 +564,46 @@ function foodSource(x){
   if(x.quick) return 'numbers you typed';
   const f=foodOf(x.id);
   if(f&&f.mine) return 'from your label';
+  if(x.src==='usda'||(f&&f.src==='usda')) return 'USDA lab values';
   return 'typical values';
 }
 const qtyText=q=>q===0.5?'½':(Math.round(q*2)%2? Math.floor(q)+'½' : String(Math.round(q)));
+/* ---------- grams and millilitres (build 73) ----------
+   Feargal: after adding 100g there was no way to add 50g more, so everything
+   came in 100g steps. Now every food with a known weight can be set to the
+   gram (or ml): the g button on a row, or tapping the amount on the plate,
+   opens a box to type it, with nudges of 1 and 10 and the usual portions as
+   chips. Foods sold by weight (anything listed per 100g, 150g and so on)
+   count in grams on the plate and step in half portions (50g on a 100g
+   food), so 100g, then 150g, is one tap. Counted foods (an egg, a slice)
+   still count 1, 2, 3, and show grams once they are not a whole or a half. */
+function portionG(x){ if(x&&+x.g>0) return +x.g; const f=x&&foodOf(x.id); return f&&+f.g>0? +f.g : null; }
+function unitOf(x){ if(x&&x.m) return x.m; const f=x&&foodOf(x.id); return (f&&f.m)||'g'; }
+function weighed(x){
+  if(!x) return false;
+  const f=foodOf(x.id)||x;
+  if(f.src==='usda'||x.src==='usda') return true;
+  return !!portionG(x)&&/^\d+(\.\d+)?\s?(g|ml)\b/i.test(String(f.u||x.u||''));
+}
+const amtNum=v=>{ const r=Math.round(v*10)/10; return r>=100? String(Math.round(r)) : String(r); };
+function amountText(x){
+  const g=portionG(x), q=+x.q||0;
+  if(g&&(weighed(x)||Math.abs(q*2-Math.round(q*2))>0.001)) return amtNum(q*g)+unitOf(x);
+  return qtyText(q);
+}
+/* the next amount for − and +: weighed foods snap to the next half portion
+   (135g, +, is 150g), counted foods go up and down by one as before */
+function stepQty(cur,d,w){
+  if(d<-1) return 0;
+  if(w){ const h=cur*2; return Math.max(0, d>0? (Math.floor(h+1e-6)+1)/2 : (Math.ceil(h-1e-6)-1)/2); }
+  return cur<1&&d>0? 1 : (cur<=1&&d<0? 0 : cur+d);
+}
 function foodStepper(x){
-  const key=escHabit(x.id)+'|'+(x.meal||'s');
-  return `<div class="fstep" role="group" aria-label="${escHabit(x.n)}: ${qtyText(x.q)}">
-    <button data-foodstep="${key}|-1" aria-label="One less">&minus;</button>
-    <span class="fq">${qtyText(x.q)}</span>
-    <button data-foodstep="${key}|1" aria-label="One more">+</button></div>`;
+  const key=escHabit(x.id)+'|'+(x.meal||'s'), w=weighed(x), amt=amountText(x), half=w&&portionG(x)? amtNum(portionG(x)/2)+unitOf(x) : '';
+  return `<div class="fstep" role="group" aria-label="${escHabit(x.n)}: ${amt}">
+    <button data-foodstep="${key}|-1" aria-label="${w? half+' less' : 'One less'}">&minus;</button>
+    <button class="fq${w?' w':''}" data-foodamt="${key}" aria-label="${escHabit(x.n)}, ${amt}. Set the exact amount">${amt}</button>
+    <button data-foodstep="${key}|1" aria-label="${w? half+' more' : 'One more'}">+</button></div>`;
 }
 /* ---------- the food screen ----------
    Rebuilt around the one thing done most: finding a food and adding it.
@@ -504,6 +619,7 @@ function foodStepper(x){
    row. */
 let foodQuick=false;
 function drawFood(){
+  if(foodAmt){ drawFoodAmount(); return; }
   const k=foodKey(), dayWord=k===todayKey()? 'today' : 'that day';
   mergeDayFood(k);
   const logged=dayFood(k), t=foodTotals(k), tg=S.targets||{};
@@ -526,7 +642,7 @@ function drawFood(){
     <div class="foodsearch"><input id="foodSearch" type="search" enterkeyhint="search" autocomplete="off"
       placeholder="Search food to add to ${mealLabel.toLowerCase()}" value="${escHabit(foodQuery)}" aria-label="Search food"></div>
 
-    ${foodQuery.trim()? '' : `
+    ${/* build 73: always drawn, hidden by .q while searching, so clearing the box brings it back */''}${`
     <div class="plate">
       <div class="platehead"><b>${mealLabel}</b>
         <label class="ateat">${foodSlot==='s'? 'Next one eaten at' : 'Eaten at'} <input type="time" id="mealAt" value="${mealAtValue(k,foodSlot)}" aria-label="${mealLabel} eaten at"></label></div>
@@ -536,7 +652,7 @@ function drawFood(){
           : `<button class="inlinebtn" data-skipmeal="${foodSlot}">I skipped ${mealLabel.toLowerCase()}</button>`) : ''}</div>
       ${plate.map(x=>`<div class="frow onplate">
         <div class="txt"><div class="t">${escHabit(x.n)}</div>
-          <div class="s">${x.quick? 'your numbers' : escHabit(x.u)}${isTeen()? '' : ' · '+Math.round(x.kcal*x.q)+' kcal · '+Math.round(x.p*x.q)+'g protein'} · <span class="src">${foodSource(x)}</span></div></div>
+          <div class="s">${x.quick? 'your numbers · ' : (weighed(x)? '' : escHabit(x.u)+' · ')}${isTeen()? '' : Math.round(x.kcal*x.q)+' kcal · '+Math.round(x.p*x.q)+'g protein · '}<span class="src">${foodSource(x)}</span></div></div>
         ${x.quick? `<button class="fadd rm" data-foodstep="${escHabit(x.id)}|${x.meal||'s'}|-99" aria-label="Remove">&minus;</button>` : foodStepper(x)}</div>`).join('')}
       <div class="shortcuts">
         ${yTotal?`<button class="mini" id="foodYesterday">Same as yesterday</button>`:''}
@@ -606,11 +722,116 @@ function drawFoodNew(){
     <button class="sheetcta" id="nfSave">Save it and add it</button>
     <button class="skipbtn" id="nfCancel">Back to the list</button>`;
 }
+/* ---------- how much: the amount box (build 73) ----------
+   Typing the number is the quickest way to an exact weight, so the box is
+   focused with the number selected; −10, −1, +1, +10 nudge it; chips give
+   what was used last time, the food's own household measures (a slice, a
+   large egg, a tablespoon) and round amounts (or glass, can and pint sizes
+   for drinks). What it comes to is worked out live as it is typed. */
+let foodAmt=null;
+const lastAmts=()=>(S.foodLast&&typeof S.foodLast==='object')? S.foodLast : {};
+function amtBase(f){ const g=portionG(f); return g? {per:g,u:unitOf(f)} : {per:1,u:''}; }
+function amtChips(f){
+  const {per,u}=amtBase(f), out=[], seen=new Set();
+  const add=(label,v)=>{ v=Math.round(v*10)/10; if(v>0&&!seen.has(v)){ seen.add(v); out.push([label,v]); } };
+  const last=lastAmts()[f.id];
+  if(+last>0) add('Last time · '+amtNum(last)+u,+last);
+  if(!u){ [0.25,0.5,1,1.5,2].forEach(v=>add(qtyText(v)===String(v)? String(v) : (v===0.25?'¼':qtyText(v)),v)); return out; }
+  if(f.src!=='usda'&&!/^\d/.test(String(f.u))){ add('1 '+f.u+' · '+amtNum(per)+u,per); add('2 · '+amtNum(per*2)+u,per*2); }
+  (f.por||[]).forEach(([l,g])=>add((/^(\d|half)/.test(l)? l : '1 '+l)+' · '+amtNum(g)+u,g));
+  (u==='ml'? (f.alc? [[0,175],[0,330],[0,500],['Pint',568]] : [[0,100],[0,200],[0,250],[0,330],[0,500]])
+    : [[0,25],[0,50],[0,100],[0,150],[0,200],[0,250]]).forEach(([l,v])=>add(l? l+' · '+v+u : v+u,v));
+  return out;
+}
+function amtCurrent(){ const a=foodAmt; return a? dayFood(foodKey()).find(x=>x.id===a.id&&(x.meal||'s')===a.meal) : null; }
+function amtRead(){ const el=document.getElementById('amtIn'); if(!el) return 0; const v=parseFloat(String(el.value).replace(',','.')); return isFinite(v)&&v>0? v : 0; }
+function amtSumHtml(f,v){
+  const {per,u}=amtBase(f), q=v/per, r=n=>Math.round(n*q*10)/10, mealName=MEALS.find(m=>m[0]===foodAmt.meal)[1].toLowerCase();
+  const cur=amtCurrent();
+  const sum= isTeen()? `<b>${Math.round(r(f.p))}</b>g protein` : `<b>${Math.round(f.kcal*q)}</b> kcal · <b>${Math.round(r(f.p))}</b>g protein · ${Math.round(r(f.c))}g carbs · ${Math.round(r(f.f))}g fat${typeof f.fb==='number'? ' · '+r(f.fb)+'g fibre' : ''}`;
+  const amt=u? amtNum(v)+u : qtyText(v);
+  const cta= !v? 'Type an amount' : (foodAmt.edit&&cur? 'Save, '+amt : (cur? `Add ${amt}, ${u? amtNum(cur.q*per+v)+u : qtyText(cur.q+v)} in ${mealName}` : `Add ${amt} to ${mealName}`));
+  return {sum,cta};
+}
+function amtRefresh(){
+  const f=foodAmt&&foodOf(foodAmt.id); if(!f) return;
+  const v=amtRead(), o=amtSumHtml(f,v);
+  const s=document.getElementById('amtSum'), b=document.getElementById('amtSave');
+  if(s) s.innerHTML=o.sum; if(b){ b.textContent=o.cta; b.disabled=!v; }
+  document.querySelectorAll('[data-amtset]').forEach(c=>c.classList.toggle('on',Math.abs(+c.dataset.amtset-v)<0.05));
+}
+function openFoodAmount(id,meal,edit){
+  foodAmt={id,meal:meal||foodSlot,edit:!!edit};
+  drawFoodAmount();
+  const el=document.getElementById('amtIn');
+  if(el) try{ el.focus({preventScroll:true}); el.select(); }catch(e){}
+}
+function drawFoodAmount(){
+  const a=foodAmt, f=a&&foodOf(a.id);
+  if(!f){ foodAmt=null; drawFood(); return; }
+  const {per,u}=amtBase(f), cur=amtCurrent();
+  if(a.edit&&!cur) a.edit=false;
+  const start= a.edit? cur.q*per : (+lastAmts()[f.id]>0? +lastAmts()[f.id] : per);
+  const v=Math.round(start*10)/10, o=amtSumHtml(f,v), mealName=MEALS.find(m=>m[0]===a.meal)[1];
+  const fine= u? [-10,-1,1,10] : [-0.5,-0.25,0.25,0.5];
+  const fineLabel=d=>(d<0?'−':'+')+(u? Math.abs(d) : (Math.abs(d)===0.25?'¼':'½'));
+  $('foodBody').innerHTML=`<div class="famt">
+    <button class="inlinebtn amtback" data-amtback>‹ Back to the list</button>
+    <div class="famthead"><b>${escHabit(f.n)}</b>
+      <small>${isTeen()? '' : (f.src==='usda'||u? 'Per '+(f.src==='usda'? '100'+u : escHabit(f.u)+(u&&!/^\d/.test(String(f.u))? ' ('+amtNum(per)+u+')' : ''))+': '+f.kcal+' kcal, '+f.p+'g protein · ' : '')}${foodSource(f)}${cur&&!a.edit? ' · '+amountText(cur)+' in '+mealName.toLowerCase()+' already' : ''}</small></div>
+    <label class="famtbox"><input id="amtIn" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" value="${amtNum(v)}"
+      aria-label="How much, in ${u==='ml'? 'millilitres' : (u? 'grams' : 'portions')}"><span>${u||'×'}</span></label>
+    <div class="famtrow">${fine.map(d=>`<button class="amtnudge" data-amtstep="${d}" aria-label="${fineLabel(d)}${u}">${fineLabel(d)}</button>`).join('')}</div>
+    <div class="famtsum" id="amtSum" aria-live="polite">${o.sum}</div>
+    <div class="pickchips famtchips">${amtChips(f).map(([l,g])=>`<button data-amtset="${g}" class="${Math.abs(g-v)<0.05?'on':''}">${escHabit(l)}</button>`).join('')}</div>
+    <button class="sheetcta" id="amtSave">${o.cta}</button>
+    ${a.edit? `<button class="skipbtn" data-amtremove>Take it off ${escHabit(mealName.toLowerCase())}</button>` : ''}
+  </div>`;
+  const b=$('foodBody'); if(b) b.classList.remove('q');
+}
+function saveFoodAmount(){
+  const a=foodAmt, f=a&&foodOf(a.id); if(!f) return;
+  const v=amtRead(), {per,u}=amtBase(f);
+  if(!v){ toast('Type how much first'); return; }
+  if(u&&v>5000){ toast('That is over 5 kilos. Check the number'); return; }
+  const q=v/per, cur=amtCurrent(), amt=u? amtNum(v)+u : qtyText(v), mealName=MEALS.find(m=>m[0]===a.meal)[1].toLowerCase();
+  if(a.edit&&cur) setFoodQty(a.id,a.meal,q); else addFood(a.id,q,a.meal);
+  if(u){ const l=Object.assign({},lastAmts()); l[f.id]=Math.round(v*10)/10;
+    const keys=Object.keys(l); if(keys.length>300) delete l[keys[0]];
+    S.foodLast=l; save(); }
+  foodAmt=null; drawFood(); renderAll();
+  if(typeof drawDay==='function'&&document.getElementById('dayCheck').classList.contains('on')) drawDay();
+  toast(a.edit&&cur? f.n+' now '+amt : amt+' of '+f.n+' added to '+mealName);
+}
+document.addEventListener('click',e=>{
+  const fa=e.target.closest('[data-foodamt]');
+  if(fa){ const parts=fa.dataset.foodamt.split('|'), meal=parts.length>1? parts.pop() : null;
+    openFoodAmount(parts.join('|'), meal||foodSlot, !!meal); return; }
+  if(!foodAmt) return;
+  if(e.target.closest('[data-amtback]')){ foodAmt=null; drawFood(); return; }
+  const st=e.target.closest('[data-amtstep]');
+  if(st){ const el=document.getElementById('amtIn'); if(!el) return;
+    const d=+st.dataset.amtstep, v=Math.max(0,Math.round((amtRead()+d)*100)/100);
+    el.value=amtNum(v); amtRefresh(); return; }
+  const cs=e.target.closest('[data-amtset]');
+  if(cs){ const el=document.getElementById('amtIn'); if(el){ el.value=amtNum(+cs.dataset.amtset); amtRefresh(); } return; }
+  if(e.target.closest('#amtSave')){ saveFoodAmount(); return; }
+  if(e.target.closest('[data-amtremove]')){
+    const a=foodAmt, cur=amtCurrent(); if(!cur) return;
+    const before=JSON.parse(JSON.stringify(cur)), dk=foodKey();
+    setFoodQty(a.id,a.meal,0); foodAmt=null; drawFood(); renderAll();
+    toast(before.n+' taken off','Undo',()=>{ S.days[dk]=S.days[dk]||{}; S.days[dk].food=(S.days[dk].food||[]).concat([before]);
+      applyFoodTotals(dk); save(); drawFood(); renderAll(); });
+    return; }
+});
+document.addEventListener('input',e=>{ if(e.target.id==='amtIn') amtRefresh(); });
+document.addEventListener('keydown',e=>{ if(e.target.id==='amtIn'&&e.key==='Enter'){ e.preventDefault(); saveFoodAmount(); } });
 document.addEventListener('click',e=>{
   if(e.target.closest('#foodBtn')) openFood(true);
   if(e.target.closest('#foodDone')) closeFood();
   const fc=e.target.closest('[data-foodcat]');
-  if(fc){ foodCat=fc.dataset.foodcat; foodQuery=''; drawFood(); return; }
+  if(fc){ foodCat=fc.dataset.foodcat; foodQuery=''; foodMore=false; drawFood(); return; }
+  if(e.target.closest('[data-foodmore]')){ foodMore=true; drawFoodList(); return; }
   const fs=e.target.closest('[data-foodslot]');
   if(fs){ foodSlot=fs.dataset.foodslot; drawFood(); }
   if(e.target.closest('#foodYesterday')){
@@ -643,7 +864,7 @@ document.addEventListener('click',e=>{
     const parts=fst.dataset.foodstep.split('|'), d=+parts.pop(), meal=parts.pop(), id=parts.join('|');
     const cur=dayFood(foodKey()).find(x=>x.id===id&&(x.meal||'s')===meal); if(!cur) return;
     const before=JSON.parse(JSON.stringify(cur));
-    const next= d<-1? 0 : (cur.q<1&&d>0? 1 : (cur.q<=1&&d<0? 0 : cur.q+d));
+    const next=stepQty(cur.q,d,weighed(cur));
     setFoodQty(id,meal,next);
     drawFood(); renderAll();
     const dk=foodKey();

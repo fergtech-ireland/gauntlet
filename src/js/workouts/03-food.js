@@ -545,14 +545,14 @@ function foodListHTML(){
     <button class="logrow" id="foodNew"><div class="txt"><div class="t">Add "${escHabit(foodQuery.trim())}" yourself</div>
       <div class="s">Once, and it is in your list from now on</div></div></button>`;
   const onPlate=id=>dayFood(foodKey()).find(x=>x.id===id&&(x.meal||'s')===foodSlot);
-  return list.map(f=>{ const p=onPlate(f.id), w=portionG(f), u=unitOf(f), db=f.src==='usda';
+  return list.map(f=>{ const p=onPlate(f.id), w=portionG(f), u=unitOf(f), db=f.src==='usda', qa=quickAmt(f);
     const per= db? 'per 100'+u : escHabit(f.u)+(w&&!/^\d/.test(String(f.u))? ', '+amtNum(w)+u : '');
     return `<div class="frow ${p?'onplate':''}">
-      <div class="txt"><div class="t">${escHabit(f.n)}${f.mine?' <span class="cichip">yours</span>':''}</div>
-        <div class="s">${per}${isTeen()? '' : ' · '+f.kcal+' kcal · '+f.p+'g protein'}${f.mine?' · from your label':''}${db?' · USDA':''}${f.alc&&!isTeen()?' · '+f.alc+'g alcohol':''}</div></div>
-      ${p? foodStepper(p) : `${w? `<button class="fadd amt" data-foodamt="${escHabit(f.id)}" aria-label="Add ${escHabit(f.n)} by weight, in ${u==='ml'?'millilitres':'grams'}">${u}</button>` : ''}
-      <button class="fadd half" data-foodadd="${escHabit(f.id)}:0.5" aria-label="Add half${w? ', '+amtNum(w/2)+u+',' : ' a portion'} of ${escHabit(f.n)}">½</button>
-      <button class="fadd" data-foodadd="${escHabit(f.id)}:1" aria-label="Add ${w? amtNum(w)+u+' of ' : ''}${escHabit(f.n)}">+</button>`}</div>`; }).join('')
+      <button class="fopen" data-foodopen="${escHabit(f.id)}" aria-label="${escHabit(f.n)}. Choose how much">
+        <span class="t">${escHabit(f.n)}${f.mine?' <span class="cichip">yours</span>':''}</span>
+        <span class="s">${per}${isTeen()? '' : ' · '+f.kcal+' kcal · '+f.p+'g protein'}${f.mine?' · from your label':''}${db?' · USDA':''}${f.alc&&!isTeen()?' · '+f.alc+'g alcohol':''}</span></button>
+      ${p? `<button class="fhave" data-foodopen="${escHabit(f.id)}|${foodSlot}" aria-label="${escHabit(f.n)}, ${amountText(p)} in this meal. Change it">${amountText(p)}</button>`
+        : `<button class="fadd" data-foodadd="${escHabit(f.id)}:${qa.q}" aria-label="Add ${escHabit(qa.label)} of ${escHabit(f.n)}">+</button>`}</div>`; }).join('')
     +(more? `<button class="mini foodmore" data-foodmore>Show all ${more+list.length} in ${escHabit((FOOD_CATS.find(c=>c[0]===foodCat)||[0,'this list'])[1].toLowerCase())}</button>` : '')
     +`<button class="logrow" id="foodNew"><div class="txt"><div class="t">Something not on the list</div>
       <div class="s">Add it once and it stays in your list</div></div></button>`;
@@ -598,13 +598,6 @@ function stepQty(cur,d,w){
   if(w){ const h=cur*2; return Math.max(0, d>0? (Math.floor(h+1e-6)+1)/2 : (Math.ceil(h-1e-6)-1)/2); }
   return cur<1&&d>0? 1 : (cur<=1&&d<0? 0 : cur+d);
 }
-function foodStepper(x){
-  const key=escHabit(x.id)+'|'+(x.meal||'s'), w=weighed(x), amt=amountText(x), half=w&&portionG(x)? amtNum(portionG(x)/2)+unitOf(x) : '';
-  return `<div class="fstep" role="group" aria-label="${escHabit(x.n)}: ${amt}">
-    <button data-foodstep="${key}|-1" aria-label="${w? half+' less' : 'One less'}">&minus;</button>
-    <button class="fq${w?' w':''}" data-foodamt="${key}" aria-label="${escHabit(x.n)}, ${amt}. Set the exact amount">${amt}</button>
-    <button data-foodstep="${key}|1" aria-label="${w? half+' more' : 'One more'}">+</button></div>`;
-}
 /* ---------- the food screen ----------
    Rebuilt around the one thing done most: finding a food and adding it.
    The old screen listed everything already eaten first and put the search box
@@ -620,6 +613,7 @@ function foodStepper(x){
 let foodQuick=false;
 function drawFood(){
   if(foodAmt){ drawFoodAmount(); return; }
+  const sh=$('foodSheet'); if(sh) sh.classList.remove('amtmode');
   const k=foodKey(), dayWord=k===todayKey()? 'today' : 'that day';
   mergeDayFood(k);
   const logged=dayFood(k), t=foodTotals(k), tg=S.targets||{};
@@ -650,10 +644,14 @@ function drawFood(){
         ${!plate.length&&foodSlot!=='s'? (((S.days[k]||{}).skipped||[]).indexOf(foodSlot)>=0
           ? `<span class="skipnote">Skipped <button class="inlinebtn" data-unskip="${foodSlot}">Undo</button></span>`
           : `<button class="inlinebtn" data-skipmeal="${foodSlot}">I skipped ${mealLabel.toLowerCase()}</button>`) : ''}</div>
-      ${plate.map(x=>`<div class="frow onplate">
+      ${plate.map(x=>x.quick? `<div class="frow onplate">
         <div class="txt"><div class="t">${escHabit(x.n)}</div>
-          <div class="s">${x.quick? 'your numbers · ' : (weighed(x)? '' : escHabit(x.u)+' · ')}${isTeen()? '' : Math.round(x.kcal*x.q)+' kcal · '+Math.round(x.p*x.q)+'g protein · '}<span class="src">${foodSource(x)}</span></div></div>
-        ${x.quick? `<button class="fadd rm" data-foodstep="${escHabit(x.id)}|${x.meal||'s'}|-99" aria-label="Remove">&minus;</button>` : foodStepper(x)}</div>`).join('')}
+          <div class="s">your numbers · ${isTeen()? '' : Math.round(x.kcal*x.q)+' kcal · '+Math.round(x.p*x.q)+'g protein · '}<span class="src">${foodSource(x)}</span></div></div>
+        <button class="fadd rm" data-foodstep="${escHabit(x.id)}|${x.meal||'s'}|-99" aria-label="Remove">&minus;</button></div>`
+      : `<button class="frow onplate fplate" data-foodopen="${escHabit(x.id)}|${x.meal||'s'}" aria-label="${escHabit(x.n)}, ${amountText(x)}. Change or remove">
+        <span class="txt"><span class="t">${escHabit(x.n)}</span>
+          <span class="s">${weighed(x)? '' : escHabit(x.u)+' · '}${isTeen()? '' : Math.round(x.kcal*x.q)+' kcal · '+Math.round(x.p*x.q)+'g protein · '}<span class="src">${foodSource(x)}</span></span></span>
+        <span class="fhave">${amountText(x)}</span></button>`).join('')}
       <div class="shortcuts">
         ${yTotal?`<button class="mini" id="foodYesterday">Same as yesterday</button>`:''}
         ${savedMeals().map(m=>`<button class="mini" data-savedmeal="${m.id}">${escHabit(m.name)}</button>`).join('')}
@@ -722,110 +720,206 @@ function drawFoodNew(){
     <button class="sheetcta" id="nfSave">Save it and add it</button>
     <button class="skipbtn" id="nfCancel">Back to the list</button>`;
 }
-/* ---------- how much: the amount box (build 73) ----------
-   Typing the number is the quickest way to an exact weight, so the box is
-   focused with the number selected; −10, −1, +1, +10 nudge it; chips give
-   what was used last time, the food's own household measures (a slice, a
-   large egg, a tablespoon) and round amounts (or glass, can and pint sizes
-   for drinks). What it comes to is worked out live as it is typed. */
+/* ---------- adding a food: one screen, MyFitnessPal's flow done better (build 75) ----------
+   Feargal found the build 73 controls worse (g, ½ and + on every row, a
+   stepper on the plate, a separate box) and asked for MyFitnessPal's flow,
+   improved. MyFitnessPal: tap a search result for its food screen (serving
+   size, number of servings, meal, a calorie and macro ring, a tick to add),
+   or tap + on the result to log one serving; tap a diary entry for the same
+   screen to change it. What it gets wrong, and what this does instead:
+   - Serving size times number of servings is two fields for one question
+     ("150g" means picking "1 g" then typing 150). Here it is one amount
+     with its unit: 150 g, 3 eggs, 2 slices.
+   - The unit of a logged entry cannot be changed there; here any unit can be
+     picked at any time and the amount converts, so the weight stays the same.
+   - The phone keyboard covers half the screen. Here a keypad is part of the
+     screen, so the ring, the meal and Add stay in view, and the first key
+     replaces the number.
+   - It shows the food's share of the day; here the line under the ring says
+     where the day ends up after it, against your target.
+   - + on a result logs a default serving; here it logs what you had last
+     time, and the toast offers Change.
+   Every row is now one tap to open (the whole row), with one + for the
+   quick add; entries on the plate open the same screen with Save and
+   Remove. */
 let foodAmt=null;
 const lastAmts=()=>(S.foodLast&&typeof S.foodLast==='object')? S.foodLast : {};
 function amtBase(f){ const g=portionG(f); return g? {per:g,u:unitOf(f)} : {per:1,u:''}; }
-function amtChips(f){
+/* the units a food can be measured in: its base (g or ml), its own portion
+   (an egg, a slice, a bowl) and the household weights from the tables */
+function unitsFor(f){
   const {per,u}=amtBase(f), out=[], seen=new Set();
-  const add=(label,v)=>{ v=Math.round(v*10)/10; if(v>0&&!seen.has(v)){ seen.add(v); out.push([label,v]); } };
-  const last=lastAmts()[f.id];
-  if(+last>0) add('Last time · '+amtNum(last)+u,+last);
-  if(!u){ [0.25,0.5,1,1.5,2].forEach(v=>add(qtyText(v)===String(v)? String(v) : (v===0.25?'¼':qtyText(v)),v)); return out; }
-  if(f.src!=='usda'&&!/^\d/.test(String(f.u))){ add('1 '+f.u+' · '+amtNum(per)+u,per); add('2 · '+amtNum(per*2)+u,per*2); }
-  (f.por||[]).forEach(([l,g])=>add((/^(\d|half)/.test(l)? l : '1 '+l)+' · '+amtNum(g)+u,g));
-  (u==='ml'? (f.alc? [[0,175],[0,330],[0,500],['Pint',568]] : [[0,100],[0,200],[0,250],[0,330],[0,500]])
-    : [[0,25],[0,50],[0,100],[0,150],[0,200],[0,250]]).forEach(([l,v])=>add(l? l+' · '+v+u : v+u,v));
+  const add=(k,label,g,note)=>{ const key=label.toLowerCase(); if(!seen.has(key)&&g>0){ seen.add(key); out.push({k,label,g,note}); } };
+  if(!u){ add('por',f.u||'portion',1,''); return out; }
+  add('base',u,1,'');
+  /* an everyday food's own portion, unless that portion is just a weight
+     (150g is already a weight, so a "portion" button would say nothing new) */
+  if(f.src!=='usda'&&!/^\d+(\.\d+)?\s?(g|ml)\b/i.test(String(f.u))) add('por',String(f.u).replace(/^(a|one) /i,''),per,amtNum(per)+u);
+  (f.por||[]).forEach((p,i)=>{ let l=String(p[0]).replace(/^(\d+(\.\d+)?|half) /,''); const n=parseFloat(p[0])||(/^half/.test(p[0])? 0.5 : 1);
+    add('h'+i,l,p[1]/n,amtNum(p[1]/n)+u); });
   return out;
 }
-function amtCurrent(){ const a=foodAmt; return a? dayFood(foodKey()).find(x=>x.id===a.id&&(x.meal||'s')===a.meal) : null; }
-function amtRead(){ const el=document.getElementById('amtIn'); if(!el) return 0; const v=parseFloat(String(el.value).replace(',','.')); return isFinite(v)&&v>0? v : 0; }
-function amtSumHtml(f,v){
-  const {per,u}=amtBase(f), q=v/per, r=n=>Math.round(n*q*10)/10, mealName=MEALS.find(m=>m[0]===foodAmt.meal)[1].toLowerCase();
-  const cur=amtCurrent();
-  const sum= isTeen()? `<b>${Math.round(r(f.p))}</b>g protein` : `<b>${Math.round(f.kcal*q)}</b> kcal · <b>${Math.round(r(f.p))}</b>g protein · ${Math.round(r(f.c))}g carbs · ${Math.round(r(f.f))}g fat${typeof f.fb==='number'? ' · '+r(f.fb)+'g fibre' : ''}`;
-  const amt=u? amtNum(v)+u : qtyText(v);
-  const cta= !v? 'Type an amount' : (foodAmt.edit&&cur? 'Save, '+amt : (cur? `Add ${amt}, ${u? amtNum(cur.q*per+v)+u : qtyText(cur.q+v)} in ${mealName}` : `Add ${amt} to ${mealName}`));
-  return {sum,cta};
+const unitOfKey=(f,k)=>unitsFor(f).find(x=>x.k===k)||unitsFor(f)[0];
+const counted=f=>!weighed(f)&&!!portionG(f);
+/* what + adds and what the screen opens on: last time, else one portion */
+function lastFor(f){
+  const l=lastAmts()[f.id];
+  if(typeof l==='number'&&l>0) return {g:l,k:'base'};
+  if(l&&+l.g>0) return {g:+l.g,k:l.k||'base'};
+  return null;
 }
-function amtRefresh(){
-  const f=foodAmt&&foodOf(foodAmt.id); if(!f) return;
-  const v=amtRead(), o=amtSumHtml(f,v);
-  const s=document.getElementById('amtSum'), b=document.getElementById('amtSave');
-  if(s) s.innerHTML=o.sum; if(b){ b.textContent=o.cta; b.disabled=!v; }
-  document.querySelectorAll('[data-amtset]').forEach(c=>c.classList.toggle('on',Math.abs(+c.dataset.amtset-v)<0.05));
+function quickAmt(f){
+  const {per,u}=amtBase(f), l=lastFor(f);
+  if(l&&u){ const un=unitOfKey(f,l.k); return {q:+(l.g/per).toFixed(4), label:un.k==='base'? amtNum(l.g)+u : amtNum(l.g/un.g)+' '+un.label}; }
+  return {q:1, label: u? (counted(f)? '1 '+f.u : amtNum(per)+u) : '1 '+(f.u||'portion')};
 }
+function amtCurrent(){ const a=foodAmt; return a? dayFood(foodKey()).find(x=>x.id===a.id&&(x.meal||'s')===a.origMeal) : null; }
+const amtVal=()=>{ const v=parseFloat(String(foodAmt.str||'').replace(',','.')); return isFinite(v)&&v>0? v : 0; };
+/* grams (or ml, or portions when there is no weight) for what is typed */
+function amtGrams(){ const f=foodOf(foodAmt.id), un=unitOfKey(f,foodAmt.k); return amtVal()*un.g; }
+function fmtN(v){ const r=Math.round(v*100)/100; return String(r>=100? Math.round(r) : r); }
 function openFoodAmount(id,meal,edit){
-  foodAmt={id,meal:meal||foodSlot,edit:!!edit};
+  const f=foodOf(id); if(!f) return;
+  const m=meal||foodSlot, cur=edit? dayFood(foodKey()).find(x=>x.id===id&&(x.meal||'s')===m) : null;
+  const {per}=amtBase(f);
+  let k, g;
+  if(cur){ g=cur.q*per; k=(cur.uk&&unitsFor(f).some(x=>x.k===cur.uk))? cur.uk : (counted(f)&&Math.abs(cur.q*2-Math.round(cur.q*2))<1e-6? 'por' : unitsFor(f)[0].k); }
+  else { const l=lastFor(f); if(l){ g=l.g; k=unitsFor(f).some(x=>x.k===l.k)? l.k : 'base'; } else { g=per; k=counted(f)? 'por' : unitsFor(f)[0].k; } }
+  const un=unitOfKey(f,k);
+  foodAmt={id,meal:m,origMeal:m,edit:!!cur,k:un.k,str:fmtN(g/un.g),fresh:true};
   drawFoodAmount();
-  const el=document.getElementById('amtIn');
-  if(el) try{ el.focus({preventScroll:true}); el.select(); }catch(e){}
+}
+function ringSvg(f,q){
+  const c=f.c*q*4, fa=f.f*q*9, p=f.p*q*4, tot=c+fa+p, R=34, L=2*Math.PI*R;
+  let off=0;
+  const arc=(v,col)=>{ if(!tot||v<=0) return ''; const len=v/tot*L, el=`<circle r="${R}" cx="44" cy="44" fill="none" stroke="var(--${col})" stroke-width="9" stroke-dasharray="${len.toFixed(1)} ${(L-len).toFixed(1)}" stroke-dashoffset="${(-off).toFixed(1)}" transform="rotate(-90 44 44)"/>`; off+=len; return el; };
+  return `<svg viewBox="0 0 88 88" width="88" height="88" aria-hidden="true"><circle r="${R}" cx="44" cy="44" fill="none" stroke="var(--track)" stroke-width="9"/>${arc(c,'carbs')}${arc(fa,'fat')}${arc(p,'coral')}</svg>`;
+}
+function amtLiveHtml(){
+  const a=foodAmt, f=foodOf(a.id), {per,u}=amtBase(f), q=amtGrams()/per, teen=isTeen();
+  const r=n=>Math.round(n*q*10)/10, kc=Math.round(f.kcal*q);
+  if(teen) return `<div class="aq-teen"><b>${Math.round(r(f.p))}</b>g protein${typeof f.fb==='number'? ' · '+r(f.fb)+'g fibre' : ''}</div>`;
+  const c=f.c*q*4, fa=f.f*q*9, p=f.p*q*4, tot=c+fa+p||1, pc=v=>Math.round(v/tot*100)+'%';
+  /* where the day ends up after this one (a change replaces what was there) */
+  const k=foodKey(), t=foodTotals(k), cur=amtCurrent(), tg=S.targets||{};
+  const base={kcal:t.kcal-(cur? cur.kcal*cur.q : 0), p:t.protein-(cur? cur.p*cur.q : 0)};
+  const dayK=Math.round(base.kcal+f.kcal*q), dayP=Math.round(base.p+f.p*q);
+  return `<div class="aqring">${ringSvg(f,q)}<div class="aqk"><b>${num(kc)}</b><span>kcal</span></div></div>
+    <div class="aqmac">
+      <div><i style="background:var(--carbs)"></i><span>Carbs</span><b>${fmtN(r(f.c))}g</b><small>${pc(c)}</small></div>
+      <div><i style="background:var(--fat)"></i><span>Fat</span><b>${fmtN(r(f.f))}g</b><small>${pc(fa)}</small></div>
+      <div><i style="background:var(--coral)"></i><span>Protein</span><b>${fmtN(r(f.p))}g</b><small>${pc(p)}</small></div>
+      ${typeof f.fb==='number'? `<div class="aqfb"><span>Fibre ${fmtN(r(f.fb))}g</span></div>` : ''}
+    </div>
+    <div class="aqday">${k===todayKey()? 'Today' : 'That day'} with this: <b>${num(dayK)}</b>${tg.kcal? ' of '+num(tg.kcal) : ''} kcal · <b>${dayP}</b>${tg.protein? ' of '+tg.protein : ''}g protein</div>`;
+}
+function amtNumHtml(){
+  const a=foodAmt, f=foodOf(a.id), un=unitOfKey(f,a.k), {u}=amtBase(f);
+  const v=amtVal(), g=amtGrams();
+  const word= un.k==='base'? un.label : (v===1? un.label : plural(un.label));
+  return `<span class="aqv${a.fresh?' fresh':''}">${escHabit(a.str||'0')}</span><span class="aqu">${escHabit(word)}</span>
+    ${un.k!=='base'&&u&&v? `<span class="aqeq">= ${amtNum(g)}${u}</span>` : ''}`;
+}
+const plural=w=>(/[\s\d,]/.test(w)||/^(large|medium|small|jumbo|standard|regular|half|whole)$/i.test(w)||/s$/.test(w))? w : (/(sh|ch|x)$/.test(w)? w+'es' : (/[^aeiou]y$/.test(w)? w.slice(0,-1)+'ies' : w+'s'));
+function amtChipsHtml(){
+  const a=foodAmt, f=foodOf(a.id), un=unitOfKey(f,a.k), {u}=amtBase(f), out=[], seen=new Set();
+  const add=(label,v)=>{ const key=+v.toFixed(3); if(v>0&&!seen.has(key)){ seen.add(key); out.push([label,key]); } };
+  const l=lastFor(f); if(l&&u){ const n=l.g/un.g; add('Last time · '+fmtN(n)+(un.k==='base'? un.label : ' '+(n===1? un.label : plural(un.label))),n); }
+  const pres= un.k==='base'? (u==='ml'? (f.alc? [175,330,500,568] : [100,200,250,330,500]) : [25,50,100,150,200]) : [0.5,1,2,3];
+  pres.forEach(v=>add(un.k==='base'? (v===568? 'Pint' : v+un.label) : qtyText(v),v));
+  return out.map(([lab,v])=>`<button data-amtset="${v}" class="${Math.abs(v-amtVal())<1e-6?'on':''}">${escHabit(lab)}</button>`).join('');
 }
 function drawFoodAmount(){
   const a=foodAmt, f=a&&foodOf(a.id);
   if(!f){ foodAmt=null; drawFood(); return; }
-  const {per,u}=amtBase(f), cur=amtCurrent();
-  if(a.edit&&!cur) a.edit=false;
-  const start= a.edit? cur.q*per : (+lastAmts()[f.id]>0? +lastAmts()[f.id] : per);
-  const v=Math.round(start*10)/10, o=amtSumHtml(f,v), mealName=MEALS.find(m=>m[0]===a.meal)[1];
-  const fine= u? [-10,-1,1,10] : [-0.5,-0.25,0.25,0.5];
-  const fineLabel=d=>(d<0?'−':'+')+(u? Math.abs(d) : (Math.abs(d)===0.25?'¼':'½'));
-  $('foodBody').innerHTML=`<div class="famt">
-    <button class="inlinebtn amtback" data-amtback>‹ Back to the list</button>
-    <div class="famthead"><b>${escHabit(f.n)}</b>
-      <small>${isTeen()? '' : (f.src==='usda'||u? 'Per '+(f.src==='usda'? '100'+u : escHabit(f.u)+(u&&!/^\d/.test(String(f.u))? ' ('+amtNum(per)+u+')' : ''))+': '+f.kcal+' kcal, '+f.p+'g protein · ' : '')}${foodSource(f)}${cur&&!a.edit? ' · '+amountText(cur)+' in '+mealName.toLowerCase()+' already' : ''}</small></div>
-    <label class="famtbox"><input id="amtIn" type="text" inputmode="decimal" enterkeyhint="done" autocomplete="off" value="${amtNum(v)}"
-      aria-label="How much, in ${u==='ml'? 'millilitres' : (u? 'grams' : 'portions')}"><span>${u||'×'}</span></label>
-    <div class="famtrow">${fine.map(d=>`<button class="amtnudge" data-amtstep="${d}" aria-label="${fineLabel(d)}${u}">${fineLabel(d)}</button>`).join('')}</div>
-    <div class="famtsum" id="amtSum" aria-live="polite">${o.sum}</div>
-    <div class="pickchips famtchips">${amtChips(f).map(([l,g])=>`<button data-amtset="${g}" class="${Math.abs(g-v)<0.05?'on':''}">${escHabit(l)}</button>`).join('')}</div>
-    <button class="sheetcta" id="amtSave">${o.cta}</button>
-    ${a.edit? `<button class="skipbtn" data-amtremove>Take it off ${escHabit(mealName.toLowerCase())}</button>` : ''}
+  const units=unitsFor(f);
+  $('foodBody').innerHTML=`<div class="famt" role="group" aria-label="How much ${escHabit(f.n)}">
+    <div class="aqtop"><button class="inlinebtn amtback" data-amtback>‹ Back</button>
+      ${a.edit? `<button class="inlinebtn aqrm" data-amtremove>Remove</button>` : ''}</div>
+    <div class="famthead"><b>${escHabit(f.n)}</b><small>${foodSource(f)}${f.src==='usda'&&!isTeen()? ', per 100'+amtBase(f).u+' '+f.kcal+' kcal' : ''}</small></div>
+    <div class="aqlive" id="amtLive" aria-live="polite">${amtLiveHtml()}</div>
+    <div class="aqamt"><div class="aqnum" id="amtNum">${amtNumHtml()}</div>
+      ${units.length>1? `<div class="aqunits" role="radiogroup" aria-label="Measured in">${units.map(x=>`<button role="radio" aria-checked="${x.k===a.k}" class="${x.k===a.k?'on':''}" data-amtunit="${x.k}">${escHabit(x.label)}${x.note? `<small>${x.note}</small>` : ''}</button>`).join('')}</div>` : ''}
+    </div>
+    <div class="pickchips famtchips" id="amtChips">${amtChipsHtml()}</div>
+    <div class="aqpad">${['1','2','3','4','5','6','7','8','9','.','0','del'].map(k=>`<button data-kp="${k}" aria-label="${k==='del'? 'Delete' : (k==='.'? 'Point' : k)}">${k==='del'? '⌫' : k}</button>`).join('')}</div>
+    <div class="aqmeal mealtabs" role="tablist" aria-label="Which meal">${MEALS.map(([id,label])=>`<button role="tab" aria-selected="${a.meal===id}" class="${a.meal===id?'on':''}" data-amtmeal="${id}"><span>${label}</span></button>`).join('')}</div>
+    <button class="sheetcta" id="amtSave"${amtVal()? '' : ' disabled'}>${amtCta()}</button>
   </div>`;
   const b=$('foodBody'); if(b) b.classList.remove('q');
+  /* the food's own screen: the sheet's title steps aside and it opens at the top */
+  const sh=$('foodSheet'); if(sh){ sh.classList.add('amtmode'); sh.scrollTop=0; }
+}
+function amtCta(){
+  const a=foodAmt; if(!amtVal()) return 'Type how much';
+  const mealName=MEALS.find(m=>m[0]===a.meal)[1];
+  return a.edit? (a.meal!==a.origMeal? 'Move to '+mealName.toLowerCase() : 'Save') : 'Add to '+mealName.toLowerCase();
+}
+/* only the parts that change are redrawn, so taps on the keypad are instant */
+function amtRefresh(){
+  const n=$('amtNum'), l=$('amtLive'), c=$('amtChips'), b=$('amtSave');
+  if(n) n.innerHTML=amtNumHtml(); if(l) l.innerHTML=amtLiveHtml(); if(c) c.innerHTML=amtChipsHtml();
+  if(b){ b.textContent=amtCta(); b.disabled=!amtVal(); }
+}
+function amtKey(k){
+  const a=foodAmt; if(!a) return;
+  let s2=a.fresh? '' : String(a.str||'');
+  if(k==='del'){ s2=(a.fresh? '' : s2.slice(0,-1)); }
+  else if(k==='.'){ if(s2.indexOf('.')<0) s2=(s2||'0')+'.'; }
+  else { if(s2==='0') s2=''; const dec=s2.split('.')[1]; if(s2.replace('.','').length<5&&!(dec&&dec.length>=2)) s2+=k; }
+  a.str=s2; a.fresh=false; amtRefresh();
 }
 function saveFoodAmount(){
   const a=foodAmt, f=a&&foodOf(a.id); if(!f) return;
-  const v=amtRead(), {per,u}=amtBase(f);
+  const v=amtVal(), {per,u}=amtBase(f), g=amtGrams();
   if(!v){ toast('Type how much first'); return; }
-  if(u&&v>5000){ toast('That is over 5 kilos. Check the number'); return; }
-  const q=v/per, cur=amtCurrent(), amt=u? amtNum(v)+u : qtyText(v), mealName=MEALS.find(m=>m[0]===a.meal)[1].toLowerCase();
-  if(a.edit&&cur) setFoodQty(a.id,a.meal,q); else addFood(a.id,q,a.meal);
-  if(u){ const l=Object.assign({},lastAmts()); l[f.id]=Math.round(v*10)/10;
+  if(u&&g>5000){ toast('That is over 5 kilos. Check the number'); return; }
+  const q=g/per, cur=amtCurrent(), mealName=MEALS.find(m=>m[0]===a.meal)[1].toLowerCase();
+  if(a.edit&&cur&&a.meal===a.origMeal) setFoodQty(a.id,a.meal,q);
+  else { if(a.edit&&cur) setFoodQty(a.id,a.origMeal,0); addFood(a.id,q,a.meal); }
+  const row=dayFood(foodKey()).find(x=>x.id===a.id&&(x.meal||'s')===a.meal);
+  if(row){ row.uk=a.k; save(); }
+  if(u){ const l=Object.assign({},lastAmts()); l[f.id]={g:Math.round(g*10)/10,k:a.k};
     const keys=Object.keys(l); if(keys.length>300) delete l[keys[0]];
     S.foodLast=l; save(); }
-  foodAmt=null; drawFood(); renderAll();
+  foodSlot=a.meal; foodAmt=null; drawFood(); renderAll();
   if(typeof drawDay==='function'&&document.getElementById('dayCheck').classList.contains('on')) drawDay();
-  toast(a.edit&&cur? f.n+' now '+amt : amt+' of '+f.n+' added to '+mealName);
+  const amt=row? amountText(row) : '';
+  toast(a.edit? f.n.split(',')[0]+' now '+amt+(a.meal!==a.origMeal? ', in '+mealName : '') : f.n.split(',')[0]+', '+amt+' added to '+mealName);
 }
 document.addEventListener('click',e=>{
-  const fa=e.target.closest('[data-foodamt]');
-  if(fa){ const parts=fa.dataset.foodamt.split('|'), meal=parts.length>1? parts.pop() : null;
+  const fo=e.target.closest('[data-foodopen]');
+  if(fo){ const parts=fo.dataset.foodopen.split('|'), meal=parts.length>1? parts.pop() : null;
     openFoodAmount(parts.join('|'), meal||foodSlot, !!meal); return; }
   if(!foodAmt) return;
   if(e.target.closest('[data-amtback]')){ foodAmt=null; drawFood(); return; }
-  const st=e.target.closest('[data-amtstep]');
-  if(st){ const el=document.getElementById('amtIn'); if(!el) return;
-    const d=+st.dataset.amtstep, v=Math.max(0,Math.round((amtRead()+d)*100)/100);
-    el.value=amtNum(v); amtRefresh(); return; }
+  const kp=e.target.closest('[data-kp]'); if(kp){ amtKey(kp.dataset.kp); return; }
+  const un=e.target.closest('[data-amtunit]');
+  if(un){ const f=foodOf(foodAmt.id), g=amtGrams(), nu=unitOfKey(f,un.dataset.amtunit);
+    foodAmt.k=nu.k; foodAmt.str=g? fmtN(g/nu.g) : ''; foodAmt.fresh=true; drawFoodAmount(); return; }
   const cs=e.target.closest('[data-amtset]');
-  if(cs){ const el=document.getElementById('amtIn'); if(el){ el.value=amtNum(+cs.dataset.amtset); amtRefresh(); } return; }
+  if(cs){ foodAmt.str=fmtN(+cs.dataset.amtset); foodAmt.fresh=true; amtRefresh(); return; }
+  const ml=e.target.closest('[data-amtmeal]');
+  if(ml){ foodAmt.meal=ml.dataset.amtmeal; document.querySelectorAll('[data-amtmeal]').forEach(x=>{ const on=x.dataset.amtmeal===foodAmt.meal; x.classList.toggle('on',on); x.setAttribute('aria-selected',on); }); amtRefresh(); return; }
   if(e.target.closest('#amtSave')){ saveFoodAmount(); return; }
   if(e.target.closest('[data-amtremove]')){
     const a=foodAmt, cur=amtCurrent(); if(!cur) return;
     const before=JSON.parse(JSON.stringify(cur)), dk=foodKey();
-    setFoodQty(a.id,a.meal,0); foodAmt=null; drawFood(); renderAll();
-    toast(before.n+' taken off','Undo',()=>{ S.days[dk]=S.days[dk]||{}; S.days[dk].food=(S.days[dk].food||[]).concat([before]);
+    setFoodQty(a.id,a.origMeal,0); foodAmt=null; drawFood(); renderAll();
+    toast(before.n.split(',')[0]+' removed','Undo',()=>{ S.days[dk]=S.days[dk]||{}; S.days[dk].food=(S.days[dk].food||[]).concat([before]);
       applyFoodTotals(dk); save(); drawFood(); renderAll(); });
     return; }
 });
-document.addEventListener('input',e=>{ if(e.target.id==='amtIn') amtRefresh(); });
-document.addEventListener('keydown',e=>{ if(e.target.id==='amtIn'&&e.key==='Enter'){ e.preventDefault(); saveFoodAmount(); } });
+/* a computer keyboard works too: digits, point, backspace, Enter, Escape */
+document.addEventListener('keydown',e=>{
+  if(!foodAmt||!document.getElementById('amtNum')) return;
+  if(e.target&&/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+  if(/^[0-9]$/.test(e.key)) { amtKey(e.key); e.preventDefault(); }
+  else if(e.key==='.'||e.key===',') { amtKey('.'); e.preventDefault(); }
+  else if(e.key==='Backspace') { amtKey('del'); e.preventDefault(); }
+  else if(e.key==='Enter') { saveFoodAmount(); e.preventDefault(); }
+});
+
 document.addEventListener('click',e=>{
   if(e.target.closest('#foodBtn')) openFood(true);
   if(e.target.closest('#foodDone')) closeFood();
@@ -857,8 +951,11 @@ document.addEventListener('click',e=>{
     foodAdding=false; foodQuery=''; addFood(f.id,1); drawFood(); renderAll();
     toast(f.n+' saved and added'); }
   const fa=e.target.closest('[data-foodadd]');
-  if(fa){ const [id,q]=fa.dataset.foodadd.split(':'); addFood(id,+q);
-    drawFood(); if(typeof drawDay==='function'&&document.getElementById('dayCheck').classList.contains('on')) drawDay(); }
+  if(fa){ const [id,q]=fa.dataset.foodadd.split(':'), meal=foodSlot; addFood(id,+q);
+    drawFood(); renderAll(); if(typeof drawDay==='function'&&document.getElementById('dayCheck').classList.contains('on')) drawDay();
+    const r=dayFood(foodKey()).find(x=>x.id===id&&(x.meal||'s')===meal);
+    if(r) toast(r.n.split(',')[0]+', '+amountText(r)+' in '+MEALS.find(m=>m[0]===meal)[1].toLowerCase(),'Change',()=>{ if(!document.getElementById('foodSheet').classList.contains('on')) openFood(false,{slot:meal}); openFoodAmount(id,meal,true); });
+    return; }
   const fst=e.target.closest('[data-foodstep]');
   if(fst){
     const parts=fst.dataset.foodstep.split('|'), d=+parts.pop(), meal=parts.pop(), id=parts.join('|');

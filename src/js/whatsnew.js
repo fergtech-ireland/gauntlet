@@ -18,6 +18,9 @@
    Writing a note: what changed for the person, in their words, one line of
    why it matters if needed, no internal names. Bump APP_VERSION with it. */
 const RELEASE_NOTES=[
+  {v:'75', date:'2026-10-14', items:[
+    {t:'Adding food, rebuilt', d:'Tap any food to open it: pick grams, ml, eggs, slices or spoons, type the amount on the keypad and see the calories and macros as you go. + still adds in one tap, with what you had last time.'},
+    {t:'Change or remove in one tap', d:'Tap anything you logged, on Eat or in a meal, to change how much, move it to another meal or remove it.'}]},
   {v:'74', date:'2026-10-14', items:[
     {t:'What is new, when it is new', d:'After an update, Gauntlet now tells you what changed, once. You can see every change any time in You, settings, What\'s new.'}]},
   {v:'73', date:'2026-10-14', items:[

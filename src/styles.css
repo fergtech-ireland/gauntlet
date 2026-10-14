@@ -112,25 +112,54 @@ header.top{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1
 .fstep button{min-width:40px;min-height:40px;border-radius:10px;font-size:20px;font-weight:700;color:var(--ink)}
 .fstep .fq{min-width:28px;text-align:center;font-family:var(--font-num);font-weight:700;font-size:16px}
 .frow.onplate .t{font-weight:700}
-.fadd.amt{background:var(--track);color:var(--green-text);font-size:14px;margin-right:6px;min-width:40px}
-.fadd.half{min-width:40px}
-.fstep .fq{min-height:40px;border-radius:10px;padding:0 4px}
-.fstep .fq.w{min-width:52px;font-size:15px;color:var(--green-text);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
-/* the amount box (build 73) */
+/* adding a food (build 75) */
+.frow .fopen{flex:1;min-width:0;text-align:left;display:flex;flex-direction:column;align-items:flex-start;min-height:44px;justify-content:center;padding:0;color:var(--ink)}
+.frow .fopen .t,.fplate .t{display:block;font-weight:600;font-size:14px}
+.frow .fopen .s,.fplate .s{display:block;font-size:11.5px;color:var(--mute);margin-top:2px}
+.fhave{flex:0 0 auto;min-height:40px;min-width:56px;padding:0 10px;border-radius:12px;background:var(--green-tint);color:var(--green-text);font-family:var(--font-num);font-weight:700;font-size:16px;display:inline-flex;align-items:center;justify-content:center}
+.fplate{width:100%;text-align:left;color:var(--ink)}
+.fplate .txt{flex:1;min-width:0;display:block}
 .famt{padding:0 14px 8px}
-.famt .amtback{font-size:13px;min-height:40px;padding:0;margin-bottom:2px}
-.famthead b{display:block;font-size:17px;line-height:1.25}
+.aqtop{display:flex;justify-content:space-between;align-items:center}
+.famt .amtback,.famt .aqrm{font-size:13px;min-height:40px;padding:0}
+.famt .aqrm{color:var(--coral-text)}
+.famthead b{display:block;font-size:16px;line-height:1.25}
 .famthead small{display:block;font-size:12px;color:var(--mute);margin-top:3px}
-.famtrow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0 4px}
-.amtnudge{min-width:0;min-height:48px;border-radius:12px;background:var(--track);color:var(--ink);font-size:14px;font-weight:700;font-family:var(--font-num)}
-.famtbox{margin-top:14px;display:flex;align-items:baseline;justify-content:center;gap:3px;min-height:60px;border:2px solid var(--ink);border-radius:14px;background:var(--surface);padding:0 8px}
-.famtbox input{flex:1 1 0;width:0;min-width:0;border:0;background:transparent;text-align:right;font-family:var(--font-num);font-size:38px;font-weight:700;color:var(--ink);padding:6px 0;outline:none}
-.famtbox span{font-family:var(--font-num);font-size:22px;font-weight:700;color:var(--mute);flex:1 1 0;text-align:left}
-.famtbox:focus-within{border-color:var(--cta)}
-.famtsum{font-size:13px;color:var(--sub);text-align:center;margin:6px 0 12px;line-height:1.5}
-.famtsum b{font-family:var(--font-num);font-size:17px;color:var(--ink)}
-.famtchips{flex-wrap:wrap;overflow:visible;padding:0 0 6px;justify-content:center}
-.famt .sheetcta{margin:10px 0 2px;width:100%}
+.aqlive{display:grid;grid-template-columns:72px 1fr;gap:2px 14px;align-items:center;margin:8px 0 2px}
+#foodSheet.amtmode > h3,#foodSheet.amtmode > .sub{display:none}
+.aqring{position:relative;width:72px;height:72px}
+.aqring svg{width:72px;height:72px}
+.aqk{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.aqk b{font-family:var(--font-num);font-size:21px;line-height:1}
+.aqk span{font-size:11px;color:var(--mute)}
+.aqmac{display:grid;gap:1px}
+.aqmac>div{display:grid;grid-template-columns:10px 1fr auto 36px;align-items:center;gap:8px;font-size:12.5px}
+.aqmac i{width:10px;height:10px;border-radius:3px}
+.aqmac b{font-family:var(--font-num);font-size:15px}
+.aqmac small{color:var(--mute);text-align:right}
+.aqmac .aqfb{display:block;font-size:12px;color:var(--mute);padding-left:18px}
+.aqday{grid-column:1/-1;font-size:12px;color:var(--sub);margin-top:4px}
+.aqday b{font-family:var(--font-num);font-size:15px;color:var(--ink)}
+.aq-teen{font-size:14px;margin:12px 0 4px}
+.aqamt{margin:8px 0 4px;padding:6px 10px 8px;border:2px solid var(--ink);border-radius:14px;background:var(--surface)}
+.aqnum{display:flex;align-items:baseline;justify-content:center;gap:6px;min-height:42px;flex-wrap:wrap}
+.aqv{font-family:var(--font-num);font-size:36px;font-weight:700;line-height:1}
+.aqv.fresh{background:var(--green-tint);border-radius:6px;padding:0 4px}
+.aqu{font-family:var(--font-num);font-size:22px;font-weight:700;color:var(--sub)}
+.aqeq{font-size:13px;color:var(--mute)}
+.aqunits{display:flex;gap:6px;overflow-x:auto;margin-top:6px;-webkit-overflow-scrolling:touch}
+.aqunits::-webkit-scrollbar{display:none}
+.aqunits button{flex:0 0 auto;min-height:40px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);font-size:13px;font-weight:700;color:var(--sub);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1}
+.aqunits button small{font-size:10.5px;font-weight:600;color:var(--mute)}
+.aqunits button.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink)}
+.aqunits button.on small{color:var(--on-ink)}
+.famtchips{padding:2px 0 6px}
+.aqpad{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:2px 0 8px}
+.aqpad button{min-height:44px;border-radius:12px;background:var(--track);color:var(--ink);font-family:var(--font-num);font-size:22px;font-weight:700}
+.aqpad button:active{background:var(--line)}
+.aqmeal{margin:0 0 4px}
+.famt .sheetcta{margin:8px 0 2px;width:100%;position:sticky;bottom:8px;z-index:2;box-shadow:0 0 0 6px var(--surface)}
+@media (max-height:760px){.aqpad button{min-height:38px;font-size:20px}.aqv{font-size:32px}.famthead small{display:none}.aqmac .aqfb{display:none}}
 .famt .sheetcta:disabled{opacity:.5}
 .foodmore{display:block;margin:10px auto 2px}
 /* what's new (build 74) */

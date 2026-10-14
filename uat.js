@@ -2732,9 +2732,10 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     d.querySelector('[data-foodslot="b"]').click();
     d.querySelector('#foodList [data-foodadd="egg:1"]').click();
     t('40 · one tap adds', today() === 'egg:b:1');
-    t('40 · and the row becomes a counter', !!d.querySelector('#foodList [data-foodstep="egg|b|1"]'));
-    d.querySelector('#foodList [data-foodstep="egg|b|1"]').click();
-    d.querySelector('#foodList [data-foodstep="egg|b|1"]').click();
+    /* build 75: the row shows the amount and opens the food's screen (was a counter); what each check proves is kept */
+    t('40 · and the row then shows how much is there', txt(d.querySelector('#foodList [data-foodopen="egg|b"]')) === '1');
+    d.querySelector('#foodList [data-foodopen="egg|b"]').click();
+    d.querySelector('[data-kp="3"]').click(); d.getElementById('amtSave').click();
     t('40 · three eggs is one row that says 3', today() === 'egg:b:3', today());
     G.addFood('egg', 1, 'b');
     t('40 · adding it again from anywhere counts up, not a new row', today() === 'egg:b:4');
@@ -2742,20 +2743,22 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('40 · the same food at another meal keeps its own row', today() === 'egg:b:4,egg:l:1');
     t('40 · calories follow the count', Math.round(G.foodTotals(G.todayKey()).kcal) === G.foodOf('egg').kcal * 5);
     G.drawFood();
-    t('40 · the plate shows the meal with its counters', /Breakfast/.test(txt(d.querySelector('.platehead')))
-      && !!d.querySelector('.plate [data-foodstep="egg|b|-1"]') && /4/.test(txt(d.querySelector('.plate .fq'))));
-    for (let i = 0; i < 4; i++) d.querySelector('.plate [data-foodstep="egg|b|-1"]').click();
-    t('40 · counting down to nothing takes it off', today() === 'egg:l:1');
-    t('40 · with Undo', /taken off/.test(txt(d.getElementById('toast'))) && /Undo/.test(txt(d.getElementById('toast'))));
+    t('40 · the plate shows the meal with how much of each', /Breakfast/.test(txt(d.querySelector('.platehead')))
+      && txt(d.querySelector('.plate [data-foodopen="egg|b"] .fhave')) === '4');
+    d.querySelector('.plate [data-foodopen="egg|b"]').click();
+    d.querySelector('[data-amtremove]').click();
+    t('40 · removing takes it off', today() === 'egg:l:1');
+    t('40 · with Undo', /removed/.test(txt(d.getElementById('toast'))) && /Undo/.test(txt(d.getElementById('toast'))));
     d.getElementById('toastAct').click();
-    t('40 · which puts it back', /egg:b:1/.test(today()));
+    t('40 · which puts it back', /egg:b:4/.test(today()));
 
-    d.querySelector('#foodList [data-foodadd="banana:0.5"]').click();
+    G.openFoodAmount('banana', 'b', false);
+    d.querySelector('[data-amtset="0.5"]').click(); d.getElementById('amtSave').click();
     t('40 · half a portion still works', /banana:b:0.5/.test(today()));
     G.drawFood();
     t('40 · and shows as a half', /½/.test(txt(d.querySelector('.plate'))));
-    d.querySelector('.plate [data-foodstep="banana|b|1"]').click();
-    t('40 · one more from a half is one whole, not one and a half', /banana:b:1(,|$)/.test(today()), today());
+    G.addFood('banana', 0.5, 'b');
+    t('40 · half and half is one whole, one row', /banana:b:1(,|$)/.test(today()), today());
 
     /* quick add */
     d.getElementById('foodQuickBtn').click();
@@ -4670,11 +4673,11 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('60 · and shows on Eat straight away, behind the sheet', /Banana/.test(txt(sec('s'))));
     G.closeSheets();
     sec('l').querySelector('[data-eatitem="l"]').click();
-    t('60 · tapping an item opens its meal, with the counter', d.getElementById('foodSheet').classList.contains('on')
-      && txt([...d.querySelectorAll('#foodSheet [data-foodslot]')].find(b => b.classList.contains('on')).querySelector('span')) === 'Lunch');
-    d.querySelector('#foodSheet [data-foodstep="chicken|l|1"]').click();
-    /* build 73: chicken is sold by weight, so + is half a portion more (150g to 225g) and Eat says the grams */
-    t('60 · one more is one tap, and Eat says how much', G.dayFood().find(x => x.id === 'chicken').q === 1.5 && /Chicken[^×]*225g/.test(txt(sec('l'))));
+    /* build 75: an item opens straight on its own screen (was its meal's counters) */
+    t('60 · tapping an item opens it, in its meal', d.getElementById('foodSheet').classList.contains('on')
+      && /Chicken/.test(txt(d.querySelector('#foodSheet .famthead'))) && /Save/.test(txt(d.getElementById('amtSave'))) && d.querySelector('[data-amtmeal="l"]').classList.contains('on'));
+    ['2', '2', '5'].forEach(k2 => d.querySelector(`[data-kp="${k2}"]`).click()); d.getElementById('amtSave').click();
+    t('60 · changing it is a few taps, and Eat says how much', G.dayFood().find(x => x.id === 'chicken').q === 1.5 && /Chicken[^×]*225g/.test(txt(sec('l'))));
     G.closeSheets();
 
     sec('d').querySelector('[data-eatskip="d"]').click();
@@ -4692,7 +4695,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const todayBefore = JSON.stringify(G.dayFood(k));
     sec('d').querySelector('[data-eatadd]').click();
     t('60 · adding to yesterday opens the sheet on yesterday', G.foodDay === y && /^Food, /.test(txt(d.querySelector('#foodSheet h3'))));
-    d.querySelector('#foodSheet [data-foodadd="chicken:1"]').click();
+    d.querySelector('#foodSheet [data-foodadd^="chicken:"]').click();
     t('60 · and it lands on yesterday, not today', G.dayFood(y).some(x => x.id === 'chicken' && x.meal === 'd') && JSON.stringify(G.dayFood(k)) === todayBefore);
     t('60 · with yesterday\'s totals kept in step', (S.days[y] || {}).kcal === Math.round(G.foodTotals(y).kcal) && (S.days[y] || {}).kcal > 0);
     t('60 · eaten at its meal\'s time on that day, not now', (() => { const x = G.dayFood(y).find(f => f.id === 'chicken'); return !!x && x.at >= G.dateOf(y).getTime() && x.at < G.dateOf(k).getTime(); })());
@@ -6198,7 +6201,6 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const S = G.S;
     const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
     const row = (id, m) => G.dayFood(G.todayKey()).find(x => x.id === id && (x.meal || 's') === m);
-    const type = v => { const el = d.getElementById('amtIn'); el.value = String(v); el.dispatchEvent(new w.Event('input', { bubbles: true })); };
     const DB = G.FOODS_DB, cats = new Set(G.FOOD_CATS.map(c => c[0]));
 
     /* ---- the list ---- */
@@ -6239,92 +6241,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const box = d.getElementById('foodSearch');
     box.value = 'rice white long grain cooked'; box.dispatchEvent(new w.Event('input', { bubbles: true }));
     t('78 · a USDA row says per 100g and where it is from', /per 100g/.test(txt(d.querySelector('#foodList .frow'))) && /USDA/.test(txt(d.querySelector('#foodList .frow'))));
-    t('78 · every row with a weight has a g button beside ½ and +', !!d.querySelector('#foodList [data-foodamt="u20045"]') && txt(d.querySelector('#foodList [data-foodamt="u20045"]')) === 'g');
-
-    /* ---- Feargal's case: 100g, then 50g more ---- */
-    d.querySelector('#foodList [data-foodadd="u20045:1"]').click();
-    t('78 · + adds 100g', Math.abs(row('u20045', 'l').q - 1) < 1e-9 && G.amountText(row('u20045', 'l')) === '100g');
-    t('78 · the row now shows grams, not a count', txt(d.querySelector('#foodList .fstep .fq')) === '100g');
-    d.querySelector('#foodList [data-foodstep="u20045|l|1"]').click();
-    t('78 · + on it is 50g more: 150g', G.amountText(row('u20045', 'l')) === '150g', G.amountText(row('u20045', 'l')));
-    d.querySelector('#foodList [data-foodstep="u20045|l|-1"]').click();
-    d.querySelector('#foodList [data-foodstep="u20045|l|-1"]').click();
-    t('78 · − goes down 50g at a time', G.amountText(row('u20045', 'l')) === '50g');
-    t('78 · steps snap to the next half portion', G.stepQty(1.35, 1, true) === 1.5 && G.stepQty(1.35, -1, true) === 1 && G.stepQty(0.5, -1, true) === 0 && G.stepQty(1, 1, false) === 2 && G.stepQty(0.5, 1, false) === 1);
-
-    /* ---- to the gram ---- */
-    d.querySelector('#foodList .fstep [data-foodamt="u20045|l"]').click();
-    t('78 · tapping the amount opens the box on that amount', !!d.getElementById('amtIn') && d.getElementById('amtIn').value === '50' && /Save, 50g/.test(txt(d.getElementById('amtSave'))));
-    type(137);
-    t('78 · it works out what that is as you type', /178\b/.test(txt(d.getElementById('amtSum'))) && /Save, 137g/.test(txt(d.getElementById('amtSave'))), txt(d.getElementById('amtSum')));
-    d.querySelector('[data-amtstep="1"]').click(); d.querySelector('[data-amtstep="10"]').click(); d.querySelector('[data-amtstep="-1"]').click();
-    t('78 · nudges of 1 and 10', d.getElementById('amtIn').value === '147');
-    d.getElementById('amtSave').click();
-    t('78 · saved to the gram', Math.abs(row('u20045', 'l').q - 1.47) < 1e-9 && G.amountText(row('u20045', 'l')) === '147g');
-    t('78 · calories follow the grams', Math.round(G.foodTotals(G.todayKey()).kcal) === Math.round(130 * 1.47));
-    t('78 · and it says so', /now 147g/.test(txt(d.getElementById('toast'))));
-    d.querySelector('#foodList .fstep [data-foodamt="u20045|l"]').click();
-    for (let i = 0; i < 3; i++) d.querySelector('[data-amtstep="1"]').click();
-    d.getElementById('amtSave').click();
-    t('78 · single grams: 147g, three taps of +1, is 150g', G.amountText(row('u20045', 'l')) === '150g');
-    t('78 · last time is remembered', S.foodLast && S.foodLast.u20045 === 150);
-    { const b2 = d.getElementById('foodSearch'); b2.value = ''; b2.dispatchEvent(new w.Event('input', { bubbles: true })); }
-    G.drawFood();
-    t('78 · the plate shows 150g too', txt(d.querySelector('.plate [data-foodamt="u20045|l"]')) === '150g');
-
-    /* ---- millilitres ---- */
-    d.querySelector('[data-foodslot="b"]').click();
-    G.openFoodAmount('milk', 'b', false);
-    t('78 · milk is measured in ml', /ml/.test(txt(d.querySelector('.famtbox'))) && d.getElementById('amtIn').value === '200');
-    t('78 · with drink sizes as chips', !!d.querySelector('[data-amtset="250"]') && !!d.querySelector('[data-amtset="330"]'));
-    d.querySelector('[data-amtset="250"]').click();
-    t('78 · a chip sets the amount', d.getElementById('amtIn').value === '250' && d.querySelector('[data-amtset="250"]').classList.contains('on'));
-    d.getElementById('amtIn').dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-    t('78 · Enter adds it', Math.abs(row('milk', 'b').q - 1.25) < 1e-9 && G.amountText(row('milk', 'b')) === '250ml');
-    G.openFoodAmount('milk', 'b', false);
-    t('78 · adding more of something already there says what it comes to', /Add 250ml, 500ml in breakfast/.test(txt(d.getElementById('amtSave'))), txt(d.getElementById('amtSave')));
-    t('78 · and offers last time as a chip', [...d.querySelectorAll('[data-amtset]')].some(c => /Last time · 250ml/.test(txt(c))));
-    G.openFoodAmount('pint_stout', 'b', false);
-    t('78 · a pint is a chip for beer', !!d.querySelector('[data-amtset="568"]'));
-    d.querySelector('[data-amtback]').click();
-    t('78 · Back returns to the list without adding', !row('pint_stout', 'b') && !!d.getElementById('foodSearch'));
-
-    /* ---- counted foods ---- */
-    G.openFoodAmount('egg', 'b', false);
-    t('78 · an egg offers itself as a chip', [...d.querySelectorAll('[data-amtset]')].some(c => /1 egg · 50g/.test(txt(c))));
-    type(75); d.getElementById('amtSave').click();
-    t('78 · 75g of egg is one and a half eggs', Math.abs(row('egg', 'b').q - 1.5) < 1e-9 && G.amountText(row('egg', 'b')) === '1½');
-    G.openFoodAmount('egg', 'b', true); type(60); d.getElementById('amtSave').click();
-    t('78 · an amount that is not a half shows in grams', G.amountText(row('egg', 'b')) === '60g');
-    G.drawFood();
-    d.querySelector('.plate [data-foodstep="egg|b|1"]').click();
-    t('78 · and + still counts eggs from there', Math.abs(row('egg', 'b').q - 2.2) < 1e-9);
-
-    /* ---- nothing silly ---- */
-    G.openFoodAmount('u20045', 'l', true);
-    type(0);
-    t('78 · nothing typed means nothing to save', d.getElementById('amtSave').disabled);
-    type('12,5');
-    t('78 · a comma works as a decimal point', /Save, 12.5g/.test(txt(d.getElementById('amtSave'))));
-    type(9000); d.getElementById('amtSave').click();
-    t('78 · over 5 kilos is checked, not saved', /over 5 kilos/.test(txt(d.getElementById('toast'))) && G.amountText(row('u20045', 'l')) === '150g');
-    d.querySelector('[data-amtremove]').click();
-    t('78 · Take it off removes it, with Undo', !row('u20045', 'l') && /Undo/.test(txt(d.getElementById('toast'))));
-    d.getElementById('toastAct').click();
-    t('78 · Undo puts it back', G.amountText(row('u20045', 'l')) === '150g');
-
-    /* ---- Eat shows it ---- */
-    G.closeSheets(); G.go('eat'); G.renderAll();
-    const lunch = d.querySelector('.eatmeal[data-eatmeal="l"]');
-    t('78 · Eat shows the grams', /150g/.test(txt(lunch)) && /USDA/.test(txt(lunch)));
-    t('78 · old logs without a weight still read', (() => {
-      S.days[G.todayKey()].food.push({ id: 'chicken', n: 'Chicken breast, cooked', u: '150g', q: 1, meal: 'd', kcal: 250, p: 47, c: 0, f: 6 });
-      return G.amountText(G.dayFood(G.todayKey()).find(x => x.id === 'chicken')) === '150g'; })());
-
-    /* ---- teens see no calories in the box ---- */
-    S.profile.age = 14; S.profile.birthYear = new w.Date().getFullYear() - 14;
-    G.openFood(false); G.openFoodAmount('u20045', 'l', true);
-    t('78 · teen: the box shows protein, not calories', !/kcal/.test(txt(d.querySelector('.famt'))) && /protein/.test(txt(d.getElementById('amtSum'))));
+    /* build 75: how much is added is journey 80 (the food screen replaced the g, ½ and amount box of build 73) */
     const src = require('fs').readFileSync(require('path').join(__dirname, 'src/js/workouts/03-food.js'), 'utf8')
       + require('fs').readFileSync(require('path').join(__dirname, 'src/js/foods-db.js'), 'utf8');
     t('78 · no em dashes', src.indexOf('—') < 0);
@@ -6344,10 +6261,10 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('79 · the newest note is this build', G.RELEASE_NOTES.some(n => n.v === w.eval('APP_VERSION')));
     /* someone who used the app before notes existed */
     delete S.profile.seenVersion; G.closeSheets();
-    t('79 · they are taken as having seen build 72', G.seenVersion() === '72' && G.unseenNotes().map(n => n.v).join(',') === '74,73');
+    t('79 · they are taken as having seen build 72', G.seenVersion() === '72' && G.unseenNotes().map(n => n.v).join(',') === '75,74,73');
     t('79 · it shows', G.maybeWhatsNew(0) && sheetOn());
     const body = txt(d.getElementById('altBody'));
-    t('79 · newest first, with what changed', body.indexOf('What is new, when it is new') < body.indexOf('Thousands more foods') && /to the gram/.test(body));
+    t('79 · newest first, with what changed', body.indexOf('Adding food, rebuilt') < body.indexOf('What is new, when it is new') && body.indexOf('What is new, when it is new') < body.indexOf('Thousands more foods') && /to the gram/.test(body));
     t('79 · and only builds they have not seen', !/Programmes for every kind/.test(body));
     t('79 · it is marked seen as it shows', S.profile.seenVersion === w.eval('APP_VERSION'));
     d.querySelector('[data-wnok]').click();
@@ -6375,7 +6292,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     /* any time, from settings */
     G.openAppSettings();
     const row = d.querySelector('[data-setting="whatsnew"]');
-    t('79 · settings has What\'s new with the build', !!row && /Build 74/.test(txt(row)));
+    t('79 · settings has What\'s new with the build', !!row && /Build 75/.test(txt(row)));
     row.click();
     t('79 · which shows every change', sheetOn() && d.querySelectorAll('#altBody .wnbuild').length === G.RELEASE_NOTES.length);
     G.closeSheets();
@@ -6385,9 +6302,134 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const b2 = await boot({ wait: 2000, before: w2 => w2.localStorage.setItem(key, JSON.stringify(saved)) });
     allErrs.push(...b2.errs);
     t('79 · reopening after an update shows it by itself', b2.d.getElementById('altSheet').classList.contains('on') && /Thousands more foods/.test(b2.d.getElementById('altBody').textContent));
-    const b3 = await boot({ wait: 2000, before: w2 => w2.localStorage.setItem(key, JSON.stringify(Object.assign({}, saved, { profile: Object.assign({}, saved.profile, { seenVersion: '74' }) }))) });
+    const b3 = await boot({ wait: 2000, before: w2 => w2.localStorage.setItem(key, JSON.stringify(Object.assign({}, saved, { profile: Object.assign({}, saved.profile, { seenVersion: '75' }) }))) });
     allErrs.push(...b3.errs);
     t('79 · and not on an ordinary open', !b3.d.getElementById('altSheet').classList.contains('on'));
+  }
+
+  /* ---------------------------------------------------------- 80 */
+  journey(80, 'Build 75: adding food the MyFitnessPal way, done better: one screen, one amount, any unit, a keypad');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const row = (id, m) => G.dayFood(G.todayKey()).find(x => x.id === id && (x.meal || 's') === m);
+    const keys = str => [...str].forEach(k => d.querySelector(`[data-kp="${k === '<' ? 'del' : k}"]`).click());
+    const num = () => txt(d.querySelector('.aqv'));
+    const search = v => { const b = d.getElementById('foodSearch'); b.value = v; b.dispatchEvent(new w.Event('input', { bubbles: true })); };
+    G.openFood(false, { slot: 'l' });
+    search('rice white long grain cooked');
+    const first = d.querySelector('#foodList .frow');
+    t('80 · a result is the food and one +, nothing else', first.querySelectorAll('button').length === 2 && !!first.querySelector('.fopen') && !!first.querySelector('.fadd') && !first.querySelector('.half,.fstep'));
+
+    /* tap the row: the food's own screen */
+    d.querySelector('#foodList [data-foodopen="u20045"]').click();
+    t('80 · tapping a food opens its screen', !!d.querySelector('.famt') && /Rice, white, long grain, cooked/.test(txt(d.querySelector('.famthead'))));
+    t('80 · the sheet title steps aside for it', d.getElementById('foodSheet').classList.contains('amtmode'));
+    t('80 · it opens on 100g for a food listed per 100g', num() === '100' && /\bg\b/.test(txt(d.querySelector('.aqu'))));
+    t('80 · with a calorie ring and the macros', /130\s*kcal/.test(txt(d.querySelector('.aqring'))) && /Carbs/.test(txt(d.querySelector('.aqmac'))) && /Protein/.test(txt(d.querySelector('.aqmac'))));
+    t('80 · and where the day ends up with it', /Today with this: 130 of [\d,]+ kcal/.test(txt(d.querySelector('.aqday'))), txt(d.querySelector('.aqday')));
+    keys('137');
+    t('80 · the first key replaces the number, then keys add to it', num() === '137');
+    t('80 · everything follows as it is typed', /178\s*kcal/.test(txt(d.querySelector('.aqring'))) && /Today with this: 178/.test(txt(d.querySelector('.aqday'))));
+    keys('<<');
+    t('80 · delete takes the last digit off', num() === '1');
+    keys('5.55');
+    t('80 · a point works, to two places', num() === '15.55');
+    keys('<<<<<');
+    t('80 · nothing typed, nothing to add', d.getElementById('amtSave').disabled && /Type how much/.test(txt(d.getElementById('amtSave'))));
+    keys('150');
+    t('80 · Add names the meal', /Add to lunch/.test(txt(d.getElementById('amtSave'))));
+    d.querySelector('[data-amtmeal="d"]').click();
+    t('80 · the meal can be changed right there', /Add to dinner/.test(txt(d.getElementById('amtSave'))) && d.querySelector('[data-amtmeal="d"]').classList.contains('on'));
+    d.querySelector('[data-amtmeal="l"]').click();
+    d.getElementById('amtSave').click();
+    t('80 · Feargal\'s case: 150g, exactly', G.amountText(row('u20045', 'l')) === '150g' && Math.abs(row('u20045', 'l').q - 1.5) < 1e-9);
+    t('80 · back on the list, which says it is there', !d.querySelector('.famt') && !d.getElementById('foodSheet').classList.contains('amtmode') && /150g/.test(txt(d.getElementById('toast'))));
+    t('80 · the result now shows its amount in place of +', txt(d.querySelector('#foodList [data-foodopen="u20045|l"]')) === '150g');
+
+    /* tap the entry: same screen, Save and Remove */
+    d.querySelector('#foodList [data-foodopen="u20045|l"]').click();
+    t('80 · tapping what you logged opens it to change', num() === '150' && /Save/.test(txt(d.getElementById('amtSave'))) && !!d.querySelector('[data-amtremove]'));
+    t('80 · a change shows the day without the old amount', /Today with this: 195/.test(txt(d.querySelector('.aqday'))), txt(d.querySelector('.aqday')));
+    keys('3'); d.getElementById('amtSave').click();
+    t('80 · single grams: 3g', G.amountText(row('u20045', 'l')) === '3g');
+    d.querySelector('#foodList [data-foodopen="u20045|l"]').click();
+    d.querySelector('[data-amtset="50"]').click();
+    t('80 · round amounts are a tap', num() === '50' && d.querySelector('[data-amtset="50"]').classList.contains('on'));
+    d.querySelector('[data-amtmeal="d"]').click();
+    t('80 · moving it says so', /Move to dinner/.test(txt(d.getElementById('amtSave'))));
+    d.getElementById('amtSave').click();
+    t('80 · and moves it, not copies it', !row('u20045', 'l') && G.amountText(row('u20045', 'd')) === '50g');
+
+    /* units: an egg is eggs, or grams, and switching keeps the weight */
+    G.drawFood(); d.querySelector('[data-foodslot="b"]').click(); search('egg large');
+    d.querySelector('#foodList [data-foodopen="egg"]').click();
+    t('80 · an egg opens on 1 egg', num() === '1' && /egg/.test(txt(d.querySelector('.aqu'))) && /= 50g/.test(txt(d.querySelector('.aqnum'))));
+    keys('3');
+    t('80 · 3 eggs reads as eggs, with the weight', /eggs/.test(txt(d.querySelector('.aqu'))) && /= 150g/.test(txt(d.querySelector('.aqnum'))));
+    d.querySelector('[data-amtunit="base"]').click();
+    t('80 · switching to grams keeps the weight: 150g', num() === '150' && /^g$/.test(txt(d.querySelector('.aqu'))));
+    keys('60'); d.querySelector('[data-amtunit="por"]').click();
+    t('80 · and back: 60g is 1.2 eggs', num() === '1.2');
+    d.getElementById('amtSave').click();
+    t('80 · saved in the unit it was given', row('egg', 'b').uk === 'por' && Math.abs(row('egg', 'b').q - 1.2) < 1e-9);
+    G.openFoodAmount('u01123', 'b', false);
+    t('80 · USDA household weights are units too', [...d.querySelectorAll('[data-amtunit]')].some(b => /large/.test(txt(b)) && /50g/.test(txt(b))));
+    d.querySelector('[data-amtback]').click();
+
+    /* millilitres */
+    search('milk semi');
+    d.querySelector('#foodList [data-foodopen="milk"]').click();
+    t('80 · milk is in ml, with drink sizes', /ml/.test(txt(d.querySelector('.aqu'))) && num() === '200' && !!d.querySelector('[data-amtset="250"]'));
+    keys('330'); d.getElementById('amtSave').click();
+    t('80 · 330ml of milk', G.amountText(row('milk', 'b')) === '330ml');
+    G.openFoodAmount('pint_stout', 'b', false);
+    t('80 · stout opens on 1 pint, which is 568ml', num() === '1' && /pint/.test(txt(d.querySelector('.aqu'))) && /= 568ml/.test(txt(d.querySelector('.aqnum'))));
+    d.querySelector('[data-amtunit="base"]').click();
+    t('80 · and in ml, a pint is a tap', txt(d.querySelector('[data-amtset="568"]')) === 'Pint' && num() === '568');
+    d.querySelector('[data-amtback]').click();
+
+    /* + is one tap, with what you had last time */
+    search('rice white long grain cooked');
+    const plus = d.querySelector('#foodList [data-foodadd^="u20045:"]');
+    t('80 · + carries last time\'s amount', plus.dataset.foodadd === 'u20045:0.5' && /50g/.test(plus.getAttribute('aria-label')));
+    plus.click();
+    t('80 · one tap adds it', G.amountText(row('u20045', 'b')) === '50g');
+    t('80 · and the toast offers Change', /Change/.test(txt(d.getElementById('toast'))));
+    d.getElementById('toastAct').click();
+    t('80 · which opens it', !!d.querySelector('.famt') && num() === '50');
+    d.querySelector('[data-amtremove]').click();
+    t('80 · Remove takes it off, with Undo', !row('u20045', 'b') && /Undo/.test(txt(d.getElementById('toast'))));
+    d.getElementById('toastAct').click();
+    t('80 · Undo brings it back', G.amountText(row('u20045', 'b')) === '50g');
+
+    /* a computer keyboard works too */
+    G.openFoodAmount('u20045', 'b', true);
+    ['2', '2', '5'].forEach(k => d.dispatchEvent(new w.KeyboardEvent('keydown', { key: k, bubbles: true })));
+    t('80 · typing on a keyboard fills the number', num() === '225');
+    d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    t('80 · Enter saves', G.amountText(row('u20045', 'b')) === '225g');
+    G.openFoodAmount('u20045', 'b', true); keys('9000'); d.getElementById('amtSave').click();
+    t('80 · over 5 kilos is checked, not saved', /over 5 kilos/.test(txt(d.getElementById('toast'))) && G.amountText(row('u20045', 'b')) === '225g');
+
+    /* the plate and Eat open straight on the entry */
+    d.querySelector('[data-amtback]').click(); search('');
+    d.querySelector('[data-foodslot="b"]').click();
+    const plateRow = d.querySelector('.plate [data-foodopen="egg|b"]');
+    t('80 · the plate lists each thing with its amount, one tap to change', !!plateRow && txt(plateRow.querySelector('.fhave')) === '60g' && !d.querySelector('.plate .fstep'));
+    G.closeSheets(); G.go('eat'); G.renderAll();
+    d.querySelector('#eatView [data-eatfood="milk|b"]').click();
+    t('80 · on Eat, tapping an item opens it to change', d.getElementById('foodSheet').classList.contains('on') && !!d.querySelector('.famt') && num() === '330');
+    G.closeSheets();
+
+    /* teens: protein, no calories */
+    S.profile.age = 14; S.profile.birthYear = new w.Date().getFullYear() - 14;
+    G.openFood(false); G.openFoodAmount('u20045', 'l', false);
+    t('80 · teen: the screen shows protein, not calories', !/kcal/.test(txt(d.querySelector('.famt'))) && /protein/.test(txt(d.querySelector('.aqlive'))));
+    const src = require('fs').readFileSync(require('path').join(__dirname, 'src/js/workouts/03-food.js'), 'utf8');
+    t('80 · no em dashes', src.indexOf('—') < 0);
   }
 
   const r = s.report(allErrs);

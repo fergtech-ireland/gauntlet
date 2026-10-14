@@ -107,7 +107,7 @@ function eatSections(k){
       ${!teen&&r.items.length? `<span class="ek">${num(r.kcal)}</span>` : ''}
       <button class="eadd" data-eatadd="${r.m}" aria-label="Add to ${lower}">+</button></div>`;
     const rows=r.items.map(x=>{ const w=!x.quick&&weighed(x), amt=x.quick? qtyText(x.q) : amountText(x);
-      return `<button class="eitem" data-eatitem="${r.m}" aria-label="${escHabit(x.n)}, ${amt}${teen? '' : ', '+Math.round(x.kcal*x.q)+' kcal'}. Tap to change how much.">
+      return `<button class="eitem" data-eatitem="${r.m}"${x.quick? '' : ` data-eatfood="${escHabit(x.id)}|${r.m}"`} aria-label="${escHabit(x.n)}, ${amt}${teen? '' : ', '+Math.round(x.kcal*x.q)+' kcal'}. Tap to change how much.">
         <span class="eit"><span class="ein">${escHabit(x.n)}${w? ` <span class="eiq">${amt}</span>` : (x.q!==1? ` <span class="eiq">× ${amt}</span>` : '')}</span>
           <span class="eis">${x.quick? 'your numbers' : (w? '' : escHabit(x.u))}${teen? '' : (w? '' : ' · ')+Math.round(x.p*x.q)+'g protein · '+foodSource(x)}</span></span>
         ${teen? '' : `<span class="eik">${Math.round(x.kcal*x.q)}</span>`}</button>`; }).join('');
@@ -163,7 +163,11 @@ document.addEventListener('click',e=>{
     renderEat(); return; }
   if(e.target.closest('[data-eatsearch]')){ openEatFood(null,{search:true}); return; }
   const ad=e.target.closest('[data-eatadd]'); if(ad){ openEatFood(ad.dataset.eatadd); return; }
-  const it=e.target.closest('[data-eatitem]'); if(it){ openEatFood(it.dataset.eatitem); return; }
+  /* build 75: an item opens straight on its own screen, to change or remove */
+  const it=e.target.closest('[data-eatitem]');
+  if(it){ openEatFood(it.dataset.eatitem);
+    if(it.dataset.eatfood){ const pr=it.dataset.eatfood.split('|'), m=pr.pop(); openFoodAmount(pr.join('|'),m,true); }
+    return; }
   const sk=e.target.closest('[data-eatskip]');
   if(sk){ skipMeal(eatKey(),sk.dataset.eatskip,true); renderAll();
     toast(isTeen()? 'Noted. While you are growing, regular meals really help, so try not to make it a habit.' : 'Noted as skipped'); return; }

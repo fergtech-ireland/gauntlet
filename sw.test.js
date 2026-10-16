@@ -228,6 +228,27 @@ const text = async r => (r && r.res ? await r.res.clone().text() : null);
     t('the in-app update check sees the newest version too', (await text(r)) === '<html>v3</html>');
   }
 
+  /* ---- 8. the barcode reader (build 76): fetched once, kept, offline after ---- */
+  {
+    const server = makeServer();
+    const caches = makeCaches();
+    await caches.open('gauntlet-scan-zxing-3.1.5');
+    const sw = makeWorker(server, { caches });
+    await sw.install(); await sw.activate();
+    t('activate keeps the barcode reader', (await caches.keys()).includes('gauntlet-scan-zxing-3.1.5'));
+    t('nothing of the reader is fetched at install', !server.calls.some(c => /vendor\/zxing/.test(c.url)));
+    server.files['gauntlet/vendor/zxing/zxing_reader.wasm'] = 'WASM';
+    const w1 = await sw.get('./vendor/zxing/zxing_reader.wasm');
+    const before = server.calls.length;
+    const w2 = await sw.get('./vendor/zxing/zxing_reader.wasm');
+    t('the reader is downloaded once and reused', (await text(w1)) === 'WASM' && (await text(w2)) === 'WASM' && server.calls.length === before);
+    server.offline = true;
+    t('and is there offline', (await text(await sw.get('./vendor/zxing/zxing_reader.wasm'))) === 'WASM');
+    server.offline = false;
+    const off = await sw.get('https://world.openfoodfacts.org/api/v2/product/5000168001234.json');
+    t('Open Food Facts lookups pass straight through, never cached', !off.responded);
+  }
+
   const r = s.report([]);
   if (require.main === module) process.exit(r.fail ? 1 : 0);
 })();

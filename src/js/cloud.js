@@ -65,7 +65,7 @@ const authHeaders=()=>({apikey:C.key,Authorization:'Bearer '+((C.session&&C.sess
 /* The version of the privacy policy and terms someone agreed to. When either
    changes, this changes, and backing up stops until they have read what changed
    and agreed again (build 53). */
-const TERMS_VERSION='2026-10-b54';
+const TERMS_VERSION='2026-10-b76';
 const hasConsent=()=>{ const c=S.profile&&S.profile.consent; return !!(c&&c.health&&c.terms&&c.version===TERMS_VERSION); };
 /* agreed once, to words that have since changed */
 const consentStale=()=>{ const c=S.profile&&S.profile.consent; return !!(c&&c.health&&c.terms&&c.version&&c.version!==TERMS_VERSION); };
@@ -427,7 +427,7 @@ function exportPayload(){
     note:'Everything Gauntlet holds about you. Plain JSON, yours to keep, import or delete.',
     profile:S.profile, plan:S.plan, goal:S.goal, days:S.days, weights:S.weights,
     checkins:S.checkins, lifts:S.lifts, workouts:S.workouts, templates:S.templates,
-    circuits:S.circuits, runPlans:S.runPlans, customFoods:S.customFoods, savedMeals:S.savedMeals, foodLast:S.foodLast,
+    circuits:S.circuits, runPlans:S.runPlans, customFoods:S.customFoods, savedMeals:S.savedMeals, foodLast:S.foodLast, scanned:S.scanned,
     cycle:S.cycle, forecasts:S.forecasts, health:S.health, posts:S.mine,
     account: signedIn()? {email:(C.session&&C.session.email)||null, id:myId()} : null,
     /* the fields above are for reading; this is everything, for restoring.
@@ -450,7 +450,7 @@ function stateFromExport(x){
   else {
     st=freshState();
     ['profile','plan','goal','days','weights','checkins','lifts','workouts','templates','circuits','runPlans',
-     'customFoods','savedMeals','foodLast','cycle','forecasts','health'].forEach(k=>{ if(x[k]!==undefined) st[k]=x[k]; });
+     'customFoods','savedMeals','foodLast','scanned','cycle','forecasts','health'].forEach(k=>{ if(x[k]!==undefined) st[k]=x[k]; });
     if(Array.isArray(x.posts)) st.mine=x.posts;
   }
   if(!st.profile||typeof st.profile!=='object') throw new Error('That download has no profile in it.');

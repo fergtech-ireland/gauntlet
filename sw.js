@@ -11,6 +11,10 @@
  *  - Icons and the manifest are served from the saved copy and refreshed in
  *    the background.
  *  - Google Fonts are saved once and reused.
+ *  - The barcode reader for phones without one built in (vendor/zxing, build
+ *    76) is saved the first time it is used and reused, so scanning works
+ *    offline after that. It is only ever fetched when the scanner needs it.
+ *    Its file names carry no version, so SCAN changes when they are updated.
  *  - Nothing else is touched. Supabase, the coach endpoint and anything else
  *    on another site pass straight through, and nothing that writes (POST,
  *    PATCH, DELETE) is ever intercepted.
@@ -22,7 +26,8 @@
  */
 const VERSION = 'gauntlet-shell-v2';
 const FONTS = 'gauntlet-fonts-v1';
-const KEEP = [VERSION, FONTS];
+const SCAN = 'gauntlet-scan-zxing-3.1.5';
+const KEEP = [VERSION, FONTS, SCAN];
 
 /* the files the app needs to open offline */
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon.svg'];
@@ -82,6 +87,11 @@ self.addEventListener('fetch', event => {
 
   if (isAppPage(request, url)) {
     event.respondWith(networkFirst(event, url));
+    return;
+  }
+
+  if (url.pathname.startsWith(new URL('./vendor/zxing/', self.location).pathname)) {
+    event.respondWith(cacheFirst(request, SCAN));
     return;
   }
 

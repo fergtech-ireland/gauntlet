@@ -139,7 +139,8 @@ function renderEat(){
       <div class="edl"><b>${eatDayLabel(k)}</b>${k!==t? `<button class="inlinebtn" data-eatday="today">Back to today</button>` : ''}</div>
       <button class="edbtn" data-eatday="1" aria-label="The day after" ${k>=t? 'disabled' : ''}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
     </div>
-    <button class="eatsearch" data-eatsearch><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>Search food or meals</span></button>
+    <div class="eatfind"><button class="eatsearch" data-eatsearch><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>Search food or meals</span></button>
+      ${typeof scanIcon==='function'? `<button class="eatscan" data-eatscan aria-label="Scan a barcode">${scanIcon()}</button>` : ''}</div>
     ${eatSummary(k)}
     ${eatSections(k)}
     ${eatShortcuts(k)}

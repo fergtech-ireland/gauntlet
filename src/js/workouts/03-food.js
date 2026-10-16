@@ -271,7 +271,19 @@ const FOOD_COMMON=['egg','oats','chicken','rice','potato','brownbread','skyr','b
 const MEALS=[['b','Breakfast'],['l','Lunch'],['d','Dinner'],['s','Snacks']];
 const customFoods=()=>Array.isArray(S.customFoods)? S.customFoods : [];
 const savedMeals=()=>Array.isArray(S.savedMeals)? S.savedMeals : [];
-const allFoods=()=>FOODS.concat(FOODS_DB,customFoods());
+/* ---------- packaged food you scanned (build 76) ----------
+   Kept on the phone, keyed by barcode, so a second scan is instant and works
+   offline. Each one is per 100g or 100ml, the way EU labels give it, with the
+   label's serving as a unit when the label has one (por, grams per one).
+   src 'off' came from Open Food Facts; 'label' was typed from the packet,
+   either because Open Food Facts did not have it or had it with gaps.
+   scan.js does the scanning, the lookup and the from-the-label screen. */
+const scannedMap=()=>(S.scanned&&typeof S.scanned==='object'&&!Array.isArray(S.scanned))? S.scanned : {};
+const scannedFoods=()=>Object.keys(scannedMap()).map(k=>scannedMap()[k]).filter(f=>f&&f.id);
+const isScanned=f=>!!(f&&f.code&&(f.src==='off'||f.src==='label'));
+/* the label's serving, as the unit the food screen shows: {label, g} */
+const scanServing=f=>(isScanned(f)&&f.por&&f.por[0]&&+f.por[0][1]>0)? {label:String(f.por[0][0]).replace(/^1 /,''), g:+f.por[0][1]} : null;
+const allFoods=()=>FOODS.concat(FOODS_DB,customFoods(),scannedFoods());
 /* ---------- fibre (build 50) ----------
    Grams of dietary fibre per portion, as each food's portion is written. Most
    come from standard food composition tables (McCance and Widdowson, USDA
@@ -296,7 +308,7 @@ function fibreInfo(k){
   items.forEach(x=>{ const v=fibreOf(x); if(v===null) unknown++; else { g+=v*x.q; if(FIBRE_ROUGH.has(x.id)&&v>0) rough++; } });
   return {g:Math.round(g*10)/10, unknown, rough, n:items.length};
 }
-const foodOf=id=>FOOD_IDX.get(id)||customFoods().find(f=>f.id===id)||null;
+const foodOf=id=>FOOD_IDX.get(id)||customFoods().find(f=>f.id===id)||(/^bc\d+$/.test(String(id))? scannedMap()[String(id).slice(2)]||null : null);
 /* Which day the food sheet is adding to (build 57). Null means today, which is
    every way in except the Eat tab's date switcher: going back a day there and
    adding opens the sheet on that day, so a forgotten snack lands where it was
@@ -515,7 +527,7 @@ function findFoods(q){
       if(i<0) return;
       sc+= i===0? 40 : (/[\s,(\-\/]/.test(n[i-1])? 20 : 0);
     }
-    if(f.mine) sc+=300; else if(f.src!=='usda') sc+=150;
+    if(f.mine) sc+=300; else if(isScanned(f)) sc+=250; else if(f.src!=='usda') sc+=150;
     const r=rec.indexOf(f.id); if(r>=0) sc+=400-r;
     sc-= n.length/4 + (n.split(',').length-1)*6;
     out.push([sc,f]);
@@ -529,8 +541,11 @@ function foodListHTML(){
   const pool=allFoods();
   const mine=pool.filter(f=>f.mine);
   let list, more=0;
+  /* build 76: scanned products, newest first */
+  const scans=()=>scannedFoods().sort((a,b)=>(b.at||0)-(a.at||0));
   if(q) list=findFoods(q);
   else if(foodCat==='mine') list=mine;
+  else if(foodCat==='scanned') list=scans();
   else if(foodCat){
     const all=pool.filter(f=>f.cat===foodCat);
     list= foodMore? all : all.slice(0,CAT_SHOW); more=all.length-list.length;
@@ -538,6 +553,8 @@ function foodListHTML(){
   else {
     /* nothing chosen: what they reach for, then the common ones */
     const first=recents.map(foodOf).filter(Boolean);
+    /* build 76: what you scanned lately sits with what you logged lately */
+    scans().slice(0,4).forEach(f=>{ if(first.indexOf(f)<0) first.push(f); });
     const common=FOOD_COMMON.map(foodOf).filter(f=>f&&first.indexOf(f)<0);
     list=first.concat(common, mine.filter(f=>first.indexOf(f)<0)).slice(0,24);
   }
@@ -545,12 +562,12 @@ function foodListHTML(){
     <button class="logrow" id="foodNew"><div class="txt"><div class="t">Add "${escHabit(foodQuery.trim())}" yourself</div>
       <div class="s">Once, and it is in your list from now on</div></div></button>`;
   const onPlate=id=>dayFood(foodKey()).find(x=>x.id===id&&(x.meal||'s')===foodSlot);
-  return list.map(f=>{ const p=onPlate(f.id), w=portionG(f), u=unitOf(f), db=f.src==='usda', qa=quickAmt(f);
-    const per= db? 'per 100'+u : escHabit(f.u)+(w&&!/^\d/.test(String(f.u))? ', '+amtNum(w)+u : '');
+  return list.map(f=>{ const p=onPlate(f.id), w=portionG(f), u=unitOf(f), db=f.src==='usda', sc=isScanned(f), qa=quickAmt(f);
+    const per= db||sc? 'per 100'+u : escHabit(f.u)+(w&&!/^\d/.test(String(f.u))? ', '+amtNum(w)+u : '');
     return `<div class="frow ${p?'onplate':''}">
       <button class="fopen" data-foodopen="${escHabit(f.id)}" aria-label="${escHabit(f.n)}. Choose how much">
         <span class="t">${escHabit(f.n)}${f.mine?' <span class="cichip">yours</span>':''}</span>
-        <span class="s">${per}${isTeen()? '' : ' · '+f.kcal+' kcal · '+f.p+'g protein'}${f.mine?' · from your label':''}${db?' · USDA':''}${f.alc&&!isTeen()?' · '+f.alc+'g alcohol':''}</span></button>
+        <span class="s">${per}${isTeen()? '' : ' · '+f.kcal+' kcal · '+f.p+'g protein'}${f.mine||f.src==='label'?' · from your label':''}${db?' · USDA':''}${f.src==='off'?' · Open Food Facts':''}${f.alc&&!isTeen()?' · '+f.alc+'g alcohol':''}</span></button>
       ${p? `<button class="fhave" data-foodopen="${escHabit(f.id)}|${foodSlot}" aria-label="${escHabit(f.n)}, ${amountText(p)} in this meal. Change it">${amountText(p)}</button>`
         : `<button class="fadd" data-foodadd="${escHabit(f.id)}:${qa.q}" aria-label="Add ${escHabit(qa.label)} of ${escHabit(f.n)}">+</button>`}</div>`; }).join('')
     +(more? `<button class="mini foodmore" data-foodmore>Show all ${more+list.length} in ${escHabit((FOOD_CATS.find(c=>c[0]===foodCat)||[0,'this list'])[1].toLowerCase())}</button>` : '')
@@ -565,6 +582,10 @@ function foodSource(x){
   const f=foodOf(x.id);
   if(f&&f.mine) return 'from your label';
   if(x.src==='usda'||(f&&f.src==='usda')) return 'USDA lab values';
+  /* build 76: Open Food Facts is people photographing and typing up labels,
+     so it is the label's numbers, and says so; typed from the packet is yours */
+  if(x.src==='off'||(f&&f.src==='off')) return 'Open Food Facts, from the label';
+  if(x.src==='label'||(f&&f.src==='label')) return 'from your label';
   return 'typical values';
 }
 const qtyText=q=>q===0.5?'½':(Math.round(q*2)%2? Math.floor(q)+'½' : String(Math.round(q)));
@@ -634,7 +655,8 @@ function drawFood(){
       class="${foodSlot===id?'on':''}" data-foodslot="${id}"><span>${label}</span><small>${isTeen()? (inMeal(id).length? inMeal(id).length+' logged':'–') : (mealKcal(id)? mealKcal(id)+' kcal' : '–')}</small></button>`).join('')}</div>
 
     <div class="foodsearch"><input id="foodSearch" type="search" enterkeyhint="search" autocomplete="off"
-      placeholder="Search food to add to ${mealLabel.toLowerCase()}" value="${escHabit(foodQuery)}" aria-label="Search food"></div>
+      placeholder="Search food to add to ${mealLabel.toLowerCase()}" value="${escHabit(foodQuery)}" aria-label="Search food">
+      ${typeof scanIcon==='function'? `<button class="scanbtn" data-scan aria-label="Scan a barcode">${scanIcon()}</button>` : ''}</div>
 
     ${/* build 73: always drawn, hidden by .q while searching, so clearing the box brings it back */''}${`
     <div class="plate">
@@ -667,6 +689,7 @@ function drawFood(){
       <button class="${foodCat?'':'on'}" data-foodcat="">Common</button>
       ${FOOD_CATS.filter(c=>c[0]!=='common').map(([id,label])=>`<button class="${foodCat===id?'on':''}" data-foodcat="${id}">${label}</button>`).join('')}
       ${allFoods().some(f=>f.mine)? `<button class="${foodCat==='mine'?'on':''}" data-foodcat="mine">Yours</button>`:''}
+      ${scannedFoods().length? `<button class="${foodCat==='scanned'?'on':''}" data-foodcat="scanned">Scanned</button>`:''}
     </div>`}
     <div id="foodList">${foodListHTML()}</div>
     <div class="fdone"><button class="sheetcta" id="foodDone">${foodCameFromLog?'Back to the log':'Done'}</button></div>`;
@@ -771,6 +794,8 @@ function lastFor(f){
 function quickAmt(f){
   const {per,u}=amtBase(f), l=lastFor(f);
   if(l&&u){ const un=unitOfKey(f,l.k); return {q:+(l.g/per).toFixed(4), label:un.k==='base'? amtNum(l.g)+u : amtNum(l.g/un.g)+' '+un.label}; }
+  /* build 76: a scanned product's first + is one of the label's servings */
+  const sv=scanServing(f); if(sv) return {q:+(sv.g/per).toFixed(4), label:'1 '+sv.label};
   return {q:1, label: u? (counted(f)? '1 '+f.u : amtNum(per)+u) : '1 '+(f.u||'portion')};
 }
 function amtCurrent(){ const a=foodAmt; return a? dayFood(foodKey()).find(x=>x.id===a.id&&(x.meal||'s')===a.origMeal) : null; }
@@ -784,7 +809,11 @@ function openFoodAmount(id,meal,edit){
   const {per}=amtBase(f);
   let k, g;
   if(cur){ g=cur.q*per; k=(cur.uk&&unitsFor(f).some(x=>x.k===cur.uk))? cur.uk : (counted(f)&&Math.abs(cur.q*2-Math.round(cur.q*2))<1e-6? 'por' : unitsFor(f)[0].k); }
-  else { const l=lastFor(f); if(l){ g=l.g; k=unitsFor(f).some(x=>x.k===l.k)? l.k : 'base'; } else { g=per; k=counted(f)? 'por' : unitsFor(f)[0].k; } }
+  else { const l=lastFor(f), sv=scanServing(f), su=sv&&unitsFor(f).find(x=>x.k==='h0');
+    if(l){ g=l.g; k=unitsFor(f).some(x=>x.k===l.k)? l.k : 'base'; }
+    /* build 76: a scanned product opens on one of the label's servings */
+    else if(su){ g=su.g; k='h0'; }
+    else { g=per; k=counted(f)? 'por' : unitsFor(f)[0].k; } }
   const un=unitOfKey(f,k);
   foodAmt={id,meal:m,origMeal:m,edit:!!cur,k:un.k,str:fmtN(g/un.g),fresh:true};
   drawFoodAmount();
@@ -836,7 +865,8 @@ function drawFoodAmount(){
   $('foodBody').innerHTML=`<div class="famt" role="group" aria-label="How much ${escHabit(f.n)}">
     <div class="aqtop"><button class="inlinebtn amtback" data-amtback>‹ Back</button>
       ${a.edit? `<button class="inlinebtn aqrm" data-amtremove>Remove</button>` : ''}</div>
-    <div class="famthead"><b>${escHabit(f.n)}</b><small>${foodSource(f)}${f.src==='usda'&&!isTeen()? ', per 100'+amtBase(f).u+' '+f.kcal+' kcal' : ''}</small></div>
+    <div class="famthead"><b>${escHabit(f.n)}</b><small${isScanned(f)? ' class="famtsrc"' : ''}>${foodSource(f)}${(f.src==='usda'||isScanned(f))&&!isTeen()? ', per 100'+amtBase(f).u+' '+fmtN(f.kcal)+' kcal' : ''}</small>
+      ${isScanned(f)? `<small class="famtlabel">${f.srv? 'Label serving: '+escHabit(f.srv)+' · ' : ''}<button class="inlinebtn" data-scanedit="${escHabit(f.code)}">Wrong? Fix it from the label</button></small>` : ''}</div>
     <div class="aqlive" id="amtLive" aria-live="polite">${amtLiveHtml()}</div>
     <div class="aqamt"><div class="aqnum" id="amtNum">${amtNumHtml()}</div>
       ${units.length>1? `<div class="aqunits" role="radiogroup" aria-label="Measured in">${units.map(x=>`<button role="radio" aria-checked="${x.k===a.k}" class="${x.k===a.k?'on':''}" data-amtunit="${x.k}">${escHabit(x.label)}${x.note? `<small>${x.note}</small>` : ''}</button>`).join('')}</div>` : ''}

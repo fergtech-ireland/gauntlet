@@ -38,8 +38,11 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('1 · the week has the days they asked for',
       plan.days.filter(x => x.templateId).length === 3, String(plan.days.filter(x => x.templateId).length));
     t('1 · the week explains itself', plan.why.length > 0 && plan.why[0].length > 20);
-    t('1 · today has something to press',
-      /id="startToday"|data-go="plan"/.test(d.getElementById('todayView').innerHTML));
+    /* build 76: on a training day that is Start; a walk or rest day offers its own action (before, this failed on walk days) */
+    const today1 = plan.days[G.dowIdx()], train1 = !!(today1.templateId || today1.runId || today1.circuitId);
+    t('1 · today has something to press', train1
+      ? /id="startToday"/.test(d.getElementById('todayView').innerHTML)
+      : /id="startToday"|data-go="plan"|data-swap/.test(d.getElementById('todayView').innerHTML), today1.kind);
     t('1 · calories and protein were worked out', G.S.targets.kcal > 1200 && G.S.targets.protein > 80);
     t('1 · nothing is logged yet, and it says so honestly',
       G.S.weights.length === 0 && !G.checkinDone());
@@ -2046,8 +2049,9 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     G.go('today'); G.renderAll();
     const home = () => d.getElementById('todayView');
 
+    const today31 = S.plan.days[G.dowIdx()], train31 = !!(today31.templateId || today31.runId || today31.circuitId);
     t('31 · the first thing is today, with something to press', !!home().querySelector('.hero') &&
-      !!home().querySelector('#startToday, [data-go="plan"], #todayViewEdit'));
+      !!home().querySelector(train31 ? '#startToday, #todayViewEdit' : '#startToday, [data-go="plan"], #todayViewEdit, .hero [data-swap], .hero [data-swapto]'), today31.kind);
     t('31 · today\'s numbers are right there, as rings: Ready, Food, Train, then Sleep, Protein, Steps', d.querySelectorAll('.rings .ring').length === 6
       && [...d.querySelectorAll('.rings .ring')].map(r => r.dataset.ring).join() === 'ready,food,train,sleep,protein,steps');
     t('31 · calories are on the first screen, because that is what people stop logging, and one tap opens the food diary',
@@ -5595,7 +5599,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     G.renderAll();
     const card = home().querySelector('.daycoach .nextcard');
     const line = card && card.querySelector('.nthen');
-    t('72 · the coach card on Today shows the Then line', !!line && /^Then: .+(at|due) \d\d:\d\d/.test(txt(line)), txt(line));
+    /* build 76: "Then:" under something due now, "Next:" when nothing is (all caught up); which one depends on the clock the test runs at */
+    t('72 · the coach card on Today shows the Then line', !!line && new RegExp('^' + (card.classList.contains('clear') ? 'Next' : 'Then') + ': .+(at|due) \\d\\d:\\d\\d').test(txt(line)), txt(line));
     t('72 · and it has no button of its own (one prompt at a time)', !!line && !line.querySelector('button'));
     /* ---- nothing due now: the card stays, slim, and says what is next ---- */
     const quiet = G.coachCard({ top: { id: 'clear' }, then: 'Dinner at 19:30', list: [] }, [], at(15, 0));
@@ -6261,10 +6266,11 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('79 · the newest note is this build', G.RELEASE_NOTES.some(n => n.v === w.eval('APP_VERSION')));
     /* someone who used the app before notes existed */
     delete S.profile.seenVersion; G.closeSheets();
-    t('79 · they are taken as having seen build 72', G.seenVersion() === '72' && G.unseenNotes().map(n => n.v).join(',') === '75,74,73');
+    t('79 · they are taken as having seen build 72', G.seenVersion() === '72' && G.unseenNotes().map(n => n.v).join(',') === '76,75,74,73');
     t('79 · it shows', G.maybeWhatsNew(0) && sheetOn());
     const body = txt(d.getElementById('altBody'));
-    t('79 · newest first, with what changed', body.indexOf('Adding food, rebuilt') < body.indexOf('What is new, when it is new') && body.indexOf('What is new, when it is new') < body.indexOf('Thousands more foods') && /to the gram/.test(body));
+    t('79 · newest first, with what changed', body.indexOf('Scan a barcode') >= 0 && body.indexOf('Scan a barcode') < body.indexOf('Adding food, rebuilt') && body.indexOf('Adding food, rebuilt') < body.indexOf('What is new, when it is new') && /keypad/.test(body));
+    t('79 · a fourth build waits one tap away', !/Thousands more foods/.test(body) && /1 earlier update/.test(txt(d.querySelector('[data-wnall]'))));
     t('79 · and only builds they have not seen', !/Programmes for every kind/.test(body));
     t('79 · it is marked seen as it shows', S.profile.seenVersion === w.eval('APP_VERSION'));
     d.querySelector('[data-wnok]').click();
@@ -6292,7 +6298,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     /* any time, from settings */
     G.openAppSettings();
     const row = d.querySelector('[data-setting="whatsnew"]');
-    t('79 · settings has What\'s new with the build', !!row && /Build 75/.test(txt(row)));
+    t('79 · settings has What\'s new with the build', !!row && new RegExp('Build ' + w.eval('APP_VERSION')).test(txt(row)));
     row.click();
     t('79 · which shows every change', sheetOn() && d.querySelectorAll('#altBody .wnbuild').length === G.RELEASE_NOTES.length);
     G.closeSheets();
@@ -6301,8 +6307,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const key = w.eval('STORE_KEY');
     const b2 = await boot({ wait: 2000, before: w2 => w2.localStorage.setItem(key, JSON.stringify(saved)) });
     allErrs.push(...b2.errs);
-    t('79 · reopening after an update shows it by itself', b2.d.getElementById('altSheet').classList.contains('on') && /Thousands more foods/.test(b2.d.getElementById('altBody').textContent));
-    const b3 = await boot({ wait: 2000, before: w2 => w2.localStorage.setItem(key, JSON.stringify(Object.assign({}, saved, { profile: Object.assign({}, saved.profile, { seenVersion: '75' }) }))) });
+    t('79 · reopening after an update shows it by itself', b2.d.getElementById('altSheet').classList.contains('on') && /Scan a barcode/.test(b2.d.getElementById('altBody').textContent));
+    const b3 = await boot({ wait: 2000, before: w2 => w2.localStorage.setItem(key, JSON.stringify(Object.assign({}, saved, { profile: Object.assign({}, saved.profile, { seenVersion: w.eval('APP_VERSION') }) }))) });
     allErrs.push(...b3.errs);
     t('79 · and not on an ordinary open', !b3.d.getElementById('altSheet').classList.contains('on'));
   }
@@ -6430,6 +6436,215 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('80 · teen: the screen shows protein, not calories', !/kcal/.test(txt(d.querySelector('.famt'))) && /protein/.test(txt(d.querySelector('.aqlive'))));
     const src = require('fs').readFileSync(require('path').join(__dirname, 'src/js/workouts/03-food.js'), 'utf8');
     t('80 · no em dashes', src.indexOf('—') < 0);
+  }
+
+  journey(81, 'Build 76: scan a barcode, Open Food Facts behind it, kept on the phone, and the label when it is missing');
+  {
+    /* a fake Open Food Facts: the workspace cannot reach the real one */
+    const check = b => { let sum = 0; for (let i = b.length - 1, wt = 3; i >= 0; i--, wt = wt === 3 ? 1 : 3) sum += (+b[i]) * wt; return b + ((10 - sum % 10) % 10); };
+    const BREAD = check('539123400001'), MILK = check('539123400002'), GAPS = check('539123400003'), NONE = check('539123400004'),
+      KJ = check('539123400005'), US = check('01234567890'), COOK = check('03456789012'), SILLY = check('539123400008'), DOWN = check('539123400009');
+    const PRODUCTS = {
+      [BREAD]: { product_name: 'Wholemeal Bread', brands: 'Brennans,Brennans Bread', quantity: '800 g', serving_size: '1 slice (40 g)', serving_quantity: 40,
+        nutriments: { 'energy-kcal_100g': 230, proteins_100g: 9.6, carbohydrates_100g: 38, fat_100g: 2.6, fiber_100g: 6.6 } },
+      [MILK]: { product_name: 'Protein Milk', brands: 'Avonmore', quantity: '500 ml', product_quantity_unit: 'ml', serving_size: '250ml', serving_quantity: 250, serving_quantity_unit: 'ml',
+        nutriments: { 'energy-kcal_100g': 64, proteins_100g: 8, carbohydrates_100g: 5, fat_100g: 1.2 } },
+      [GAPS]: { product_name: 'Granola Bites', brands: 'Lidl', nutriments: { 'energy-kcal_100g': 450, carbohydrates_100g: 60 } },
+      [KJ]: { product_name: 'Oat Bar', nutriments: { 'energy-kj_100g': 1674, proteins_100g: 7, carbohydrates_100g: 55, fat_100g: 18 } },
+      ['0' + US]: { product_name: 'Bran Flakes', brands: 'Kellogg', nutriments: { 'energy-kcal_100g': 330, proteins_100g: 10, carbohydrates_100g: 80, fat_100g: 2, fiber_100g: 18 } },
+      ['0' + COOK]: { product_name: 'Cookies', serving_size: '2 cookies (30 g)', serving_quantity: 30, nutrition_data_per: 'serving',
+        nutriments: { 'energy-kcal_serving': 150, proteins_serving: 1.5, carbohydrates_serving: 21, fat_serving: 6.6 } },
+      [SILLY]: { product_name: 'Peanut Butter', nutriments: { 'energy-kcal_100g': 5880, proteins_100g: 25, carbohydrates_100g: 12, fat_100g: 50 } }
+    };
+    const calls = [];
+    let down = false;
+    const fetch = async url => {
+      url = String(url);
+      if (!/world\.openfoodfacts\.org\/api\/v2\/product\//.test(url)) throw new Error('offline in test');
+      calls.push(url);
+      const code = url.match(/product\/(\d+)\.json/)[1];
+      if (down || code === DOWN) throw new TypeError('Failed to fetch');
+      const p = PRODUCTS[code];
+      if (!p) return { ok: false, status: 404, json: async () => ({ status: 0, status_verbose: 'product not found' }) };
+      return { ok: true, status: 200, json: async () => ({ status: 1, code, product: Object.assign({ code }, p) }) };
+    };
+    const { w, d, G, errs } = await boot({ fetch }); allErrs.push(...errs);
+    onboard(G);
+    const S = G.S;
+    const settle = () => new Promise(r => setTimeout(r, 30));
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const num = () => txt(d.querySelector('.aqv'));
+    const row = (id, m) => G.dayFood(G.todayKey()).find(x => x.id === id && (x.meal || 's') === m);
+    const typeCode = async c => { d.getElementById('scanCode').value = c; d.getElementById('scanLook').click(); await settle(); };
+
+    /* the pieces */
+    t('81 · check digits: a right one passes, a wrong one does not', G.gtinValid(BREAD) && !G.gtinValid(BREAD.slice(0, -1) + ((+BREAD.slice(-1) + 1) % 10)) && G.gtinValid('96385074'));
+    t('81 · UPC-A is kept as 13 digits, as Open Food Facts keeps it', G.normCode(US) === '0' + US);
+    t('81 · UPC-E is written out in full', G.upceToA('04252614') === '042100005264' && G.normCode('04252614', 'upc_e') === '0042100005264');
+    const sv1 = G.parseServing('1 slice (40 g)', 40), sv2 = G.parseServing('2 biscuits (25g)'), sv3 = G.parseServing('30 g'), sv4 = G.parseServing('33cl'), sv5 = G.parseServing('a bowl');
+    t('81 · the label\'s serving is read: 1 slice is 40g', sv1.label === 'slice' && sv1.g === 40);
+    t('81 · 2 biscuits (25g) is a biscuit of 12.5g', sv2.label === 'biscuit' && sv2.g === 12.5 && sv2.tot === 25);
+    t('81 · a bare weight is "serving"; cl is ml; no weight, no serving', sv3.label === 'serving' && sv3.g === 30 && sv4.unit === 'ml' && sv4.g === 330 && sv5 === null);
+    t('81 · two reads that agree before a code counts', G.scanAgree(BREAD) === null && G.scanAgree(BREAD) === BREAD);
+    G.SC.last = '';
+    t('81 · a misread never counts', G.scanAgree('5391234000019') === null && G.scanAgree('5391234000019') === null);
+
+    /* ways in */
+    G.openFood(false, { slot: 'b' });
+    t('81 · the food search has a scan button', !!d.querySelector('.foodsearch [data-scan]'));
+    G.closeSheets(); G.go('eat'); G.renderAll();
+    t('81 · so does Eat, beside search', !!d.querySelector('#eatView .eatfind [data-eatscan]'));
+
+    /* scan from Eat: no camera in this browser, so it offers the number */
+    d.querySelector('[data-eatscan]').click();
+    const scr = d.getElementById('scan');
+    t('81 · the scanner opens', scr.classList.contains('on'));
+    t('81 · without a camera it says so and asks for the number', !!d.getElementById('scanCode') && /cannot use the camera/.test(txt(d.getElementById('scanMsg'))));
+    await typeCode(BREAD.slice(0, -1) + ((+BREAD.slice(-1) + 1) % 10));
+    t('81 · a mistyped number is caught, not looked up', /does not check out/.test(txt(d.getElementById('scanMsg'))) && calls.length === 0 && scr.classList.contains('on'));
+    await typeCode(BREAD);
+    t('81 · Open Food Facts is asked for that number only', calls.length === 1 && calls[0].indexOf('/product/' + BREAD + '.json?fields=') > 0 && !/user|email|handle/i.test(calls[0]));
+    t('81 · found: the scanner closes and the food screen opens on it', !scr.classList.contains('on') && d.getElementById('foodSheet').classList.contains('on') && /Wholemeal Bread, Brennans/.test(txt(d.querySelector('.famthead'))));
+    t('81 · it says where the numbers come from', /Open Food Facts, from the label, per 100g 230 kcal/.test(txt(d.querySelector('.famthead'))));
+    t('81 · and shows the label serving', /Label serving: 1 slice \(40 g\)/.test(txt(d.querySelector('.famthead'))));
+    t('81 · it opens on 1 slice, with its weight', num() === '1' && /slice/.test(txt(d.querySelector('.aqu'))) && /= 40g/.test(txt(d.querySelector('.aqnum'))));
+    t('81 · slice, g and 100g are all units', [...d.querySelectorAll('[data-amtunit]')].map(b => txt(b)).join('|') === 'g|slice40g');
+    t('81 · the numbers follow the label: 2 slices is 184 kcal', (d.querySelector('[data-kp="2"]').click(), /184\s*kcal/.test(txt(d.querySelector('.aqring')))));
+    d.getElementById('amtSave').click();
+    const bread = G.dayFood(G.todayKey()).find(x => x.id === 'bc' + BREAD);
+    t('81 · added: 2 slices, 80g, from Open Food Facts', !!bread && Math.abs(bread.q - 0.8) < 1e-9 && bread.src === 'off' && bread.uk === 'h0');
+    t('81 · Eat shows it with its source', /Open Food Facts, from the label/.test(txt(d.getElementById('eatView'))) && /Wholemeal Bread/.test(txt(d.getElementById('eatView'))));
+    t('81 · kept on the phone, with name, brand, per 100g values and serving', (() => { const f = S.scanned[BREAD];
+      return f && f.n === 'Wholemeal Bread, Brennans' && f.brand === 'Brennans' && f.kcal === 230 && f.p === 9.6 && f.c === 38 && f.f === 2.6 && f.fb === 6.6 && f.m === 'g' && f.por[0][0] === '1 slice' && f.por[0][1] === 40; })());
+
+    /* the second scan: instant, no network, offline too */
+    Object.defineProperty(w.navigator, 'onLine', { value: false, configurable: true });
+    G.closeSheets();
+    G.openScanner({ slot: 'l', typed: true }); await typeCode(BREAD);
+    t('81 · the second scan comes from the phone, offline, no lookup', calls.length === 1 && /Wholemeal Bread/.test(txt(d.querySelector('.famthead'))) && /Found on your phone/.test(txt(d.getElementById('toast'))));
+    t('81 · and it opens on the meal it was scanned for', /Add to lunch/.test(txt(d.getElementById('amtSave'))));
+    d.querySelector('[data-amtback]').click();
+    G.openScanner({ typed: true }); await typeCode(MILK);
+    t('81 · offline and not on the phone: says so, offers the label, and Try again', /No connection/.test(txt(d.querySelector('.scanwhy'))) && !!d.querySelector('[data-scanretry]') && !!d.getElementById('slSave') && calls.length === 1);
+    Object.defineProperty(w.navigator, 'onLine', { value: true, configurable: true });
+    d.querySelector('[data-scanretry]').click(); await settle();
+    t('81 · Try again finds it once back online', /Protein Milk, Avonmore/.test(txt(d.querySelector('.famthead'))));
+    t('81 · a drink is per 100ml, with its 250ml serving', S.scanned[MILK].m === 'ml' && /per 100ml 64 kcal/.test(txt(d.querySelector('.famthead'))) && /= 250ml/.test(txt(d.querySelector('.aqnum'))));
+    d.querySelector('[data-amtback]').click();
+
+    /* recents, search and the Scanned list */
+    G.drawFood();
+    const firstIds = [...d.querySelectorAll('#foodList [data-foodopen]')].map(b => b.dataset.foodopen);
+    t('81 · scanned products sit with your recent foods', firstIds.indexOf('bc' + BREAD) >= 0 && firstIds.indexOf('bc' + MILK) >= 0 && firstIds.indexOf('bc' + MILK) < 8);
+    const sb = d.getElementById('foodSearch'); sb.value = 'brennans'; sb.dispatchEvent(new w.Event('input', { bubbles: true }));
+    t('81 · search finds them by brand, first, with their source', (() => { const r0 = d.querySelector('#foodList .frow'); return r0 && /Wholemeal Bread, Brennans/.test(txt(r0)) && /per 100g/.test(txt(r0)) && /Open Food Facts/.test(txt(r0)); })());
+    sb.value = 'wholemeal bread'; sb.dispatchEvent(new w.Event('input', { bubbles: true }));
+    t('81 · and above the general lists for the same words', /Brennans/.test(txt(d.querySelector('#foodList .frow'))));
+    sb.value = ''; sb.dispatchEvent(new w.Event('input', { bubbles: true }));
+    t('81 · a Scanned category lists them', !!d.querySelector('[data-foodcat="scanned"]'));
+    d.querySelector('[data-foodcat="scanned"]').click();
+    t('81 · newest first', [...d.querySelectorAll('#foodList [data-foodopen]')].map(b => b.dataset.foodopen).slice(0, 2).join() === 'bc' + MILK + ',bc' + BREAD);
+    const plus = d.querySelector('#foodList [data-foodadd^="bc' + MILK + ':"]');
+    t('81 · + on a scanned drink adds one label serving', plus && plus.dataset.foodadd === 'bc' + MILK + ':2.5' && /1 serving/.test(plus.getAttribute('aria-label')));
+
+    /* missing numbers: one screen, what is missing marked */
+    G.closeSheets(); G.openScanner({ slot: 's', typed: true }); await typeCode(GAPS);
+    t('81 · gaps in Open Food Facts are said plainly', /has this one, but without protein and fat/.test(txt(d.querySelector('.scanwhy'))));
+    t('81 · what it has is filled in, what is missing is marked', d.getElementById('slName').value === 'Granola Bites' && d.getElementById('slKcal').value === '450' && d.getElementById('slC').value === '60'
+      && d.getElementById('slP').value === '' && /missing/.test(txt(d.getElementById('slP').closest('.nf'))) && !/missing/.test(txt(d.getElementById('slKcal').closest('.nf'))));
+    d.getElementById('slSave').click();
+    t('81 · it will not save without the missing numbers', /It needs protein and fat/.test(txt(d.getElementById('toast'))) && !S.scanned[GAPS]);
+    d.getElementById('slP').value = '9'; d.getElementById('slF').value = '20';
+    d.getElementById('slSrvName').value = 'bite'; d.getElementById('slSrvG').value = '12';
+    d.getElementById('slSave').click();
+    t('81 · saved from the label, then straight to choosing how much', S.scanned[GAPS] && S.scanned[GAPS].src === 'label' && S.scanned[GAPS].p === 9 && /Granola Bites, Lidl/.test(txt(d.querySelector('.famthead'))) && /from your label/.test(txt(d.querySelector('.famthead'))));
+    t('81 · with its serving as a unit', num() === '1' && /bite/.test(txt(d.querySelector('.aqu'))) && /= 12g/.test(txt(d.querySelector('.aqnum'))));
+    const before = calls.length;
+    d.querySelector('[data-amtback]').click();
+    G.openScanner({ typed: true }); await typeCode(GAPS);
+    t('81 · and the next scan finds it on the phone', calls.length === before && /Granola Bites/.test(txt(d.querySelector('.famthead'))));
+    d.querySelector('[data-amtback]').click();
+
+    /* not found */
+    G.openScanner({ typed: true }); await typeCode(NONE);
+    t('81 · not found: said plainly, with the label screen', /does not have this one yet/.test(txt(d.querySelector('.scanwhy'))) && d.getElementById('slName').value === '' && /Barcode \d{13}/.test(txt(d.querySelector('.famthead'))));
+    d.querySelector('[data-slper="ml"]').click();
+    ['slName:Kombucha', 'slKcal:18', 'slP:0', 'slC:4', 'slF:0'].forEach(x => { const [id, v] = x.split(':'); d.getElementById(id).value = v; });
+    d.getElementById('slSave').click();
+    t('81 · a drink added from the label is per 100ml, no serving needed', S.scanned[NONE] && S.scanned[NONE].m === 'ml' && !S.scanned[NONE].por && num() === '100' && /ml/.test(txt(d.querySelector('.aqu'))));
+    d.querySelector('[data-amtback]').click();
+
+    /* Open Food Facts down */
+    G.openScanner({ typed: true }); await typeCode(DOWN);
+    t('81 · Open Food Facts unreachable: said plainly, label or Try again', /could not be reached/.test(txt(d.querySelector('.scanwhy'))) && !!d.querySelector('[data-scanretry]'));
+    d.querySelector('[data-scanback]').click();
+    t('81 · Back from the label screen is the food list again', !d.querySelector('.scanlabel') && !!d.getElementById('foodSearch') && !d.getElementById('foodSheet').classList.contains('amtmode'));
+
+    /* how the numbers are read */
+    G.offTimes = [];
+    G.openScanner({ typed: true }); await typeCode(KJ);
+    t('81 · energy in kJ only is turned into kcal', S.scanned[KJ] && S.scanned[KJ].kcal === 400);
+    d.querySelector('[data-amtback]').click();
+    G.openScanner({ typed: true }); await typeCode(US);
+    t('81 · a 12 digit UPC is looked up as 13', calls.some(u => u.indexOf('/product/0' + US + '.json') > 0));
+    t('81 · US labels: fibre taken out of carbohydrate (rule of thumb)', S.scanned['0' + US] && S.scanned['0' + US].c === 62 && S.scanned['0' + US].fb === 18);
+    d.querySelector('[data-amtback]').click();
+    G.openScanner({ typed: true }); await typeCode(COOK);
+    t('81 · values given per serving only are turned into per 100g', (() => { const f = S.scanned['0' + COOK]; return f && f.kcal === 500 && f.p === 5 && f.c === 70 && f.f === 22 && f.por[0][0] === '1 cookie' && f.por[0][1] === 15; })());
+    d.querySelector('[data-amtback]').click();
+    G.openScanner({ typed: true }); await typeCode(SILLY);
+    t('81 · numbers that cannot be per 100g are not trusted: the label is asked for', !S.scanned[SILLY] && /cannot be right per 100g/.test(txt(d.querySelector('.scanwhy'))));
+    d.querySelector('[data-scanback]').click();
+
+    /* wrong numbers: fixed from the label, for good on this phone */
+    G.openFoodAmount('bc' + BREAD, 'b', false);
+    d.querySelector('[data-scanedit]').click();
+    t('81 · Wrong? opens the label screen with what is kept', /Fix it from the label/.test(txt(d.querySelector('.famthead'))) && d.getElementById('slKcal').value === '230' && d.getElementById('slSrvName').value === 'slice' && d.getElementById('slName').value === 'Wholemeal Bread');
+    d.getElementById('slKcal').value = '240'; d.getElementById('slSave').click();
+    t('81 · the fix is kept for the next scan', S.scanned[BREAD].kcal === 240 && S.scanned[BREAD].src === 'label' && /from your label/.test(txt(d.querySelector('.famthead'))));
+    t('81 · what was already logged keeps the numbers it was logged with', bread.kcal === 230);
+    d.querySelector('[data-amtback]').click();
+
+    /* staying inside Open Food Facts' limit */
+    G.offTimes = [];
+    const n0 = calls.length;
+    for (let i = 0; i < 11; i++) await G.lookupBarcode(check('5391234100' + String(i).padStart(2, '0')));
+    const last = await G.lookupBarcode(check('539123410099'));
+    t('81 · no more than 10 lookups a minute, then it says to wait', calls.length - n0 === 10 && last.kind === 'busy');
+    G.offTimes = [];
+
+    /* the scanner itself */
+    G.openScanner({ typed: true });
+    d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    t('81 · Escape closes the scanner and nothing else', !d.getElementById('scan').classList.contains('on') && d.getElementById('foodSheet').classList.contains('on'));
+    G.openScanner({ typed: true }); d.querySelector('[data-scanclose]').click();
+    t('81 · so does its close button', !d.getElementById('scan').classList.contains('on'));
+    t('81 · no camera is left running', !G.SC.stream && !G.SC.on);
+
+    /* kept, exported, deleted with everything */
+    t('81 · Download everything includes scanned products', !!G.exportPayload && G.exportPayload().scanned && !!G.exportPayload().scanned[BREAD]);
+    t('81 · a damaged store is ignored, not a crash', (() => { const keep = S.scanned; S.scanned = ['x']; const ok = G.scannedFoods().length === 0 && G.foodOf('bc' + BREAD) === null; S.scanned = keep; return ok; })());
+
+    /* teens: protein, no calories, on a scanned food too */
+    S.profile.age = 14; S.profile.birthYear = new w.Date().getFullYear() - 14;
+    G.openFoodAmount('bc' + BREAD, 'l', false);
+    t('81 · teen: a scanned food shows protein, not calories', !/kcal/.test(txt(d.querySelector('.famt'))) && /protein/.test(txt(d.querySelector('.aqlive'))));
+    S.profile.age = 34; S.profile.birthYear = new w.Date().getFullYear() - 34;
+    G.closeSheets();
+
+    /* the policy, the version, the notes, the method */
+    const pol = G.LEGAL.privacy.sections().map(x => x.join(' ')).join(' ');
+    t('81 · the privacy policy says what scanning sends, and to whom', /Open Food Facts/.test(pol) && /only the barcode number|All the app sends is the barcode number/i.test(pol) && /never stored or sent/.test(pol) && /Open Database Licence/.test(pol));
+    t('81 · the terms version moved with it', w.__CLOUD.TERMS_VERSION === '2026-10-b76');
+    t('81 · the release note leads with scanning', /Scan a barcode/.test(JSON.stringify(G.RELEASE_NOTES ? G.RELEASE_NOTES[0] : w.eval('RELEASE_NOTES[0]'))));
+    const fs = require('fs'), path = require('path');
+    const scanSrc = fs.readFileSync(path.join(__dirname, 'src/js/scan.js'), 'utf8');
+    const zxJs = fs.readFileSync(path.join(__dirname, 'vendor/zxing/zxing-reader.js'), 'utf8');
+    const wasmHash = require('crypto').createHash('sha256').update(fs.readFileSync(path.join(__dirname, 'vendor/zxing/zxing_reader.wasm'))).digest('hex');
+    t('81 · the iPhone reader is the published one, unmodified (its hash matches)', zxJs.indexOf('ZXING_WASM_SHA256=`' + wasmHash + '`') >= 0);
+    t('81 · and is never loaded on opening the app', !d.querySelector('script[src*="zxing"]'));
+    t('81 · the method sheet explains barcodes', /Barcodes<\/b>/.test(fs.readFileSync(path.join(__dirname, 'src/js/trends/02-weight-trends.js'), 'utf8')));
+    t('81 · no em dashes', scanSrc.indexOf('—') < 0);
   }
 
   const r = s.report(allErrs);

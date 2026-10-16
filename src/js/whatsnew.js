@@ -18,6 +18,10 @@
    Writing a note: what changed for the person, in their words, one line of
    why it matters if needed, no internal names. Bump APP_VERSION with it. */
 const RELEASE_NOTES=[
+  {v:'76', date:'2026-10-14', items:[
+    {t:'Scan a barcode', d:'Tap the barcode button in food search or on Eat and point your camera at a packet. It opens with the label\'s numbers and serving, from Open Food Facts, and scanning it again is instant, even offline.', go:'eat', goLabel:'Open Eat'},
+    {t:'Not found? Add it from the label', d:'If a product is missing or has gaps, one screen takes the numbers off the label and keeps them for next time. Spot a wrong number? Fix it from the food\'s screen.'},
+    {t:'Privacy policy updated', d:'It now says what scanning sends (only the barcode number, to Open Food Facts). If you back up, backing up waits until you agree to it: You, Account, Read what changed.'}]},
   {v:'75', date:'2026-10-14', items:[
     {t:'Adding food, rebuilt', d:'Tap any food to open it: pick grams, ml, eggs, slices or spoons, type the amount on the keypad and see the calories and macros as you go. + still adds in one tap, with what you had last time.'},
     {t:'Change or remove in one tap', d:'Tap anything you logged, on Eat or in a meal, to change how much, move it to another meal or remove it.'}]},
@@ -81,6 +85,7 @@ function busyForNotes(){
   const rv=document.getElementById('review'); if(rv&&rv.classList.contains('on')) return true;
   const gym=document.getElementById('gym'); if(gym&&gym.classList.contains('on')) return true;
   const legal=document.getElementById('legal'); if(legal&&legal.classList.contains('on')) return true;
+  const scan=document.getElementById('scan'); if(scan&&scan.classList.contains('on')) return true;
   return false;
 }
 function maybeWhatsNew(tries){

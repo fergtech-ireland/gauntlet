@@ -1748,3 +1748,58 @@ body.has-live .toast:not(.top){bottom:140px}
 .plusmark{font-style:normal;font-weight:800;color:var(--green-text);margin-left:1px}
 .progsheet details.method summary{cursor:pointer;min-height:40px;display:flex;align-items:center;gap:6px}
 .progsheet details.method summary b{display:inline;margin:0}
+/* ---------- barcode scanning (build 76) ----------
+   The scanner is a camera screen, dark in both themes like the session card
+   (the hero tokens), above everything including the food sheet. */
+.foodsearch{display:flex;gap:8px;align-items:center}
+.foodsearch input{flex:1;min-width:0}
+.scanbtn,.eatscan{flex:none;width:48px;min-height:48px;display:grid;place-items:center;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.eatfind{display:flex;gap:8px;align-items:center}
+.eatfind .eatsearch{flex:1;min-width:0}
+.eatscan{width:44px;min-height:44px;border-radius:10px}
+.scan{position:fixed;inset:0;z-index:320;background:var(--hero);color:var(--hero-ink);max-width:460px;margin:0 auto;display:none;flex-direction:column}
+.scan.on{display:flex}
+.scantop{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(8px + env(safe-area-inset-top,0px)) 8px 8px}
+.scantop b{font-size:16px;font-weight:800}
+.scanx{width:44px;height:44px;display:grid;place-items:center;border-radius:50%;color:var(--hero-ink);background:var(--hero-chip)}
+.scanx[hidden]{display:grid;visibility:hidden}
+.scanx[aria-pressed="true"]{background:var(--mint);color:var(--mint-ink)}
+.scanview{position:relative;flex:1;min-height:0;overflow:hidden;background:var(--hero)}
+.scanview video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.scanframe{position:absolute;left:7%;right:7%;top:50%;transform:translateY(-50%);aspect-ratio:1.75;max-height:52%;border-radius:14px;box-shadow:0 0 0 2000px rgba(0,0,0,.45);outline:3px solid var(--mint);outline-offset:0}
+.scanframe i{position:absolute;left:6%;right:6%;top:50%;height:2px;background:var(--coral);opacity:.9;animation:scanline 1.6s ease-in-out infinite alternate}
+@keyframes scanline{from{transform:translateY(-34px)}to{transform:translateY(34px)}}
+@media (prefers-reduced-motion:reduce){.scanframe i{animation:none}}
+.scanmsg{position:absolute;left:16px;right:16px;bottom:14px;text-align:center;font-size:14px;font-weight:700;color:var(--hero-ink);text-shadow:0 1px 3px rgba(0,0,0,.8)}
+.scanmsg:empty{display:none}
+.scanview.typed{flex:none;min-height:0}
+.scanview.typed video,.scanview.typed .scanframe{display:none}
+.scanview.typed .scanmsg{position:static;padding:4px 16px 10px;text-align:left;text-shadow:none;font-weight:600;color:var(--hero-sub)}
+.scanfoot{padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:6px}
+.scanview.typed+.scanfoot{flex:1}
+.scanhint{margin:0;text-align:center;font-size:13.5px;color:var(--hero-sub)}
+.scanfoot .skipbtn{color:var(--hero-ink)}
+.scantype{display:block}
+.scantype span{display:block;font-size:12px;font-weight:700;color:var(--hero-sub);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.scantype input{width:100%;min-height:54px;border-radius:12px;border:1px solid var(--hero-line);background:var(--hero-chip);color:var(--hero-ink);font:inherit;font-family:var(--font-num);font-size:28px;font-weight:700;letter-spacing:.06em;padding:0 14px;outline:none}
+.scantype input:focus{border-color:var(--mint)}
+.scantype input::placeholder{color:var(--hero-sub);opacity:.6}
+.scanfoot .sheetcta:disabled{opacity:.6}
+/* the label screen, inside the food sheet */
+.scanlabel{padding-bottom:6px}
+.scanlabel .famthead{margin:4px 0 8px}
+.scanwhy{margin:0 0 12px}
+.scanlabel .nf.miss{border-color:var(--amber)}
+.needmark{display:inline-block;margin-left:4px;padding:1px 6px;border-radius:999px;background:var(--amber-tint);color:var(--amber-text);font-size:10px;letter-spacing:.04em}
+.scanlabel .nf label small,.slsrv small{text-transform:none;letter-spacing:0;font-weight:600}
+.scanlabel .nf input{font-size:18px}
+.slper{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 10px;font-size:13px;font-weight:700;color:var(--sub)}
+.slper .pickchips{margin:0}
+.slsrv{margin:2px 0 6px}
+.slgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-bottom:10px}
+.slsrv .slgrid{margin-bottom:0}
+.scanlabel .nf input::placeholder{color:var(--mute);font-weight:600;font-size:15px}
+.slsrv>span{display:block;font-size:13px;font-weight:700;color:var(--sub);margin-bottom:6px}
+.famthead small.famtlabel{display:block}
+/* scanned foods always say where their numbers come from, even on a short phone */
+@media (max-height:760px){.famthead small.famtlabel,.famthead small.famtsrc{display:block}}

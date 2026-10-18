@@ -6267,12 +6267,12 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('79 · the newest note is this build', G.RELEASE_NOTES.some(n => n.v === w.eval('APP_VERSION')));
     /* someone who used the app before notes existed */
     delete S.profile.seenVersion; G.closeSheets();
-    t('79 · they are taken as having seen build 72', G.seenVersion() === '72' && G.unseenNotes().map(n => n.v).join(',') === '78,77,76,75,74,73');
+    t('79 · they are taken as having seen build 72', G.seenVersion() === '72' && G.unseenNotes().map(n => n.v).join(',') === '79,78,77,76,75,74,73');
     t('79 · it shows', G.maybeWhatsNew(0) && sheetOn());
     const body = txt(d.getElementById('altBody'));
     /* build 78: one more build, so the three shown are 78, 77, 76 */
-    t('79 · newest first, with what changed', body.indexOf('Goals you can read at a glance') >= 0 && body.indexOf('Goals you can read at a glance') < body.indexOf('Your goal, under the rings') && body.indexOf('Your goal, under the rings') < body.indexOf('Scan a barcode') && /Open Food Facts/.test(body));
-    t('79 · a fourth build waits one tap away', !/Adding food, rebuilt/.test(body) && /3 earlier updates/.test(txt(d.querySelector('[data-wnall]'))));
+    t('79 · newest first, with what changed', body.indexOf('Goal charts say what they mean') >= 0 && body.indexOf('Goal charts say what they mean') < body.indexOf('Goals you can read at a glance') && body.indexOf('Goals you can read at a glance') < body.indexOf('Your goal, under the rings') && !/Open Food Facts/.test(body));
+    t('79 · a fourth build waits one tap away', !/Adding food, rebuilt/.test(body) && /4 earlier updates/.test(txt(d.querySelector('[data-wnall]'))));
     t('79 · and only builds they have not seen', !/Programmes for every kind/.test(body));
     t('79 · it is marked seen as it shows', S.profile.seenVersion === w.eval('APP_VERSION'));
     d.querySelector('[data-wnok]').click();
@@ -6309,7 +6309,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const key = w.eval('STORE_KEY');
     const b2 = await boot({ wait: 2000, before: w2 => w2.localStorage.setItem(key, JSON.stringify(saved)) });
     allErrs.push(...b2.errs);
-    t('79 · reopening after an update shows it by itself', b2.d.getElementById('altSheet').classList.contains('on') && /Scan a barcode/.test(b2.d.getElementById('altBody').textContent));
+    t('79 · reopening after an update shows it by itself', b2.d.getElementById('altSheet').classList.contains('on') && /Goal charts say what they mean/.test(b2.d.getElementById('altBody').textContent));
     const b3 = await boot({ wait: 2000, before: w2 => w2.localStorage.setItem(key, JSON.stringify(Object.assign({}, saved, { profile: Object.assign({}, saved.profile, { seenVersion: w.eval('APP_VERSION') }) }))) });
     allErrs.push(...b3.errs);
     t('79 · and not on an ordinary open', !b3.d.getElementById('altSheet').classList.contains('on'));
@@ -6749,11 +6749,11 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     G.go('today');
     Object.keys(aims).forEach(a => { S.profile.aim = a; G.renderAll(); t('82 · aim ' + a + ' shows its own line under the rings', aims[a].test(gl()), gl()); });
     S.profile.aim = 'build'; G.renderAll();
-    t('82 · building muscle reads the rate of gain against 0.25 to 0.5%', /gain 0\.25 to 0\.5% a week/.test(gl()) && /% of bodyweight/.test(gl()) && /weight trend/.test(gl()));
+    t('82 · building muscle reads the rate of gain against 0.25 to 0.5%', /Aim: gain [\d.]+ to [\d.]+ (kg|lb) a week/.test(gl()) && /your weight trend/.test(gl()) && /Losing/.test(gl()) && /Gaining/.test(gl()));
     S.profile.aim = 'lose'; S.target = { kind: 'weight', value: 92, by: G.addDays(today, 120), set: G.addDays(today, -20) }; G.renderAll();
     t('82 · losing fat with a goal keeps the weight line, unchanged', !d.querySelector('#todayView .gline') && /Start/.test(gl()) && /Goal/.test(gl()));
     S.target = null; G.renderAll();
-    t('82 · losing fat with no goal reads the rate of loss', /Lose fat/.test(gl()) && /lose 0\.5 to 1% a week/.test(gl()));
+    t('82 · losing fat with no goal reads the rate of loss', /Lose fat/.test(gl()) && /Aim: lose [\d.]+ to [\d.]+ (kg|lb) a week/.test(gl()));
 
     /* ---- 1: steps, and the calories that counted on them ---- */
     S.profile.stepTarget = 5500; S.targets = G.ownTargets();
@@ -6843,7 +6843,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('83 · Build muscle is a card that names the goal and says the weight is falling', !!c1 && /Build muscle/.test(txt(c1)) && /Losing weight/.test(txt(c1)) && /−0\.\d kg a week/.test(txt(c1)) && /weight trend/.test(txt(c1)), txt(c1));
     t('83 · the picture is a target zone with a marker, not an empty fill bar', !!c1.querySelector('.zg .zg-band') && !!c1.querySelector('.zg .zg-mark') && !c1.querySelector('.ybar'));
     t('83 · the marker sits left of the zone when the weight is falling', left(c1.querySelector('.zg-mark')) < left(c1.querySelector('.zg-band')));
-    t('83 · the zone is named in words under it', /Target zone: gain 0\.25 to 0\.5% a week/.test(txt(c1)));
+    t('83 · the zone is named in words under it', /Aim: gain [\d.]+ to [\d.]+ (kg|lb) a week/.test(txt(c1)) && !!c1.querySelector('.zg-you') && !!c1.querySelector('.zg-aim'));
     t('83 · it is red and says what to do', c1.classList.contains('st-red') && /eat a little more/.test(txt(c1.querySelector('.gc-v'))));
     t('83 · the lifts row is there even before there is anything to compare', /Lifts/.test(txt(c1)) && /Compare after two sessions each/.test(txt(c1)));
     /* in the zone */
@@ -6862,13 +6862,13 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     /* ---- each aim has its own picture ---- */
     weights(0.002); lifts(60, 66); S.profile.aim = 'strong'; G.renderAll(); c = gcs()[0];
     t('83 · Get stronger shows each lift, was to now, with a dot', /Get stronger/.test(txt(c)) && c.querySelectorAll('.gc-row').length === 2 && /76 → 84 kg/.test(txt(c)) && c.querySelectorAll('.gc-row .pips i.on').length === 2, txt(c));
-    t('83 · and its zone is up 1% or more', /Target zone: up 1% or more/.test(txt(c)) && !!c.querySelector('.zg'));
+    t('83 · and its zone is up 1% or more', /Aim: up 1% or more/.test(txt(c)) && !!c.querySelector('.zg'));
     S.profile.aim = 'hold'; G.renderAll(); c = gcs()[0];
-    t('83 · Hold steady is a band around your weight', !!c.querySelector('.zg') && /within 3%/.test(txt(c)) && /band/.test(txt(c)));
+    t('83 · Hold steady is a band around your weight', !!c.querySelector('.zg') && /Aim: stay between/.test(txt(c)) && /Lighter/.test(txt(c)) && /Heavier/.test(txt(c)));
     S.profile.aim = 'lose'; weights(-0.07); G.renderAll(); c = gcs()[0];
-    t('83 · Lose fat with no goal weight shows its zone too', /Lose fat/.test(txt(c)) && /Target zone: lose 0\.5 to 1% a week/.test(txt(c)) && !!c.querySelector('.zg'));
+    t('83 · Lose fat with no goal weight shows its zone too', /Lose fat/.test(txt(c)) && /Aim: lose [\d.]+ to [\d.]+ (kg|lb) a week/.test(txt(c)) && !!c.querySelector('.zg'));
     S.profile.aim = 'endure'; G.renderAll(); c = gcs()[0];
-    t('83 · Run further is a bar with a tick for where the plan has you by today', !!c.querySelector('.pb .pb-pace') && /Tick: where the plan has you by today/.test(txt(c)) && /planned/.test(txt(c)), txt(c));
+    t('83 · Run further is a bar with a line for where you should be by today', !!c.querySelector('.pb .pb-pace') && /The line is where you should be by today/.test(txt(c)) && /planned/.test(txt(c)), txt(c));
     t('83 · and a week still in progress is never red', !c.classList.contains('st-red'));
     S.profile.aim = 'eat'; G.renderAll(); c = gcs()[0];
     t('83 · Eat better says nothing is logged rather than guessing', /Eat better/.test(txt(c)) && c.classList.contains('st-none') && /once food is logged/.test(txt(c)));
@@ -6957,7 +6957,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
 
     /* ---- housekeeping ---- */
     t('83 · an account from before this build, with no extras saved, still draws', (() => { delete S.profile.alsoAims; S.profile.aim = 'build'; G.renderAll(); return gcs().length === 1; })());
-    t('83 · the release note leads with goals', /Goals you can read at a glance/.test(JSON.stringify(w.eval('RELEASE_NOTES').find(n => n.v === '78'))) && w.eval('APP_VERSION') === '78');
+    t('83 · the release note leads with goals', /Goals you can read at a glance/.test(JSON.stringify(w.eval('RELEASE_NOTES').find(n => n.v === '78'))) && /Goal charts say what they mean/.test(JSON.stringify(w.eval('RELEASE_NOTES').find(n => n.v === '79'))) && w.eval('APP_VERSION') === '79');
     t('83 · no em dashes in the goal code', require('fs').readFileSync(require('path').join(__dirname, 'src/js/goals.js'), 'utf8').indexOf('—') < 0);
     t('83 · and no page errors', errs.length === 0, errs.join(' | '));
   }

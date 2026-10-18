@@ -1891,7 +1891,7 @@ body.rv-open .toast{z-index:310}
 .goalstack{display:grid;gap:10px;margin:14px 0 2px}
 .goalstack>.wline{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
 .goalstack .gc-n{font-size:26px}
-.goalstack .zg,.goalstack .pb{margin-top:12px}
+.goalstack .pb{margin-top:12px}
 .alsohead{display:flex;justify-content:space-between;align-items:baseline;margin:18px 2px 2px;font-weight:700}
 .alsohead span{font-size:12px;font-weight:600;color:var(--mute)}
 .alsonote{margin:0 2px 8px;font-size:12.5px;color:var(--mute)}
@@ -1904,3 +1904,16 @@ body.rv-open .toast{z-index:310}
 .gwhy .gw ul{margin:0;padding-left:18px;display:grid;gap:4px}
 .gwbtns{display:grid;gap:8px;margin-top:6px}
 
+/* build 78, clearer: the chart labels itself (You, Aim, which end is which) and the aim is said in words */
+.gc-aim{display:block;margin-top:8px;font-size:14px;font-weight:700;color:var(--ink)}
+.zg{margin:30px 8px 26px}
+.zg-aim,.zg-you,.zg-end{position:absolute;font-size:12px;font-weight:800;line-height:1;white-space:nowrap}
+.zg-aim{top:16px;transform:translateX(-50%);color:var(--green-text)}
+.zg-you{bottom:19px;transform:translateX(-50%);color:var(--ink)}
+.zg-you.lft{transform:translateX(-25%)}
+.zg-you.rgt{transform:translateX(-75%)}
+.zg-end{top:16px;font-weight:600;color:var(--mute)}
+.zg-end.l{left:-6px}
+.zg-end.r{right:-6px}
+
+.zg{margin-bottom:34px}

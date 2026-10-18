@@ -18,6 +18,8 @@
    Writing a note: what changed for the person, in their words, one line of
    why it matters if needed, no internal names. Bump APP_VERSION with it. */
 const RELEASE_NOTES=[
+  {v:'79', date:'2026-10-18', items:[
+    {t:'Goal charts say what they mean', d:'The chart now labels itself: You is where you are, Aim is the target, and each end says which way is which. The aim is written in plain kilos a week, and a line on a progress bar is where you should be by today.', adult:true}]},
   {v:'78', date:'2026-10-18', items:[
     {t:'Goals you can read at a glance', d:'Each goal on Today is now a card that shows where you are against a shaded target zone, or against a tick for where you should be by today, with one line on what to do. Building muscle now shows your weight trend against the 0.25 to 0.5% a week zone and how many of your lifts are up. Tap any card for what it means and where the target comes from.', adult:true},
     {t:'More than one goal', d:'Pick a main aim, then add up to two more under Also track on the aim sheet. A goal you set with Set a goal (a lift, a run distance, sessions a week) now sits here too, with its own card, instead of further down the page. Up to three show on Today.', adult:true}]},

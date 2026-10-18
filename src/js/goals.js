@@ -64,10 +64,12 @@ function toggleAlsoAim(id){
 
 /* ----- the pictures ----- */
 const gpc=(v,min,max)=>Math.max(0,Math.min(100,(v-min)/(max-min)*100));
-/* A track with a shaded, outlined zone and a marker. */
-function zoneGauge(min,max,lo,hi,val,label){
-  const L=gpc(lo,min,max), R=gpc(hi,min,max), V=gpc(val,min,max), edge=val<min||val>max;
-  return `<span class="zg" role="img" aria-label="${escHabit(label)}"><i class="zg-band" style="left:${L}%;width:${Math.max(2,R-L)}%"></i><i class="zg-mark${edge?' edge':''}" style="left:${V}%"></i></span>`;
+/* A track with a shaded zone and a marker, labelled on the picture itself:
+   You over the marker, Aim under the zone, and what each end means. */
+function zoneGauge(min,max,lo,hi,val,label,ends){
+  const L=gpc(lo,min,max), R=gpc(hi,min,max), V=gpc(val,min,max), edge=val<min||val>max, M=(L+R)/2;
+  const ya= V<12? ' lft' : (V>88? ' rgt' : '');
+  return `<span class="zg" role="img" aria-label="${escHabit(label)}"><i class="zg-band" style="left:${L}%;width:${Math.max(2,R-L)}%"></i><b class="zg-aim" style="left:${M}%">Aim</b><i class="zg-mark${edge?' edge':''}" style="left:${V}%"></i><b class="zg-you${ya}" style="left:${V}%">You</b>${ends? `<span class="zg-end l">${ends[0]}</span><span class="zg-end r">${ends[1]}</span>` : ''}</span>`;
 }
 /* A bar with a tick where you would be by now. */
 function paceBar(pct,pace,label){
@@ -76,7 +78,6 @@ function paceBar(pct,pace,label){
 }
 /* One dot per lift, day or week: on, missed, or nothing to judge. */
 function pips(states){ return `<span class="pips" aria-hidden="true">${states.map(s=>`<i class="${s}"></i>`).join('')}</span>`; }
-const zoneCap=txt=>`<i class="sw"></i>${txt}`;
 
 /* ----- the card ----- */
 function gcard(o,compact){
@@ -84,6 +85,7 @@ function gcard(o,compact){
   return `<button class="wline gline gc st-${o.st}${compact?' compact':''}" data-goalwhy="${escHabit(o.key)}" aria-label="${escHabit(o.aria)} Tap for what it means.">
     <span class="gc-h"><span class="gc-k">${o.kicker}</span> <span class="gc-s">${o.status}</span></span>
     ${o.num!=null? `<span class="gc-m"><b class="gc-n">${o.num}</b>${o.unit? ` <span class="gc-u">${o.unit}</span>` : ''}${o.ctx? ` <span class="gc-c">${o.ctx}</span>` : ''}</span>` : ''}
+    ${o.aim? `<span class="gc-aim">${o.aim}</span>` : ''}
     ${o.vis||''}
     ${o.cap? `<span class="gc-cap">${o.cap}</span>` : ''}
     ${compact? (rows.length? `<span class="gc-line">${rows.map(r=>r.t).join(' · ')}</span>` : '')
@@ -141,15 +143,15 @@ function cardLose(imp){
       why:{title:kicker,sub:'Your rate of loss',now:'There are not enough weigh ins yet to see which way your weight is going. Three weigh ins at least a week apart give a direction.',
         target:'Losing 0.5 to 1% of your bodyweight a week.',moves:['Weigh in a few mornings a week, in the same conditions.'],source:'Helms, Aragon and Fitschen 2014 (contest prep, natural athletes). '+MOVE_SRC}};
   }
-  const p=-r.pct, abs=Math.abs(r.pct);
+  const p=-r.pct, abs=Math.abs(r.pct), wn=weightNow()||0;
   const st= p>=0.5&&p<=1? 'green' : (p>0.1? 'amber' : 'red');
   const word= p>=0.5&&p<=1? GST.green : (p>1? 'Too fast' : (p>0.1? 'Slow' : 'Not losing'));
   const verdict= p>1? 'Faster than 1% a week tends to cost muscle' : (p>=0.5? 'In the range that keeps muscle' : (p>0.1? 'Slower than 0.5% a week. The Week in review shows why' : 'Not losing yet. The Week in review shows what to change'));
   const dir= p>0.005? 'down' : (p<-0.005? 'up' : 'flat');
   return {key:'aim:lose',st,kicker,status:word,
-    num:(p>0.005? '−' : (p<-0.005? '+' : ''))+n(Math.abs(r.kg)), unit:unit+' a week', ctx:'weight trend · '+abs.toFixed(2)+'% of bodyweight',
-    vis:zoneGauge(-0.5,1.5,0.5,1,p,'Weight trend '+(p>=0?'down ':'up ')+abs.toFixed(2)+'% a week. Target zone is losing 0.5 to 1% a week.'),
-    cap:zoneCap('Target zone: lose 0.5 to 1% a week'), verdict,
+    num:(p>0.005? '−' : (p<-0.005? '+' : ''))+n(Math.abs(r.kg)), unit:unit+' a week', ctx:'your weight trend',
+    aim:'Aim: lose '+n(wn*0.005)+' to '+n(wn*0.01)+' '+unit+' a week',
+    vis:zoneGauge(-0.5,1.5,0.5,1,p,'Weight trend '+(p>=0?'down ':'up ')+abs.toFixed(2)+'% a week. Target zone is losing 0.5 to 1% a week.',['Gaining','Losing']), verdict,
     aria:kicker+': weight trend '+dir+' '+abs.toFixed(2)+'% of bodyweight a week, target 0.5 to 1%. '+verdict+'.',
     why:{title:kicker,sub:'Your rate of loss',
       now:'Your weight trend is '+dir+' '+showW(Math.abs(r.kg),imp)+' a week, which is '+abs.toFixed(2)+'% of your bodyweight. It is worked out from your weigh ins over the last '+rateSpan(r)+', the same line as the weight chart.',
@@ -173,7 +175,7 @@ function cardBuild(imp){
       aria:kicker+'. Three weigh ins over a week give your rate of gain. '+liftsTxt+'.',
       why:Object.assign({},whyBase,{now:'Not enough weigh ins yet to see which way your weight is going. '+liftsTxt+'.',moves:['Weigh in a few mornings a week.','Keep adding a rep or a little weight to your lifts.']})};
   }
-  const p=r.pct, abs=Math.abs(p);
+  const p=r.pct, abs=Math.abs(p), wn=weightNow()||0;
   const inZ=p>=0.25&&p<=0.5, fast=p>0.5, slow=p>=0.1&&p<0.25;
   let st,word,verdict;
   if(inZ){ if(liftsFlat){ st='amber'; word='Check lifts'; verdict='Weight is rising but your lifts are not. Check reps, load and sleep'; }
@@ -184,9 +186,9 @@ function cardBuild(imp){
   else { st='red'; word= p<0? 'Losing weight' : 'Not gaining'; verdict= p<0? 'Weight is falling. To build, eat a little more' : 'Weight is flat. To build, eat a little more'; }
   const dir= p>0.005? 'up' : (p<-0.005? 'down' : 'flat');
   return {key:'aim:build',st,kicker,status:word,
-    num:(p>0.005? '+' : (p<-0.005? '−' : ''))+n(Math.abs(r.kg)), unit:unit+' a week', ctx:'weight trend · '+abs.toFixed(2)+'% of bodyweight',
-    vis:zoneGauge(-0.5,1,0.25,0.5,p,'Weight trend '+(p>=0?'up ':'down ')+abs.toFixed(2)+'% a week. Target zone is gaining 0.25 to 0.5% a week.'),
-    cap:zoneCap('Target zone: gain 0.25 to 0.5% a week'), rows:[liftRow], verdict,
+    num:(p>0.005? '+' : (p<-0.005? '−' : ''))+n(Math.abs(r.kg)), unit:unit+' a week', ctx:'your weight trend',
+    aim:'Aim: gain '+n(wn*0.0025)+' to '+n(wn*0.005)+' '+unit+' a week',
+    vis:zoneGauge(-0.5,1,0.25,0.5,p,'Weight trend '+(p>=0?'up ':'down ')+abs.toFixed(2)+'% a week. Target zone is gaining 0.25 to 0.5% a week.',['Losing','Gaining']), rows:[liftRow], verdict,
     aria:kicker+': weight trend '+dir+' '+abs.toFixed(2)+'% of bodyweight a week, target gain 0.25 to 0.5%. '+liftsTxt+'. '+verdict+'.',
     why:Object.assign({},whyBase,{
       now:'Your weight trend is '+dir+' '+showW(Math.abs(r.kg),imp)+' a week ('+abs.toFixed(2)+'% of bodyweight) over the last '+rateSpan(r)+'. '+liftsTxt+'. '+verdict+'.',
@@ -210,9 +212,9 @@ function cardStrong(imp){
   const up=lt.filter(x=>x.now>x.was).length;
   const rows=lt.map(x=>({label:escHabit(x.n), value:x.was+' → '+x.now+' kg', vis:pips([x.now>x.was? 'on' : 'off']), t:escHabit(x.n)+' '+x.was+' → '+x.now+' kg'}));
   return {key:'aim:strong',st,kicker,status:word,
-    num:(avgP>=0? '+' : '−')+Math.abs(avgP).toFixed(1)+'%', unit:'strength', ctx:'estimated max, vs 4 weeks ago',
-    vis:zoneGauge(-6,8,1,8,Math.max(-6,Math.min(8,avgP)),'Strength '+(avgP>=0?'up ':'down ')+Math.abs(avgP).toFixed(1)+'% on four weeks ago. Target zone is up 1% or more.'),
-    cap:zoneCap('Target zone: up 1% or more'),
+    num:(avgP>=0? '+' : '−')+Math.abs(avgP).toFixed(1)+'%', unit:'strength', ctx:'your best lifts vs 4 weeks ago',
+    aim:'Aim: up 1% or more',
+    vis:zoneGauge(-6,8,1,8,Math.max(-6,Math.min(8,avgP)),'Strength '+(avgP>=0?'up ':'down ')+Math.abs(avgP).toFixed(1)+'% on four weeks ago. Target zone is up 1% or more.',['Down','Up']),
     rows, verdict,
     aria:kicker+': estimated one-rep max '+(avgP>=0?'up ':'down ')+Math.abs(avgP).toFixed(1)+'% on four weeks ago, '+up+' of '+lt.length+' lifts up. '+verdict+'.',
     why:Object.assign({},whyBase,{
@@ -231,12 +233,12 @@ function cardEndure(){
   const rows=[last>0||now>0? {label:'Last week', value:last+' min', t:'Last week '+last+' min'} : null];
   return {key:'aim:endure',st,kicker,status:word,
     num:String(now), unit:'min this week', ctx:plan? 'of '+plan+' planned' : 'no runs planned',
-    vis:plan? paceBar(now/plan*100,wp.sofar/plan*100,'Running '+now+' of '+plan+' minutes planned this week. The tick is where the plan has you by today, '+wp.sofar+' minutes.') : '',
-    cap:plan? '<i class="tk"></i>Tick: where the plan has you by today' : '', rows, verdict,
+    vis:plan? paceBar(now/plan*100,wp.sofar/plan*100,'Running '+now+' of '+plan+' minutes planned this week. The line is where you should be by today, '+wp.sofar+' minutes.') : '',
+    cap:plan? '<i class="tk"></i>The line is where you should be by today' : '', rows, verdict,
     aria:kicker+': '+now+' running minutes this week'+(plan? ' of '+plan+' planned, '+wp.sofar+' by today' : '')+', last week '+last+'. '+verdict+'.',
     why:{title:kicker,sub:'Running minutes this week',
       now:now+' minutes run this week'+(plan? ' of '+plan+' planned. By today the plan has '+wp.sofar+'.' : '.')+' Last week was '+last+'.',
-      target:plan? 'The week\'s planned running is the full bar. The tick marks where the plan has you by today, so you can see ahead or behind.' : 'No runs are planned this week, so there is no bar. Last week is the thing to build on.',
+      target:plan? 'The week\'s planned running is the full bar. The line marks where you should be by today, so you can see ahead or behind.' : 'No runs are planned this week, so there is no bar. Last week is the thing to build on.',
       moves:['Keep most runs easy: you should be able to talk.','Add no more than about 30% on last week.','Missing a run is normal. The week is what counts.'],
       source:'Weekly volume is the main thing to build. A jump of more than about 30% over two weeks went with more injuries in new runners (Nielsen and colleagues 2014, observational). '+MOVE_SRC}};
 }
@@ -251,9 +253,9 @@ function cardHold(imp){
   const word= !inBand? 'Outside the band' : (edge? 'Near the edge' : 'Steady');
   const verdict= !inBand? 'Outside the band: the Week in review shows what moved it' : (edge? 'Near the edge of the band' : 'Steady');
   return {key:'aim:hold',st,kicker,status:word,
-    num:n(now), unit:unit+' trend', ctx:'band '+w(lo)+' to '+w(hi),
-    vis:zoneGauge(ref*0.94,ref*1.06,lo,hi,now,'Weight trend '+w(now)+'. Target band is '+w(lo)+' to '+w(hi)+'.'),
-    cap:zoneCap('Target zone: within 3% of '+w(ref)), verdict,
+    num:n(now), unit:unit, ctx:'your weight trend',
+    aim:'Aim: stay between '+w(lo)+' and '+w(hi),
+    vis:zoneGauge(ref*0.94,ref*1.06,lo,hi,now,'Weight trend '+w(now)+'. Target band is '+w(lo)+' to '+w(hi)+'.',['Lighter','Heavier']), verdict,
     aria:kicker+': trend '+w(now)+', band '+w(lo)+' to '+w(hi)+' around '+w(ref)+'. '+verdict+'.',
     why:{title:kicker,sub:'Your weight against a steady band',
       now:'Your weight trend is '+w(now)+'. The band around '+w(ref)+(t? ' (your goal weight)' : ' (your trend twelve weeks ago)')+' runs from '+w(lo)+' to '+w(hi)+'.',
@@ -306,13 +308,13 @@ function targetCard(t){
     const key='target:sessions';
     return {key,st,kicker:v+' sessions a week',status:hit? 'Week done' : (st==='green'? GST.green : 'Behind pace'),
       num:String(now), unit:'of '+v+' this week', ctx:'',
-      vis:paceBar(Math.min(100,now/v*100),Math.min(100,expect/v*100),now+' of '+v+' sessions this week. The tick is where you would be on pace today.'),
-      cap:'<i class="tk"></i>Tick: where you would be on pace today',
+      vis:paceBar(Math.min(100,now/v*100),Math.min(100,expect/v*100),now+' of '+v+' sessions this week. The line is where you should be by today.'),
+      cap:'<i class="tk"></i>The line is where you should be by today',
       rows:[{label:'Last 8 weeks', value:weeks+' of 8 weeks hit', vis:pips(hits), t:weeks+' of 8 weeks hit'}],
       verdict: hit? 'This week is done' : (st==='green'? 'On pace for the week' : 'A little behind. There is still time this week'),
       aria:v+' sessions a week: '+now+' this week, '+weeks+' of the last 8 weeks hit.',
       why:{title:v+' sessions a week',sub:'A weekly goal',now:now+' sessions so far this week. '+weeks+' of the last 8 weeks reached '+v+'.',
-        target:'The bar is '+v+' sessions in the week. The tick is where you would be if they were spread evenly, so ahead or behind is plain. Weeks count, not streaks: a missed week does not wipe the rest.',
+        target:'The bar is '+v+' sessions in the week. The line is where you should be if they were spread evenly, so ahead or behind is plain. Weeks count, not streaks: a missed week does not wipe the rest.',
         moves:['Book the sessions on Plan so the week has room for them.','One short session beats none.'],target_kind:true,source:''}};
   }
   const hist= t.kind==='lift'? exHistory(t.exId).slice().sort((a,b)=>a.d<b.d? -1 : 1) : [];
@@ -336,12 +338,12 @@ function targetCard(t){
   const togo=+(v-now).toFixed(1);
   return {key:'target:'+t.kind,st,kicker,status:word,
     num:String(now), unit:unit+(t.kind==='lift'? ' best set' : ' longest run'), ctx:togo+' '+unit+' to go'+(left? ' · '+left : ''),
-    vis:paceBar(pct,pace,pct+'% of the way from '+start+' to '+v+' '+unit+(pace!==null? '. The tick is where a steady climb to the date would have you today.' : '.')),
-    cap:pace!==null? '<i class="tk"></i>Tick: where a steady climb to the date has you today' : '',
+    vis:paceBar(pct,pace,pct+'% of the way from '+start+' to '+v+' '+unit+(pace!==null? '. The line is where you should be by today, climbing steadily to the date.' : '.')),
+    cap:pace!==null? '<i class="tk"></i>The line is where you should be by today' : '',
     verdict: late? 'The date has passed. Tap to set a new one' : (pace!==null&&pct<pace-5? 'A little behind a steady climb to the date' : (pace!==null? 'On a steady climb to the date' : '')),
     aria:kicker+': '+now+' '+unit+' now, '+togo+' to go'+(left? ', '+left : '')+'.',
     why:{title:name+' to '+v+' '+unit,sub:'A goal with a number',now:'Best so far '+now+' '+unit+', started from '+start+'. '+togo+' '+unit+' to go'+(left? ', '+left : '')+'.',
-      target:pace!==null? 'The bar is the distance from where you started to the goal. The tick is where a steady climb from the day you set it to the goal date would have you today.' : 'The bar is the distance from where you started to the goal. There is no date, so no tick.',
+      target:pace!==null? 'The bar is the distance from where you started to the goal. The tick is where a steady climb from the day you set it to the goal date would have you today.' : 'The bar is the distance from where you started to the goal. There is no date, so no line.',
       moves:t.kind==='lift'? ['Progress this lift each time you can: a rep, then weight.','A rest day before a heavy attempt is worth it.'] : ['Build the long run a little at a time.','Keep the other runs easy.'],target_kind:true,source:''}};
 }
 

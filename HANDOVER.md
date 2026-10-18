@@ -331,3 +331,6 @@ Feargal's list, all done, no database change (the paused gauntlet-test project w
 ## Still open from the review
 - Open: P1-03 wellbeing loop, P1-05 wider goals, P1-06 personal patterns. The review's detailed wording for these is not in the repo or past chats; get Feargal to paste it before building.
 - Decisions: health data (native wrapper or aggregator), built-in coach (server and budget), barcode scanning, Feed tab placement, real-device accessibility testing.
+
+## Build 79 (18 Oct): goal charts that explain themselves
+Feargal could not read the build 78 charts ("a new user won't have a clue"). Fix, kept small: the gauge now labels itself (You over the marker, Aim under the zone, Losing/Gaining or Lighter/Heavier or Down/Up at the ends), each card has an `Aim:` line in plain units (kg or lb a week, derived from current weight) instead of "% of bodyweight", "weight trend" became "your weight trend", and the pace bar legend reads "The line is where you should be by today". Gotcha: `.goalstack .zg` once overrode the gauge margin and made the You label collide with the Aim line; only `.pb` is overridden there now. Open question for Feargal: Build muscle with a lower goal weight shows two cards that pull opposite ways (a cut-while-building case); not reconciled yet.

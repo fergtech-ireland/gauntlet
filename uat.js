@@ -6948,6 +6948,13 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('83 · under 18s see no goal cards and no stack', !view().querySelector('.gc') && !view().querySelector('.goalstack'));
     S.profile.birthYear = new Date().getFullYear() - 34; S.profile.age = 34; S.profile.alsoAims = [];
 
+    /* ---- opening the app: the cards are there on the first draw, not only after a redraw ---- */
+    S.profile.aim = 'build'; S.profile.alsoAims = ['eat']; weights(0.05); G.setTarget('weight', 92, G.addDays(today, 90)); S.target.set = G.addDays(today, -20); G.save();
+    const saved = w.localStorage.getItem(w.eval('STORE_KEY'));
+    const re = await boot({ before: w2 => { w2.localStorage.setItem(w.eval('STORE_KEY'), saved); }, wait: 1200 }); allErrs.push(...re.errs);
+    t('83 · reopening the app shows the goal cards straight away, no redraw needed', !!re.d.querySelector('#todayView .goalstack') && re.d.querySelectorAll('#todayView .gc').length === 2 && /Build muscle/.test(txt(re.d.querySelector('#todayView .goalstack'))) && /Eat better/.test(txt(re.d.querySelector('#todayView .goalstack'))), txt(re.d.getElementById('todayView')).slice(0, 200));
+    G.clearTarget(); S.profile.alsoAims = [];
+
     /* ---- housekeeping ---- */
     t('83 · an account from before this build, with no extras saved, still draws', (() => { delete S.profile.alsoAims; S.profile.aim = 'build'; G.renderAll(); return gcs().length === 1; })());
     t('83 · the release note leads with goals', /Goals you can read at a glance/.test(JSON.stringify(w.eval('RELEASE_NOTES').find(n => n.v === '78'))) && w.eval('APP_VERSION') === '78');

@@ -388,4 +388,8 @@ document.addEventListener('click',e=>{
   if(e.target.closest('[data-goalsettarget]')){ closeSheets(); openTargetSheet(); return; }
   if(e.target.closest('[data-goalyou]')){ closeSheets(); go('progress'); return; }
 });
+/* This file loads after the first draw of Today (boot.js draws it earlier), so
+   on opening the app the old weight line was drawn instead of the goal cards
+   until anything else redrew. Draw once more when every script is in. */
+setTimeout(()=>{ try{ renderAll(); }catch(e){} },0);
 Object.assign(window.__G,{goalLine,goalAim,ratePct,liftsTrend,runMinutesWeek,goalExtras,goalExtraMax,toggleAlsoAim,GOAL_WHY,openGoalWhy,weekHits,weekRunPlan});

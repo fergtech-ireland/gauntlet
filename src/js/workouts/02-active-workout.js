@@ -308,6 +308,7 @@ document.addEventListener('click',e=>{
   toast(ex.retFull? n+' set'+(n===1?'':'s')+' at your old '+num(kg)+' kg' : 'Back to '+num(kg)+' kg to start');
 });
 function drawGym(){
+  if(typeof gymFinishLabel==='function') gymFinishLabel();
   if(!GYM) return;
   $('gymName').textContent=GYM.name;
   $('gymSub').textContent=elapsed();
@@ -325,7 +326,7 @@ function drawGym(){
       <div class="exh">${gi?`<span class="gbadge">${gi.letter}${gi.pos}</span>`:''}<div class="n">${x.n}</div>${exHasPR(e)?`<span class="pr" title="Personal record">PR</span>`:''}<button class="dots" data-exmenu="${i}" aria-label="Options">···</button></div>
       <div class="cue">${e.rx&&e.rx.plan? e.rx.plan.map(p2=>p2.reps+(p2.plus?'+':'')).join(', ')+' reps' : e.sets.length+' × '+(range.bottom===range.top? e.reps : range.bottom+' to '+range.top)}${e.tempo&&showTempo()?' @ '+e.tempo:''} · rest ${e.rest}s${pre&&pre.heaviest?` · best ${pre.heaviest}kg`:''}</div>
       ${prev&&prev.length? `<div class="prevline">Last time <b>${prev.map(p2=>p2.kg+' × '+p2.reps).join(', ')}</b></div>`:''}
-      ${e.rx? `<div class="rxline"><b>${e.rx.kind==='load'?'Weight up today':(e.rx.kind==='first'?'First time':(e.rx.kind==='return'?'Welcome back':(e.rx.kind==='rebuild'?'Building back':(e.rx.kind==='scheme'?'Today\'s percentages':(e.rx.kind==='zone'?'A different day':'Chase the reps')))))}</b> ${e.rx.why}
+      ${e.rx? `<div class="rxline"><b>${e.rx.kind==='load'?'Weight up today':(e.rx.kind==='first'?'First time':(e.rx.kind==='return'?'Welcome back':(e.rx.kind==='rebuild'?'Building back':(e.rx.kind==='scheme'?'Today\'s percentages':(e.rx.kind==='zone'?'A different day':(e.rx.kind==='bwload'?'Past the range':'Chase the reps'))))))}</b> ${e.rx.why}
         ${e.rx.lastTonnage? `<span class="tonn">Last time you moved ${num(Math.round(e.rx.lastTonnage))}kg on this. Today so far: ${num(Math.round(tonnageOf(e.sets)))}kg.</span>`:''}</div>`:''}
       ${e.tempo&&showTempo()&&tempoMatters(e.tempo)?`<div class="tempo">${tempoWords(e.tempo)}</div>`:''}
       ${e.note?`<div class="note">${e.note}</div>`:''}

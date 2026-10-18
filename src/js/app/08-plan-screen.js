@@ -34,11 +34,18 @@ function dayMovesHTML(d){
 }
 function dayActionsHTML(n,d){
   const startable=d.type&&d.slot!=='walk'&&d.slot!=='rest';
+  const easy=!d.type||d.slot==='rest'||d.slot==='walk', marked=dayMarked(n);
+  /* build 77: rest and walk days can be marked done, today or earlier */
+  const markBtn= easy&&addDays(mondayKey(),n)<=todayKey()? (marked? `<button class="dact" data-unmarkday="${n}">Not done after all</button>`
+    : `<button class="cta" data-markday="${n}">Mark ${d.slot==='walk'?'walk':'rest day'} done</button>`) : '';
+  /* build 77: a session done this week can be repeated on another day */
+  const code=d.templateId||d.circuitId||'', rep= code&&dayDone(n)? `<button class="dact" data-repeat="${code}">Repeat on another day</button>` : '';
   const edit= d.templateId? `<button class="dact" data-tpledit="${d.templateId}">Edit workout</button>`
     : (d.circuitId? `<button class="dact" data-circedit="${d.circuitId}">Edit circuit</button>`
     : (d.runId? `<button class="dact" data-runswap="${n}">Change run</button>` : ''));
   return `${startable? `<button class="cta" data-startday="${n}">${n===dowIdx()?(dayDone(n)?'Do it again':'Start'):'Start '+DAYS[n]+'\u2019s now'}</button>`:''}
-    <div class="dacts">${edit}
+    ${markBtn}
+    <div class="dacts">${rep}${edit}
       <button class="dact" data-swap="${n}">Change day</button>
       ${startable? `<button class="dact" data-restday="${n}">Cannot do it</button>`:''}</div>`;
 }
@@ -49,7 +56,7 @@ function dayActionsHTML(n,d){
    Change day, Cannot do it), so nothing moved further away. Today sits on the
    amber tint, and a day with something left out says so in amber. */
 function dayCard(n,d,isToday,open){
-  const done=dayDone(n)&&!!d.type, flag=!!(d.exclude&&d.exclude.length);
+  const done=(dayDone(n)&&!!d.type)||!!dayMarked(n), flag=!!(d.exclude&&d.exclude.length);
   const sub=[isToday? 'Today' : '', daySub(d),
     flag? 'minus '+d.exclude.length+' movement'+(d.exclude.length>1?'s':'') : '',
     d.deload? 'easy week' : (d.setDelta? 'one set lighter' : ''),

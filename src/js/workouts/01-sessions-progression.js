@@ -1066,6 +1066,12 @@ function rebuildOf(exId,row,base){
   }
   return null;
 }
+/* "You did 11 on every set" or "You did 12, 11, 11 and 10" */
+function repsDoneText(reps){
+  if(!reps.length) return 'You did nothing logged';
+  if(reps.every(r=>r===reps[0])) return `You did ${reps[0]} on every set`;
+  return `You did ${reps.slice(0,-1).join(', ')} and ${reps[reps.length-1]}`;
+}
 function nextPrescriptionBase(exId,row){
   const range=repRangeFor(row), inc=incrementFor(exId);
   const hist=exHistory(exId);
@@ -1080,11 +1086,15 @@ function nextPrescriptionBase(exId,row){
     /* every set was bodyweight only: reps are the progression */
     const best=Math.max(...working.map(s2=>+s2.reps));
     const hit=working.every(s2=>+s2.reps>=range.top);
-    return {kg:null, reps: hit? range.top+2 : Math.min(range.top,best+1), range, inc,
+    /* build 77: say what was done, not the range. Someone who did 11 on a
+       range of 6 to 10 read "you hit 10" and knew it was wrong. */
+    const low=Math.min(...working.map(s2=>+s2.reps));
+    const aim=hit? Math.max(range.top+2,low+1) : Math.min(range.top,best+1);
+    return {kg:null, reps:aim, range, inc,
       lastTonnage:0, kind: hit? 'bwload':'bwreps',
       why: hit
-        ? `You hit ${range.top} on every set with just bodyweight. Add reps, or start adding weight and go back to ${range.bottom}.`
-        : `Bodyweight last time, best set ${best}. Aim for ${Math.min(range.top,best+1)} on the first set.`};
+        ? `${repsDoneText(working.map(s2=>+s2.reps))} with just bodyweight${low>range.top? `, past the top of ${range.bottom} to ${range.top}` : `, the top of ${range.bottom} to ${range.top}`}. Go for ${aim} today, or start adding weight and go back to ${range.bottom}.`
+        : `Bodyweight last time, best set ${best}. Aim for ${aim} on the first set.`};
   }
   const topWeight=Math.max(...working.map(s2=>+s2.kg));
   /* build 71: last time was a different kind of day for this lift (heavy
@@ -1109,7 +1119,7 @@ function nextPrescriptionBase(exId,row){
     return {kg, reps:range.bottom, range, inc, lastTonnage:tonnage,
       why: twoForTwo
         ? `You went two reps past the range twice running, so the weight is ready. Up ${inc}kg and back to ${range.bottom} reps.`
-        : `You hit ${range.top} reps on every set at ${topWeight}kg, so cash it in: ${kg}kg for ${range.bottom} reps.`,
+        : `${repsDoneText(atTop.map(s2=>+s2.reps))} at ${topWeight}kg${Math.min(...atTop.map(s2=>+s2.reps))>range.top? `, past the top of ${range.bottom} to ${range.top}` : ''}, so cash it in: ${kg}kg for ${range.bottom} reps.`,
       kind:'load'};
   }
   const short=atTop.find(s2=>+s2.reps<range.top);

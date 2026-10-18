@@ -437,3 +437,121 @@ function weightLine(){
     <span class="wls">${wp.hit? 'Set the next one on You' : 'Trend '+done+' · '+showW(wp.toGo,imp)+' to go'+left+scaleTxt}</span>
     ${wp.hit? '' : `<span class="wlook">${look}</span>`}</button>`;
 }
+
+/* ---------- the goal line under the rings, by aim (build 77) ----------
+   Feargal: Today always showed the weight loss bar, but not everyone is
+   losing weight. The line under the rings now follows the aim picked:
+     Lose fat      the weight line, unchanged (build 64); with no weight goal
+                   yet, the rate of loss against 0.5 to 1% of bodyweight a
+                   week (Helms, Aragon and Fitschen, 2014).
+     Build muscle  the rate of gain against 0.25 to 0.5% a week, the range
+                   for gaining with as little fat as possible (Iraki and
+                   colleagues, 2019), plus how many lifts went up in 4 weeks,
+                   since the scale alone cannot say it is muscle.
+     Get stronger  estimated one-rep max (Epley, best set) of the three lifts
+                   done most, this 4 weeks against the 4 before. Strength is
+                   the outcome; weight is not the point.
+     Run further   running minutes this week against what the week plans and
+                   last week. Weekly volume is the main thing to build; a
+                   jump of more than about 30% over two weeks went with more
+                   injuries in new runners (Nielsen and colleagues, 2014,
+                   observational), so a big jump is flagged.
+     Hold steady   the trend against a band of 3% either side, the usual
+                   definition of keeping weight steady (Stevens and
+                   colleagues, 2006).
+     Eat better    this week's days at the protein target and at 30g of
+                   fibre (SACN 2015), from the food log.
+   Each one is one tap from You. Under 18s keep the plain rule. */
+function goalAim(){ return (S.profile&&S.profile.aim)||'lose'; }
+function gl(st,label,mid,right,barPct,sub,look,aria){
+  return `<button class="wline gline st-${st}" data-go="progress" aria-label="${escHabit(aria)}">
+    <span class="wlh"><span>${label}</span><b class="wnow">${mid}</b><span>${right||''}</span></span>
+    ${barPct===null? '' : `<span class="ybar"><i style="width:${Math.max(0,Math.min(100,barPct))}%"></i></span>`}
+    ${sub? `<span class="wls">${sub}</span>` : ''}
+    ${look? `<span class="wlook">${look}</span>` : ''}</button>`;
+}
+/* % of bodyweight a week from the chart's own trend rate */
+function ratePct(){ const r=trendRate(), now=weightNow(); return r&&now? {kg:r.perWeek, pct:r.perWeek/now*100} : null; }
+function liftsTrend(){
+  const today=todayKey(), a=addDays(today,-28), b=addDays(today,-56), out=[];
+  Object.keys(S.lifts||{}).forEach(id=>{
+    const h=exHistory(id).filter(e=>e.d>b); if(h.length<2) return;
+    const best=list=>Math.max(0,...list.map(e=>Math.max(0,...(e.sets||[]).map(x=>e1RM(+x.kg||0,+x.reps||0)))));
+    const now=best(h.filter(e=>e.d>a)), was=best(h.filter(e=>e.d<=a));
+    out.push({id, n:exOf(id).n, now, was, count:h.length});
+  });
+  return out.filter(x=>x.now>0).sort((x,y)=>y.count-x.count);
+}
+function runMinutesWeek(mon){
+  const end=addDays(mon,6); let m=0;
+  (S.mine||[]).forEach(p=>{ if(!p||p.kind!=='run'||p.d<mon||p.d>end) return;
+    const r=p.session&&p.session.runId&&runPlan(p.session.runId); m+=r&&r.mins? +r.mins : 30; });
+  (S.workouts||[]).forEach(w=>{ if(w&&w.d>=mon&&w.d<=end&&w.runMin) m+=w.runMin; });
+  return Math.round(m);
+}
+function goalLine(){
+  const rule='<div class="wline rule" aria-hidden="true"></div>';
+  if(isTeen()) return rule;
+  const aim=goalAim(), imp=S.profile.units==='imperial', w=v=>showW(v,imp);
+  const hasGoal=S.target&&S.target.kind==='weight'&&(S.weights||[]).length;
+  if(aim==='lose'){
+    if(hasGoal) return weightLine();
+    const r=ratePct(); if(!r) return (S.weights||[]).length? gl('none','Losing fat','Rate to come','0.5 to 1% a week',null,'Three weigh ins over a week give your rate','','Losing fat: three weigh ins over a week give your rate. Tap for You.') : rule;
+    const p=-r.pct, st= p>=0.5&&p<=1? 'green' : (p>1? 'amber' : (p>0.1? 'amber' : 'red'));
+    return gl(st,'Losing fat',`${p>0? '−':'+'}${w(Math.abs(r.kg))}/wk`,'aim 0.5 to 1%',p/1.5*100,
+      `${Math.abs(r.pct).toFixed(2)}% of bodyweight a week · trend ${w(weightNow())}`,
+      p>1? 'Faster than 1% a week tends to cost muscle' : (p>=0.5? 'In the range that keeps muscle' : 'Slower than 0.5% a week; the Week in review shows why'),
+      `Losing fat: ${Math.abs(r.pct).toFixed(2)}% of bodyweight a week, aim 0.5 to 1%. Tap for You.`);
+  }
+  if(aim==='build'){
+    const r=ratePct(), lt=liftsTrend(), up=lt.filter(x=>x.was&&x.now>x.was).length, withPrev=lt.filter(x=>x.was).length;
+    const liftsTxt= withPrev? `${up} of ${withPrev} lifts up in 4 weeks` : 'Lifts compare after two sessions each';
+    if(!r) return gl('none','Building muscle','Rate to come','aim 0.25 to 0.5%',null,liftsTxt,'Three weigh ins over a week give your rate of gain','Building muscle. '+liftsTxt+'. Tap for You.');
+    const p=r.pct, st= p>=0.25&&p<=0.5? 'green' : (p>0.5? 'amber' : (p>=0.1? 'amber' : 'red'));
+    return gl(st,'Building muscle',`${p>=0? '+':'−'}${w(Math.abs(r.kg))}/wk`,'aim 0.25 to 0.5%',p/0.75*100,
+      `${p.toFixed(2)}% of bodyweight a week · ${liftsTxt}`,
+      p>0.5? 'Faster than 0.5% a week is mostly fat' : (p>=0.25? 'In the range for lean gain' : (p<0? 'Losing weight: eat a little more to build' : 'Slower than the range: a little more food')),
+      `Building muscle: ${p.toFixed(2)}% of bodyweight a week, aim 0.25 to 0.5%. ${liftsTxt}. Tap for You.`);
+  }
+  if(aim==='strong'){
+    const lt=liftsTrend().filter(x=>x.was).slice(0,3);
+    if(!lt.length) return gl('none','Getting stronger','Log to compare','4 weeks',null,'Each lift compares once it has sessions both this month and last','','Getting stronger: lifts compare after a month of sessions. Tap for You.');
+    const pcts=lt.map(x=>(x.now-x.was)/x.was*100), avgP=pcts.reduce((a,b)=>a+b,0)/pcts.length;
+    const st= avgP>=1? 'green' : (avgP>-2? 'amber' : 'red');
+    return gl(st,'Getting stronger',`${avgP>=0?'+':''}${avgP.toFixed(1)}%`,'est. 1RM, 4 weeks',null,
+      lt.map((x,i)=>`${escHabit(x.n)} ${x.was} → ${x.now} kg`).join(' · '),
+      avgP>=1? 'Stronger than four weeks ago' : (avgP>-2? 'Holding: the reps come before the weight' : 'Down on four weeks ago: sleep, food and easy weeks first'),
+      `Getting stronger: estimated one-rep max ${avgP.toFixed(1)}% on four weeks ago. Tap for You.`);
+  }
+  if(aim==='endure'){
+    const mon=mondayKey(), now=runMinutesWeek(mon), last=runMinutesWeek(addDays(mon,-7));
+    const plan=((S.plan&&S.plan.days)||[]).reduce((a,d)=>a+(d.runId? (+d.mins||(runPlan(d.runId)||{}).mins||0) : 0),0);
+    const jump= last>0&&now>last*1.3;
+    const st= jump? 'amber' : (plan&&now>=plan? 'green' : (now>0? 'green' : 'none'));
+    return gl(st,'Running',`${now} min`,plan? 'of '+plan+' planned' : 'this week',plan? now/plan*100 : null,
+      `Last week ${last} min`, jump? 'More than 30% up on last week: build gradually' : (plan&&now>=plan? 'The week\'s running is in' : ''),
+      `Running: ${now} minutes this week${plan? ' of '+plan+' planned' : ''}, last week ${last}. Tap for You.`);
+  }
+  if(aim==='hold'){
+    const now=weightNow(); if(now===null) return rule;
+    const ref= hasGoal? +S.target.value : ((typeof trendOn==='function'&&trendOn(addDays(todayKey(),-84)))||weightStart()||now);
+    const lo=ref*0.97, hi=ref*1.03, inBand=now>=lo&&now<=hi, edge=Math.abs(now-ref)>ref*0.02;
+    const st= !inBand? 'red' : (edge? 'amber' : 'green');
+    return gl(st,'Holding steady',w(now),'within 3%',(now-lo)/(hi-lo)*100,
+      `Band ${w(lo)} to ${w(hi)} around ${w(ref)}`,
+      !inBand? 'Outside the band: the Week in review shows what moved it' : (edge? 'Near the edge of the band' : 'Steady'),
+      `Holding steady: trend ${w(now)}, band ${w(lo)} to ${w(hi)}. Tap for You.`);
+  }
+  if(aim==='eat'){
+    const t=S.targets||{}, keys=[]; for(let i=0;i<7;i++) keys.push(addDays(todayKey(),-i));
+    const fed=keys.filter(k=>dayFood(k).length), tot=fed.map(k=>foodTotals(k));
+    const pHit=t.protein? tot.filter(x=>x.protein>=t.protein*0.9).length : 0, fHit=tot.filter(x=>(x.fibre||0)>=(t.fibre||30)).length;
+    if(!fed.length) return gl('none','Eating better','Log food','last 7 days',null,'Protein and fibre days show once food is logged','','Eating better: log food to see protein and fibre days. Tap for You.');
+    const score=(pHit+fHit)/(fed.length*(t.protein?2:1));
+    return gl(score>=0.6? 'green' : (score>=0.3? 'amber' : 'red'),'Eating better',`${fed.length} of 7 days logged`,'last 7 days',score*100,
+      `${t.protein? 'Protein on target '+pHit+' · ' : ''}Fibre ${t.fibre||30}g ${fHit}`,
+      '',`Eating better: ${fed.length} days logged, protein on target ${pHit}, fibre ${fHit}. Tap for You.`);
+  }
+  return hasGoal? weightLine() : rule;
+}
+Object.assign(window.__G,{goalLine,goalAim,ratePct,liftsTrend,runMinutesWeek});

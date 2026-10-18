@@ -20,6 +20,27 @@ function syncWeek(){
   S.weekOf=wk;
 }
 function dayDone(i){ return i>=0&&i<7&&doneKindsOn(addDays(mondayKey(),i)).length>0; }
+/* build 77: a rest or walk day can be marked done. Kept on that date's own
+   record (S.days[date].marked), so like the sessions it can never leak into
+   another week, and it never counts as a training session. */
+function dayMarked(i){
+  if(i<0||i>6) return null;
+  const r=S.days&&S.days[addDays(mondayKey(),i)];
+  return r&&r.marked? r.marked : null;
+}
+function markDay(i,on){
+  const k=addDays(mondayKey(),i); if(k>todayKey()) return false;
+  const d=S.plan&&S.plan.days[i], kind=d&&d.slot==='walk'? 'walk' : 'rest';
+  S.days[k]=S.days[k]||{};
+  if(on) S.days[k].marked=kind; else delete S.days[k].marked;
+  save(); renderAll(); return kind;
+}
+document.addEventListener('click',e=>{
+  const m=e.target.closest('[data-markday]'), u=e.target.closest('[data-unmarkday]');
+  if(m){ const i=+m.dataset.markday, kind=markDay(i,true); if(!kind){ toast('That day has not come yet'); return; }
+    toast(kind==='walk'? 'Walk marked done' : 'Rest day marked done','Undo',()=>markDay(i,false)); return; }
+  if(u){ const i=+u.dataset.unmarkday; markDay(i,false); toast('Marked as not done','Undo',()=>markDay(i,true)); }
+});
 function walkDone(){ const st=stepsToday(); return st!==null && st>=stepTarget(); }
 const checkinDone=()=>!!S.checkins.find(c=>c.weekOf===mondayKey());
 const checkinDayName=()=>DAYS[S.profile.checkinDay===undefined?6:S.profile.checkinDay];
@@ -268,7 +289,8 @@ function priorities(){
     if(dayFood(k).length===0&&hour>=13&&fc.n>=3&&!((S.days[k]||{}).skipped||[]).length)
       add(60,'food','Log what you have eaten so far','Nothing logged yet today, and the rest of the week relies on it. Same as yesterday is one tap.','<button class="mini go" data-glance="food">Log food</button>');
     else if(dayFood(k).length&&pr<expected-25)
-      add(50,'protein',...proteinPaceText(pr,expected,aimP),'<button class="mini" data-glance="food">Log food</button>');
+    { const left=t.kcal? Math.round(t.kcal-(foodTotals(k).kcal||0)) : null, tight=proteinTight(pr,aimP,left);
+      add(tight? 55 : 50,'protein',...(tight||proteinPaceText(pr,expected,aimP)),'<button class="mini" data-glance="food">'+(tight? 'See food' : 'Log food')+'</button>'); }
     else if(dayFood(k).length&&pr>=expected)
       add(10,'proteinok','Protein is on track','Nothing to fix here today, so put the effort elsewhere.','');
   }
@@ -287,6 +309,27 @@ function priorities(){
 /* Late in the day "on pace" becomes the whole target, which read as
    "around 171g would be on pace for 171g". Then it simply says how far short,
    and that one day matters less than the week. */
+/* build 77: protein short and the calories nearly used up. Telling someone to
+   eat more protein then pushes them over, so it says what is worth doing:
+   a small lean top-up when the gap is big enough to matter (20g of protein
+   for about 100 to 150 kcal), otherwise leave today and put protein first
+   tomorrow. Why the top-up is the one exception worth going over for:
+   protein is the most filling macronutrient and costs the most to digest,
+   and in overfeeding studies the extra from protein went to lean tissue
+   rather than more fat (Bray and colleagues, JAMA 2012; Antonio and
+   colleagues 2015 in trained people). The week matters more than the day.
+   The 20g and 150 kcal lines are this app's rule of thumb. */
+function proteinTight(pr,target,left){
+  if(left===null||left===undefined||!target) return null;
+  const gap=Math.round(target-pr);
+  if(gap<15) return null;
+  if(left>=gap*4*1.6) return null;
+  const per=(typeof perMealProtein==='function')? perMealProtein() : null;
+  const tomorrow=`Tomorrow, start breakfast with ${per? per+'g' : '30g or more'} of protein, so the evening is not left to catch up.`;
+  if(left<=0) return ['Over calories, protein short',`${pr}g of ${target}g, and the calories are used up. Leave today: one day matters less than the week. ${tomorrow}`];
+  if(gap>=20) return ['Protein short, calories nearly used',`${num(left)} kcal left and ${gap}g of protein to go. Not the whole gap tonight. A lean top-up is worth it even if it tips you a little over: 200g of fat-free Greek yoghurt, a whey shake or a tin of tuna is about 20g of protein for 100 to 150 kcal. ${tomorrow}`];
+  return ['Protein a little short',`${num(left)} kcal left, ${gap}g of protein to go. Not worth going over for. ${tomorrow}`];
+}
 function proteinPaceText(pr,expected,target){
   if(expected>=target*0.95) return ['Protein is short today',`${pr}g of ${target}g so far. A protein-rich last meal or snack closes some of the gap, and the week matters more than one day.`];
   return ['Get protein into the next meal',`${pr}g so far; around ${expected}g would be on pace for ${target}g today.`];
@@ -776,10 +819,13 @@ function heroCard(plan,d,i){
   const whyBox=plan.why[0]? `<div class="why" id="whyToday" hidden>${plan.why[0]}</div>` : '';
   const head=(icon,tone,kick,title,extra)=>`<div class="shead"><span class="sic" style="background:var(--${tone}-tint);color:var(--${tone}-text)">${SESS_ICON[icon]}</span>
       <div class="stx"><div class="kicker">${kick}</div><h2>${title}</h2></div>${extra||''}</div>`;
-  if(rest) return `<div class="hero restday">
-    ${head('rest','cyan',DAYS[i].toUpperCase()+' · REST',dayLabel(d)||'Rest')}
-    <div class="sub">Nothing owed. Rest is part of it.</div>
-    <div class="ctarow"><button class="cta ghost" data-swapto="${i}:walk">Walk instead</button><button class="cta ghost" data-swap="${i}">Change this day</button></div>
+  const marked=dayMarked(i);
+  if(rest) return `<div class="hero restday ${marked?'isdone':''}">
+    ${head(marked?'done':'rest',marked?'green':'cyan',DAYS[i].toUpperCase()+' · REST',dayLabel(d)||'Rest')}
+    <div class="sub">${marked? 'Rest day done. Recovery is where the training turns into progress.' : 'Nothing owed. Rest is part of it.'}</div>
+    ${marked? `<div class="ctarow"><button class="cta ghost" data-unmarkday="${i}">Not done after all</button><button class="cta ghost" data-swap="${i}">Change this day</button></div>`
+      : `<div class="ctarow"><button class="cta" data-markday="${i}" aria-label="Mark rest day done">Mark done</button><button class="cta ghost" data-swap="${i}">Change this day</button></div>
+    <button class="skipbtn" data-swapto="${i}:walk">Walk instead</button>`}
     <div class="herofoot">${whyBtn}<button class="skipbtn" data-go="plan">See the week</button></div>${whyBox}</div>`;
   const live=(typeof liveSession==='function')&&liveSession();
   const chips=[daySub(d)];
@@ -787,15 +833,18 @@ function heroCard(plan,d,i){
   if(d.setDelta) chips.push('one set lighter than usual');
   if(d.deload) chips.push('easy week');
   const prog=isWalk||done? '' : heroProgress(d);
-  const icon= done? 'done' : (isWalk? 'walk' : (d.runId? 'run' : (d.circuitId? 'circuit' : 'lift')));
-  const tone= done||live? 'green' : 'cyan';
+  const walkMarked=isWalk&&!!marked, walkOk=isWalk&&(walkMarked||walkDone());
+  const icon= done||walkOk? 'done' : (isWalk? 'walk' : (d.runId? 'run' : (d.circuitId? 'circuit' : 'lift')));
+  const tone= done||live||walkOk? 'green' : 'cyan';
   const kick= isWalk? DAYS[i].toUpperCase()+' · WALK' : (live? 'IN PROGRESS · '+liveClock() : heroKicker(d,done));
   const has=d.templateId||d.runId||d.circuitId;
-  const main= isWalk? (walkDone()? `<div class="doneline">Done. ${num(st)} steps in.</div>` : '')
+  const main= isWalk? (walkDone()? `<div class="doneline">Done. ${num(st)} steps in.</div>`
+      : (walkMarked? `<div class="doneline">Walk done.</div><button class="skipbtn" data-unmarkday="${i}">Not done after all</button>`
+      : `<div class="ctarow"><button class="cta" data-markday="${i}" aria-label="Mark walk done">Mark walk done</button></div>`))
     : live? `<div class="ctarow"><button class="cta" id="startToday">Resume session</button>${has? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`
     : done? `<div class="ctarow"><button class="cta ghost" id="startToday">Do it again</button>${has? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`
     : `<div class="ctarow"><button class="cta" id="startToday">Start session</button>${has? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`;
-  return `<div class="hero ${done?'isdone':''} ${live?'islive':''}">
+  return `<div class="hero ${done||walkOk?'isdone':''} ${live?'islive':''}">
     ${head(icon,tone,kick,dayLabel(d))}
     <div class="chips">${chips.filter(Boolean).map(c=>`<span>${c}</span>`).join('')}</div>
     ${isWalk&&st!==null
@@ -905,7 +954,7 @@ function renderToday(){
   const coach=(typeof coachCard==='function')? coachCard(nx,prios) : '';
   $('todayView').innerHTML=`
   ${ringsRow()}
-  ${typeof weightLine==='function'? weightLine() : ''}
+  ${typeof goalLine==='function'? goalLine() : (typeof weightLine==='function'? weightLine() : '')}
   ${coach}
   ${hero}${mealsList()}
   ${quickTiles()}

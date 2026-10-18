@@ -5711,7 +5711,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('73 · one button puts it in the week', !!pick && !pick.disabled);
     const habitsBefore = G.activeHabits().length; pick.click();
     t('73 · and the pick is kept with the check-in', !!S.checkins[0].review.pick && S.checkins[0].review.pick.lever === G.oneThing(R).lever);
-    t('73 · the button then says it is done', rv().querySelector('#rvPick').disabled);
+    /* build 77: the card says it is in the week, and it can come out again (was: a disabled button) */
+    t('73 · the card then says it is in your week, with a way to take it out', /In your week/.test(txt(rv().querySelector('#rvOne'))) && !!rv().querySelector('#rvUnpick') && !rv().querySelector('#rvPick'));
     if (G.oneThing(R).habit) t('73 · a habit pick adds the habit', G.activeHabits().length >= habitsBefore && !!G.habitSlotOf(G.oneThing(R).habit));
 
     /* ---- your own evidence ---- */
@@ -6266,11 +6267,12 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('79 · the newest note is this build', G.RELEASE_NOTES.some(n => n.v === w.eval('APP_VERSION')));
     /* someone who used the app before notes existed */
     delete S.profile.seenVersion; G.closeSheets();
-    t('79 · they are taken as having seen build 72', G.seenVersion() === '72' && G.unseenNotes().map(n => n.v).join(',') === '76,75,74,73');
+    t('79 · they are taken as having seen build 72', G.seenVersion() === '72' && G.unseenNotes().map(n => n.v).join(',') === '77,76,75,74,73');
     t('79 · it shows', G.maybeWhatsNew(0) && sheetOn());
     const body = txt(d.getElementById('altBody'));
-    t('79 · newest first, with what changed', body.indexOf('Scan a barcode') >= 0 && body.indexOf('Scan a barcode') < body.indexOf('Adding food, rebuilt') && body.indexOf('Adding food, rebuilt') < body.indexOf('What is new, when it is new') && /keypad/.test(body));
-    t('79 · a fourth build waits one tap away', !/Thousands more foods/.test(body) && /1 earlier update/.test(txt(d.querySelector('[data-wnall]'))));
+    /* build 77: one more build, so the three shown are 77, 76, 75 */
+    t('79 · newest first, with what changed', body.indexOf('Your goal, under the rings') >= 0 && body.indexOf('Your goal, under the rings') < body.indexOf('Scan a barcode') && body.indexOf('Scan a barcode') < body.indexOf('Adding food, rebuilt') && /keypad/.test(body));
+    t('79 · a fourth build waits one tap away', !/What is new, when it is new/.test(body) && /2 earlier updates/.test(txt(d.querySelector('[data-wnall]'))));
     t('79 · and only builds they have not seen', !/Programmes for every kind/.test(body));
     t('79 · it is marked seen as it shows', S.profile.seenVersion === w.eval('APP_VERSION'));
     d.querySelector('[data-wnok]').click();
@@ -6636,7 +6638,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const pol = G.LEGAL.privacy.sections().map(x => x.join(' ')).join(' ');
     t('81 · the privacy policy says what scanning sends, and to whom', /Open Food Facts/.test(pol) && /only the barcode number|All the app sends is the barcode number/i.test(pol) && /never stored or sent/.test(pol) && /Open Database Licence/.test(pol));
     t('81 · the terms version moved with it', w.__CLOUD.TERMS_VERSION === '2026-10-b76');
-    t('81 · the release note leads with scanning', /Scan a barcode/.test(JSON.stringify(G.RELEASE_NOTES ? G.RELEASE_NOTES[0] : w.eval('RELEASE_NOTES[0]'))));
+    t('81 · the release note leads with scanning', /Scan a barcode/.test(JSON.stringify((G.RELEASE_NOTES || w.eval('RELEASE_NOTES')).find(n => n.v === '76'))));
     const fs = require('fs'), path = require('path');
     const scanSrc = fs.readFileSync(path.join(__dirname, 'src/js/scan.js'), 'utf8');
     const zxJs = fs.readFileSync(path.join(__dirname, 'vendor/zxing/zxing-reader.js'), 'utf8');
@@ -6645,6 +6647,177 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('81 · and is never loaded on opening the app', !d.querySelector('script[src*="zxing"]'));
     t('81 · the method sheet explains barcodes', /Barcodes<\/b>/.test(fs.readFileSync(path.join(__dirname, 'src/js/trends/02-weight-trends.js'), 'utf8')));
     t('81 · no em dashes', scanSrc.indexOf('—') < 0);
+  }
+
+  journey(82, 'Build 77: steps and calories, a week in review that says what changed, goals by aim, rest and walk days done, repeat a session, and fixes');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G, { weight: 100 });
+    const S = G.S, today = G.todayKey(), idx = G.dowIdx();
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const FOODS = w.eval('FOODS');
+    const row = (id, q, meal, k) => { const f = FOODS.find(x => x.id === id);
+      return { id: f.id, n: f.n, u: f.u, q, meal, kcal: f.kcal, p: f.p, c: f.c, f: f.f, fb: f.fb, at: G.dateOf(k).getTime() + ({ b: 8, l: 13, s: 16, d: 19 })[meal] * 3600e3 }; };
+
+    /* ---- 5: past the top of the range says what was done ---- */
+    const bss = w.eval('LIBRARY').find(x => /Bulgarian/.test(x.n));
+    S.lifts[bss.id] = [{ d: G.addDays(today, -3), sets: [11, 11, 11, 11].map(r => ({ kg: 0, reps: r })) }];
+    const pb = G.nextPrescription(bss.id, { reps: 10, repMin: 6 });
+    t('82 · bodyweight past the range says the reps actually done', /You did 11 on every set/.test(pb.why) && /past the top of 6 to 10/.test(pb.why) && pb.reps === 12, pb.why);
+    t('82 · and never claims a number that was not done', !/You hit 10/.test(pb.why));
+    const sq = w.eval('LIBRARY').find(x => x.id === 'squat' || /Back Squat/.test(x.n));
+    S.lifts[sq.id] = [{ d: G.addDays(today, -3), sets: [12, 12, 11].map(r => ({ kg: 60, reps: r })) }];
+    const pl = G.nextPrescription(sq.id, { reps: 10, repMin: 8 });
+    t('82 · loaded too: the reps done, then the weight up', /You did 12, 12 and 11 at 60kg/.test(pl.why) && /past the top of 8 to 10/.test(pl.why) && pl.kind === 'load', pl.why);
+    const src2 = require('fs').readFileSync(require('path').join(__dirname, 'src/js/workouts/02-active-workout.js'), 'utf8');
+    t('82 · the box over it is headed Past the range, not Chase the reps', /'bwload'\?'Past the range'/.test(src2));
+    delete S.lifts[bss.id]; delete S.lifts[sq.id];
+
+    /* ---- 6: Finish after finishing closes the session ---- */
+    const ti = S.plan.days.findIndex(x => x.templateId);
+    G.startWorkout(S.plan.days[ti].templateId);
+    t('82 · the header button reads Finish during a session', txt(d.getElementById('gymFinish')) === 'Finish');
+    G.GYM.ex[0].sets.forEach(x => { if (!x.warm) { x.kg = 40; x.reps = 8; } x.done = true; }); G.drawGym();
+    d.getElementById('gymFinish').click();
+    t('82 · Finish finishes', G.GYM.done && /done\./.test(txt(d.getElementById('gymBody'))));
+    t('82 · then reads Close', txt(d.getElementById('gymFinish')) === 'Close');
+    d.getElementById('gymFinish').click();
+    t('82 · and closes the finished session (it used to do nothing)', !d.getElementById('gym').classList.contains('on') && d.getElementById('s-today').classList.contains('on'));
+    G.startWorkout(S.plan.days[ti].templateId);
+    t('82 · a new session reads Finish again', txt(d.getElementById('gymFinish')) === 'Finish');
+    G.GYM.done = true; G.GYM.dropped = true; d.getElementById('gym').classList.remove('on'); if (G.clearLive) G.clearLive();
+
+    /* ---- 2: repeat a session done this week ---- */
+    const code = S.workouts[0].templateId;
+    t('82 · a workout done this week is offered for repeating', G.weekDoneCodes().some(x => x.code === code));
+    G.openSessionByWorkout ? G.openSessionByWorkout(S.workouts[0].id) : w.openSessionByWorkout(S.workouts[0].id);
+    t('82 · the finished session has Repeat on a day', !!d.querySelector('#sessBody [data-repeat="' + code + '"]'));
+    d.querySelector('#sessBody [data-repeat]').click();
+    t('82 · which lists Start it now and the days left this week', d.getElementById('altSheet').classList.contains('on') && !!d.querySelector('#altBody [data-redo="' + code + '"]') && d.querySelectorAll('#altBody [data-swapto]').length === 7 - idx);
+    const tgt = idx < 6 ? idx + 1 : idx, was = JSON.stringify(S.plan.days[tgt]);
+    const btn = d.querySelector('#altBody [data-swapto="' + tgt + ':' + code + '"]');
+    if (btn && !btn.disabled) {
+      btn.click();
+      t('82 · picking a day puts the session there', S.plan.days[tgt].templateId === code);
+      d.getElementById('toastAct').click();
+      t('82 · with Undo', JSON.stringify(S.plan.days[tgt]) === was);
+    } else t('82 · picking a day puts the session there (already that session)', S.plan.days[tgt].templateId === code);
+    G.closeSheets(); G.go('plan'); G.renderAll();
+    w.eval('planOpen=' + idx); G.renderAll();
+    t('82 · Plan offers Repeat on a done day', !!d.querySelector('.daycard.open [data-repeat="' + code + '"]') || !G.dayDone(idx) || S.plan.days[idx].templateId !== code);
+    G.openSwap(tgt);
+    t('82 · Change this day leads with what was done this week', /Done this week, repeat it/.test(txt(d.getElementById('swapRows'))) && !!d.querySelector('#swapRows [data-swapto="' + tgt + ':' + code + '"]') === (S.plan.days[tgt].templateId !== code));
+    G.closeSheets();
+
+    /* ---- 4: rest and walk days can be marked done ---- */
+    G.go('today');
+    d.body.insertAdjacentHTML('beforeend', '<button id="fx82" data-swapto="' + idx + ':rest"></button>'); d.getElementById('fx82').click(); d.getElementById('fx82').remove();
+    G.renderAll();
+    const hero = () => d.querySelector('#todayView .hero');
+    t('82 · a rest day on Today has Mark done', /Mark done/.test(txt(hero())) && hero().querySelector('[data-markday]').getAttribute('aria-label') === 'Mark rest day done');
+    const doneBefore = G.dayDone(idx);
+    hero().querySelector('[data-markday]').click();
+    t('82 · marking it keeps it on today\'s record', S.days[today].marked === 'rest');
+    t('82 · and Today says it is done', /Rest day done/.test(txt(hero())) && hero().classList.contains('isdone'));
+    t('82 · it is not counted as a training session', G.dayDone(idx) === doneBefore);
+    G.go('plan'); w.eval('planOpen=' + idx); G.renderAll();
+    t('82 · Plan ticks it', !!d.querySelector('.daycard.today .dtick'));
+    d.getElementById('toastAct').click();
+    t('82 · Undo takes the mark off', !S.days[today].marked);
+    G.go('today');
+    d.body.insertAdjacentHTML('beforeend', '<button id="fx82" data-swapto="' + idx + ':walk"></button>'); d.getElementById('fx82').click(); d.getElementById('fx82').remove();
+    G.renderAll();
+    t('82 · a walk day has Mark walk done', /Mark walk done/.test(txt(hero())));
+    hero().querySelector('[data-markday]').click();
+    t('82 · and marks it', S.days[today].marked === 'walk' && /Walk done/.test(txt(hero())));
+    hero().querySelector('[data-unmarkday]').click();
+    t('82 · Not done after all takes it off', !S.days[today].marked);
+    if (idx < 6) t('82 · a day still to come cannot be marked', w.eval('markDay(' + (idx + 1) + ',true)') === false && !(S.days[G.addDays(G.mondayKey(), idx + 1)] || {}).marked);
+    G.buildPlan(); G.renderAll();
+
+    /* ---- 10: protein short with the calories used up ---- */
+    const tight = w.eval('proteinTight');
+    t('82 · protein short, calories nearly used: a lean top-up and tomorrow', /calories nearly used/.test(tight(100, 186, 80)[0]) && /20g of protein for 100 to 150 kcal/.test(tight(100, 186, 80)[1]) && /Tomorrow, start breakfast/.test(tight(100, 186, 80)[1]));
+    t('82 · over calories: leave today, start tomorrow', /Over calories/.test(tight(100, 186, -40)[0]) && /Leave today/.test(tight(100, 186, -40)[1]));
+    t('82 · plenty of calories left: the usual prompt', tight(100, 186, 900) === null && tight(180, 186, 50) === null);
+
+    /* ---- 3: the line under the rings follows the aim ---- */
+    S.weights = [];
+    for (let i = 20; i >= 0; i -= 2) S.weights.push({ d: G.addDays(today, -i), kg: +(100 + (20 - i) * 0.04).toFixed(2) });
+    const gl = () => txt(d.querySelector('#todayView .gline') || d.querySelector('#todayView .wline'));
+    const aims = { build: /Building muscle/, strong: /Getting stronger/, endure: /Running/, hold: /Holding steady/, eat: /Eating better/ };
+    G.go('today');
+    Object.keys(aims).forEach(a => { S.profile.aim = a; G.renderAll(); t('82 · aim ' + a + ' shows its own line under the rings', aims[a].test(gl()), gl()); });
+    S.profile.aim = 'build'; G.renderAll();
+    t('82 · building muscle reads the rate of gain against 0.25 to 0.5%', /aim 0\.25 to 0\.5%/.test(gl()) && /% of bodyweight a week/.test(gl()));
+    S.profile.aim = 'lose'; S.target = { kind: 'weight', value: 92, by: G.addDays(today, 120), set: G.addDays(today, -20) }; G.renderAll();
+    t('82 · losing fat with a goal keeps the weight line, unchanged', !d.querySelector('#todayView .gline') && /Start/.test(gl()) && /Goal/.test(gl()));
+    S.target = null; G.renderAll();
+    t('82 · losing fat with no goal reads the rate of loss', /Losing fat/.test(gl()));
+
+    /* ---- 1: steps, and the calories that counted on them ---- */
+    S.profile.stepTarget = 5500; S.targets = G.ownTargets();
+    for (let i = 0; i < 7; i++) { const k = G.addDays(today, -i); S.days[k] = S.days[k] || {}; S.days[k].steps = 2250;
+      S.days[k].food = [row('egg', 2, 'b', k), row('chicken', 1, 'l', k), row('chickenthigh', 1, 'd', k)]; w.applyFoodTotals(k); }
+    const deal = G.stepsDeal ? G.stepsDeal() : w.eval('stepsDeal()');
+    /* with a step count logged, maintenance is measured from it, so the
+       calories already count 2,250: matching changes nothing more and
+       committing adds the target's steps back */
+    const sk = n => w.eval('stepKcal(' + n + ',' + G.weightNow() + ')');
+    const add = Math.round((sk(5500) - sk(deal.inKcal)) / 10) * 10;
+    t('82 · 2,250 steps against 5,500: the choice is offered, with the calories each way', deal.state === 'adjust' && deal.source === 'measured' && deal.inKcal === 2250 && deal.commit === add && deal.match === 0 && add > 0, JSON.stringify(deal));
+    const planned = w.eval('(()=>{ const keep=weeklyHistory; weeklyHistory=n=>keep(n).map(x=>Object.assign({},x,{steps:null})); const d=stepsDeal(); weeklyHistory=keep; return d; })()');
+    const short = Math.round((sk(5500) - sk(2250)) / 10) * 10;
+    t('82 · before a tracker is in the calories, they count the target, and matching takes the shortfall off', planned.source === 'planned' && planned.inKcal === 5500 && planned.match === -short && planned.commit === 0, JSON.stringify(planned));
+    t('82 · the first 2,500 steps add nothing, and that is said', /first 2,500 steps of a day add nothing/.test(w.eval('stepsBaselineText(100)')));
+    const base = S.targets.kcal;
+    G.openWeek(); const send = d.getElementById('saveWeek'); send.click(); send.click();
+    const wb = txt(d.getElementById('weekBody'));
+    t('82 · the check-in says what walking the target is worth', /2,250 steps a day against 5,500/.test(wb) && new RegExp(G.num(deal.toTarget) + ' kcal more a day').test(wb), wb.slice(0, 400));
+    t('82 · and offers the choice, matching picked unless changed', !!d.querySelector('[data-stepspick="commit"]') && d.querySelector('[data-stepspick="match"]').classList.contains('on'));
+    d.querySelector('[data-stepspick="commit"]').click();
+    G.go('today');
+    send.click();
+    t('82 · I\'ll walk them: next week\'s calories count the target\'s steps', S.stepAdj && S.stepAdj.kcal === add && S.targets.stepAdj === add && S.targets.kcal === S.targets.kcalBase + add, JSON.stringify(S.stepAdj) + ' ' + S.targets.kcal + ' ' + S.targets.kcalBase);
+    t('82 · for a week, not for ever', S.stepAdj.until <= G.addDays(G.mondayKey(), 13));
+    t('82 · with the promise kept for next week', S.stepCommit && S.stepCommit.target === 5500);
+    const rv = d.getElementById('review');
+    t('82 · the review opens with what changes next week', rv.classList.contains('on') && !!rv.querySelector('#rvChanges') && rv.querySelector('#rvChanges').compareDocumentPosition(rv.querySelector('#rvLevers')) & 4);
+    const ch = txt(rv.querySelector('#rvChanges'));
+    t('82 · calories, protein, steps, training and weight, each with its reason', ['Calories', 'Protein', 'Steps', 'Training', 'Weight'].every(x => ch.indexOf(x) >= 0) && new RegExp('\\+' + G.num(add) + ' for steps').test(ch), ch.slice(0, 300));
+    t('82 · the steps row in the review says the baseline', /first 2,500 steps/.test(txt(rv.querySelector('#rvl-steps'))));
+    t('82 · while it is open, toasts sit above it', d.body.classList.contains('rv-open'));
+    /* 8: the one thing is an offer */
+    const skip = rv.querySelector('#rvSkip');
+    t('82 · the one thing can be added or left', !!rv.querySelector('#rvPick') && !!skip);
+    const hb = G.activeHabits().length; skip.click();
+    t('82 · Not this week adds nothing and says so', G.activeHabits().length === hb && /Left out this week/.test(txt(rv.querySelector('#rvOne'))) && S.checkins[0].review.pick.declined);
+    rv.querySelector('#rvPick').click();
+    t('82 · Add it after all adds it', /In your week/.test(txt(rv.querySelector('#rvOne'))));
+    rv.querySelector('#rvUnpick').click();
+    t('82 · and Take it out takes it out again', /Left out this week/.test(txt(rv.querySelector('#rvOne'))));
+    /* 7: the protein step says what it did */
+    const stb = rv.querySelector('[data-rvstep]');
+    if (stb) { stb.click();
+      t('82 · Aim for the step: the box says it is set and what it changes', /Step set/.test(txt(rv.querySelector('#rvStepBox'))) && /Protein ring/.test(txt(rv.querySelector('#rvStepBox'))));
+      rv.querySelector('[data-rvstepundo]').click();
+      t('82 · with Undo', !S.proteinStep || !S.proteinStep.g); }
+    /* the way out at the end lands where the check-in was opened */
+    const end = rv.querySelector('#rvEnd');
+    t('82 · the end of the review has a button back', !!end && /Done, back to Today/.test(txt(end)));
+    end.click();
+    t('82 · it closes and lands on the screen before', !rv.classList.contains('on') && d.getElementById('s-today').classList.contains('on') && !d.body.classList.contains('rv-open'));
+    /* before a tracker is in the calories: matching takes the shortfall off */
+    { const b = await boot(); allErrs.push(...b.errs); onboard(b.G, { weight: 100 });
+      const S2 = b.G.S; S2.profile.stepTarget = 5500;
+      b.w.eval('{ const keep=weeklyHistory; weeklyHistory=n=>keep(n).map(x=>Object.assign({},x,{steps:null})); }'); S2.targets = b.G.ownTargets();
+      for (let i = 0; i < 7; i++) { const k = b.G.addDays(today, -i); S2.days[k] = { steps: 2250 }; }
+      const k0 = S2.targets.kcal; b.G.openWeek(); const sw = b.d.getElementById('saveWeek'); sw.click(); sw.click(); sw.click();
+      t('82 · matched: next week\'s calories come down by the steps not walked', S2.stepAdj && S2.stepAdj.kcal === -short && S2.targets.kcal === k0 - short && !S2.stepCommit, k0 + ' to ' + S2.targets.kcal);
+      t('82 · and the review says why', new RegExp('−' + short + ' for steps').test(txt(b.d.getElementById('rvChanges'))) && /counted 5,500/.test(txt(b.d.getElementById('rvChanges')))); }
+    t('82 · the release note is build 77', w.eval('RELEASE_NOTES[0].v') === '77' && w.eval('APP_VERSION') === '77');
+    const srcAll = ['repeat.js', 'review.js', 'next.js', 'daily.js', 'app/07-today.js', 'app/03-helpers-energy.js'].map(f => require('fs').readFileSync(require('path').join(__dirname, 'src/js/' + f), 'utf8')).join('');
+    t('82 · no em dashes', srcAll.indexOf('—') < 0);
   }
 
   const r = s.report(allErrs);

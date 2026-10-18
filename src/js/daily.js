@@ -73,13 +73,18 @@ function ownTargets(){
   if(p&&isMinorAge(p.age)) return Object.assign({},DEFAULT_TARGETS,{kcal:null,protein:null,maintenance:null,steps:stepTarget(p),minor:true,teen:isTeen(p),sleep:[8,10]});
   if(!p||!p.detailsSet||!plausibleBody(p)) return Object.assign({},DEFAULT_TARGETS,{steps:stepTarget(p)});
   const ct=calorieTarget();
-  const kcal=ct? ct.kcal : plannedTdee(p).kcal, protein=proteinOf(p);
+  const base=ct? ct.kcal : plannedTdee(p).kcal, protein=proteinOf(p);
+  /* build 77: steps not walked come off for a week, unless the person said
+     they would walk them, or the target's steps added back when they said
+     they would (stepsDeal in 03-helpers-energy). Never under the floor. */
+  const adj=(typeof stepAdjNow==='function')? stepAdjNow() : 0;
+  const kcal= adj? Math.max(kcalFloor(p.sex),base+adj) : base;
   const fat=Math.round(kcal*0.28/9);
   return Object.assign({},DEFAULT_TARGETS,{kcal,protein,fat,
     carbs:Math.max(0,Math.round((kcal-protein*4-fat*9)/4)),
     steps: stepTarget(p),
     maintenance: ct? ct.maintenance : kcal, kcalSource: ct? ct.source : 'planned',
-    rateKg: ct? ct.rateKg : 0, dir: ct? ct.dir : 'hold'});
+    rateKg: ct? ct.rateKg : 0, dir: ct? ct.dir : 'hold', stepAdj: kcal-base, kcalBase: base});
 }
 
 /* ---------- schema repair, so old saves keep working ---------- */
@@ -489,7 +494,8 @@ function drawWeekStep(){
       ${diff.length? diff.map(x=>`<div class="change"><div class="ar">→</div><div class="t">${x}</div></div>`).join('')
         : `<div class="change"><div class="ar">→</div><div class="t">Same shape as this week. Nothing you said calls for a change.</div></div>`}
       <div class="slab">Why</div>
-      ${wkPreview.why.map(w=>`<div class="note" style="margin-top:8px">${w}</div>`).join('')}</div>`;
+      ${wkPreview.why.map(w=>`<div class="note" style="margin-top:8px">${w}</div>`).join('')}
+      ${weekStepsBlock()}</div>`;
   }
   $('saveWeek').textContent = wkStep===2? 'Lock in next week' : 'Next';
   const back=$('wkBack'); if(back) back.remove();
@@ -508,12 +514,64 @@ document.addEventListener('input',e=>{
   const ta=e.target.closest('[data-week]');
   if(ta&&weekDraft) weekDraft[ta.dataset.week]=ta.value;
 });
+/* ---------- steps at the check-in (build 77) ----------
+   When the week's steps fell short of what the calories counted on, the
+   check-in says what that cost and offers the choice: walk the target next
+   week and keep the calories, or match the calories to the steps walked.
+   Matching is picked unless they say otherwise. */
+function weekStepsBlock(){
+  const deal=weekDraft&&(weekDraft.stepsDealNow||(weekDraft.stepsDealNow=stepsDeal()));
+  if(!deal) return '';
+  const pick=weekDraft.stepsPick||'match';
+  const head=`<div class="slab">Steps</div>`;
+  if(deal.state==='unknown') return head+`<div class="note" style="margin-top:8px">${deal.n? 'Steps were counted on '+deal.n+' day'+(deal.n===1?'':'s')+', not enough to judge the week.' : 'No steps were counted this week.'} Your calories assume ${num(deal.target)} a day. ${stepsBaselineText(deal.kg)}</div>`;
+  if(deal.state==='ok') return head+`<div class="note" style="margin-top:8px">${num(deal.avg)} a day against ${num(deal.target)}. On target, so your calories stay as they are.</div>`;
+  if(deal.state==='low') return head+`<div class="note" style="margin-top:8px">${num(deal.avg)} a day against ${num(deal.target)}. ${deal.source==='observed'? 'Your calories come from what you ate and what the scale did, so the steps you walked are already in them and nothing changes.' : 'The difference to your calories is under 50 kcal a day, so nothing changes.'} Reaching ${num(deal.target)} would burn about ${num(deal.toTarget)} kcal more a day, about ${showW(deal.kg12,S.profile.units==='imperial')} more over 12 weeks.</div>`;
+  const base=S.targets.kcalBase||S.targets.kcal, fl=kcalFloor(S.profile.sex), imp=S.profile.units==='imperial';
+  const kc=d=>num(Math.max(fl,base+d));
+  const why= deal.source==='planned'
+    ? `Your calories count your ${num(deal.target)} step target, so about <b>${num(deal.short)} kcal a day</b> was counted as burned and was not. Carried on for 12 weeks, that is about ${showW(+(deal.short*7*12/SCI.kcalPerKg).toFixed(1),imp)} less lost than the plan says.`
+    : `Your calories already count the ${num(deal.inKcal)} steps a day your tracker has seen over three weeks, not your ${num(deal.target)} target. Walking the target would burn about ${num(deal.toTarget)} kcal more a day, about ${showW(deal.kg12,imp)} over 12 weeks.`;
+  return head+`<div class="stepsdeal">
+      <p><b>${num(deal.avg)} steps a day against ${num(deal.target)}.</b> ${why}</p>
+      <p class="sdbase">${stepsBaselineText(deal.kg)}</p>
+      <div class="sdpick" role="radiogroup" aria-label="Next week's steps">
+        <button role="radio" aria-checked="${pick==='commit'}" class="${pick==='commit'?'on':''}" data-stepspick="commit"><b>I'll walk ${num(deal.target)} a day</b><span>${kc(deal.commit)} kcal a day next week${deal.commit? ', the steps counted in' : ''}</span></button>
+        <button role="radio" aria-checked="${pick==='match'}" class="${pick==='match'?'on':''}" data-stepspick="match"><b>Match my calories to my steps</b><span>${kc(deal.match)} kcal a day next week</span></button>
+      </div>
+      <p class="sdfine">For one week, then looked at again at your next check-in. The 85% line and 50 kcal minimum are this app's rule of thumb.</p></div>`;
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-stepspick]'); if(!b||!weekDraft) return;
+  weekDraft.stepsPick=b.dataset.stepspick;
+  document.querySelectorAll('[data-stepspick]').forEach(x=>{ const on=x===b; x.classList.toggle('on',on); x.setAttribute('aria-checked',on); });
+});
+/* what the targets were, kept with each check-in so the next review can say
+   what changed since */
+function targetsSnap(){
+  const t=S.targets||{};
+  return {kcal:t.kcal||null, kcalBase:t.kcalBase||t.kcal||null, stepAdj:t.stepAdj||0, protein:t.protein||null,
+    proteinAim:(typeof proteinAim==='function'? proteinAim() : null), steps:t.steps||null, maintenance:t.maintenance||null,
+    kcalSource:t.kcalSource||null, kg:(typeof weightNow==='function'? weightNow() : null), at:todayKey()};
+}
 $('saveWeek').addEventListener('click',()=>{
   if(!weekDraft) return;
   if(wkStep<2){ wkStep++; drawWeekStep(); return; }
-  const entry=Object.assign({at:Date.now(),weekOf:mondayKey()},weekDraft); delete entry.auto;
+  const deal=weekDraft.stepsDealNow||stepsDeal(), pick=deal&&deal.state==='adjust'? (weekDraft.stepsPick||'match') : null;
+  const prevTargets=(S.checkins[0]&&S.checkins[0].targets)||null, beforeNow=targetsSnap(), planWas=JSON.parse(JSON.stringify(S.plan||null));
+  const entry=Object.assign({at:Date.now(),weekOf:mondayKey()},weekDraft); delete entry.auto; delete entry.stepsDealNow; delete entry.stepsPick;
   S.checkins.unshift(entry);
-  buildPlan(); save(); closeSheets(); renderAll(); go('plan');
+  /* the step adjustment is set before the week is built, which works out the targets */
+  const adjK= pick==='match'? deal.match : (pick==='commit'? deal.commit : 0);
+  S.stepAdj= adjK? {kcal:adjK, set:todayKey(), until:addDays(mondayKey(),13), avg:deal.avg, target:deal.target, pick} : null;
+  S.stepCommit= pick==='commit'? {target:deal.target, avg:deal.avg, set:todayKey(), short:deal.short} : null;
+  buildPlan();
+  entry.steps= deal? {state:deal.state, avg:deal.avg, n:deal.n, target:deal.target, short:deal.short, toTarget:deal.toTarget, source:deal.source, inKcal:deal.inKcal, pick, adj:adjK} : null;
+  entry.before= prevTargets||beforeNow;
+  entry.targets= targetsSnap();
+  entry.planDiff= planWas? planDiff(planWas,S.plan) : [];
+  entry.planWhy= (S.plan&&S.plan.why||[]).slice();
+  save(); closeSheets(); renderAll(); go('plan');
   toast('Next week is set. Change any day you like.');
 });
 

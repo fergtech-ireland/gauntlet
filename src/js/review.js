@@ -110,6 +110,11 @@ function weekLedger(end){
   L.sleep={avg:meanOf(slept.map(d=>d.sleep)), n:slept.length, short:slept.filter(d=>d.sleep<7).length,
     hit:slept.filter(d=>d.sleep>=7).length};
   L.train={done:st.done||0, planned:st.planned||0, lifts:days.filter(d=>d.lifted).length};
+  /* the steps the maintenance figure already counts (build 77) */
+  const deal=(typeof stepsDeal==='function')? stepsDeal(end) : null;
+  L.stepsDeal=deal; L.stepsBase= deal&&deal.inKcal!==null&&deal.inKcal!==undefined&&L.steps.avg!==null? deal.inKcal : null;
+  /* days the calories ran out before the protein did (build 77) */
+  L.kcalFirst= t.protein&&t.kcal? fed.filter(d=>d.kcal>=t.kcal*0.95&&d.protein<t.protein*0.85).length : 0;
   L.fibre={avg:meanOf(fed.map(d=>d.fibre).filter(v=>v!==null)), target:+t.fibre||30};
   /* the better days: the best three of the week for each number, so the
      second future is built from days this person has already had */
@@ -172,7 +177,11 @@ function forkHabits(L,which,only){
   h.maint=L.kcal.maint;
   /* steps above this week's own average burn a little more; the maintenance
      figure already contains the usual steps */
-  h.stepsExtra= h.steps!==null&&now.steps!==null&&kg? stepKcal(h.steps,kg)-stepKcal(now.steps,kg) : 0;
+  /* build 77: while maintenance is the planned figure it already counts the
+     step target, so a week walking less than that loses less than the target
+     says; the forecast now shows it */
+  const base=L.stepsBase!==undefined&&L.stepsBase!==null? L.stepsBase : now.steps;
+  h.stepsExtra= h.steps!==null&&base!==null&&kg? stepKcal(h.steps,kg)-stepKcal(base,kg) : 0;
   return h;
 }
 const LEVERS=[
@@ -354,10 +363,13 @@ function leverStory(id,L,kg){
   }
   if(id==='steps'){
     const a=L.steps.avg;
+    const D=L.stepsDeal;
+    const missed= D&&D.state==='adjust'? ` This week your calories counted ${num(D.inKcal)} steps a day and you walked ${num(D.avg)}, so about ${num(D.short)} kcal a day counted as burned was not. The forecast above shows it.`
+      : (D&&D.state==='low'? ` Reaching ${num(D.target)} would burn about ${num(D.toTarget)} kcal more a day, about ${w(D.kg12)} over ${REVIEW_WEEKS} weeks.` : '');
     return {now: a===null? 'No step count' : `${num(Math.round(a))} a day against ${num(t.steps)} · ${L.steps.hit} of ${L.steps.n} days`,
       good:`Each extra 1,000 steps a day burns about ${num(Math.round(stepKcal(BASAL_STEPS+1000,kg)))} kcal at your weight. Across 57 studies, 7,000 a day went with 47% lower risk of death than 2,000 (Ding and colleagues, 2025; observational).`,
-      bad:'Walking is the easiest energy to add back and the first to go in a busy week. The forecast already counts what your usual steps burn.',
-      over:''};
+      bad:'Walking is the easiest energy to add back and the first to go in a busy week.'+missed,
+      over:'', base:(typeof stepsBaselineText==='function'? stepsBaselineText(kg) : '')};
   }
   return null;
 }
@@ -395,6 +407,7 @@ function buildReview(end){
       if(p) R.protein.atTarget={lean:+(p.lean-R.now.lean).toFixed(1), fat:+(R.now.fat-p.fat).toFixed(1)}; }
   }
   R.evidence=minor? [] : ownEvidence();
+  R.checkin=(S.checkins||[]).find(c=>c&&c.targets)||null;
   const prev=(S.checkins||[]).find(c=>c.review&&c.review.end<L.keys[6]);
   if(prev){
     const pr=prev.review, tw=typeof trendOn==='function'? [trendOn(pr.end),trendOn(L.keys[6])] : [null,null];
@@ -484,6 +497,7 @@ function leverRow(id,R,worth){
       <p><b class="g">Keep it up</b> ${st.good}</p>
       <p><b class="b">If it slips</b> ${st.bad}</p>
       ${st.over? `<p><b class="o">Overdoing it</b> ${st.over}</p>` : ''}
+      ${st.base? `<p class="rvfine">${st.base}</p>` : ''}
     </div></details>`;
 }
 function proteinCard(R){
@@ -494,11 +508,18 @@ function proteinCard(R){
   if(P.atTarget&&(P.atTarget.lean>=0.1||P.atTarget.fat>=0.1)) lines.push(`<p class="rvp rvbig">At ${t}g every day, with the same calories (swapped in, not added on), the next ${REVIEW_WEEKS} weeks keep about <b>${P.atTarget.lean.toFixed(1)} kg more muscle</b> and lose <b>${P.atTarget.fat.toFixed(1)} kg more fat</b>. Carry on as this week and that is the muscle that goes.</p>`);
   if(g.weakest&&g.per) lines.push(`<div class="rvmeals">${g.meals.filter(m=>m.m!=='s').map(m=>`<div class="${m===g.weakest?'weak':''}"><b>${m.avg}g</b><span>${m.name}</span></div>`).join('')}<div><b>${g.per}g</b><span>a meal's mark</span></div></div>`);
   if(g.bestDay&&g.bestFoods.length) lines.push(`<p class="rvp">Your best day was ${prettyDate(g.bestDay.k)} at <b>${g.bestDay.protein}g</b>, mostly ${g.bestFoods.map(f=>escHabit(f.n)+' ('+f.p+'g)').join(', ')}. That day is the template.</p>`);
-  if(run>=3&&g.dense.length) lines.push(`<p class="rvp">Foods you already eat with the most protein for their calories: ${g.dense.map(f=>escHabit(f.n)+' ('+f.p+'g, '+f.kcal+' kcal)').join(', ')}.</p>`);
-  if(run>=2&&P.step&&!(S.proteinStep&&S.proteinStep.g===P.step)) lines.push(`<div class="rvstep"><div><b>A step, not the whole target</b><span>Aim for ${P.step}g a day next week. When you reach it, the next step comes; two weeks at ${t}g and the step goes. Graded steps are a recognised way to build a habit; the halfway rule is this app's.</span></div>
+  if(R.L.kcalFirst>=2) lines.push(`<p class="rvp"><b>On ${R.L.kcalFirst} day${R.L.kcalFirst===1?'':'s'} the calories ran out before the protein did.</b> Eating more is not the fix: swap something for a leaner protein at the meal that was short.${g.dense.length? ' Ones you already eat: '+g.dense.map(f=>escHabit(f.n)+' ('+f.p+'g, '+f.kcal+' kcal)').join(', ')+'.' : ' Chicken breast, white fish, fat-free Greek yoghurt, cottage cheese or a whey shake each give 20g or more for under 150 kcal.'}</p>`);
+  if(run>=3&&g.dense.length&&R.L.kcalFirst<2) lines.push(`<p class="rvp">Foods you already eat with the most protein for their calories: ${g.dense.map(f=>escHabit(f.n)+' ('+f.p+'g, '+f.kcal+' kcal)').join(', ')}.</p>`);
+  if(run>=2&&P.step&&!(S.proteinStep&&S.proteinStep.g===P.step)) lines.push(`<div class="rvstep" id="rvStepBox"><div><b>A step, not the whole target</b><span>Aim for ${P.step}g a day next week. When you reach it, the next step comes; two weeks at ${t}g and the step goes. Graded steps are a recognised way to build a habit; the halfway rule is this app's.</span></div>
     <button class="mini go" data-rvstep="${P.step}">Aim for ${P.step}g</button></div>`);
-  else if(S.proteinStep&&S.proteinStep.g<t) lines.push(`<p class="rvp">Your step is <b>${S.proteinStep.g}g a day</b> on the way to ${t}g.</p>`);
+  else if(S.proteinStep&&S.proteinStep.g<t) lines.push(stepSetHtml(S.proteinStep.g,t,false));
   return `<section class="rvcard" id="rvProtein"><h4>Protein, week after week</h4>${lines.join('')}</section>`;
+}
+/* build 77: what setting the step did, said where the button was */
+function stepSetHtml(g,t,fresh){
+  return `<div class="rvstep rvset" id="rvStepBox" ${fresh?'role="status"':''}><div><b>${fresh? 'Step set: ' : 'Your step: '}${g}g a day, on the way to ${t}g</b>
+    <span>Your Protein ring on Today and the pace prompts now count to ${g}g. Eat still shows the full ${t}g target. Reach ${g}g and the next step comes at your check-in.</span></div>
+    ${fresh? '<button class="mini" data-rvstepundo="1">Undo</button>' : ''}</div>`;
 }
 function evidenceCard(R){
   if(!R.evidence||!R.evidence.length) return '';
@@ -513,7 +534,85 @@ function lastCard(R){
   if(x.expected!==null&&x.expected!==undefined&&x.actual!==null) bits.push(`Last week's review expected about ${x.expected>0?'+':''}${showW(x.expected,imp)} a week; the trend moved ${x.actual>0?'+':''}${showW(x.actual,imp)}.`);
   return bits.length? `<section class="rvcard" id="rvLast"><h4>Last week</h4>${bits.map(b=>`<p class="rvp">${b}</p>`).join('')}</section>` : '';
 }
-let reviewNow=null;
+/* ---------- what changes next week, and why (build 77) ----------
+   Feargal: the review has to say plainly what changed and why: calories,
+   steps, weight, workouts. Each row is the number before and after, and the
+   reason in the person's own data. "Before" is the last check-in's targets
+   (or, the first time, the targets just before this check-in), so the change
+   covers the whole week, not only the moment of locking it in. */
+function liftsUpNext(){
+  const out=[], seen={};
+  ((S.plan&&S.plan.days)||[]).forEach(d=>{
+    const t=d.templateId&&(S.templates||[]).find(x=>x.id===d.templateId); if(!t||d.deload) return;
+    t.ex.forEach(r=>{ if(seen[r.exId]) return; seen[r.exId]=1;
+      let p=null; try{ p=nextPrescription(r.exId,r); }catch(e){}
+      if(p&&p.kind==='load'&&p.kg) out.push({n:exOf(r.exId).n, kg:p.kg, inc:p.inc, why:p.why}); });
+  });
+  return out;
+}
+function changeRow(label,value,lines,tone){
+  return `<div class="rvchg ${tone||''}"><div class="rvchh"><b>${label}</b><span>${value}</span></div>${lines.filter(Boolean).map(l=>`<p>${l}</p>`).join('')}</div>`;
+}
+function changesCard(R){
+  const c=R.checkin; if(!c||!c.targets) return '';
+  const b=c.before||{}, a=c.targets, imp=S.profile.units==='imperial', L=R.L, rows=[];
+  const arrow=(x,y,u)=> x!==null&&x!==undefined&&y!==null&&y!==undefined&&Math.round(x)!==Math.round(y)? `${num(Math.round(x))} → <b>${num(Math.round(y))}</b>${u}` : `<b>${num(Math.round(y||0))}</b>${u} · same`;
+  if(!R.minor&&a.kcal){
+    const ln=[], st=c.steps;
+    if(a.stepAdj<0&&st) ln.push(`<b>−${num(-a.stepAdj)} for steps.</b> You averaged ${num(st.avg)} a day against ${num(st.target)}, and your calories had counted ${num(st.inKcal||st.target)}. This week they match what you walked. Walk ${num(st.target)} a day and they come back at your next check-in.`);
+    else if(a.stepAdj>0&&st) ln.push(`<b>+${num(a.stepAdj)} for steps.</b> You said you'll walk ${num(st.target)} a day, so your calories count them. If the week falls short, the next check-in takes them back off.`);
+    else if(st&&st.pick==='match'&&st.source==='measured') ln.push(`Your calories already count the ${num(st.inKcal)} steps a day your tracker has seen, so they match what you walk. Walking ${num(st.target)} would burn about ${num(st.toTarget)} kcal more a day.`);
+    else if(st&&st.pick==='commit') ln.push(`You said you'll walk ${num(st.target)} a day, so nothing comes off for steps. If the week falls short again, the next check-in shows what it cost.`);
+    if(b.stepAdj&&!a.stepAdj) ln.push(`<b>${b.stepAdj<0?'+':'−'}${num(Math.abs(b.stepAdj))}:</b> last week's step adjustment has ended.`);
+    const baseD=(a.kcalBase||a.kcal)-(b.kcalBase||b.kcal||a.kcalBase||a.kcal);
+    if(Math.abs(baseD)>=10){
+      let why;
+      if(a.kcalSource&&b.kcalSource&&a.kcalSource!==b.kcalSource) why=`your maintenance now comes from ${a.kcalSource==='observed'? 'what you actually ate and what the scale did over three weeks' : 'the steps your tracker counted and the sessions you did'}, not the estimate`;
+      else if(a.kg&&b.kg&&Math.abs(a.kg-b.kg)>=0.2) why=`your trend weight moved ${a.kg<b.kg?'down':'up'} ${showW(Math.abs(a.kg-b.kg),imp)}, and a ${a.kg<b.kg?'lighter':'heavier'} body needs ${a.kg<b.kg?'less':'more'}`;
+      else why='next week has different sessions in it, and the lifting is counted in your maintenance';
+      ln.push(`${baseD>0?'+':'−'}${num(Math.abs(Math.round(baseD)))} because ${why}.`);
+    }
+    if(!ln.length) ln.push(`Nothing in your week calls for a change. ${L.kcal.avg!==null? `You averaged ${num(Math.round(L.kcal.avg))} a day, ${L.kcal.on} of ${L.logged} days within 10%.` : ''}`);
+    rows.push(changeRow('Calories',arrow(b.kcal,a.kcal,' kcal'),ln,a.kcal<(b.kcal||a.kcal)?'down':''));
+  }
+  if(!R.minor&&a.protein){
+    const aim=(typeof proteinAim==='function'&&proteinAim())||a.protein, was=c.proteinStepWas, run=R.protein&&R.protein.run? R.protein.run.under : 0;
+    const ln=[];
+    if(was==='up') ln.push(`You reached last week's step, so it moves up again, halfway to ${a.protein}g.`);
+    else if(was==='done') ln.push(`Step finished: back to the full ${a.protein}g.`);
+    else if(aim<a.protein) ln.push(`A step on the way to ${a.protein}g${run>=2? `: ${run} weeks in a row under 85% of target` : ''}. The Protein ring counts to ${aim}g.`);
+    if(L.protein.avg!==null) ln.push(`This week: ${Math.round(L.protein.avg)}g a day, ${L.protein.hit} of ${L.logged} days at 90% or more.`);
+    rows.push(changeRow('Protein',aim<a.protein? `<b>${aim}g</b> step · target ${a.protein}g` : arrow(b.proteinAim||b.protein,aim,'g'),ln));
+  }
+  if(c.steps||a.steps){
+    const st=c.steps, ln=[];
+    if(st&&st.avg!==null&&st.avg!==undefined) ln.push(`You averaged ${num(st.avg)} a day over ${st.n} counted day${st.n===1?'':'s'}${st.state==='ok'? ', on target.' : '.'}`);
+    else ln.push('Not enough days counted to judge the week.');
+    if(st&&st.pick==='commit') ln.push(`Your choice: walk ${num(st.target)} a day.`);
+    if(st&&st.pick==='match') ln.push('Your choice: calories matched to the steps walked, for one week.');
+    const prevC=(S.checkins||[]).filter(x=>x&&x.targets)[1], ps=prevC&&prevC.steps;
+    if(ps&&ps.pick==='commit'&&st&&st.avg!==null&&st.avg!==undefined) ln.unshift(`Last week you said you'd walk ${num(ps.target)} a day: you averaged ${num(st.avg)}${st.avg>=ps.target*0.85? ', kept.' : '.'}`);
+    rows.push(changeRow('Steps',`<b>${num(a.steps||st.target)}</b> a day target`,ln));
+  }
+  { const ln=[], diff=c.planDiff||[], up=R.minor? [] : liftsUpNext();
+    if(diff.length) diff.slice(0,4).forEach(x=>ln.push(x)); else ln.push(`Same shape as this week: ${L.train.planned} session${L.train.planned===1?'':'s'}. You did ${L.train.done}.`);
+    (c.planWhy||[]).slice(0,2).forEach(x=>ln.push(x));
+    if(up.length) ln.push(`<b>Weight up next time:</b> ${up.slice(0,4).map(x=>escHabit(x.n)+' to '+x.kg+'kg').join(', ')}${up.length>4? ' and '+(up.length-4)+' more' : ''}. Each one hit the top of its rep range on every set.`);
+    rows.push(changeRow('Training',`<b>${S.plan? S.plan.days.filter(d=>d.type&&d.slot!=='walk').length : 0}</b> sessions next week`,ln));
+  }
+  if(!R.minor&&typeof trendOn==='function'){
+    const t0=trendOn(addDays(L.keys[0],-1)), t1=trendOn(L.keys[6]), ln=[];
+    if(t0!==null&&t1!==null){
+      const d=+(t1-t0).toFixed(1);
+      ln.push(`Trend ${Math.abs(d)<0.05? 'level' : (d<0?'down ':'up ')+showW(Math.abs(d),imp)} this week, now ${showW(t1,imp)}.`);
+      if(S.target&&S.target.kind==='weight'&&!S.target.hit&&typeof weightOutlook==='function') ln.push(outlookLine(weightOutlook(),imp)+'.');
+      if(R.last&&R.last.expected!==null&&R.last.expected!==undefined) ln.push(`Last week's forecast was ${R.last.expected>0?'+':''}${showW(R.last.expected,imp)} a week.`);
+      rows.push(changeRow('Weight',`<b>${showW(t1,imp)}</b> trend`,ln));
+    }
+  }
+  return rows.length? `<section class="rvcard" id="rvChanges"><h4>What changes next week, and why</h4>${rows.join('')}</section>` : '';
+}
+let reviewNow=null, reviewFrom=null, stepUndo=null;
 function reviewHtml(R){
   const L=R.L, imp=S.profile.units==='imperial';
   const span=`${prettyDate(L.keys[0])} to ${prettyDate(L.keys[6])}`;
@@ -536,25 +635,41 @@ function reviewHtml(R){
   const levers=`<section class="rvcard" id="rvLevers"><h4>What each one did, and where it leads</h4>
     <p class="rvsub">Dots are this week's days, green where it was on target. Tap one for what happens if it carries on.</p>
     ${ids.map(id=>leverRow(id,R,worth[id])).join('')}</section>`;
-  const picked=S.checkins[0]&&S.checkins[0].review&&S.checkins[0].review.pick;
-  const oneCard=`<section class="rvcard rvone" id="rvOne"><h4>One thing for next week</h4>
+  const oneCard=`<section class="rvcard rvone" id="rvOne"><h4>One thing for next week, if you want it</h4>
     <p class="rvif">${one.t}.</p><p class="rvsub">${one.s}</p>
-    ${one.lever? `<button class="cta" id="rvPick" ${picked&&picked.lever===one.lever?'disabled':''}>${picked&&picked.lever===one.lever? 'In your week' : 'Put it in my week'}</button>` : ''}
+    <div id="rvOneAct">${oneActions(one)}</div>
   </section>`;
   return `<div class="rv-top"><button class="legal-back" id="rvBack" aria-label="Close the review">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m15 5-7 7 7 7"/></svg> Done</button></div>
     <div class="rv-body">
       <div class="rvkick">WEEK IN REVIEW · ${span.toUpperCase()}</div>
       <h2 class="rvverdict">${verdict}.</h2>${sub? `<p class="rvlead">${sub}</p>` : ''}
-      ${lastCard(R)}${fork}${levers}${R.minor? '' : proteinCard(R)}${evidenceCard(R)}${oneCard}
+      ${changesCard(R)}${lastCard(R)}${fork}${levers}${R.minor? '' : proteinCard(R)}${evidenceCard(R)}${oneCard}
       <details class="rvmethod"><summary>Where this comes from</summary>
         ${R.minor? `<p>Activity: the World Health Organization's 2020 guidelines for 5 to 17 year olds. Sleep: the American Academy of Sleep Medicine's recommendation for 13 to 18 year olds (Paruthi and colleagues, 2016).</p>` : `<p>Weight: what you ate against your maintenance, worked out week by week from the new weight, with the body needing about ${ADAPT_KCAL_PER_KG} kcal a day less for each kg lost (Hall and colleagues, 2011). Fat and muscle: about a quarter of weight lost is fat-free mass as a rough rule (Heymsfield and colleagues, 2014); lifting twice a week cut that by about 93% in six trials (Sardeli and colleagues, 2018); protein at target kept 0.43 kg more fat-free mass across 24 trials (Wycherley and colleagues, 2012); 5½ hours in bed against 8½ meant 60% more fat-free mass lost (Nedeltcheva and colleagues, 2010, a small study); losing faster than about 1% a week cost more lean mass (Garthe and colleagues, 2011). How those combine is this app's rule of thumb. Your better days are the best three days of the week for each number.</p>`}
         <p>Why it is built this way: seeing progress recorded helps people reach goals (Harkin and colleagues, 2016, 138 studies); feedback about the task works and feedback about the person often backfires (Kluger and DeNisi, 1996), so this talks about the week, not you; gain framed messages did better for prevention behaviours (Gallagher and Updegraff, 2012); and a specific, personal picture of the future makes it count for more today (Rösch and colleagues, 2022).</p>
+        ${R.minor? '' : `<p>Steps: ${typeof stepsBaselineText==='function'? stepsBaselineText(R.kg) : ''} Until about three weeks of your own logs replace it, your maintenance counts your step target, which is why steps not walked can come off the next week's calories.</p>`}
       </details>
+      <button class="cta rvclose" id="rvEnd">${reviewBackLabel()}</button>
     </div>`;
 }
+/* build 77: the one thing is an offer. Add it, or not; added, it can come
+   out again. Picked or declined is kept so next week can say how it went. */
+function oneActions(one){
+  if(!one.lever) return '';
+  const c=S.checkins[0], pk=c&&c.review&&c.review.pick, mine=pk&&pk.lever===one.lever;
+  if(mine&&!pk.declined) return `<p class="rvdone" role="status">In your week${one.habit&&habitOf(one.habit)? ': '+escHabit(habitOf(one.habit).t)+', on Your routine' : ''}.</p>
+    <button class="mini" id="rvUnpick">Take it out</button>`;
+  if(mine&&pk.declined) return `<p class="rvdone muted" role="status">Left out this week.</p><button class="mini" id="rvPick">Add it after all</button>`;
+  return `<div class="rvchoice"><button class="cta" id="rvPick">Add to my week</button><button class="cta ghost" id="rvSkip">Not this week</button></div>`;
+}
+function drawOne(){ const box=$('rvOneAct'); if(box&&reviewNow) box.innerHTML=oneActions(oneThing(reviewNow)); }
+const SCREEN_NAME={today:'Today',plan:'Plan',eat:'Eat',progress:'You',feed:'Friends'};
+function reviewBackLabel(){ return 'Done, back to '+(SCREEN_NAME[reviewFrom]||'Today'); }
 function openReview(opts){
   const o=opts||{};
+  if(o.from!==undefined) reviewFrom=o.from;
+  else if(!reviewFrom) reviewFrom=document.body.dataset.screen||'today';
   const R=buildReview(o.end);
   if(o.store!==false&&S.checkins[0]&&!S.checkins[0].review){
     S.checkins[0].proteinStepWas=reviewProteinStep(R.L);
@@ -565,32 +680,53 @@ function openReview(opts){
   if(!el){ el=document.createElement('div'); el.id='review'; el.className='review'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true');
     el.setAttribute('aria-label','Week in review'); document.body.appendChild(el); }
   el.innerHTML=reviewHtml(R);
-  el.classList.add('on'); el.scrollTop=0;
+  el.classList.add('on'); el.scrollTop=0; document.body.classList.add('rv-open');
   const body=el.querySelector('.rv-body'); if(body) body.scrollTop=0;
   setTimeout(()=>{ const b=document.getElementById('rvBack'); if(b) try{ b.focus({preventScroll:true}); }catch(e){} },30);
   return R;
 }
 function closeReview(){
   const el=document.getElementById('review'); if(!el||!el.classList.contains('on')) return false;
-  el.classList.remove('on'); reviewNow=null;
+  el.classList.remove('on'); reviewNow=null; document.body.classList.remove('rv-open');
+  const back=reviewFrom; reviewFrom=null;
+  if(back&&document.getElementById('s-'+back)) go(back);
   return true;
 }
 document.addEventListener('click',e=>{
-  if(e.target.closest('#rvBack')){ closeReview(); return; }
+  if(e.target.closest('#rvBack')||e.target.closest('#rvEnd')){ closeReview(); return; }
   const st=e.target.closest('[data-rvstep]');
-  if(st){ const g=+st.dataset.rvstep, was=S.proteinStep||null;
+  if(st){ const g=+st.dataset.rvstep, was=S.proteinStep||null, t=S.targets.protein;
     S.proteinStep={g,set:todayKey()}; save(); renderAll();
-    st.disabled=true; st.textContent='Step set';
-    toast(`Next week's protein step: ${g}g a day`,'Undo',()=>{ S.proteinStep=was; save(); renderAll(); });
+    /* build 77: the box itself says what happened; the toast sat behind the
+       review before, so tapping looked like it did nothing */
+    const box=st.closest('#rvStepBox'); if(box) box.outerHTML=stepSetHtml(g,t,true);
+    stepUndo=was;
     return; }
+  if(e.target.closest('[data-rvstepundo]')){
+    S.proteinStep=stepUndo||null; save(); renderAll();
+    const box=$('rvProtein'); if(box&&reviewNow) box.outerHTML=proteinCard(reviewNow);
+    toast('Protein step taken off'); return; }
   if(e.target.closest('#rvPick')&&reviewNow){
     const one=oneThing(reviewNow), c=S.checkins[0];
-    if(one.habit&&habitOf(one.habit)&&!habitSlotOf(one.habit)) startHabit(one.habit);
-    if(one.step&&!(S.proteinStep&&S.proteinStep.g)) S.proteinStep={g:one.step,set:todayKey()};
-    if(c){ c.review=c.review||reviewSnapshot(reviewNow,null); c.review.pick={lever:one.lever, habit:one.habit, t:one.t}; }
-    save(); renderAll();
-    const b=$('rvPick'); if(b){ b.disabled=true; b.textContent='In your week'; }
-    toast(one.habit&&habitOf(one.habit)? 'Added to your habits: '+habitOf(one.habit).t : 'In your week');
+    const added=one.habit&&habitOf(one.habit)&&!habitSlotOf(one.habit);
+    if(added) startHabit(one.habit);
+    const stepSet=one.step&&!(S.proteinStep&&S.proteinStep.g);
+    if(stepSet) S.proteinStep={g:one.step,set:todayKey()};
+    if(c){ c.review=c.review||reviewSnapshot(reviewNow,null); c.review.pick={lever:one.lever, habit:one.habit, t:one.t, added:!!added, stepSet:!!stepSet}; }
+    save(); renderAll(); drawOne();
+    return;
+  }
+  if(e.target.closest('#rvSkip')&&reviewNow){
+    const one=oneThing(reviewNow), c=S.checkins[0];
+    if(c){ c.review=c.review||reviewSnapshot(reviewNow,null); c.review.pick={lever:one.lever, habit:one.habit, t:one.t, declined:true}; }
+    save(); drawOne(); return;
+  }
+  if(e.target.closest('#rvUnpick')&&reviewNow){
+    const c=S.checkins[0], pk=c&&c.review&&c.review.pick;
+    if(pk){ if(pk.added&&pk.habit&&habitSlotOf(pk.habit)&&typeof retireHabit==='function') retireHabit(habitSlotOf(pk.habit));
+      if(pk.stepSet) S.proteinStep=null;
+      c.review.pick=Object.assign({},pk,{declined:true,added:false,stepSet:false}); }
+    save(); renderAll(); drawOne(); return;
   }
 });
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&closeReview()){ e.preventDefault(); e.stopPropagation(); } },true);
@@ -599,9 +735,10 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&closeReview()){ e.
 { const btn=$('saveWeek'); let before=-1;
   /* the count is taken before the check-in's own handler runs; a new entry
      afterwards means the check-in was sent, not just moved a step on */
-  btn.addEventListener('click',()=>{ before=(S.checkins||[]).length; },true);
+  let from=null;
+  btn.addEventListener('click',()=>{ before=(S.checkins||[]).length; from=document.body.dataset.screen||'today'; },true);
   btn.addEventListener('click',()=>{
-    if(before>=0&&(S.checkins||[]).length>before) openReview();
+    if(before>=0&&(S.checkins||[]).length>before) openReview({from});
     before=-1;
   });
 }
@@ -615,9 +752,9 @@ function reviewEntry(){
     <span class="rvet"><b>Week in review</b><span>${c? 'Two futures from your last 7 days, and what each habit is worth' : 'Where this week is heading, from your own logs'}</span></span>
     <span class="rvego" aria-hidden="true">›</span></button>`;
 }
-document.addEventListener('click',e=>{ if(e.target.closest('[data-review]')) openReview({store:false}); });
+document.addEventListener('click',e=>{ if(e.target.closest('[data-review]')) openReview({store:false, from:document.body.dataset.screen||'progress'}); });
 
 Object.assign(window.__G,{reviewEntry,REVIEW_WEEKS,LEAN,ADAPT_KCAL_PER_KG,PROTEIN_CEILING_GKG,weekLedger,leanShare,projectWeeks,forkHabits,leverWorth,
   proteinRun,proteinWeekAvg,proteinGaps,proteinStepFor,proteinAim,reviewProteinStep,ownEvidence,leverStory,worthText,buildReview,
-  reviewSnapshot,oneThing,openReview,closeReview,reviewHtml,keptSince,stepsOnDay});
+  reviewSnapshot,oneThing,openReview,closeReview,reviewHtml,keptSince,stepsOnDay,changesCard,liftsUpNext,oneActions});
 Object.defineProperty(window.__G,'reviewNow',{get:()=>reviewNow,configurable:true});

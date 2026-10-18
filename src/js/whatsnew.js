@@ -18,6 +18,14 @@
    Writing a note: what changed for the person, in their words, one line of
    why it matters if needed, no internal names. Bump APP_VERSION with it. */
 const RELEASE_NOTES=[
+  {v:'77', date:'2026-10-18', items:[
+    {t:'Your goal, under the rings', d:'The line under the rings on Today now follows your aim: your rate of gain for building muscle, your lifts for getting stronger, your running minutes, a steady band for holding, or protein and fibre days for eating better. Losing fat keeps the weight line.'},
+    {t:'Mark rest and walk days done', d:'Rest and walk days have a Mark done button on Today and on Plan.', go:'plan', goLabel:'Open Plan'},
+    {t:'Repeat a session', d:'Done a session this week and want it again? Repeat it today or on another day from the finished session, from Plan, or from the top of Change this day.'},
+    {t:'Steps and your calories', d:'At the weekly check-in, if your steps fell short of what your calories counted on, you choose: walk them next week, or match your calories to what you walked for a week.', adult:true},
+    {t:'A clearer Week in review', d:'It now opens with what changes next week and why: calories, protein, steps, training and weight. The one thing for next week is yours to add or leave, buttons say what they did, and Done at the end takes you back where you were.', adult:true},
+    {t:'Protein short, calories used up', d:'Today now says what is worth doing: a small lean top-up when the gap is big, or leave it and start tomorrow with protein.', adult:true},
+    {t:'Fixes', d:'Finish closes a finished session. Going past the top of a rep range now says how many reps you actually did.'}]},
   {v:'76', date:'2026-10-14', items:[
     {t:'Scan a barcode', d:'Tap the barcode button in food search or on Eat and point your camera at a packet. It opens with the label\'s numbers and serving, from Open Food Facts, and scanning it again is instant, even offline.', go:'eat', goLabel:'Open Eat'},
     {t:'Not found? Add it from the label', d:'If a product is missing or has gaps, one screen takes the numbers off the label and keeps them for next time. Spot a wrong number? Fix it from the food\'s screen.'},

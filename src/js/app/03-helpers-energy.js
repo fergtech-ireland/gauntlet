@@ -581,6 +581,73 @@ function recentRealSteps(days){
     if(typeof v==='number'&&v>0) out.push(v); }
   return out.length? Math.round(out.reduce((a,b)=>a+b,0)/out.length) : null;
 }
+/* ---------- the steps a calorie target counts on (build 77) ----------
+   Feargal: the first 2,500 steps add nothing on top of the sedentary
+   baseline (they are already in it), and people should be told that
+   somewhere other than Today. And when someone keeps missing their steps,
+   say what it costs and, unless they say they will walk them, set next
+   week's calories for the steps they actually walk.
+   How the calorie target already counts steps:
+     planned   (the first weeks) maintenance includes every step of the
+               step target, so walking 2,250 against 5,500 means calories
+               were set for energy that was never burned.
+     measured  (a tracker's steps) maintenance includes the steps actually
+               counted over three weeks, so it has already come down.
+     observed  (food and the scale) the steps are inside it and cannot be
+               split out; nothing to adjust, the app says what more would do.
+   So at the check-in, when the week averaged under 85% of the target, the
+   person picks: walk the target next week (calories count the target), or
+   match calories to the steps walked. Each option's calories are shown.
+   Planned: matching takes the steps not walked off. Measured: matching keeps
+   it as it is (or lower, if this week fell below the three week average),
+   committing adds the target's steps back. The change lasts to the end of
+   next week and is looked at again at the next check-in. The shortfall is
+   the walking energy of one step count minus the other (stepKcal). The 85%
+   line, 3 counted days and 50 kcal minimum are rules of thumb, labelled. */
+const STEPS_SHORT=0.85, STEPS_MIN_DAYS=3, STEP_ADJ_MIN=50;
+function stepsCountedOn(k){
+  const r=S.days&&S.days[k]; if(!r) return null;
+  const v=(r.auto&&!r.auto.sim&&typeof r.auto.steps==='number')? r.auto.steps : r.steps;
+  return typeof v==='number'&&v>0? v : null;
+}
+function stepsWeek(end){
+  const e=end||todayKey(), v=[];
+  for(let i=0;i<7;i++){ const x=stepsCountedOn(addDays(e,-i)); if(x!==null) v.push(x); }
+  return {n:v.length, avg: v.length? Math.round(v.reduce((a,b)=>a+b,0)/v.length) : null};
+}
+const round10=v=>Math.round(v/10)*10;
+function stepsDeal(end){
+  const p=S.profile;
+  if(!p||!p.detailsSet||isMinorAge(p.age)||!plausibleBody(p)) return null;
+  const m=maintenance(); if(!m) return null;
+  const w=stepsWeek(end), target=stepTarget(p), kg=weightNow()||+p.weight;
+  const KPK=(typeof SCI!=='undefined'? SCI.kcalPerKg : 7700);
+  const inKcal= m.source==='planned'? target : (m.source==='measured'? m.steps : null);
+  const out={n:w.n, avg:w.avg, target, source:m.source, inKcal, kg,
+    per1000:Math.round(stepKcal(BASAL_STEPS+1000,kg)), walkKcal:Math.round(stepKcal(target,kg)), state:'unknown',
+    short:0, toTarget:0, kg12:0, match:0, commit:0};
+  if(w.avg===null||w.n<STEPS_MIN_DAYS) return out;
+  out.toTarget=Math.max(0,round10(stepKcal(target,kg)-stepKcal(w.avg,kg)));
+  out.kg12=+(out.toTarget*7*12/KPK).toFixed(1);
+  if(w.avg>=target*STEPS_SHORT){ out.state='ok'; return out; }
+  if(inKcal===null){ out.state='low'; return out; }
+  /* calories counted inKcal steps a day; the week walked w.avg */
+  out.short=Math.max(0,round10(stepKcal(inKcal,kg)-stepKcal(w.avg,kg)));
+  out.match=-out.short;
+  out.commit=Math.max(0,round10(stepKcal(target,kg)-stepKcal(inKcal,kg)));
+  out.state= (out.short>=STEP_ADJ_MIN||out.commit>=STEP_ADJ_MIN)? 'adjust' : 'low';
+  return out;
+}
+/* this week's step adjustment to the calorie target, kcal a day (signed), or 0 */
+function stepAdjNow(){
+  const a=S.stepAdj;
+  return a&&a.kcal&&a.until&&todayKey()<=a.until? a.kcal : 0;
+}
+/* The baseline, said once, for the places that explain steps (never Today). */
+function stepsBaselineText(kg){
+  const per=Math.round(stepKcal(BASAL_STEPS+1000,kg||weightNow()||80));
+  return `The first ${num(BASAL_STEPS)} steps of a day add nothing to your calories: a sedentary day already contains about that many (Tudor-Locke and colleagues, 2009, call under 2,500 basal activity). Every 1,000 after that burns about ${per} kcal at your weight.`;
+}
 function stepSplit(ct,m,p){
   if(!ct||!m||!p) return null;
   const kg=+p.weight, KPK=(typeof SCI!=='undefined'? SCI.kcalPerKg : 7700);

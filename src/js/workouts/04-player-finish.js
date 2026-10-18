@@ -38,6 +38,7 @@ function circSubText(){
 }
 const fmtSplit=ms=>{ const s=Math.round(ms/1000); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
 function drawCircuit(){
+  gymFinishLabel();
   { const sg=$('gymSegs'); if(sg) sg.innerHTML=''; }
   const c=circuitOf(GYM.circuitId)||{};
   $('gymName').textContent=GYM.name;
@@ -132,7 +133,7 @@ document.addEventListener('input',e=>{
 });
 function finishCircuit(){
   if(!GYM||GYM.done) return null;
-  GYM.done=true; clearInterval(gymTick); if(typeof clearLive==='function') clearLive();
+  GYM.done=true; clearInterval(gymTick); if(typeof clearLive==='function') clearLive(); gymFinishLabel();
   const mins=Math.max(1,Math.round((Date.now()-GYM.started)/60000));
   const done=circuitDone(), total=GYM.items.length;
   let prevAt=GYM.started;
@@ -359,7 +360,7 @@ function finishWorkout(){
   try{ record.prs=GYM.ex.filter(e=>typeof exHasPR==='function'&&exHasPR(e)).map(e=>e.exId); }catch(err){ record.prs=[]; }
   S.workouts.unshift(record);
   if(record.kind==='hifb') GYM.record=record;
-  GYM.done=true; clearInterval(gymTick); clearInterval(restTick); $('restBar').classList.remove('on');
+  GYM.done=true; clearInterval(gymTick); clearInterval(restTick); $('restBar').classList.remove('on'); gymFinishLabel();
   if(typeof clearLive==='function') clearLive();
   logSession({title:GYM.name,type:'workout',adds:1,workoutId:record.id,steps:GYM.ex.map(e=>({n:exOf(e.exId).n,r:''}))});
   const amended = GYM.templateId && templateChanged(GYM.templateId, GYM);
@@ -426,8 +427,16 @@ function gymToTemplateRows(){
     reps:e.reps,repMin:e.repMin,tempo:e.tempo,rest:e.rest,note:e.note}; if(e.group) r.group=e.group;
     if(e.run) r.run={m:e.run.m,pace:e.run.pace}; return r; }));
 }
+/* build 77: once a session is finished the header button closes it.
+   Before, Finish stayed on the summary and did nothing when tapped. */
+function gymFinishLabel(){
+  const b=$('gymFinish'); if(!b) return;
+  const done=!!(GYM&&GYM.done);
+  b.textContent=done? 'Close' : 'Finish'; b.classList.toggle('closing',done);
+}
 $('gymFinish').addEventListener('click',()=>{
-  if(!GYM||GYM.done) return;
+  if(!GYM) return;
+  if(GYM.done){ $('gym').classList.remove('on'); go('today'); if(typeof drawLiveBar==='function') drawLiveBar(); gymFinishLabel(); return; }
   if(GYM.mode==='circuit'){
     if(!circuitDone()){ toast('Tick at least one station first'); return; }
     finishCircuit(); return;

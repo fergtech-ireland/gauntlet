@@ -6267,12 +6267,12 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('79 · the newest note is this build', G.RELEASE_NOTES.some(n => n.v === w.eval('APP_VERSION')));
     /* someone who used the app before notes existed */
     delete S.profile.seenVersion; G.closeSheets();
-    t('79 · they are taken as having seen build 72', G.seenVersion() === '72' && G.unseenNotes().map(n => n.v).join(',') === '77,76,75,74,73');
+    t('79 · they are taken as having seen build 72', G.seenVersion() === '72' && G.unseenNotes().map(n => n.v).join(',') === '78,77,76,75,74,73');
     t('79 · it shows', G.maybeWhatsNew(0) && sheetOn());
     const body = txt(d.getElementById('altBody'));
-    /* build 77: one more build, so the three shown are 77, 76, 75 */
-    t('79 · newest first, with what changed', body.indexOf('Your goal, under the rings') >= 0 && body.indexOf('Your goal, under the rings') < body.indexOf('Scan a barcode') && body.indexOf('Scan a barcode') < body.indexOf('Adding food, rebuilt') && /keypad/.test(body));
-    t('79 · a fourth build waits one tap away', !/What is new, when it is new/.test(body) && /2 earlier updates/.test(txt(d.querySelector('[data-wnall]'))));
+    /* build 78: one more build, so the three shown are 78, 77, 76 */
+    t('79 · newest first, with what changed', body.indexOf('Goals you can read at a glance') >= 0 && body.indexOf('Goals you can read at a glance') < body.indexOf('Your goal, under the rings') && body.indexOf('Your goal, under the rings') < body.indexOf('Scan a barcode') && /Open Food Facts/.test(body));
+    t('79 · a fourth build waits one tap away', !/Adding food, rebuilt/.test(body) && /3 earlier updates/.test(txt(d.querySelector('[data-wnall]'))));
     t('79 · and only builds they have not seen', !/Programmes for every kind/.test(body));
     t('79 · it is marked seen as it shows', S.profile.seenVersion === w.eval('APP_VERSION'));
     d.querySelector('[data-wnok]').click();
@@ -6745,15 +6745,15 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     S.weights = [];
     for (let i = 20; i >= 0; i -= 2) S.weights.push({ d: G.addDays(today, -i), kg: +(100 + (20 - i) * 0.04).toFixed(2) });
     const gl = () => txt(d.querySelector('#todayView .gline') || d.querySelector('#todayView .wline'));
-    const aims = { build: /Building muscle/, strong: /Getting stronger/, endure: /Running/, hold: /Holding steady/, eat: /Eating better/ };
+    const aims = { build: /Build muscle/, strong: /Get stronger/, endure: /Run further/, hold: /Hold steady/, eat: /Eat better/ };
     G.go('today');
     Object.keys(aims).forEach(a => { S.profile.aim = a; G.renderAll(); t('82 · aim ' + a + ' shows its own line under the rings', aims[a].test(gl()), gl()); });
     S.profile.aim = 'build'; G.renderAll();
-    t('82 · building muscle reads the rate of gain against 0.25 to 0.5%', /aim 0\.25 to 0\.5%/.test(gl()) && /% of bodyweight a week/.test(gl()));
+    t('82 · building muscle reads the rate of gain against 0.25 to 0.5%', /gain 0\.25 to 0\.5% a week/.test(gl()) && /% of bodyweight/.test(gl()) && /weight trend/.test(gl()));
     S.profile.aim = 'lose'; S.target = { kind: 'weight', value: 92, by: G.addDays(today, 120), set: G.addDays(today, -20) }; G.renderAll();
     t('82 · losing fat with a goal keeps the weight line, unchanged', !d.querySelector('#todayView .gline') && /Start/.test(gl()) && /Goal/.test(gl()));
     S.target = null; G.renderAll();
-    t('82 · losing fat with no goal reads the rate of loss', /Losing fat/.test(gl()));
+    t('82 · losing fat with no goal reads the rate of loss', /Lose fat/.test(gl()) && /lose 0\.5 to 1% a week/.test(gl()));
 
     /* ---- 1: steps, and the calories that counted on them ---- */
     S.profile.stepTarget = 5500; S.targets = G.ownTargets();
@@ -6815,9 +6815,144 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
       const k0 = S2.targets.kcal; b.G.openWeek(); const sw = b.d.getElementById('saveWeek'); sw.click(); sw.click(); sw.click();
       t('82 · matched: next week\'s calories come down by the steps not walked', S2.stepAdj && S2.stepAdj.kcal === -short && S2.targets.kcal === k0 - short && !S2.stepCommit, k0 + ' to ' + S2.targets.kcal);
       t('82 · and the review says why', new RegExp('−' + short + ' for steps').test(txt(b.d.getElementById('rvChanges'))) && /counted 5,500/.test(txt(b.d.getElementById('rvChanges')))); }
-    t('82 · the release note is build 77', w.eval('RELEASE_NOTES[0].v') === '77' && w.eval('APP_VERSION') === '77');
+    t('82 · the release note for build 77 is there', w.eval('RELEASE_NOTES').some(n => n.v === '77') && +w.eval('APP_VERSION') >= 77);
     const srcAll = ['repeat.js', 'review.js', 'next.js', 'daily.js', 'app/07-today.js', 'app/03-helpers-energy.js'].map(f => require('fs').readFileSync(require('path').join(__dirname, 'src/js/' + f), 'utf8')).join('');
     t('82 · no em dashes', srcAll.indexOf('—') < 0);
+  }
+
+  journey(83, 'Build 78: goals read at a glance, one card each, more than one goal, and what each card means');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G, { weight: 100 });
+    const S = G.S, today = G.todayKey();
+    const txt = el => el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
+    const view = () => d.getElementById('todayView');
+    const gcs = () => [...view().querySelectorAll('.gc')];
+    const weights = perDay => { S.weights = []; for (let i = 40; i >= 0; i -= 2) S.weights.push({ d: G.addDays(today, -i), kg: +(100 + (40 - i) * perDay).toFixed(2) }); };
+    const left = el => parseFloat(el.style.left);
+    const lib = w.eval('LIBRARY');
+    const lifts = (a, b) => { S.lifts = {}; [lib[0].id, lib[1].id].forEach(id => { S.lifts[id] = [
+      { d: G.addDays(today, -40), sets: [{ kg: a, reps: 8 }] }, { d: G.addDays(today, -35), sets: [{ kg: a, reps: 8 }] },
+      { d: G.addDays(today, -10), sets: [{ kg: b, reps: 8 }] }, { d: G.addDays(today, -3), sets: [{ kg: b, reps: 8 }] }]; }); };
+    G.go('today');
+
+    /* ---- the bug that started this: a falling weight under Build muscle ---- */
+    S.profile.aim = 'build'; S.profile.alsoAims = []; S.target = null; S.lifts = {};
+    weights(-0.03); G.renderAll();
+    const c1 = gcs()[0];
+    t('83 · Build muscle is a card that names the goal and says the weight is falling', !!c1 && /Build muscle/.test(txt(c1)) && /Losing weight/.test(txt(c1)) && /−0\.\d kg a week/.test(txt(c1)) && /weight trend/.test(txt(c1)), txt(c1));
+    t('83 · the picture is a target zone with a marker, not an empty fill bar', !!c1.querySelector('.zg .zg-band') && !!c1.querySelector('.zg .zg-mark') && !c1.querySelector('.ybar'));
+    t('83 · the marker sits left of the zone when the weight is falling', left(c1.querySelector('.zg-mark')) < left(c1.querySelector('.zg-band')));
+    t('83 · the zone is named in words under it', /Target zone: gain 0\.25 to 0\.5% a week/.test(txt(c1)));
+    t('83 · it is red and says what to do', c1.classList.contains('st-red') && /eat a little more/.test(txt(c1.querySelector('.gc-v'))));
+    t('83 · the lifts row is there even before there is anything to compare', /Lifts/.test(txt(c1)) && /Compare after two sessions each/.test(txt(c1)));
+    /* in the zone */
+    weights(0.05); G.renderAll();
+    let c = gcs()[0];
+    t('83 · gaining at a lean rate is green and the marker is inside the zone', c.classList.contains('st-green') && /On track/.test(txt(c)) && left(c.querySelector('.zg-mark')) >= left(c.querySelector('.zg-band')) && left(c.querySelector('.zg-mark')) <= left(c.querySelector('.zg-band')) + parseFloat(c.querySelector('.zg-band').style.width), txt(c));
+    lifts(60, 60); G.renderAll(); c = gcs()[0];
+    t('83 · gaining but lifts flat is not called on track', c.classList.contains('st-amber') && /Check lifts/.test(txt(c)) && /lifts are not/.test(txt(c)), txt(c));
+    lifts(60, 70); G.renderAll(); c = gcs()[0];
+    t('83 · gaining with lifts up is on track and the dots say how many lifts are up', c.classList.contains('st-green') && /2 of 2 up in 4 weeks/.test(txt(c)) && c.querySelectorAll('.gc-row .pips i.on').length === 2, txt(c));
+    weights(-0.03); G.renderAll(); c = gcs()[0];
+    t('83 · weight falling with lifts rising is amber and honest about it', c.classList.contains('st-amber') && /Lifts are going up while weight is falling/.test(txt(c)), txt(c));
+    weights(0.12); G.renderAll(); c = gcs()[0];
+    t('83 · too fast says too fast', /Too fast/.test(txt(c)) && c.classList.contains('st-amber') && /mostly fat/.test(txt(c)));
+
+    /* ---- each aim has its own picture ---- */
+    weights(0.002); lifts(60, 66); S.profile.aim = 'strong'; G.renderAll(); c = gcs()[0];
+    t('83 · Get stronger shows each lift, was to now, with a dot', /Get stronger/.test(txt(c)) && c.querySelectorAll('.gc-row').length === 2 && /76 → 84 kg/.test(txt(c)) && c.querySelectorAll('.gc-row .pips i.on').length === 2, txt(c));
+    t('83 · and its zone is up 1% or more', /Target zone: up 1% or more/.test(txt(c)) && !!c.querySelector('.zg'));
+    S.profile.aim = 'hold'; G.renderAll(); c = gcs()[0];
+    t('83 · Hold steady is a band around your weight', !!c.querySelector('.zg') && /within 3%/.test(txt(c)) && /band/.test(txt(c)));
+    S.profile.aim = 'lose'; weights(-0.07); G.renderAll(); c = gcs()[0];
+    t('83 · Lose fat with no goal weight shows its zone too', /Lose fat/.test(txt(c)) && /Target zone: lose 0\.5 to 1% a week/.test(txt(c)) && !!c.querySelector('.zg'));
+    S.profile.aim = 'endure'; G.renderAll(); c = gcs()[0];
+    t('83 · Run further is a bar with a tick for where the plan has you by today', !!c.querySelector('.pb .pb-pace') && /Tick: where the plan has you by today/.test(txt(c)) && /planned/.test(txt(c)), txt(c));
+    t('83 · and a week still in progress is never red', !c.classList.contains('st-red'));
+    S.profile.aim = 'eat'; G.renderAll(); c = gcs()[0];
+    t('83 · Eat better says nothing is logged rather than guessing', /Eat better/.test(txt(c)) && c.classList.contains('st-none') && /once food is logged/.test(txt(c)));
+    const FOODS = w.eval('FOODS');
+    for (let i = 0; i < 4; i++) { const k = G.addDays(today, -i); S.days[k] = S.days[k] || {}; S.days[k].food = [{ id: 'egg', n: 'Egg', u: 'egg', q: 2, meal: 'b', kcal: 150, p: 25, c: 1, f: 10, fb: 0, at: G.dateOf(k).getTime() + 8 * 3600e3 }]; w.applyFoodTotals(k); }
+    G.renderAll(); c = gcs()[0];
+    t('83 · with food logged it shows seven dots for protein and seven for fibre', c.querySelectorAll('.gc-row').length === 2 && [...c.querySelectorAll('.gc-row .pips')].every(p => p.querySelectorAll('i').length === 7), txt(c));
+    t('83 · the days with nothing logged are dashed, not counted as misses', c.querySelectorAll('.gc-row .pips i.none').length >= 6);
+
+    /* ---- a goal set with Set a goal gets its own card ---- */
+    S.profile.aim = 'build'; weights(0.05); lifts(60, 70);
+    G.setTarget('sessions', 4, null); G.renderAll();
+    const st = view().querySelector('.goalstack');
+    t('83 · build plus a sessions goal is two cards, in a stack', !!st && st.querySelectorAll('.gc').length === 2 && /Build muscle/.test(txt(st.children[0])) && /4 sessions a week/.test(txt(st.children[1])), txt(st));
+    t('83 · in a stack the cards are the tighter kind', [...st.querySelectorAll('.gc')].every(x => x.classList.contains('compact')));
+    t('83 · the sessions card shows this week against a tick for where you should be, and 8 weeks of dots', !!st.querySelector('.pb .pb-pace') && /of 4 this week/.test(txt(st)) && st.querySelectorAll('.gc-line, .gc-row').length >= 1);
+    t('83 · nothing is pre-filled to flatter the bar', st.querySelector('.pb-fill').style.width === '0%' || /^\d+%$/.test(st.querySelector('.pb-fill').style.width));
+    t('83 · that goal is not drawn a second time lower down', !view().querySelector('.goalrow'));
+    G.clearTarget(); G.renderAll();
+    t('83 · with no goal set the invitation to set one is still there', !!view().querySelector('.goalrow #setTarget'));
+    const ex = lib[0].id;
+    G.setTarget('lift', 100, G.addDays(today, 60), ex); S.target.set = G.addDays(today, -20); S.target.from = 60; G.renderAll();
+    const lc = view().querySelector('.goalstack .gc:nth-child(2)');
+    t('83 · a lift goal is a bar from where you started to the number, with a pace tick to the date', !!lc && /to 100 kg/.test(txt(lc)) && !!lc.querySelector('.pb-pace') && /to go/.test(txt(lc)), txt(lc));
+    G.setTarget('weight', 92, G.addDays(today, 120)); S.target.set = G.addDays(today, -20); G.renderAll();
+    const wst = view().querySelector('.goalstack');
+    t('83 · a goal weight under Build muscle is its own card, the weight line unchanged', !!wst && wst.querySelectorAll('.wline').length === 2 && /Start/.test(txt(wst)) && /Goal 92/.test(txt(wst)) && !!wst.querySelector('.gc'));
+    G.clearTarget();
+
+    /* ---- more than one aim ---- */
+    S.profile.alsoAims = []; G.renderAll();
+    t('83 · up to two extra aims with no other goal set', G.goalExtraMax() === 2);
+    t('83 · the main aim cannot be an extra', G.toggleAlsoAim('build') === false && !G.goalExtras().includes('build') && !(S.profile.alsoAims || []).includes('build'));
+    S.profile.alsoAims = [];
+    G.toggleAlsoAim('eat'); G.toggleAlsoAim('hold');
+    t('83 · two extras make three cards, main aim first', view().querySelectorAll('.goalstack .gc').length === 3 && /Build muscle/.test(txt(view().querySelectorAll('.goalstack .gc')[0])) && /Eat better/.test(txt(view().querySelectorAll('.goalstack .gc')[1])) && /Hold steady/.test(txt(view().querySelectorAll('.goalstack .gc')[2])));
+    t('83 · a third extra is refused, three goals at most', G.toggleAlsoAim('strong') === false && G.goalExtras().length === 2);
+    G.setTarget('sessions', 3, null);
+    t('83 · a set goal takes one of the three places', G.goalExtraMax() === 1);
+    G.renderAll();
+    t('83 · so only three cards show', view().querySelectorAll('.goalstack .gc').length === 3 && /3 sessions a week/.test(txt(view().querySelectorAll('.goalstack .gc')[1])));
+    G.clearTarget(); G.renderAll();
+    /* the aim sheet */
+    w.eval("drawAimSheet(); openSheet('aimSheet')");
+    const ab = d.getElementById('aimBody');
+    t('83 · the aim sheet offers Also track, with how many of how many', /Also track on Today/.test(txt(ab)) && /2 of 2/.test(txt(ab)));
+    t('83 · the main aim is not offered as an extra and the full ones are switched off', !ab.querySelector('[data-alsoaim="build"]') && ab.querySelectorAll('[data-alsoaim]').length === 5 && [...ab.querySelectorAll('[data-alsoaim]')].filter(b => b.disabled).length === 3);
+    ab.querySelector('[data-alsoaim="eat"]').click();
+    t('83 · tapping one switches it off in place and the card goes', !G.goalExtras().includes('eat') && view().querySelectorAll('.goalstack .gc').length === 2 && d.getElementById('aimSheet').classList.contains('on'));
+    G.setAim('hold');
+    t('83 · choosing an extra as the main aim takes it out of the extras', S.profile.aim === 'hold' && !G.goalExtras().includes('hold'));
+    G.closeSheets();
+    S.profile.aim = 'build'; S.profile.alsoAims = ['eat', 'hold']; w.eval('renderSettings()');
+    t('83 · Settings names the extras beside the main aim', /Build muscle \+ Eat better, Hold steady/.test(txt(d.getElementById('settingsList'))), txt(d.getElementById('settingsList')).slice(0, 200));
+
+    /* ---- tapping a card says what it means, with where the target comes from ---- */
+    S.profile.aim = 'build'; S.profile.alsoAims = []; weights(-0.03); G.renderAll();
+    gcs()[0].click();
+    const sheet = d.getElementById('altSheet');
+    t('83 · tapping a card opens what it means', sheet.classList.contains('on') && /Where you are/.test(txt(d.getElementById('altBody'))) && /The target/.test(txt(d.getElementById('altBody'))) && /What moves it/.test(txt(d.getElementById('altBody'))) && /Where this comes from/.test(txt(d.getElementById('altBody'))));
+    t('83 · it says where the target comes from and that it is a rule of thumb', /Iraki/.test(txt(d.getElementById('altBody'))) && /rules of thumb/i.test(txt(d.getElementById('altBody'))));
+    d.querySelector('[data-goalchange]').click();
+    t('83 · Change or add an aim goes to the aim sheet', d.getElementById('aimSheet').classList.contains('on'));
+    G.closeSheets();
+    G.setTarget('sessions', 4, null); G.renderAll();
+    view().querySelectorAll('.gc')[1].click();
+    t('83 · a set goal offers to change that goal', !!d.querySelector('[data-goalsettarget]'));
+    d.querySelector('[data-goalsettarget]').click();
+    t('83 · and it opens the goal sheet', d.getElementById('altSheet').classList.contains('on') && /goal|Goal/.test(txt(d.getElementById('altBody'))));
+    G.closeSheets(); G.clearTarget();
+
+    /* ---- the weight line is untouched, and under 18s are unchanged ---- */
+    S.profile.aim = 'lose'; S.profile.alsoAims = []; G.setTarget('weight', 85, G.addDays(today, 90)); S.target.set = G.addDays(today, -20); weights(-0.07); G.renderAll();
+    t('83 · Lose fat with a goal weight is still just the weight line', !view().querySelector('.goalstack') && !view().querySelector('.gc') && /Start/.test(txt(view().querySelector('.wline'))) && /Goal/.test(txt(view().querySelector('.wline'))));
+    G.clearTarget();
+    S.profile.alsoAims = ['eat']; S.profile.aim = 'hold'; S.profile.birthYear = new Date().getFullYear() - 15; S.profile.age = 15; G.renderAll();
+    t('83 · under 18s see no goal cards and no stack', !view().querySelector('.gc') && !view().querySelector('.goalstack'));
+    S.profile.birthYear = new Date().getFullYear() - 34; S.profile.age = 34; S.profile.alsoAims = [];
+
+    /* ---- housekeeping ---- */
+    t('83 · an account from before this build, with no extras saved, still draws', (() => { delete S.profile.alsoAims; S.profile.aim = 'build'; G.renderAll(); return gcs().length === 1; })());
+    t('83 · the release note leads with goals', /Goals you can read at a glance/.test(JSON.stringify(w.eval('RELEASE_NOTES').find(n => n.v === '78'))) && w.eval('APP_VERSION') === '78');
+    t('83 · no em dashes in the goal code', require('fs').readFileSync(require('path').join(__dirname, 'src/js/goals.js'), 'utf8').indexOf('—') < 0);
+    t('83 · and no page errors', errs.length === 0, errs.join(' | '));
   }
 
   const r = s.report(allErrs);

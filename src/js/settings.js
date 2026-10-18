@@ -59,7 +59,7 @@ function renderSettings(){
   const showCycle= p.sex==='f'||(S.cycle&&S.cycle.tracking);
 
   top.innerHTML=`<div class="ysgroup"><div class="yshead">Your plan</div>
-    ${setRow('aim','marine','Aim and training days', aim.t+' · '+(+p.liftDays||0)+' lifting, '+(+p.cardioDays||0)+' cardio')}
+    ${setRow('aim','marine','Aim and training days', aim.t+(typeof goalExtras==='function'&&goalExtras().length? ' + '+goalExtras().map(id=>aimOf(id).t).join(', ') : '')+' · '+(+p.liftDays||0)+' lifting, '+(+p.cardioDays||0)+' cardio')}
     ${setRow('goal','forest','Goal', goal)}
     ${setRow('body','burnt','Calories and body', p.detailsSet&&ct? 'Eat '+num(ct.kcal)+' kcal · maintenance '+num(ct.maintenance) : 'Add your details to work these out')}
     ${setRow('steps','marine','Daily steps', num(stepTarget())+' a day')}

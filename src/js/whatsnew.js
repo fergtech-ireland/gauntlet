@@ -18,6 +18,9 @@
    Writing a note: what changed for the person, in their words, one line of
    why it matters if needed, no internal names. Bump APP_VERSION with it. */
 const RELEASE_NOTES=[
+  {v:'78', date:'2026-10-18', items:[
+    {t:'Goals you can read at a glance', d:'Each goal on Today is now a card that shows where you are against a shaded target zone, or against a tick for where you should be by today, with one line on what to do. Building muscle now shows your weight trend against the 0.25 to 0.5% a week zone and how many of your lifts are up. Tap any card for what it means and where the target comes from.', adult:true},
+    {t:'More than one goal', d:'Pick a main aim, then add up to two more under Also track on the aim sheet. A goal you set with Set a goal (a lift, a run distance, sessions a week) now sits here too, with its own card, instead of further down the page. Up to three show on Today.', adult:true}]},
   {v:'77', date:'2026-10-18', items:[
     {t:'Your goal, under the rings', d:'The line under the rings on Today now follows your aim: your rate of gain for building muscle, your lifts for getting stronger, your running minutes, a steady band for holding, or protein and fibre days for eating better. Losing fat keeps the weight line.'},
     {t:'Mark rest and walk days done', d:'Rest and walk days have a Mark done button on Today and on Plan.', go:'plan', goLabel:'Open Plan'},

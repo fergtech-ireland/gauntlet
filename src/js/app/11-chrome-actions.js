@@ -186,7 +186,10 @@ function startSessionFromPost(post){
   return startSession(Object.assign({},post.session,{fromPost:post.id,fromUser:post.by}));
 }
 function setAim(id){
-  S.profile.aim=id; buildPlan(); save(); renderAll();
+  S.profile.aim=id;
+  /* build 78: an aim chosen as the main one is no longer an extra */
+  if(Array.isArray(S.profile.alsoAims)) S.profile.alsoAims=S.profile.alsoAims.filter(x=>x!==id);
+  buildPlan(); save(); renderAll();
   return S.plan;
 }
 /* What was actually eaten today, or nothing. */
@@ -441,7 +444,14 @@ document.addEventListener('click',e=>{
   if(what==='coach'&&typeof openCoach==='function') openCoach();
 });
 function drawAimSheet(){
+  /* build 78: the main aim builds the week; up to two more can be tracked on
+     Today with a card each (goals.js). Under 18s have one aim. */
+  const main=S.profile.aim, teen=typeof isTeen==='function'&&isTeen(), extras=typeof goalExtras==='function'? goalExtras() : [], max=typeof goalExtraMax==='function'? goalExtraMax() : 0;
+  const also= teen||!max? '' : `<div class="alsohead">Also track on Today <span>${Math.min(extras.length,max)} of ${max}</span></div>
+    <p class="alsonote">Each one gets its own progress card. Your week is still built around ${aimOf(main).t}.</p>
+    <div class="chips alsochips">${AIMS.filter(a=>a.id!==main&&!(a.id==='lose'&&teen)).map(a=>{ const on=extras.indexOf(a.id)>=0;
+      return `<button class="${on?'on':''}" data-alsoaim="${a.id}" aria-pressed="${on}"${!on&&extras.length>=max?' disabled':''}>${a.t}</button>`; }).join('')}</div>`;
   $('aimBody').innerHTML=AIMS.map(a=>`<button class="opt ${S.profile.aim===a.id?'on':''}" data-aim="${a.id}">
-    <div class="txt"><div class="t">${a.t}</div><div class="s">${a.s}</div></div><div class="rad"></div></button>`).join('');
+    <div class="txt"><div class="t">${a.t}</div><div class="s">${a.s}</div></div><div class="rad"></div></button>`).join('')+also;
 }
 

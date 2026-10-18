@@ -958,7 +958,7 @@ function renderToday(){
   ${coach}
   ${hero}${mealsList()}
   ${quickTiles()}
-  ${S.target&&S.target.kind==='weight'&&typeof weightLine==='function'? '' : `<div class="goalrow">${targetLine()}</div>`}
+  ${S.target&&!isTeen()? '' : `<div class="goalrow">${targetLine()}</div>`}
   ${typeof routineBlock==='function'? routineBlock() : ''}
   ${(()=>{ /* build 69: the week strip, the week line and the weekly check in
        row are gone from here (Plan has the week; the coach card asks for the

@@ -1842,3 +1842,65 @@ body.rv-open .toast{z-index:310}
 .gline .wlh>span:first-child{text-align:left}
 .gline .wlh>span:last-child{text-align:right}
 .gline .wnow{white-space:nowrap;padding:0 6px}
+
+/* build 78: goal cards (goals.js). One shape for every goal: name and status,
+   the number that matters, a picture (target zone, pace bar or dots), a line
+   saying what to do. Alone a card keeps the quiet band look of the weight line;
+   two or three share a tighter boxed card. */
+.wline.gc{padding:12px 2px 12px}
+.gc .gc-h{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.gc-k{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);min-width:0;overflow-wrap:anywhere}
+.gc-s{flex:none;font-size:12px;font-weight:700;padding:2px 10px;border-radius:99px;white-space:nowrap}
+.st-green .gc-s{background:var(--green-tint);color:var(--green-text)}
+.st-amber .gc-s{background:var(--amber-tint);color:var(--amber-text)}
+.st-red .gc-s{background:var(--coral-tint);color:var(--coral-text)}
+.st-none .gc-s{border:1px solid var(--line);color:var(--mute)}
+.gc-m{display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 7px;margin-top:6px}
+.gc-n{font-family:var(--font-num);font-size:30px;line-height:1;font-weight:600;color:var(--ink);letter-spacing:0}
+.gc-u{font-size:13px;font-weight:700;color:var(--ink)}
+.gc-c{font-size:12px;color:var(--mute);flex-basis:100%}
+.zg,.pb{position:relative;display:block;height:10px;border-radius:5px;background:var(--track);margin:16px 8px 6px}
+.zg-band{position:absolute;top:0;bottom:0;border-radius:5px;background:var(--green-tint);box-shadow:inset 0 0 0 1.5px var(--green)}
+.zg-mark{position:absolute;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;background:var(--mute);box-shadow:0 0 0 3px var(--bg)}
+.goalstack .zg-mark{box-shadow:0 0 0 3px var(--surface)}
+.zg-mark.edge{outline:2px dashed var(--ink);outline-offset:2px}
+.st-green .zg-mark{background:var(--green)}
+.st-amber .zg-mark{background:var(--amber)}
+.st-red .zg-mark{background:var(--coral)}
+.pb{margin:14px 0 6px}
+.pb-fill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--mute)}
+.st-green .pb-fill{background:var(--green)}
+.st-amber .pb-fill{background:var(--amber)}
+.st-red .pb-fill{background:var(--coral)}
+.pb-pace{position:absolute;top:-4px;bottom:-4px;width:3px;margin-left:-1px;border-radius:2px;background:var(--ink)}
+.gc-cap{display:flex;align-items:center;gap:7px;margin-top:2px;font-size:12px;color:var(--mute)}
+.gc-cap .sw{flex:none;width:16px;height:9px;border-radius:3px;background:var(--green-tint);box-shadow:inset 0 0 0 1.5px var(--green)}
+.gc-cap .tk{flex:none;width:3px;height:12px;border-radius:2px;background:var(--ink)}
+.gc-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:4px 10px;margin-top:8px;font-size:12.5px;color:var(--mute)}
+.gc-rl{font-weight:700;color:var(--ink);overflow-wrap:anywhere}
+.gc-rv{min-width:0}
+.pips{display:inline-flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.pips i{display:block;width:12px;height:12px;border-radius:50%;box-sizing:border-box;border:1.5px solid var(--mute)}
+.pips i.on{background:var(--green);border-color:var(--green)}
+.pips i.none{border:1.5px dashed var(--mute);opacity:.55}
+.gc-line{display:block;margin-top:5px;font-size:12px;color:var(--mute)}
+.gc-v{display:block;margin-top:8px;font-size:13px;font-weight:700;color:var(--mute);text-wrap:balance}
+.st-green .gc-v{color:var(--green-text)}
+.st-amber .gc-v{color:var(--amber-text)}
+.st-red .gc-v{color:var(--coral-text)}
+.goalstack{display:grid;gap:10px;margin:14px 0 2px}
+.goalstack>.wline{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.goalstack .gc-n{font-size:26px}
+.goalstack .zg,.goalstack .pb{margin-top:12px}
+.alsohead{display:flex;justify-content:space-between;align-items:baseline;margin:18px 2px 2px;font-weight:700}
+.alsohead span{font-size:12px;font-weight:600;color:var(--mute)}
+.alsonote{margin:0 2px 8px;font-size:12.5px;color:var(--mute)}
+.alsochips{margin-bottom:12px}
+.alsochips button:disabled{opacity:.45}
+.gwhy{padding:0 14px 10px}
+.gwhy .gw{margin:0 0 14px}
+.gwhy .gw b{display:block;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--mute);margin-bottom:3px}
+.gwhy .gw p,.gwhy .gw li{margin:0;font-size:14px;line-height:1.45;color:var(--ink)}
+.gwhy .gw ul{margin:0;padding-left:18px;display:grid;gap:4px}
+.gwbtns{display:grid;gap:8px;margin-top:6px}
+

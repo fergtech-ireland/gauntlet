@@ -1,96 +1,63 @@
-/* ---------- goals on Today, one card each (build 78) ----------
-   Feargal, 18 Oct: "I do not understand what we are trying to show the user on
-   the bar and progress bar for building muscle." He was right. Build 77's bar
-   was a rate of weight gain squeezed onto a 0 to 0.75% scale with nothing
-   marking the target, so a falling weight drew an empty bar, under a heading
-   that said "Building muscle" while the number said he was losing weight. It
-   also showed one aim only, and a person can want two things.
+/* ---------- your plan, under the rings (build 80) ----------
+   Feargal, 18 Oct, after builds 78 and 79: "If the goal is to build muscle and
+   lose weight, how can we say one is on track and one is off track?" He was
+   right, and the fault was the model, not the drawing. Each goal judged the
+   same body weight on its own terms: Build muscle wanted it rising, his goal
+   weight wanted it falling, so one card was bound to be red.
 
-   What the leading apps do (read for this build, not remembered):
-   - Strava draws what you did against the pace your goal asks for by now, and
-     users keep asking for exactly "ahead or behind", for weekly and longer
-     goals, and for more than one.
-   - MacroFactor puts the rate of change against a chosen rate and reviews it
-     weekly, rather than judging a single day.
-   - Whoop has a weekly plan, says missing a goal is normal, and shows the week
-     rather than a streak. Apple's rings are criticised for daily targets that
-     feel punishing and for covering only three things; the asks are weekly
-     consistency, more kinds of goal, and goals you choose.
-   - Hevy shows each lift's own estimated one-rep max and records, not one
-     blended number. A study of 1.4 million MyFitnessPal goals found most were
-     not met and that early consistency predicts success, so the card says
-     where you are and what to do, kindly.
-   So every card here answers the same four questions, in the same order: what
-   is this goal, where am I, where should I be, and what do I do about it.
-     1  the goal's name, and one status word
-     2  the number that matters, in words (a rate says it is the weight trend)
-     3  a picture that can be read without a legend:
-          a target zone (shaded, outlined) with a marker, for things that
-            should sit in a range, so under or over is plainly left or right;
-          a bar with a tick for where the plan has you by today, for a total
-            that builds up over a week or to a date;
-          dots, one per lift, day or week, for things counted in ones;
-     4  one line saying what it means and what to do.
-   Tapping a card says it all again in full, with where the target comes from.
-   Goals: the main aim (which builds the week), the goal set with Set a goal if
-   it is a different thing, and up to two more aims chosen on the aim sheet
-   (Also track). Three at most, so Today stays short: with more than one they
-   share a tighter card. Under 18s keep the plain rule.
-   Honest by design: nothing is pre-filled to make a bar look further along
-   (a known motivation trick) and nothing is red for a week still in progress. */
+   What the evidence and the leading apps say (read for this build):
+   - Body weight has one direction at a time. MacroFactor asks one question,
+     lose, maintain or gain, with one rate, and treats building muscle while
+     losing fat as maintenance or a slow loss, not a second weight goal.
+   - In a moderate calorie deficit, strength still goes up even when lean mass
+     barely does, and on average a deficit of about 500 kcal a day neither
+     added nor lost lean mass (Murphy and Koehler 2022, meta-analysis; mostly
+     untrained people). So while losing, lifts going up or holding is the sign
+     muscle is being kept.
+   - Slower loss keeps more muscle: athletes losing 0.7% a week gained lean
+     mass, at 1.4% they did not (Garthe and colleagues 2010).
+   - Apple's Trends answer "is it working?" with an arrow per measure and two
+     groups, Keep it going and Worth a look. No red, no gauge to decode.
+   - Fitbod and Hevy show strength as each lift's estimated max over time.
+
+   So Today shows one plan, not a card per goal:
+     1  the plan's name, built from everything chosen, so the combination
+        reads as one intention ("Lose fat, keep building muscle")
+     2  one word and one sentence: is it working, and if not, the one thing
+        to look at
+     3  a row per sign (weight, lifts, a goal you set, running, protein,
+        fibre): an arrow for which way it is moving, the value in words, and
+        a word for how that suits the plan
+   The weight direction comes from one place: the goal weight if there is one,
+   otherwise the aims (Lose fat, then Hold steady, then Build muscle). Every
+   sign is judged against that same direction, so two rows can never pull
+   against each other. The weight line under a goal weight is the approved
+   one, unchanged, and shown by itself when weight is the only thing tracked.
+   Words are good (green), worth a look (amber) or not enough yet (grey):
+   nothing is red, and nothing is judged before there is data. */
 const GOAL_MAX=3;
 const GOAL_WHY={};
-const GST={green:'On track',amber:'Close',red:'Off track',none:'Not enough yet'};
+const MOVE_SRC='Rules of thumb for most people, not a promise for you. Your own weigh ins and lifts decide.';
 function goalAim(){ return (S.profile&&S.profile.aim)||'lose'; }
-function goalTargetSeparate(){
-  const t=S.target; if(!t||!t.kind) return false;
-  const a=goalAim();
-  return !(t.kind==='weight'&&(a==='lose'||a==='hold'));
-}
-function goalExtraMax(){ return GOAL_MAX-1-(goalTargetSeparate()?1:0); }
+/* Lose fat and Hold steady ask opposite things of your weight, so only one. */
+const CLASH={lose:'hold',hold:'lose'};
 function goalExtras(){
-  const main=goalAim(), raw=(S.profile&&Array.isArray(S.profile.alsoAims))? S.profile.alsoAims : [];
-  return raw.filter((id,i)=>id!==main&&raw.indexOf(id)===i&&AIMS.some(a=>a.id===id));
+  const main=goalAim(), raw=(S.profile&&Array.isArray(S.profile.alsoAims))? S.profile.alsoAims : [], out=[];
+  raw.forEach(id=>{ if(id!==main&&out.indexOf(id)<0&&AIMS.some(a=>a.id===id)&&CLASH[id]!==main&&out.indexOf(CLASH[id])<0) out.push(id); });
+  return out;
 }
+function planAims(){ return [goalAim()].concat(goalExtras()); }
+function goalClash(id){ const c=CLASH[id]; return !!c&&planAims().indexOf(c)>=0; }
+function goalTargetSeparate(){ const t=S.target; return !!(t&&t.kind&&t.kind!=='weight'); }
+function goalExtraMax(){ return GOAL_MAX-1-(goalTargetSeparate()?1:0); }
 function toggleAlsoAim(id){
   if(id===goalAim()||!AIMS.some(a=>a.id===id)) return false;
   const cur=goalExtras(), on=cur.indexOf(id)>=0;
-  if(!on&&cur.length>=goalExtraMax()) return false;
+  if(!on&&(cur.length>=goalExtraMax()||goalClash(id))) return false;
   S.profile.alsoAims= on? cur.filter(x=>x!==id) : cur.concat([id]);
   save(); renderAll();
   if(typeof drawAimSheet==='function') drawAimSheet();
   return true;
-}
-
-/* ----- the pictures ----- */
-const gpc=(v,min,max)=>Math.max(0,Math.min(100,(v-min)/(max-min)*100));
-/* A track with a shaded zone and a marker, labelled on the picture itself:
-   You over the marker, Aim under the zone, and what each end means. */
-function zoneGauge(min,max,lo,hi,val,label,ends){
-  const L=gpc(lo,min,max), R=gpc(hi,min,max), V=gpc(val,min,max), edge=val<min||val>max, M=(L+R)/2;
-  const ya= V<12? ' lft' : (V>88? ' rgt' : '');
-  return `<span class="zg" role="img" aria-label="${escHabit(label)}"><i class="zg-band" style="left:${L}%;width:${Math.max(2,R-L)}%"></i><b class="zg-aim" style="left:${M}%">Aim</b><i class="zg-mark${edge?' edge':''}" style="left:${V}%"></i><b class="zg-you${ya}" style="left:${V}%">You</b>${ends? `<span class="zg-end l">${ends[0]}</span><span class="zg-end r">${ends[1]}</span>` : ''}</span>`;
-}
-/* A bar with a tick where you would be by now. */
-function paceBar(pct,pace,label){
-  const p=Math.max(0,Math.min(100,Math.round(pct)));
-  return `<span class="pb" role="img" aria-label="${escHabit(label)}"><i class="pb-fill" style="width:${p}%"></i>${pace===null||pace===undefined? '' : `<i class="pb-pace" style="left:${Math.max(0,Math.min(100,pace))}%"></i>`}</span>`;
-}
-/* One dot per lift, day or week: on, missed, or nothing to judge. */
-function pips(states){ return `<span class="pips" aria-hidden="true">${states.map(s=>`<i class="${s}"></i>`).join('')}</span>`; }
-
-/* ----- the card ----- */
-function gcard(o,compact){
-  const rows=(o.rows||[]).filter(Boolean);
-  return `<button class="wline gline gc st-${o.st}${compact?' compact':''}" data-goalwhy="${escHabit(o.key)}" aria-label="${escHabit(o.aria)} Tap for what it means.">
-    <span class="gc-h"><span class="gc-k">${o.kicker}</span> <span class="gc-s">${o.status}</span></span>
-    ${o.num!=null? `<span class="gc-m"><b class="gc-n">${o.num}</b>${o.unit? ` <span class="gc-u">${o.unit}</span>` : ''}${o.ctx? ` <span class="gc-c">${o.ctx}</span>` : ''}</span>` : ''}
-    ${o.aim? `<span class="gc-aim">${o.aim}</span>` : ''}
-    ${o.vis||''}
-    ${o.cap? `<span class="gc-cap">${o.cap}</span>` : ''}
-    ${compact? (rows.length? `<span class="gc-line">${rows.map(r=>r.t).join(' · ')}</span>` : '')
-      : rows.map(r=>`<span class="gc-row"><span class="gc-rl">${r.label}</span> <span class="gc-rv">${r.value}</span> ${r.vis||''}</span>`).join('')}
-    ${o.verdict? `<span class="gc-v">${o.verdict}</span>` : ''}</button>`;
 }
 
 /* ----- the numbers ----- */
@@ -130,221 +97,209 @@ function weekHits(target){
   return out;
 }
 
-/* ----- the aims, one card each ----- */
-const MOVE_SRC='Rules of thumb for most people, not a promise for you. Your own weigh ins and lifts decide.';
-
-function cardLose(imp){
-  const n=v=>showW(v,imp).split(' ')[0], unit=showW(0,imp).split(' ')[1]||'kg', kicker=aimOf('lose').t;
-  const r=ratePct();
-  if(!r){
-    if(!(S.weights||[]).length) return null;
-    return {key:'aim:lose',st:'none',kicker,status:GST.none,verdict:'Three weigh ins over a week give your rate of loss',
-      aria:kicker+': three weigh ins over a week give your rate.',
-      why:{title:kicker,sub:'Your rate of loss',now:'There are not enough weigh ins yet to see which way your weight is going. Three weigh ins at least a week apart give a direction.',
-        target:'Losing 0.5 to 1% of your bodyweight a week.',moves:['Weigh in a few mornings a week, in the same conditions.'],source:'Helms, Aragon and Fitschen 2014 (contest prep, natural athletes). '+MOVE_SRC}};
+/* ----- the one direction for your weight ----- */
+function planDir(){
+  const t=S.target;
+  if(t&&t.kind==='weight'&&(S.weights||[]).length){
+    const wp=weightProgress();
+    if(wp&&wp.goal!==null){ const gap=wp.goal-wp.start;
+      return {dir: Math.abs(gap)<wp.start*0.01? 'hold' : (gap<0? 'down' : 'up'), from:'target', goal:wp.goal}; }
   }
-  const p=-r.pct, abs=Math.abs(r.pct), wn=weightNow()||0;
-  const st= p>=0.5&&p<=1? 'green' : (p>0.1? 'amber' : 'red');
-  const word= p>=0.5&&p<=1? GST.green : (p>1? 'Too fast' : (p>0.1? 'Slow' : 'Not losing'));
-  const verdict= p>1? 'Faster than 1% a week tends to cost muscle' : (p>=0.5? 'In the range that keeps muscle' : (p>0.1? 'Slower than 0.5% a week. The Week in review shows why' : 'Not losing yet. The Week in review shows what to change'));
-  const dir= p>0.005? 'down' : (p<-0.005? 'up' : 'flat');
-  return {key:'aim:lose',st,kicker,status:word,
-    num:(p>0.005? '−' : (p<-0.005? '+' : ''))+n(Math.abs(r.kg)), unit:unit+' a week', ctx:'your weight trend',
-    aim:'Aim: lose '+n(wn*0.005)+' to '+n(wn*0.01)+' '+unit+' a week',
-    vis:zoneGauge(-0.5,1.5,0.5,1,p,'Weight trend '+(p>=0?'down ':'up ')+abs.toFixed(2)+'% a week. Target zone is losing 0.5 to 1% a week.',['Gaining','Losing']), verdict,
-    aria:kicker+': weight trend '+dir+' '+abs.toFixed(2)+'% of bodyweight a week, target 0.5 to 1%. '+verdict+'.',
-    why:{title:kicker,sub:'Your rate of loss',
-      now:'Your weight trend is '+dir+' '+showW(Math.abs(r.kg),imp)+' a week, which is '+abs.toFixed(2)+'% of your bodyweight. It is worked out from your weigh ins over the last '+rateSpan(r)+', the same line as the weight chart.',
-      target:'Losing 0.5 to 1% of your bodyweight a week is the shaded zone. Slower works but takes longer; faster tends to take muscle with it.',
-      moves:['Weigh in a few mornings a week so the trend is true.','The Week in review sets next week\'s calories from this.','Keep lifting: it tells your body to keep muscle.'],
-      source:'Helms, Aragon and Fitschen 2014 (0.5 to 1% a week, natural athletes cutting). '+MOVE_SRC}};
+  const a=planAims();
+  if(a.indexOf('lose')>=0) return {dir:'down',from:'aim'};
+  if(a.indexOf('hold')>=0) return {dir:'hold',from:'aim'};
+  if(a.indexOf('build')>=0) return {dir:'up',from:'aim'};
+  return {dir:null,from:null};
+}
+const keepsMuscle=()=>{ const a=planAims(); return a.indexOf('build')>=0||a.indexOf('strong')>=0; };
+/* the healthy range of weekly change, % of bodyweight */
+function planBand(dir){
+  if(dir==='down') return keepsMuscle()? [0.25,0.75] : [0.5,1];
+  if(dir==='up') return [0.25,0.5];
+  return null;
+}
+function planName(pd){
+  const a=planAims(), has=id=>a.indexOf(id)>=0, p=[];
+  if(pd.dir==='down'){ p.push(has('lose')? 'Lose fat' : 'Lose weight'); if(has('build')) p.push('keep building muscle'); else if(has('strong')) p.push('keep your strength'); }
+  else if(pd.dir==='up'){ p.push(has('build')? 'Build muscle' : 'Gain weight'); if(has('strong')) p.push('get stronger'); }
+  else if(pd.dir==='hold'){ p.push(has('build')? 'Build muscle at a steady weight' : 'Hold steady'); if(has('strong')) p.push('get stronger'); }
+  else if(has('strong')) p.push('Get stronger');
+  const t=S.target;
+  if(t&&t.kind==='lift'&&!has('strong')&&!has('build')) p.push(p.length? 'lift more' : 'Lift more');
+  if(has('endure')||(t&&t.kind==='runkm')) p.push(p.length? 'run further' : 'Run further');
+  if(t&&t.kind==='sessions') p.push(p.length? 'train '+t.value+' times a week' : 'Train '+t.value+' times a week');
+  if(has('eat')) p.push(p.length? 'eat better' : 'Eat better');
+  return p.length<2? (p[0]||'') : p.slice(0,-1).join(', ')+' and '+p[p.length-1];
 }
 
-function cardBuild(imp){
-  const n=v=>showW(v,imp).split(' ')[0], unit=showW(0,imp).split(' ')[1]||'kg', kicker=aimOf('build').t;
-  const r=ratePct(), lt=liftsTrend(), withPrev=lt.filter(x=>x.was), up=withPrev.filter(x=>x.now>x.was).length;
-  const liftsTxt= withPrev.length? up+' of '+withPrev.length+' lifts up in 4 weeks' : 'Lifts compare after two sessions each';
-  const liftRow={label:'Lifts', value:withPrev.length? up+' of '+withPrev.length+' up in 4 weeks' : 'Compare after two sessions each',
-    vis:withPrev.length? pips(withPrev.slice(0,6).map(x=>x.now>x.was? 'on' : 'off')) : '', t:liftsTxt};
-  const liftsUp= withPrev.length>=1&&up/withPrev.length>=0.5, liftsFlat= withPrev.length>=1&&up===0;
-  const whyBase={title:kicker,sub:'Weight and lifts, together',
-    target:'Two things say you are building: your weight rising slowly (0.25 to 0.5% of bodyweight a week is the shaded zone, enough to feed muscle with little fat) and your lifts going up (more load or reps over time).',
-    source:'Iraki and colleagues 2019 (rate of gain for natural lifters); Barakat and colleagues 2020 (recomposition review: possible for beginners, returners and people carrying fat). '+MOVE_SRC};
-  if(!r){
-    return {key:'aim:build',st:'none',kicker,status:GST.none,rows:[liftRow],verdict:'Three weigh ins over a week give your rate of gain',
-      aria:kicker+'. Three weigh ins over a week give your rate of gain. '+liftsTxt+'.',
-      why:Object.assign({},whyBase,{now:'Not enough weigh ins yet to see which way your weight is going. '+liftsTxt+'.',moves:['Weigh in a few mornings a week.','Keep adding a rep or a little weight to your lifts.']})};
+/* ----- the signs: one row each, judged against the same plan ----- */
+const ARROW={up:'↑',down:'↓',flat:'→'};
+const cap1=s=>s? s.charAt(0).toUpperCase()+s.slice(1) : s;
+
+function signWeight(pd,imp){
+  const unit=showW(0,imp).split(' ')[1]||'kg', n=v=>showW(v,imp).split(' ')[0], w=v=>showW(v,imp);
+  if(pd.from==='target'){
+    const o=weightOutlook(), s=o? o.status : 'none';
+    const st= s==='green'||s==='hit'? 'good' : (s==='none'? 'none' : 'look');
+    return {key:'sign:weight', raw:weightLine(), st,
+      say: s==='hit'? 'you reached your goal weight' : 'your weight is on course for '+w(pd.goal),
+      fix: 'your weight is not on course for '+w(pd.goal)+(S.target.by? ' by '+prettyDate(S.target.by) : '')+'. The Week in review sets next week\'s calories from it',
+      why:null};
   }
-  const p=r.pct, abs=Math.abs(p), wn=weightNow()||0;
-  const inZ=p>=0.25&&p<=0.5, fast=p>0.5, slow=p>=0.1&&p<0.25;
-  let st,word,verdict;
-  if(inZ){ if(liftsFlat){ st='amber'; word='Check lifts'; verdict='Weight is rising but your lifts are not. Check reps, load and sleep'; }
-    else { st='green'; word=GST.green; verdict= liftsUp? 'Gaining at a lean rate and your lifts are rising' : 'Gaining at a lean rate'; } }
-  else if(fast){ st='amber'; word='Too fast'; verdict='Faster than 0.5% a week is mostly fat. A little less food'; }
-  else if(slow){ st='amber'; word='A bit slow'; verdict='Just under the range: a little more food'; }
-  else if(liftsUp){ st='amber'; word='Weight not rising'; verdict='Lifts are going up while weight is '+(p<0?'falling':'flat')+'. That works for a while. For more size, eat more'; }
-  else { st='red'; word= p<0? 'Losing weight' : 'Not gaining'; verdict= p<0? 'Weight is falling. To build, eat a little more' : 'Weight is flat. To build, eat a little more'; }
-  const dir= p>0.005? 'up' : (p<-0.005? 'down' : 'flat');
-  return {key:'aim:build',st,kicker,status:word,
-    num:(p>0.005? '+' : (p<-0.005? '−' : ''))+n(Math.abs(r.kg)), unit:unit+' a week', ctx:'your weight trend',
-    aim:'Aim: gain '+n(wn*0.0025)+' to '+n(wn*0.005)+' '+unit+' a week',
-    vis:zoneGauge(-0.5,1,0.25,0.5,p,'Weight trend '+(p>=0?'up ':'down ')+abs.toFixed(2)+'% a week. Target zone is gaining 0.25 to 0.5% a week.',['Losing','Gaining']), rows:[liftRow], verdict,
-    aria:kicker+': weight trend '+dir+' '+abs.toFixed(2)+'% of bodyweight a week, target gain 0.25 to 0.5%. '+liftsTxt+'. '+verdict+'.',
-    why:Object.assign({},whyBase,{
-      now:'Your weight trend is '+dir+' '+showW(Math.abs(r.kg),imp)+' a week ('+abs.toFixed(2)+'% of bodyweight) over the last '+rateSpan(r)+'. '+liftsTxt+'. '+verdict+'.',
-      moves:[p<0.25? 'Eat a little above your maintenance: the Week in review sets next week\'s calories from your trend.' : (fast? 'Ease the calories back a little.' : 'Keep the calories where they are.'),
-        'Add a rep or a little weight to your lifts each time you can.','Protein at your target, and sleep.']})};
+  const band=planBand(pd.dir), r=ratePct();
+  const whyBase={title:'Weight',sub:'Which way it is going, and how fast',
+    target: pd.dir==='down'? 'Your plan is to lose, at '+band[0]+' to '+band[1]+'% of your bodyweight a week'+(keepsMuscle()? '. Because you are also building, the range is slower than for fat loss alone: slower loss keeps more muscle.' : '. Slower works but takes longer; faster tends to take muscle with it.')
+      : pd.dir==='up'? 'Your plan is to gain slowly, 0.25 to 0.5% of your bodyweight a week: enough to feed muscle with little fat.'
+      : 'Your plan is to keep your weight steady: within 3% either way.',
+    source: pd.dir==='down'? (keepsMuscle()? 'Garthe and colleagues 2010 (0.7% a week kept and added lean mass, 1.4% did not); Murphy and Koehler 2022 (strength still rises in a moderate deficit). ' : 'Helms, Aragon and Fitschen 2014 (0.5 to 1% a week, natural athletes cutting). ')+MOVE_SRC
+      : pd.dir==='up'? 'Iraki and colleagues 2019 (rate of gain for natural lifters). '+MOVE_SRC : 'Stevens and colleagues 2006 (weight maintenance defined as within 3%). '+MOVE_SRC};
+  if(!r){
+    const any=(S.weights||[]).length;
+    return {key:'sign:weight',st:'none',icon:'',label:'Weight',value: any? 'Three weigh ins over a week show the direction' : 'Weigh in to start',word:'Not enough yet',
+      why:Object.assign({},whyBase,{now:'There are not enough weigh ins yet to see which way your weight is going.',moves:['Weigh in a few mornings a week, in the same conditions.']})};
+  }
+  const p=r.pct, abs=Math.abs(p), mv= p>0.05? 'up' : (p<-0.05? 'down' : 'flat');
+  const value= mv==='flat'? 'Steady at '+w(weightNow()) : cap1(mv)+' '+n(Math.abs(r.kg))+' '+unit+' a week';
+  let st='good', word, say, fix='';
+  if(pd.dir==='down'){ const loss=-p;
+    if(loss>=band[0]&&loss<=band[1]){ word='Good pace'; say='your weight is coming down at a good pace'; }
+    else if(loss>band[1]){ st='look'; word='Too fast'; fix='weight is coming off faster than '+band[1]+'% a week, which tends to cost muscle. Eat a little more'; }
+    else if(loss>=0.1){ st='look'; word='Slow'; fix='weight is coming down slowly. The Week in review trims next week\'s calories'; }
+    else { st='look'; word='Not coming down'; fix='your weight is not coming down yet. The Week in review shows what to change'; }
+  } else if(pd.dir==='up'){
+    if(p>=band[0]&&p<=band[1]){ word='Good pace'; say='your weight is rising slowly, which feeds muscle'; }
+    else if(p>band[1]){ st='look'; word='Too fast'; fix='weight is rising faster than 0.5% a week, which is mostly fat. Ease the food back a little'; }
+    else if(p>=0.1){ st='look'; word='Slow'; fix='your weight is barely rising. Eat a little more'; }
+    else { st='look'; word='Not rising'; fix='your weight is not rising, and building muscle needs a little more food'; }
+  } else {
+    const ref=(typeof trendOn==='function'&&trendOn(addDays(todayKey(),-84)))||weightStart()||weightNow(), now=weightNow();
+    if(Math.abs(now-ref)<=ref*0.03){ word='Steady'; say='your weight is holding steady'; }
+    else { st='look'; word= now>ref? 'Drifting up' : 'Drifting down'; fix='your weight has moved more than 3% from '+w(ref)+'. The Week in review shows what moved it'; }
+  }
+  return {key:'sign:weight',st,icon:ARROW[mv],label:'Weight',value,word,say,fix,
+    why:Object.assign({},whyBase,{now:'Your weight trend is '+(mv==='flat'? 'steady' : mv+' '+w(Math.abs(r.kg))+' a week')+', '+abs.toFixed(2)+'% of your bodyweight, from your weigh ins over the last '+rateSpan(r)+'. It is the same line as the weight chart.',
+      moves: pd.dir==='down'? ['Weigh in a few mornings a week so the trend is true.','The Week in review sets next week\'s calories from this.','Keep lifting: it tells your body to keep muscle.']
+        : pd.dir==='up'? ['Eat a little above maintenance: the Week in review sets next week\'s calories from your trend.','Protein at your target, and sleep.']
+        : ['Weigh in a few mornings a week.','If you drift, the Week in review shows what moved it.']})};
 }
 
-function cardStrong(imp){
-  const kicker=aimOf('strong').t;
-  const lt=liftsTrend().filter(x=>x.was).slice(0,3);
-  const whyBase={title:kicker,sub:'Estimated one-rep max, lift by lift',
-    target:'Each of your three most done lifts compared with four weeks ago: the best estimated one-rep max in the last 4 weeks against the 4 before. Up 1% or more on average is the shaded zone.',
-    source:'One-rep max is estimated from your best set (Epley: load times 1 plus reps over 30). It is a guide, not a test. '+MOVE_SRC};
-  if(!lt.length) return {key:'aim:strong',st:'none',kicker,status:GST.none,verdict:'Each lift compares once it has sessions this month and last',
-    aria:kicker+': lifts compare after a month of sessions.',
-    why:Object.assign({},whyBase,{now:'No lift has sessions in both of the last two months yet, so there is nothing to compare.',moves:['Keep logging your sets. Each lift shows up here once it has two months of history.']})};
-  const pcts=lt.map(x=>(x.now-x.was)/x.was*100), avgP=pcts.reduce((a,b)=>a+b,0)/pcts.length;
-  const st= avgP>=1? 'green' : (avgP>-2? 'amber' : 'red');
-  const word= avgP>=1? GST.green : (avgP>-2? 'Holding' : 'Down');
-  const verdict= avgP>=1? 'Stronger than four weeks ago' : (avgP>-2? 'Holding. The reps come before the weight' : 'Down on four weeks ago: sleep, food and easy weeks first');
-  const up=lt.filter(x=>x.now>x.was).length;
-  const rows=lt.map(x=>({label:escHabit(x.n), value:x.was+' → '+x.now+' kg', vis:pips([x.now>x.was? 'on' : 'off']), t:escHabit(x.n)+' '+x.was+' → '+x.now+' kg'}));
-  return {key:'aim:strong',st,kicker,status:word,
-    num:(avgP>=0? '+' : '−')+Math.abs(avgP).toFixed(1)+'%', unit:'strength', ctx:'your best lifts vs 4 weeks ago',
-    aim:'Aim: up 1% or more',
-    vis:zoneGauge(-6,8,1,8,Math.max(-6,Math.min(8,avgP)),'Strength '+(avgP>=0?'up ':'down ')+Math.abs(avgP).toFixed(1)+'% on four weeks ago. Target zone is up 1% or more.',['Down','Up']),
-    rows, verdict,
-    aria:kicker+': estimated one-rep max '+(avgP>=0?'up ':'down ')+Math.abs(avgP).toFixed(1)+'% on four weeks ago, '+up+' of '+lt.length+' lifts up. '+verdict+'.',
-    why:Object.assign({},whyBase,{
-      now:lt.map(x=>x.n+' '+x.was+' to '+x.now+' kg').join('. ')+'. On average '+(avgP>=0?'up ':'down ')+Math.abs(avgP).toFixed(1)+'%.',
-      moves:['Hit the top of the rep range on every set, then add weight.','Sleep and protein do most of the rest.','An easy week now and then lets the numbers catch up.']})};
+function signLifts(pd){
+  const lt=liftsTrend().filter(x=>x.was).slice(0,4);
+  const why={title:'Lifts',sub:'Your best lifts against last month',
+    target: pd.dir==='down'? 'While you are losing weight, lifts going up or holding is the sign you are keeping muscle. Strength usually keeps rising in a moderate deficit.' : 'Lifts going up over the weeks is the sign you are building. Each lift\'s best set in the last 4 weeks is compared with the 4 before.',
+    source:'One-rep max is estimated from your best set (Epley). Murphy and Koehler 2022 (strength gains hold up in a moderate deficit). '+MOVE_SRC};
+  if(!lt.length) return {key:'sign:lifts',st:'none',icon:'',label:'Lifts',value:'Compares once a lift has sessions this month and last',word:'Not enough yet',
+    why:Object.assign({},why,{now:'No lift has sessions in both of the last two months yet.',moves:['Keep logging your sets. Each lift counts once it has two months of history.']})};
+  const pcts=lt.map(x=>(x.now-x.was)/x.was*100), avg=pcts.reduce((a,b)=>a+b,0)/pcts.length, up=lt.filter(x=>x.now>x.was).length;
+  const value=up+' of '+lt.length+' lifts up on last month';
+  let st='good', icon, word, say='', fix='';
+  const build=planAims().indexOf('build')>=0;
+  if(avg>=1){ icon=ARROW.up; word= pd.dir==='down'? (build? 'Keeping muscle' : 'Still rising') : 'Getting stronger';
+    say= pd.dir==='down'? 'your lifts are still going up'+(build? ', so you are keeping muscle' : ' while you lose') : 'your lifts are going up'; }
+  else if(avg>-2){ icon=ARROW.flat;
+    if(pd.dir==='down'){ word='Holding'; say='your lifts are holding, the sign you are keeping muscle'; }
+    else { st='look'; word='Flat'; fix='your lifts have not moved in a month. Aim for one more rep each session'; } }
+  else { st='look'; icon=ARROW.down; word='Slipping'; fix= pd.dir==='down'? 'your lifts are slipping. Slow the loss a little and protect your sleep' : 'your lifts are down on last month. Sleep, food and an easy week first'; }
+  return {key:'sign:lifts',st,icon,label:'Lifts',value,word,say,fix,
+    why:Object.assign({},why,{now:lt.map(x=>x.n+' '+x.was+' to '+x.now+' kg').join('. ')+'. On average '+(avg>=0? 'up ' : 'down ')+Math.abs(avg).toFixed(1)+'%.',
+      moves:['Hit the top of the rep range on every set, then add weight.','Protein at your target and sleep do most of the rest.']})};
 }
 
-function cardEndure(){
-  const kicker=aimOf('endure').t, mon=mondayKey();
-  const now=runMinutesWeek(mon), last=runMinutesWeek(addDays(mon,-7)), wp=weekRunPlan(), plan=wp.total;
-  const jump= last>0&&now>last*1.3;
-  const behind= plan>0&&now<wp.sofar;
-  const st= jump? 'amber' : (plan>0? (behind? 'amber' : 'green') : (now>0? 'green' : 'none'));
-  const word= jump? 'Big jump' : (plan>0? (behind? 'Behind pace' : (now>=plan? 'Week done' : GST.green)) : (now>0? GST.green : GST.none));
-  const verdict= jump? 'More than 30% up on last week: build gradually' : (plan>0&&now>=plan? 'The week\'s running is in' : (behind? 'A little behind where the plan has you by today' : ''));
-  const rows=[last>0||now>0? {label:'Last week', value:last+' min', t:'Last week '+last+' min'} : null];
-  return {key:'aim:endure',st,kicker,status:word,
-    num:String(now), unit:'min this week', ctx:plan? 'of '+plan+' planned' : 'no runs planned',
-    vis:plan? paceBar(now/plan*100,wp.sofar/plan*100,'Running '+now+' of '+plan+' minutes planned this week. The line is where you should be by today, '+wp.sofar+' minutes.') : '',
-    cap:plan? '<i class="tk"></i>The line is where you should be by today' : '', rows, verdict,
-    aria:kicker+': '+now+' running minutes this week'+(plan? ' of '+plan+' planned, '+wp.sofar+' by today' : '')+', last week '+last+'. '+verdict+'.',
-    why:{title:kicker,sub:'Running minutes this week',
-      now:now+' minutes run this week'+(plan? ' of '+plan+' planned. By today the plan has '+wp.sofar+'.' : '.')+' Last week was '+last+'.',
-      target:plan? 'The week\'s planned running is the full bar. The line marks where you should be by today, so you can see ahead or behind.' : 'No runs are planned this week, so there is no bar. Last week is the thing to build on.',
-      moves:['Keep most runs easy: you should be able to talk.','Add no more than about 30% on last week.','Missing a run is normal. The week is what counts.'],
-      source:'Weekly volume is the main thing to build. A jump of more than about 30% over two weeks went with more injuries in new runners (Nielsen and colleagues 2014, observational). '+MOVE_SRC}};
-}
-
-function cardHold(imp){
-  const kicker=aimOf('hold').t, w=v=>showW(v,imp), n=v=>showW(v,imp).split(' ')[0], unit=showW(0,imp).split(' ')[1]||'kg';
-  const now=weightNow(); if(now===null) return null;
-  const t=S.target&&S.target.kind==='weight'&&(S.weights||[]).length? S.target : null;
-  const ref= t? +t.value : ((typeof trendOn==='function'&&trendOn(addDays(todayKey(),-84)))||weightStart()||now);
-  const lo=ref*0.97, hi=ref*1.03, inBand=now>=lo&&now<=hi, edge=Math.abs(now-ref)>ref*0.02;
-  const st= !inBand? 'red' : (edge? 'amber' : 'green');
-  const word= !inBand? 'Outside the band' : (edge? 'Near the edge' : 'Steady');
-  const verdict= !inBand? 'Outside the band: the Week in review shows what moved it' : (edge? 'Near the edge of the band' : 'Steady');
-  return {key:'aim:hold',st,kicker,status:word,
-    num:n(now), unit:unit, ctx:'your weight trend',
-    aim:'Aim: stay between '+w(lo)+' and '+w(hi),
-    vis:zoneGauge(ref*0.94,ref*1.06,lo,hi,now,'Weight trend '+w(now)+'. Target band is '+w(lo)+' to '+w(hi)+'.',['Lighter','Heavier']), verdict,
-    aria:kicker+': trend '+w(now)+', band '+w(lo)+' to '+w(hi)+' around '+w(ref)+'. '+verdict+'.',
-    why:{title:kicker,sub:'Your weight against a steady band',
-      now:'Your weight trend is '+w(now)+'. The band around '+w(ref)+(t? ' (your goal weight)' : ' (your trend twelve weeks ago)')+' runs from '+w(lo)+' to '+w(hi)+'.',
-      target:'Staying within 3% either side is the usual meaning of keeping your weight steady.',
-      moves:['Weigh in a few mornings a week.','If you drift towards an edge, the Week in review shows what moved it and what to change.'],
-      source:'Stevens and colleagues 2006 (weight maintenance defined as within 3%). '+MOVE_SRC}};
-}
-
-function cardEat(){
-  const kicker=aimOf('eat').t, t=S.targets||{}, keys=[]; for(let i=6;i>=0;i--) keys.push(addDays(todayKey(),-i));
-  const fedKeys=keys.filter(k=>dayFood(k).length), tot={}; fedKeys.forEach(k=>{ tot[k]=foodTotals(k); });
-  const fibreT=t.fibre||30, proteinT=t.protein||0;
-  const pState=k=>!dayFood(k).length? 'none' : (tot[k].protein>=proteinT*0.9? 'on' : 'off');
-  const fState=k=>!dayFood(k).length? 'none' : ((tot[k].fibre||0)>=fibreT? 'on' : 'off');
-  const pDays=proteinT? keys.filter(k=>pState(k)==='on').length : 0, fDays=keys.filter(k=>fState(k)==='on').length;
-  const whyBase={title:kicker,sub:'Protein and fibre, day by day',
-    target:'A day counts when you reach about your protein target'+(proteinT? ' ('+proteinT+'g)' : '')+' or '+fibreT+'g of fibre. The dots are the last seven days, today last; an empty dot is a day with food logged that missed, a dashed one is a day with nothing logged.',
-    source:'Fibre: 30g a day (SACN 2015). Protein: your own target. '+MOVE_SRC};
-  if(!fedKeys.length) return {key:'aim:eat',st:'none',kicker,status:GST.none,verdict:'Protein and fibre days show once food is logged',
-    aria:kicker+': log food to see protein and fibre days.',
-    why:Object.assign({},whyBase,{now:'No food logged in the last seven days.',moves:['Log what you eat. One tap on Eat does it.']})};
-  const score=(pDays+fDays)/(fedKeys.length*(proteinT? 2 : 1));
-  const early=fedKeys.length<3;
-  const st= early? 'none' : (score>=0.6? 'green' : (score>=0.3? 'amber' : 'red'));
-  const word= early? 'Early days' : (score>=0.6? GST.green : (score>=0.3? 'Getting there' : 'Off track'));
-  const rows=[proteinT? {label:'Protein', value:pDays+' of '+fedKeys.length+' logged days', vis:pips(keys.map(pState)), t:'Protein '+pDays+' of '+fedKeys.length+' days'} : null,
-    {label:'Fibre', value:fDays+' of '+fedKeys.length+' logged days', vis:pips(keys.map(fState)), t:'Fibre '+fDays+' of '+fedKeys.length+' days'}];
-  const verdict= early? 'A few more days logged and this means something' : (score>=0.6? 'Most days are landing' : 'Pick one: protein at breakfast is the easiest win');
-  return {key:'aim:eat',st,kicker,status:word,
-    num:String(fedKeys.length), unit:'of 7 days logged', ctx:'', rows, verdict,
-    aria:kicker+': '+fedKeys.length+' of 7 days logged'+(proteinT? ', protein on target '+pDays : '')+', fibre '+fDays+'. '+verdict+'.',
-    why:Object.assign({},whyBase,{now:fedKeys.length+' of the last 7 days have food logged. '+(proteinT? 'Protein hit '+pDays+', ' : '')+'fibre hit '+fDays+'.',
-      moves:['Protein first at breakfast makes the rest of the day easier.','Beans, oats, fruit and vegetables carry the fibre.','Log every day, even a bad one. A missed day is information, not failure.']})};
-}
-
-function aimCard(id,imp){
-  return id==='lose'? cardLose(imp) : id==='build'? cardBuild(imp) : id==='strong'? cardStrong(imp)
-    : id==='endure'? cardEndure() : id==='hold'? cardHold(imp) : id==='eat'? cardEat() : null;
-}
-
-/* ----- a goal set with Set a goal, when it is a different thing from the aim ----- */
-function targetCard(t){
+function signTarget(t){
   const TK=TARGET_KINDS[t.kind]; if(!TK) return null;
   const daysLeft=t.by? Math.round((dateOf(t.by)-dateOf(todayKey()))/864e5) : null;
   const left= daysLeft===null? '' : (daysLeft<0? Math.abs(daysLeft)+' days past' : daysLeft+' days left');
+  const target_kind=true;
   if(t.kind==='sessions'){
-    const now=targetNow()||0, v=+t.value, expect=v*(dowIdx()+1)/7, hit=now>=v;
-    const st= hit? 'green' : (now>=Math.floor(expect)? 'green' : 'amber');
-    const hits=weekHits(v), weeks=hits.filter(x=>x==='on').length;
-    const key='target:sessions';
-    return {key,st,kicker:v+' sessions a week',status:hit? 'Week done' : (st==='green'? GST.green : 'Behind pace'),
-      num:String(now), unit:'of '+v+' this week', ctx:'',
-      vis:paceBar(Math.min(100,now/v*100),Math.min(100,expect/v*100),now+' of '+v+' sessions this week. The line is where you should be by today.'),
-      cap:'<i class="tk"></i>The line is where you should be by today',
-      rows:[{label:'Last 8 weeks', value:weeks+' of 8 weeks hit', vis:pips(hits), t:weeks+' of 8 weeks hit'}],
-      verdict: hit? 'This week is done' : (st==='green'? 'On pace for the week' : 'A little behind. There is still time this week'),
-      aria:v+' sessions a week: '+now+' this week, '+weeks+' of the last 8 weeks hit.',
-      why:{title:v+' sessions a week',sub:'A weekly goal',now:now+' sessions so far this week. '+weeks+' of the last 8 weeks reached '+v+'.',
-        target:'The bar is '+v+' sessions in the week. The line is where you should be if they were spread evenly, so ahead or behind is plain. Weeks count, not streaks: a missed week does not wipe the rest.',
-        moves:['Book the sessions on Plan so the week has room for them.','One short session beats none.'],target_kind:true,source:''}};
+    const now=targetNow()||0, v=+t.value, expect=v*(dowIdx()+1)/7, hit=now>=v, behind=!hit&&now<Math.floor(expect);
+    const weeks=weekHits(v).filter(x=>x==='on').length;
+    return {key:'sign:target',st: behind? 'look' : 'good',icon:'',label:'Sessions this week',value:now+' of '+v,word: hit? 'Week done' : (behind? 'A bit behind' : 'On pace'),
+      bar:Math.min(100,now/v*100), say: hit? 'this week\'s sessions are done' : 'your sessions are on pace this week', fix: dowIdx()===6? 'your sessions fell short this week. A new week starts tomorrow' : 'your sessions are a little behind this week. There is still time',
+      why:{title:v+' sessions a week',sub:'A weekly goal',now:now+' so far this week. '+weeks+' of the last 8 weeks reached '+v+'.',
+        target:'The bar is the week\'s '+v+' sessions. Weeks count, not streaks: a missed week does not wipe the rest.',moves:['Book the sessions on Plan so the week has room for them.','One short session beats none.'],target_kind,source:''}};
   }
   const hist= t.kind==='lift'? exHistory(t.exId).slice().sort((a,b)=>a.d<b.d? -1 : 1) : [];
   const firstBest= hist.length? Math.max(0,...(hist[0].sets||[]).map(x=>+x.kg||0)) : 0;
-  const now=targetNow(), v=+t.value;
+  const now=targetNow(), v=+t.value, unit=TK.unit;
   const start= t.from!==undefined&&t.from!==null? +t.from : (t.kind==='lift'? firstBest : 0);
   const name= t.kind==='lift'? exOf(t.exId).n : 'Longest run';
-  const kicker= t.kind==='lift'? escHabit(name)+' to '+v+' kg' : 'Run '+v+' km';
-  const unit= TK.unit;
-  if(t.hit||(now!==null&&now>=v)) return {key:'target:'+t.kind,st:'green',kicker,status:'Target met',num:String(now!==null? now : v),unit:unit+(t.kind==='lift'? ' best set' : ' longest run'),ctx:'',
-    vis:paceBar(100,null,'Target met.'),verdict:'Target met. Tap to set the next one',aria:kicker+': target met.',
-    why:{title:name+' to '+v+' '+unit,sub:'Target met',now:'You did it'+(t.hit? ' on '+prettyDate(t.hit) : '')+'.',target:'Set the next one from the button below.',moves:['A goal that is met is a good time to pick a slightly harder one.'],target_kind:true,source:''}};
-  if(now===null) return {key:'target:'+t.kind,st:'none',kicker,status:GST.none,verdict:'Nothing logged against it yet',aria:kicker+': nothing logged against it yet.',
-    why:{title:name+' to '+v+' '+unit,sub:'A goal',now:'Nothing logged against it yet.',target:v+' '+unit+(left? ', '+left : '')+'.',moves:['Log it once and the bar starts.'],target_kind:true,source:''}};
+  const label= t.kind==='lift'? escHabit(name)+' to '+v+' kg' : 'Run '+v+' km';
+  const whyT={title:name+' to '+v+' '+unit,sub:'A goal with a number',target_kind,source:'',
+    moves:t.kind==='lift'? ['Progress this lift each time you can: a rep, then weight.','A rest day before a heavy attempt is worth it.'] : ['Build the long run a little at a time.','Keep the other runs easy.']};
+  if(t.hit||(now!==null&&now>=v)) return {key:'sign:target',st:'good',icon:'',label,value:'Done',word:'Goal met',bar:100,say:'you met your '+label+' goal',
+    why:Object.assign({},whyT,{now:'You did it'+(t.hit? ' on '+prettyDate(t.hit) : '')+'.',target:'Set the next one from the button below.'})};
+  if(now===null) return {key:'sign:target',st:'none',icon:'',label,value:'Nothing logged against it yet',word:'Not enough yet',
+    why:Object.assign({},whyT,{now:'Nothing logged against it yet.',target:v+' '+unit+(left? ', '+left : '')+'.'})};
   const span=v-start, pct= span>0? Math.max(0,Math.min(100,Math.round((now-start)/span*100))) : 0;
   let pace=null;
   if(t.by&&t.set){ const total=Math.round((dateOf(t.by)-dateOf(t.set))/864e5), el=Math.round((dateOf(todayKey())-dateOf(t.set))/864e5); if(total>0) pace=Math.max(0,Math.min(100,Math.round(el/total*100))); }
-  const late= daysLeft!==null&&daysLeft<0;
-  const st= late? 'red' : (pace===null? (now>start? 'green' : 'none') : (pct>=pace-5? 'green' : 'amber'));
-  const word= late? 'Date passed' : (pace===null? (now>start? 'Moving' : GST.none) : (pct>=pace-5? GST.green : 'Behind pace'));
-  const togo=+(v-now).toFixed(1);
-  return {key:'target:'+t.kind,st,kicker,status:word,
-    num:String(now), unit:unit+(t.kind==='lift'? ' best set' : ' longest run'), ctx:togo+' '+unit+' to go'+(left? ' · '+left : ''),
-    vis:paceBar(pct,pace,pct+'% of the way from '+start+' to '+v+' '+unit+(pace!==null? '. The line is where you should be by today, climbing steadily to the date.' : '.')),
-    cap:pace!==null? '<i class="tk"></i>The line is where you should be by today' : '',
-    verdict: late? 'The date has passed. Tap to set a new one' : (pace!==null&&pct<pace-5? 'A little behind a steady climb to the date' : (pace!==null? 'On a steady climb to the date' : '')),
-    aria:kicker+': '+now+' '+unit+' now, '+togo+' to go'+(left? ', '+left : '')+'.',
-    why:{title:name+' to '+v+' '+unit,sub:'A goal with a number',now:'Best so far '+now+' '+unit+', started from '+start+'. '+togo+' '+unit+' to go'+(left? ', '+left : '')+'.',
-      target:pace!==null? 'The bar is the distance from where you started to the goal. The tick is where a steady climb from the day you set it to the goal date would have you today.' : 'The bar is the distance from where you started to the goal. There is no date, so no line.',
-      moves:t.kind==='lift'? ['Progress this lift each time you can: a rep, then weight.','A rest day before a heavy attempt is worth it.'] : ['Build the long run a little at a time.','Keep the other runs easy.'],target_kind:true,source:''}};
+  const late=daysLeft!==null&&daysLeft<0, behind=late||(pace!==null&&pct<pace-5), togo=+(v-now).toFixed(1);
+  return {key:'sign:target',st: behind? 'look' : 'good',icon:'',label,value:now+' '+unit+' now, '+togo+' to go'+(left? ' · '+left : ''),
+    word: late? 'Date passed' : (behind? 'Behind pace' : (pace===null? 'Moving' : 'On pace')), bar:pct,
+    say:label+' is on pace', fix: late? 'the date for '+label+' has passed. Set a new one' : label+' is behind a steady climb to the date',
+    why:Object.assign({},whyT,{now:'Best so far '+now+' '+unit+', started from '+start+'. '+togo+' '+unit+' to go'+(left? ', '+left : '')+'.',
+      target:'The bar is the way from where you started to the goal. On pace means at least as far along as a steady climb to the date.'})};
+}
+
+function signRunning(){
+  const mon=mondayKey(), now=runMinutesWeek(mon), last=runMinutesWeek(addDays(mon,-7)), wp=weekRunPlan(), plan=wp.total;
+  const jump=last>0&&now>last*1.3, behind=plan>0&&now<wp.sofar;
+  const why={title:'Running',sub:'Minutes this week',
+    now:now+' minutes run this week'+(plan? ' of '+plan+' planned, '+wp.sofar+' by today in the plan' : '')+'. Last week was '+last+'.',
+    target:'Weekly minutes are the main thing to build, a little at a time.',
+    moves:['Keep most runs easy: you should be able to talk.','Add no more than about 30% on last week.','Missing a run is normal. The week is what counts.'],
+    source:'A jump of more than about 30% went with more injuries in new runners (Nielsen and colleagues 2014, observational). '+MOVE_SRC};
+  if(!plan&&!now&&!last) return {key:'sign:run',st:'none',icon:'',label:'Running',value:'No runs planned or logged this week',word:'Not enough yet',why};
+  const value= plan? now+' of '+plan+' min this week' : now+' min this week';
+  let st='good', word, say='', fix='';
+  if(jump){ st='look'; word='Big jump'; fix='your running is up more than 30% on last week. Build gradually'; }
+  else if(plan&&now>=plan){ word='Week done'; say='this week\'s running is in'; }
+  else if(behind){ st='look'; word='A bit behind'; fix='your running is a little behind this week\'s plan'; }
+  else { word= plan? 'On pace' : 'Moving'; say='your running is on pace'; }
+  return {key:'sign:run',st,icon:'',label:'Running',value,word,say,fix,bar: plan? Math.min(100,now/plan*100) : null,why};
+}
+
+function signsEat(){
+  const t=S.targets||{}, keys=[]; for(let i=6;i>=0;i--) keys.push(addDays(todayKey(),-i));
+  const fed=keys.filter(k=>dayFood(k).length), tot={}; fed.forEach(k=>{ tot[k]=foodTotals(k); });
+  const fibreT=t.fibre||30, proteinT=t.protein||0, early=fed.length<3;
+  const src='Fibre: 30g a day (SACN 2015). Protein: your own target. '+MOVE_SRC;
+  if(!fed.length) return [{key:'sign:eat',st:'none',icon:'',label:'Protein and fibre',value:'Shows once food is logged',word:'Not enough yet',
+    why:{title:'Protein and fibre',sub:'Day by day',now:'No food logged in the last seven days.',target:'A day counts when you reach about your protein target or '+fibreT+'g of fibre.',moves:['Log what you eat. One tap on Eat does it.'],source:src}}];
+  const row=(id,label,days,goal,goodSay,fixSay,moves)=>{ const r=days/fed.length;
+    return {key:'sign:'+id, st: early? 'none' : (r>=0.6? 'good' : 'look'), icon:'', label, value:days+' of '+fed.length+' logged days', word: early? 'Early days' : (r>=0.6? 'Most days' : 'Worth a look'),
+      say:goodSay, fix:fixSay,
+      why:{title:label,sub:'The last seven days',now:days+' of the '+fed.length+' days with food logged reached '+goal+'.',target:'A day counts when it reaches '+goal+'. Most days is the aim, not every day.',moves,source:src}}; };
+  const out=[];
+  if(proteinT) out.push(row('protein','Protein',fed.filter(k=>tot[k].protein>=proteinT*0.9).length,'about '+proteinT+'g','protein is landing most days','protein is short on most days. Start with protein at breakfast',['Protein first at breakfast makes the rest of the day easier.']));
+  out.push(row('fibre','Fibre',fed.filter(k=>(tot[k].fibre||0)>=fibreT).length,fibreT+'g','fibre is landing most days','fibre is low on most days. Beans, oats, fruit and veg carry it',['Beans, oats, fruit and vegetables carry the fibre.']));
+  return out;
+}
+
+/* everything the plan tracks, in order */
+function planSigns(pd,imp){
+  const a=planAims(), out=[], t=S.target;
+  if(pd.dir) out.push(signWeight(pd,imp));
+  if(a.indexOf('build')>=0||a.indexOf('strong')>=0) out.push(signLifts(pd));
+  if(t&&t.kind&&t.kind!=='weight'){ const s=signTarget(t); if(s) out.push(s); }
+  if(a.indexOf('endure')>=0) out.push(signRunning());
+  if(a.indexOf('eat')>=0) signsEat().forEach(s=>out.push(s));
+  return out;
+}
+/* one word and one sentence for the whole plan */
+function planVerdict(signs){
+  const good=signs.filter(s=>s.st==='good'), look=signs.filter(s=>s.st==='look');
+  if(!good.length&&!look.length) return {st:'none',word:'Getting started',say:'This fills in as you weigh in, log sessions and log food.'};
+  if(!look.length) return {st:'good',word:'Working',say:cap1(good.slice(0,2).map(s=>s.say).join(', and '))+'.'};
+  const one=look[0], goodTxt=good.length? cap1(good[0].say)+'. ' : '';
+  return {st:'look',word: good.length>=look.length? 'Mostly working' : 'Worth a look',say:goodTxt+cap1(one.fix)+'.'};
+}
+
+function signRow(s){
+  return `<button class="sg sg-${s.st}" data-goalwhy="${s.key}" aria-label="${escHabit(s.label)}: ${escHabit(s.value)}. ${escHabit(s.word)}. Tap for what it means.">
+    <span class="sg-ic" aria-hidden="true">${s.icon||'•'}</span>
+    <span class="sg-t"><span class="sg-l">${s.label}</span><span class="sg-v">${s.value}</span>${s.bar!=null? `<span class="sg-bar"><i style="width:${Math.max(0,Math.min(100,Math.round(s.bar)))}%"></i></span>` : ''}</span>
+    <span class="sg-w">${s.word}</span></button>`;
 }
 
 /* ----- Today ----- */
@@ -352,22 +307,32 @@ function goalLine(){
   const rule='<div class="wline rule" aria-hidden="true"></div>';
   if(isTeen()) return rule;
   Object.keys(GOAL_WHY).forEach(k=>{ delete GOAL_WHY[k]; });
-  const imp=S.profile.units==='imperial', aim=goalAim(), t=S.target, haveW=(S.weights||[]).length>0, items=[];
-  const add=o=>{ if(o&&items.length<GOAL_MAX) items.push(o); };
-  if(aim==='lose'&&t&&t.kind==='weight'&&haveW) add({raw:weightLine()});
-  else add(aimCard(aim,imp));
-  if(goalTargetSeparate()){
-    if(t.kind==='weight'){ if(haveW) add({raw:weightLine()}); }
-    else add(targetCard(t));
-  }
-  goalExtras().forEach(id=>add(aimCard(id,imp)));
-  if(!items.length) return rule;
-  items.forEach(o=>{ if(o.why) GOAL_WHY[o.key]=o.why; });
-  if(items.length===1) return items[0].raw? items[0].raw : gcard(items[0],false);
-  return `<div class="goalstack">${items.map(o=>o.raw? o.raw : gcard(o,true)).join('')}</div>`;
+  const imp=S.profile.units==='imperial', pd=planDir(), signs=planSigns(pd,imp);
+  if(!signs.length) return rule;
+  /* weight against a goal weight, and nothing else: the approved line, alone */
+  if(signs.length===1&&signs[0].raw) return signs[0].raw;
+  /* only the weight, and no weigh ins yet: the plain rule, as before (the line follows the data) */
+  if(signs.length===1&&signs[0].key==='sign:weight'&&signs[0].st==='none') return rule;
+  const v=planVerdict(signs), name=planName(pd);
+  signs.forEach(s=>{ if(s.why) GOAL_WHY[s.key]=s.why; });
+  const dirTxt= pd.dir==='down'? 'down' : (pd.dir==='up'? 'up, slowly' : (pd.dir==='hold'? 'steady' : ''));
+  GOAL_WHY.plan={title:name,sub:'Your plan, in one place',now:v.say,
+    target:(pd.dir? 'Your weight has one direction in this plan: '+dirTxt+(pd.from==='target'? ', set by your goal weight of '+showW(pd.goal,imp) : ', set by your aim')+'. Everything else is judged against that same direction, so the rows never pull against each other.' : 'Each row is judged on its own: there is no weight direction in this plan.')
+      +(pd.dir==='down'&&keepsMuscle()? ' Losing while building: the weight should come down slowly and your lifts should go up or hold. That is how you know muscle is being kept.' : ''),
+    moves:['Tap any row for what it means and what moves it.','Change or add an aim below. Your goal weight lives on You.'],
+    source:'Murphy and Koehler 2022; Garthe and colleagues 2010; Helms and colleagues 2014; Iraki and colleagues 2019. '+MOVE_SRC};
+  const raw=signs.filter(s=>s.raw).map(s=>s.raw).join(''), rows=signs.filter(s=>!s.raw);
+  return `<section class="plan pl-${v.st}" aria-label="Your plan: ${escHabit(name)}. ${escHabit(v.word)}. ${escHabit(v.say)}">
+    <button class="plan-h" data-goalwhy="plan">
+      <span class="plan-top"><span class="plan-k">Your plan</span><span class="plan-w">${v.word}</span></span>
+      <span class="plan-n">${escHabit(name)}</span>
+      <span class="plan-say">${v.say}</span></button>
+    ${raw}
+    ${rows.length? `<div class="plan-rows">${rows.map(signRow).join('')}</div>` : ''}
+  </section>`;
 }
 
-/* What a card says, in full, with where the target comes from. */
+/* What a row means, in full, with where the target comes from. */
 function openGoalWhy(key){
   const o=GOAL_WHY[key]; if(!o) return;
   $('altTitle').textContent=o.title; $('altSub').textContent=o.sub||'';
@@ -391,7 +356,6 @@ document.addEventListener('click',e=>{
   if(e.target.closest('[data-goalyou]')){ closeSheets(); go('progress'); return; }
 });
 /* This file loads after the first draw of Today (boot.js draws it earlier), so
-   on opening the app the old weight line was drawn instead of the goal cards
-   until anything else redrew. Draw once more when every script is in. */
+   draw once more when every script is in, or the plan is missing on opening. */
 setTimeout(()=>{ try{ renderAll(); }catch(e){} },0);
-Object.assign(window.__G,{goalLine,goalAim,ratePct,liftsTrend,runMinutesWeek,goalExtras,goalExtraMax,toggleAlsoAim,GOAL_WHY,openGoalWhy,weekHits,weekRunPlan});
+Object.assign(window.__G,{goalLine,goalAim,ratePct,liftsTrend,runMinutesWeek,goalExtras,goalExtraMax,toggleAlsoAim,goalClash,GOAL_WHY,openGoalWhy,weekHits,weekRunPlan,planDir,planName,planSigns,planVerdict});

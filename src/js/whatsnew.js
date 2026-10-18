@@ -18,6 +18,9 @@
    Writing a note: what changed for the person, in their words, one line of
    why it matters if needed, no internal names. Bump APP_VERSION with it. */
 const RELEASE_NOTES=[
+  {v:'80', date:'2026-10-18', items:[
+    {t:'One plan for all your goals', d:'Under the rings, everything you chose is now one plan with one name, like Lose fat, keep building muscle. Your weight has one direction, set by your goal weight or your aim, and every row is judged against it, so two goals can no longer disagree. Losing weight while your lifts hold or rise now counts as keeping muscle.', adult:true},
+    {t:'Is it working, in one line', d:'The plan says Working, Mostly working or Worth a look, with one sentence on why and the one thing to change. Each row has an arrow for which way it is going. Tap anything for what it means and where the numbers come from.', adult:true}]},
   {v:'79', date:'2026-10-18', items:[
     {t:'Goal charts say what they mean', d:'The chart now labels itself: You is where you are, Aim is the target, and each end says which way is which. The aim is written in plain kilos a week, and a line on a progress bar is where you should be by today.', adult:true}]},
   {v:'78', date:'2026-10-18', items:[

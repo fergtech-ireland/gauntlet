@@ -1885,3 +1885,55 @@ body.rv-open .toast{z-index:310}
 .gwhy .gw p,.gwhy .gw li{margin:0;font-size:14px;line-height:1.45;color:var(--ink)}
 .gwhy .gw ul{margin:0;padding-left:18px;display:grid;gap:4px}
 .gwbtns{display:grid;gap:8px;margin-top:6px}
+
+/* ===== eating pattern (build 81) ===== */
+.ep{padding:0 14px 8px}
+.ep-chips{display:flex;flex-wrap:wrap;gap:7px;margin:4px 0 12px}
+.ep-chip{display:inline-flex;align-items:center;gap:7px;background:var(--surface)}
+.ep-chip em{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;opacity:.75}
+.ep-dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--mute)}
+.ep-dot.d-green{background:var(--green)}
+.ep-dot.d-amber{background:var(--amber)}
+.ep-dot.d-coral{background:var(--coral)}
+.ep-head{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}
+.ep-head b{font-size:17px;font-weight:800}
+.ep-head span{font-size:13px;color:var(--sub)}
+.ep-ctl{display:flex;flex-direction:column;gap:10px;margin-bottom:6px}
+.ep-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ep-meals{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub)}
+.ep-meals span{flex:1}
+.ep-meals b{min-width:18px;text-align:center;font-family:var(--font-num);font-size:20px;color:var(--ink)}
+.ep-goals{display:flex;flex-direction:column;gap:8px}
+.ep-goal{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;align-items:baseline;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.ep-goal b{font-size:14px}
+.ep-gw{font-size:11px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:var(--sub);min-width:78px}
+.ep-gw.d-green{color:var(--green-text)}
+.ep-gw.d-amber{color:var(--amber-text)}
+.ep-gw.d-coral{color:var(--coral-text)}
+.ep-gs{grid-column:1 / -1;font-size:12.5px;color:var(--sub);line-height:1.4}
+.ep-list{margin:4px 0 0;padding-left:18px;font-size:13px;line-height:1.45;color:var(--ink)}
+.ep-list li{margin:0 0 6px}
+.ep-list small{display:block;color:var(--mute);font-size:11.5px}
+.ep-nums{display:block;list-style:none;margin:4px 0 0;padding:0;font-size:13px;line-height:1.45;color:var(--sub)}
+.ep-nums li{display:block;margin:0 0 5px}
+.ep-safe{margin:14px 0 4px;padding:12px;border-radius:10px;background:var(--amber-tint);color:var(--ink);font-size:13px}
+.ep-safe b{display:block;margin-bottom:4px}
+.ep-safe ul{margin:0 0 10px;padding-left:18px}
+.ep-ack.on{background:var(--ink);color:var(--surface)}
+.fastcard{padding:12px 14px}
+.fastcard .fk{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;font-weight:800}
+.fastcard .fs{font-size:13px;color:var(--sub);margin:3px 0 8px}
+.fastcard .fbar{height:6px;border-radius:99px;background:var(--track);overflow:hidden}
+.fastcard .fbar i{display:block;height:100%;border-radius:99px;background:var(--green)}
+.fastcard.shut .fbar i{background:var(--amber)}
+.fastrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 2px 0;font-size:12.5px;color:var(--mute)}
+.fastrow b{color:var(--sub)}
+.mwin{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:6px 14px 8px;font-size:12px;color:var(--mute)}
+.mwin b{font-weight:700;color:var(--sub)}
+.mwin.open b{color:var(--green-text)}
+.mwin.shut b{color:var(--amber-text)}
+
+/* ===== habit due times (build 81) ===== */
+.rt-cue.due{color:var(--coral-text);font-weight:700}
+.rt-cue.soon{color:var(--amber-text);font-weight:700}
+.due-chips small{font-weight:600;opacity:.8}

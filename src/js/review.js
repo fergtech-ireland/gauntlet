@@ -232,7 +232,7 @@ function proteinGaps(L){
     const vals=fed.map(d=>dayFood(d.k).filter(x=>(x.meal||'s')===m).reduce((a,x)=>a+(+x.p||0)*(+x.q||1),0));
     return {m, name:NAMES[m], avg:Math.round(meanOf(vals)||0)};
   });
-  const mains=meals.filter(x=>x.m!=='s');
+  const mains=meals.filter(x=>x.m!=='s'&&!(typeof eatRoleOff==='function'&&eatRoleOff(x.m)&&!x.avg));
   const weakest=per? mains.slice().sort((a,b)=>(a.avg-per)-(b.avg-per))[0] : null;
   const bestDay=fed.length? topN(fed,1,d=>d.protein)[0] : null;
   const bestFoods=bestDay? dayFood(bestDay.k).map(x=>({n:x.n, p:Math.round((+x.p||0)*(+x.q||1))})).sort((a,b)=>b.p-a.p).slice(0,3) : [];
@@ -282,7 +282,7 @@ function ownEvidence(){
   } else out.push({id:'sleepfood', ready:false, t:'Short nights and what you eat the next day',
     s:`Needs three days of food logged after a night under 6½ hours and three after 7 or more. So far: ${shortK.length} and ${longK.length}.`});
   /* breakfast protein and the day's total */
-  if(per){
+  if(per&&!(typeof eatRoleOff==='function'&&eatRoleOff('b'))){
     const hitB=[], missB=[];
     keys.forEach(k=>{ const f=dayFood(k); if(!f.length) return;
       const b=f.filter(x=>x.meal==='b').reduce((a,x)=>a+(+x.p||0)*(+x.q||1),0), tot=foodTotals(k).protein;

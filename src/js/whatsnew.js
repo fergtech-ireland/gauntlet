@@ -18,6 +18,10 @@
    Writing a note: what changed for the person, in their words, one line of
    why it matters if needed, no internal names. Bump APP_VERSION with it. */
 const RELEASE_NOTES=[
+  {v:'81', date:'2026-10-21', items:[
+    {t:'Choose how you eat', d:'Fasting window or regular meals, 12:12 to 20:4, two meals or one, or your own times. For each, you see the good and the catch for your own goals, with the research behind it. Your day on Eat and Today lays itself out inside your window. Find it on Eat or in You, Eating pattern. Not offered under 18.', go:'eat', goLabel:'Open Eat', adult:true},
+    {t:'Habits have a time to be done by', d:'Adding a habit now asks when, in one tap. At that time Today asks for it and keeps asking until it is ticked. Stop habits and anything you set to end of day come up at 9pm, and yesterday can be logged until the morning is over. Turn it all off in You, Habit reminders.'},
+    {t:'Reminders on your phone', d:'Each habit can send a notification at its time while Gauntlet is open or running in the background, show a number on the app icon, or go into your phone\'s calendar as a daily alert that arrives even when Gauntlet is closed.'}]},
   {v:'80', date:'2026-10-18', items:[
     {t:'One plan for all your goals', d:'Under the rings, everything you chose is now one plan with one name, like Lose fat, keep building muscle. Your weight has one direction, set by your goal weight or your aim, and every row is judged against it, so two goals can no longer disagree. Losing weight while your lifts hold or rise now counts as keeping muscle.', adult:true},
     {t:'Is it working, in one line', d:'The plan says Working, Mostly working or Worth a look, with one sentence on why and the one thing to change. Each row has an arrow for which way it is going. Tap anything for what it means and where the numbers come from.', adult:true}]},

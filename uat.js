@@ -1411,7 +1411,9 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     const own = G.currentHabit('stop');
     t('24 · writing one starts it as the habit to stop', !!own && G.habitOf(own.id).tag === 'own');
     t('24 · spaces are tidied', G.habitOf(own.id).t === 'No energy <b>drinks</b>', G.habitOf(own.id).t);
-    t('24 · the sheet closes and says so', !d.getElementById('altSheet').classList.contains('on') && /No energy <b>drinks<\/b>\. One day at a time/.test(txt(d.getElementById('toast'))));
+    /* build 81: adding a habit goes straight on to when it is to be done by */
+    t('24 · it goes straight on to Do it by when, and says so', d.getElementById('altSheet').classList.contains('on') && /Do it by when/.test(txt(d.getElementById('altTitle'))) && /No energy <b>drinks<\/b>\. One day at a time/.test(txt(d.getElementById('toast'))));
+    G.closeSheets();
     G.go('today'); G.renderAll();
     const today = d.getElementById('todayView').innerHTML;
     t('24 · Today shows it exactly as written, as text, and never as markup',
@@ -6267,12 +6269,12 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('79 · the newest note is this build', G.RELEASE_NOTES.some(n => n.v === w.eval('APP_VERSION')));
     /* someone who used the app before notes existed */
     delete S.profile.seenVersion; G.closeSheets();
-    t('79 · they are taken as having seen build 72', G.seenVersion() === '72' && G.unseenNotes().map(n => n.v).join(',') === '80,79,78,77,76,75,74,73');
+    t('79 · they are taken as having seen build 72', G.seenVersion() === '72' && G.unseenNotes().map(n => n.v).join(',') === '81,80,79,78,77,76,75,74,73');
     t('79 · it shows', G.maybeWhatsNew(0) && sheetOn());
     const body = txt(d.getElementById('altBody'));
-    /* build 78: one more build, so the three shown are 78, 77, 76 */
-    t('79 · newest first, with what changed', body.indexOf('One plan for all your goals') >= 0 && body.indexOf('One plan for all your goals') < body.indexOf('Goal charts say what they mean') && body.indexOf('Goal charts say what they mean') < body.indexOf('Goals you can read at a glance') && !/Your goal, under the rings/.test(body));
-    t('79 · a fourth build waits one tap away', !/Adding food, rebuilt/.test(body) && /5 earlier updates/.test(txt(d.querySelector('[data-wnall]'))));
+    /* build 81: the three shown are 81, 80, 79 */
+    t('79 · newest first, with what changed', body.indexOf('Choose how you eat') >= 0 && body.indexOf('Choose how you eat') < body.indexOf('One plan for all your goals') && body.indexOf('One plan for all your goals') < body.indexOf('Goal charts say what they mean') && !/Goals you can read at a glance/.test(body));
+    t('79 · a fourth build waits one tap away', !/Adding food, rebuilt/.test(body) && /6 earlier updates/.test(txt(d.querySelector('[data-wnall]'))));
     t('79 · and only builds they have not seen', !/Programmes for every kind/.test(body));
     t('79 · it is marked seen as it shows', S.profile.seenVersion === w.eval('APP_VERSION'));
     d.querySelector('[data-wnok]').click();
@@ -6973,9 +6975,274 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
 
     /* ---- housekeeping ---- */
     t('83 · an account from before this build, with no extras saved, still draws', (() => { delete S.profile.alsoAims; S.profile.aim = 'build'; G.renderAll(); return !!plan(); })());
-    t('83 · the release note says what changed', /One plan for all your goals/.test(JSON.stringify(w.eval('RELEASE_NOTES').find(n => n.v === '80'))) && w.eval('APP_VERSION') === '80');
+    t('83 · the release note says what changed', /One plan for all your goals/.test(JSON.stringify(w.eval('RELEASE_NOTES').find(n => n.v === '80'))) && +w.eval('APP_VERSION') >= 80);
     t('83 · no em dashes in the goal code', require('fs').readFileSync(require('path').join(__dirname, 'src/js/goals.js'), 'utf8').indexOf('—') < 0);
     t('83 · and no page errors', errs.length === 0, errs.join(' | '));
+  }
+
+
+  /* ---------------------------------------------------------- 84 */
+  journey(84, 'Build 81: choose how you eat: a fasting window or a set number of meals, with the good and the catch for your own goals');
+  {
+    const { w, d, G, errs } = await boot(); allErrs.push(...errs);
+    onboard(G); const S = G.S, T = G.todayKey();
+    const txt = e => (e ? e.textContent.replace(/\s+/g, ' ').trim() : '');
+    const ev = c => w.eval(c);
+    S.profile.wakeTime = '07:00'; S.profile.bedtime = '23:00'; S.profile.trainTime = '18:00'; S.profile.aim = 'lose'; S.profile.alsoAims = []; G.save(); G.renderAll();
+    const body = () => txt(d.getElementById('altBody'));
+
+    /* ---- nothing chosen: nothing changes ---- */
+    t('84 · by default there is no pattern and the day is the usual three meals', ev('eatPat()') === null && ev('eatingPlan().items.some(i=>i.tag==="breakfast")') && ev('eatRolesIn().join("")') === 'bld');
+    G.go('eat');
+    t('84 · Eat says it is regular meals and offers a way to change it', /Regular meals/.test(txt(d.getElementById('eatView'))) && !!d.querySelector('#eatView [data-eatopen]'));
+    t('84 · Settings has an Eating pattern row, regular meals', /Eating pattern/.test(txt(d.getElementById('settingsList'))) && /Regular meals/.test(txt(d.querySelector('[data-setting="eating"]'))));
+
+    /* ---- the picker ---- */
+    d.querySelector('#eatView [data-eatopen]').click();
+    t('84 · the picker opens with every pattern, and marks the current one', d.getElementById('altSheet').classList.contains('on') && d.querySelectorAll('[data-eatpick]').length === 9 && /Now/.test(txt(d.querySelector('[data-eatpick="regular"]'))));
+    t('84 · it says first that calories, not timing, decide weight', /Your total calories still decide your weight/.test(txt(d.getElementById('altSub'))));
+    d.querySelector('[data-eatpick="12-12"]').click();
+    t('84 · 12:12 is a light change: no safety note, and it can be used straight away', !d.querySelector('.ep-safe') && !d.querySelector('[data-eatuse]').disabled);
+    d.querySelector('[data-eatpick="16-8"]').click();
+    t('84 · 16:8 starts at noon for someone who is up at 7, ending at 20:00', d.getElementById('epStartP').value === '12:00' && /12:00 to 20:00/.test(body()));
+    t('84 · it shows the fit against the aim, with the good and the catch', /For your goals/.test(body()) && /Lose fat/.test(txt(d.querySelector('.ep-goals'))) && /The good/.test(body()) && /The catch/.test(body()));
+    t('84 · the evidence is named, including the long trial that found no extra loss', /Liu and colleagues, 2022/.test(body()) && /8\.0 kg against 6\.3 kg/.test(body()) && /Lowe and colleagues, 2020/.test(body()));
+    t('84 · it turns the window into numbers: protein and calories per meal, and the session against the window', /g of protein a day is about/.test(body()) && /kcal a day is about/.test(body()) && /Your usual session at 18:00 is inside the window/.test(body()));
+    t('84 · past an overnight break it asks you to read a safety note before it can be used', !!d.querySelector('.ep-safe') && /Pregnant or breastfeeding/.test(body()) && /history of an eating disorder/.test(body()) && d.querySelector('[data-eatuse]').disabled);
+    d.querySelector('[data-eatack]').click();
+    t('84 · reading it turns the button on', !d.querySelector('[data-eatuse]').disabled && !!S.profile.fastAck);
+    d.querySelector('[data-eatuse]').click();
+    t('84 · using it saves the pattern and closes the sheet', S.profile.eat && S.profile.eat.id === '16-8' && S.profile.eat.start === '12:00' && S.profile.eat.end === '20:00' && !d.getElementById('altSheet').classList.contains('on'));
+    t('84 · the label is the hours without food then the hours with', ev('eatPat().label') === '16:8' && ev('eatPat().fastMin') === 960);
+
+    /* ---- the day lays itself out inside the window ---- */
+    const items = ev('eatingPlan().items');
+    const meals = items.filter(i => !['train', 'coffee'].includes(i.tag));
+    t('84 · with a noon window there is no breakfast in the plan', !items.some(i => i.tag === 'breakfast') && meals.length === 3);
+    t('84 · the three meals sit inside 12:00 to 20:00, first at the open and the last as dinner', meals[0].time === '12:00' && meals.every(i => i.time >= '12:00' && i.time <= '20:00') && meals[meals.length - 1].tag === 'last');
+    t('84 · and the roles follow: lunch and dinner, no breakfast', ev('eatRolesIn().join("")') === 'ld' && ev('eatRoleOff("b")') && !ev('eatRoleOff("l")'));
+    G.renderAll();
+    t('84 · Eat shows no Breakfast section while none is in the pattern', !d.querySelector('#eatView [data-eatmeal="b"]') && !!d.querySelector('#eatView [data-eatmeal="l"]') && !!d.querySelector('#eatView [data-eatmeal="d"]'));
+    t('84 · Eat shows the window with a bar and a way to change it', !!d.querySelector('#eatView .fastcard') && /16:8/.test(txt(d.querySelector('#eatView .fastcard'))) && !!d.querySelector('#eatView .fastcard [data-eatopen]'));
+    t('84 · Today\'s Meals list drops breakfast too, and says where the window is', !/Breakfast/.test(txt(d.querySelector('.mealscard'))) && !!d.querySelector('.mealscard .mwin'));
+    G.addFood('oats', 1, 'b');
+    G.renderAll();
+    t('84 · food already logged as breakfast is never hidden', !!d.querySelector('#eatView [data-eatmeal="b"]') && /Breakfast/.test(txt(d.querySelector('.mealscard'))));
+    S.days[T].food = (S.days[T].food || []).filter(f => f.meal !== 'b'); G.save(); G.renderAll();
+
+    /* ---- everything that reads the day follows the pattern ---- */
+    const cues = ev('cueTimes()');
+    t('84 · the breakfast cue for habits becomes the first meal', cues.breakfast === 12 * 60);
+    t('84 · protein per meal is the day\'s target over the meals, not 0.4 g per kg', ev('perMealProtein()') === Math.round(S.targets.protein / 3));
+    t('84 · a habit that ticks from the breakfast log follows the first meal instead', ev('firstMealRole()') === 'l');
+    t('84 · the week in review does not count the skipped breakfast against you', ev('proteinGaps({days:[]}).weakest===null||proteinGaps({days:[]}).weakest.m!=="b"'));
+    t('84 · the first-meal word follows the pattern', ev('firstMealWord()') === 'your first meal');
+
+    /* ---- the window now ---- */
+    const ws = ev('windowState(13*60)');
+    t('84 · inside the window it says how long is left', ws.open && ws.leftMin === 7 * 60 && /left/.test(ev('(()=>{const w=windowState(13*60);return fmtLeft(w.leftMin)+" left"})()')));
+    const wc = ev('windowState(22*60)');
+    t('84 · outside it says when the window opens', !wc.open && wc.opensInMin === 14 * 60 && wc.fastedMin === 2 * 60);
+    t('84 · a time is in the window or not, across midnight too', ev('inWindowMin(12*60)') && !ev('inWindowMin(11*60+59)') && !ev('inWindowMin(20*60)'));
+
+    /* ---- fit for different aims and patterns ---- */
+    const fit = (id, aims, ctx) => ev('(()=>{const d=eatDraftFrom(' + JSON.stringify(id) + ');return eatFit(d,Object.assign(eatCtx(),' + JSON.stringify(Object.assign({ aims }, ctx || {})) + '))})()');
+    t('84 · regular meals and 12:12 are good for everything', fit('regular', ['lose', 'build']).rows.every(r => r.lv === 'good') && fit('12-12', ['build', 'strong']).rows.every(r => r.lv === 'good'));
+    t('84 · 16:8 is fine for losing fat but needs care for building muscle', fit('16-8', ['lose']).rows[0].lv === 'ok' && fit('16-8', ['build']).rows[0].lv === 'care');
+    t('84 · 18:6 is a poor fit for building muscle and strength', fit('18-6', ['build']).rows[0].lv === 'poor' && fit('18-6', ['strong']).rows[0].lv === 'poor');
+    t('84 · one meal a day is a poor fit for fat loss and says why, with the evidence', fit('omad', ['lose']).rows[0].lv === 'poor' && fit('omad', ['lose']).cons.some(c => /11 person|24,000/.test(c.t)));
+    t('84 · a training time outside the window lowers the fit for endurance and says to open it earlier', fit('18-6', ['endure'], { trains: true, trainMin: 7 * 60 }).steps.some(x => /Open the window/.test(x)) && fit('16-8', ['endure'], { trains: true, trainMin: 7 * 60 }).rows[0].lv === 'care');
+    t('84 · under 18.5 BMI a long fast is a poor fit whatever the aim', fit('16-8', ['lose'], { kg: 50, cm: 180 }).rows[0].lv === 'poor');
+    t('84 · over 65 it asks to check with a doctor', fit('16-8', ['hold'], { age: 70 }).cons.some(c => /Baylor/.test(c.s)));
+    t('84 · every pro and con with a number carries its source', ['16-8', '18-6', 'omad'].every(id => fit(id, ['lose', 'build']).cons.filter(c => /\d/.test(c.t)).every(c => c.s)));
+
+    /* ---- custom times, two meals and one ---- */
+    ev("openEatPattern()"); d.querySelector('[data-eatpick="two"]').click();
+    t('84 · two meals asks for two times, not a window', !!d.getElementById('epFirst') && !!d.getElementById('epSecond') && !d.querySelector('[data-eatmeals]'));
+    const sec = d.getElementById('epSecond'); sec.value = '19:00'; sec.dispatchEvent(new w.Event('change', { bubbles: true }));
+    t('84 · the second time is where the window ends', ev('ED.end') === '20:00' && ev('ED.meals') === 2);
+    d.querySelector('[data-eatpick="omad"]').click();
+    t('84 · one meal a day asks for one time and carries the strongest warning', !!d.getElementById('epOnce') && fit('omad', ['hold']).cons.some(c => /AHA|American Heart/.test(c.s || c.t)));
+    d.querySelector('[data-eatpick="custom"]').click();
+    t('84 · your own window has an open, a close and a number of meals', !!d.getElementById('epStart') && !!d.getElementById('epEnd') && !!d.querySelector('[data-eatmeals]'));
+    d.querySelector('[data-eatmeals="1"]').click();
+    t('84 · the number of meals goes up and down within 1 to 5', ev('ED.meals') === 4);
+    for (let i = 0; i < 6; i++) { const b = d.querySelector('[data-eatmeals="1"]'); if (b && !b.disabled) b.click(); }
+    t('84 · and stops at five', ev('ED.meals') === 5 && d.querySelector('[data-eatmeals="1"]').disabled);
+    d.querySelector('[data-eatpick="two"]').click();
+    d.querySelector('[data-eatuse]').click();
+    t('84 · two meals saved, with a plan of exactly two meals', ev('eatPat().id') === 'two' && ev('eatingPlan().items.filter(i=>!["train","coffee"].includes(i.tag)).length') === 2);
+    t('84 · Settings shows the pattern and its times', /Two meals/.test(txt(d.querySelector('[data-setting="eating"]'))));
+
+    /* ---- undo, back to regular, and the guard rails ---- */
+    ev("openEatPattern()"); d.querySelector('[data-eatpick="regular"]').click(); d.querySelector('[data-eatuse]').click();
+    t('84 · back to regular meals is one tap and brings breakfast back', ev('eatPat()') === null && ev('eatRolesIn().join("")') === 'bld' && !!d.querySelector('#eatView [data-eatmeal="b"]'));
+    d.getElementById('toastAct').click();
+    t('84 · Undo puts the pattern back', ev('eatPat().id') === 'two');
+    S.profile.age = 16; S.profile.birthYear = new Date().getFullYear() - 16; G.renderAll();
+    t('84 · under 18s get no pattern at all, even if one was saved', ev('eatPat()') === null && !/Eating pattern/.test(txt(d.getElementById('settingsList'))) && !d.querySelector('#eatView .fastcard'));
+    S.profile.age = 34; S.profile.birthYear = new Date().getFullYear() - 34; G.renderAll();
+    S.profile.eat = { id: '16-8', start: 'bad', end: '20:00', meals: 3 };
+    t('84 · a damaged saved pattern is ignored rather than breaking the day', ev('eatPat()') === null && ev('eatingPlan().items.length') > 0);
+    S.profile.eat = { id: '16-8', start: '22:00', end: '06:00', meals: 3 }; G.renderAll();
+    t('84 · a window that crosses midnight works', ev('eatPat().lenMin') === 480 && ev('inWindowMin(23*60)') && ev('inWindowMin(5*60)') && !ev('inWindowMin(12*60)'));
+    S.profile.eat = { id: 'regular' }; G.renderAll();
+
+    /* ---- housekeeping ---- */
+    const fsx = require('fs'), pathx = require('path');
+    t('84 · no em dashes in the new code', fsx.readFileSync(pathx.join(__dirname, 'src/js/eating.js'), 'utf8').indexOf('\u2014') < 0);
+    t('84 · and no page errors', errs.length === 0, errs.join(' | '));
+  }
+
+  /* ---------------------------------------------------------- 85 */
+  journey(85, 'Build 81: habits get a time to be done by, an end of day, prompts on Today until they are logged, a catch up for yesterday and reminders');
+  {
+    /* now is 14:30 on the day, ticking on, so the states below do not depend on when the suite runs */
+    const { w, d, G, errs } = await boot({ before: w0 => {
+      const Real = w0.Date, n = new Real(); const target = new Real(n.getFullYear(), n.getMonth(), n.getDate(), 14, 30, 0).getTime();
+      const off = target - Real.now();
+      class Fixed extends Real { constructor(...a) { if (a.length) super(...a); else super(Real.now() + off); } static now() { return Real.now() + off; } }
+      w0.Date = Fixed;
+    } }); allErrs.push(...errs);
+    onboard(G); const S = G.S, T = G.todayKey(), A = n => G.addDays(T, n);
+    const txt = e => (e ? e.textContent.replace(/\s+/g, ' ').trim() : '');
+    const ev = c => w.eval(c), tv = () => d.getElementById('todayView'), body = () => txt(d.getElementById('altBody'));
+    S.profile.wakeTime = '07:00'; S.profile.bedtime = '23:00'; S.profile.trainTime = '18:00'; G.save(); G.renderAll();
+    t('85 · the test clock reads 14:30', ev('minToHhmm(nowMins())') === '14:30', ev('minToHhmm(nowMins())'));
+
+    /* ---- adding a habit asks when ---- */
+    ev('openHabitSheet()');
+    const pick = d.querySelector('[data-habitchoose="water_am"]') || d.querySelector('[data-habitchoose]');
+    const hid = pick.dataset.habitchoose; pick.click();
+    t('85 · adding a habit goes straight on to Do it by when', d.getElementById('altSheet').classList.contains('on') && /Do it by when/.test(txt(d.getElementById('altTitle'))) && G.activeHabits().some(h => h.id === hid));
+    t('85 · it offers morning, lunch, evening and end of day in one tap, and a time of your own', d.querySelectorAll('[data-duepick]').length === 4 && /End of day/.test(body()) && !!d.getElementById('dueTime'));
+    t('85 · it says why a time is asked for, with the evidence', /Gollwitzer and Sheeran, 2006/.test(body()) && /d = 0\.65/.test(body()) && /Stawarz/.test(body()) && /Morrison/.test(body()));
+    const slot1 = G.habitSlotOf(hid);
+    t('85 · until a time is chosen, the habit still gets one from its moment in the day', ev('habitDue(S.habits.' + slot1 + ',habitOf("' + hid + '"))').set === false);
+    d.querySelector('[data-duepick="' + slot1 + '|' + ev('dueChoices("' + slot1 + '")')[0].time + '|0"]').click();
+    t('85 · one tap on a time saves it and closes the sheet', S.habits[slot1].due === ev('dueChoices("' + slot1 + '")')[0].time && S.habits[slot1].eod === false && !d.getElementById('altSheet').classList.contains('on'));
+    t('85 · the toast offers Undo', /by 09:00/.test(txt(d.getElementById('toast'))) && d.getElementById('toastAct').style.display !== 'none');
+    d.getElementById('toastAct').click();
+    t('85 · Undo takes the time off again', S.habits[slot1].due === undefined);
+    ev('setDue("' + slot1 + '","09:00",false,true)');
+    G.renderAll();
+    const rowOf = sl => tv().querySelector('.rt-item [data-habittoggle="' + sl + '"]').closest('.rt-item');
+    t('85 · the routine row says it is due by that time, and is marked once it has passed', /by 09:00/.test(txt(rowOf(slot1))) && /rt-cue due/.test(rowOf(slot1).innerHTML));
+
+    /* ---- a stop habit is judged at the end of the day ---- */
+    const stopId = ev('HABITS.find(h=>h.kind==="stop").id');
+    ev('startHabit("' + stopId + '")'); const slot2 = G.habitSlotOf(stopId); G.renderAll();
+    const dd = ev('habitDue(S.habits.' + slot2 + ',habitOf("' + stopId + '"))');
+    t('85 · a stop habit with no time set defaults to end of day, 21:00', dd.eod === true && dd.t === '21:00' && dd.set === false);
+    ev('openHabitDue("' + slot2 + '",true)');
+    t('85 · and the sheet says it can only be judged once the day is over, with End of day already chosen', /once the day is over/.test(body()) && d.querySelector('[data-duepick$="|21:00|1"]').classList.contains('on'));
+    d.querySelector('[data-duepick$="|21:00|1"]').click();
+    t('85 · choosing End of day sets the 21:00 end of day flag', S.habits[slot2].due === '21:00' && S.habits[slot2].eod === true);
+
+    /* ---- Up next: later, soon, due ---- */
+    const nx = () => ev('nextUp().list.filter(x=>x.id==="habit"||x.id==="habitcatch")');
+    S.habits[slot1].due = '17:00'; G.save(); G.renderAll();
+    t('85 · a habit due in over an hour is not asked about yet', ev('habitsToLog().find(x=>x.slot==="' + slot1 + '").state') === 'later' && nx().filter(x => x.id === 'habit').length === 0);
+    t('85 · but it is the thing coming later, with its time', /by 17:00|17:00/.test(ev('thenAfter(null)')) || ev('laterToday().some(x=>x.id==="habit")'));
+    S.habits[slot1].due = '15:15'; G.save(); G.renderAll();
+    const soon = nx().find(x => x.id === 'habit');
+    t('85 · inside the hour it is coming up, with how long', !!soon && /Coming up/.test(soon.kick) && /in about/.test(soon.why), soon && soon.kick);
+    S.habits[slot1].due = '13:00'; G.save(); G.renderAll();
+    const due = nx().find(x => x.id === 'habit');
+    t('85 · past its time it is due, and stays asked about until it is ticked', !!due && /Due, by 13:00/.test(due.kick) && /Still open today/.test(due.why));
+    t('85 · the card is on Today with the habit and a Done button', !!tv().querySelector('.nextcard[data-next="habit"]') && !!tv().querySelector('.nextcard [data-habittoggle="' + slot1 + '"]'));
+    t('85 · it never says missed, failed or lost', !/missed|failed|lost|streak/i.test(txt(tv().querySelector('.nextcard'))));
+    t('85 · the app icon badge counts the habits that are due', ev('habitBadgeCount()') === 1);
+    tv().querySelector('.nextcard [data-habittoggle="' + slot1 + '"]').click();
+    t('85 · tapping Done logs it, takes the card away and clears the badge', S.habits[slot1].days[T] === true && !tv().querySelector('.nextcard[data-next="habit"]') && ev('habitBadgeCount()') === 0);
+    delete S.habits[slot1].days[T]; G.save();
+
+    /* ---- end of day: close the day ---- */
+    S.habits[slot1].days[T] = true; S.habits[slot2].due = '14:00'; S.habits[slot2].eod = true; G.save(); G.renderAll();
+    const eod = nx().find(x => x.id === 'habit');
+    t('85 · an end of day habit past its time says so, and is judged at the end of the day', !!eod && /End of the day/.test(eod.kick) && /judged once the day is done/.test(eod.why));
+    t('85 · a stop habit\'s button says Went without', /Went without/.test(eod.act));
+    S.habits[slot1].days = {}; S.habits[slot1].due = '13:00'; G.save(); G.renderAll();
+    const both = nx().find(x => x.id === 'habit');
+    t('85 · with several open, one card closes the day with a button for each', /Close the day/.test(both.title) && (both.act.match(/data-habittoggle/g) || []).length === 2);
+    t('85 · the end of day card outranks an ordinary due habit, and a due habit outranks the evening check in', both.score === 95 && due.score === 91);
+    S.habits[slot1].days[T] = true; S.habits[slot2].days[T] = true; G.save(); G.renderAll();
+    t('85 · once everything is logged, nothing is asked', nx().length === 0 && ev('habitsToLog().length') === 0);
+    delete S.habits[slot1].days[T]; delete S.habits[slot2].days[T];
+
+    /* ---- yesterday catch up until the morning is over ---- */
+    t('85 · at 14:30 yesterday is no longer offered', ev('habitCatchUp().length') === 0);
+    S.profile.wakeTime = '12:30'; S.profile.bedtime = '04:30'; S.habits[slot1].started = A(-4); S.habits[slot2].started = A(-4); S.habits[slot1].due = '23:30'; S.habits[slot2].due = '23:45'; S.habits[slot1].days = {}; S.habits[slot2].days = {}; G.save(); G.renderAll();
+    const cu = ev('habitCatchUp()');
+    t('85 · two hours after waking, yesterday\'s unlogged habits are offered', cu.length === 2 && cu.every(x => x.k === A(-1)), JSON.stringify(cu.map(x => x.k)));
+    const cs = cu[0].slot, cid = S.habits[cs].id;
+    S.days[T] = Object.assign(S.days[T] || {}, { sleep: 7.5 }); G.save(); G.renderAll();
+    const cn = nx().find(x => x.id === 'habitcatch');
+    t('85 · the card asks, and offers yes or no', !!cn && /yesterday/i.test(cn.title) && /Yes, I did/.test(cn.act) && /data-habitcatch="[^"]*\|no"/.test(cn.act));
+    d.querySelector('[data-habitcatch="' + cs + '|' + A(-1) + '"]').click();
+    t('85 · yes logs yesterday and it counts in the habit\'s record', S.habits[cs].days[A(-1)] === true && ev('habitLedger(S.habits.' + cs + ',habitOf("' + cid + '")).days.find(x=>x.k==="' + A(-1) + '").st') === 'kept');
+    t('85 · Undo puts it back', (d.getElementById('toastAct').click(), S.habits[cs].days[A(-1)] === undefined));
+    d.querySelector('[data-habitcatch="' + cs + '|' + A(-1) + '|no"]').click();
+    t('85 · no dismisses that one for good', S.habits[cs].skipCatch === A(-1) && ev('habitCatchUp().every(x=>x.slot!=="' + cs + '")'));
+    S.profile.wakeTime = '07:00'; S.profile.bedtime = '23:00'; S.habits[slot1].due = '13:00'; S.habits[slot2].due = '21:00'; G.save(); G.renderAll();
+
+    /* ---- the habit sheet and the calendar file ---- */
+    ev('openHabitOne("' + slot1 + '")');
+    t('85 · opening a habit shows its time with a way to change it', /Do it by/.test(body()) && /By 13:00/.test(body()) && !!d.querySelector('[data-dueedit="' + slot1 + '"]'));
+    d.querySelector('[data-dueedit="' + slot1 + '"]').click();
+    t('85 · which opens the same sheet, now titled Do it by', /^Do it by$/.test(txt(d.getElementById('altTitle'))) && /Now: by 13:00/.test(body()));
+    const ics = ev('habitIcs("' + slot1 + '")');
+    t('85 · the calendar file is a daily event at the habit\'s time with an alert', /BEGIN:VCALENDAR/.test(ics) && /DTSTART:\d{8}T130000/.test(ics) && /RRULE:FREQ=DAILY/.test(ics) && /BEGIN:VALARM/.test(ics) && /TRIGGER:PT0M/.test(ics));
+    t('85 · lines end in CRLF and the title is escaped', /\r\n/.test(ics) && /SUMMARY:/.test(ics) && !/[^\r]\n/.test(ics));
+    const only = ev('(()=>{const m=habitOf("' + hid + '");const keep=m.days;m.days=[1,3,5];const x=habitIcs("' + slot1 + '");m.days=keep;return x})()');
+    t('85 · a habit with set days only repeats on those days', /RRULE:FREQ=DAILY;BYDAY=MO,WE,FR/.test(only));
+    t('85 · the sheet says which reminder arrives with the app closed', /even when Gauntlet is closed/.test(body()) && /Add it once/.test(body()));
+    t('85 · and without notification support says so', /cannot do reminders/.test(body()));
+    G.closeSheets();
+
+    /* ---- phone reminders, set by the app ---- */
+    t('85 · with no notification support it says so rather than failing', ev('habitNoteState()') === 'unsupported' || ev('habitNoteState()') === 'off');
+    const shown = [];
+    w.Notification = function (title, o) { shown.push({ title, o }); }; w.Notification.permission = 'granted'; w.Notification.requestPermission = () => Promise.resolve('granted');
+    S.profile.habitNotes = true; G.save();
+    t('85 · with permission and the switch on, reminders are on', ev('habitNoteState()') === 'on');
+    const sent = await ev('fireHabitNote("' + slot1 + '")');
+    t('85 · a due habit that is not logged sends one reminder with its name', sent === true && shown.length === 1 && /Done|Due 13:00/.test(shown[0].o.body) && shown[0].o.tag === 'gauntlet-habit-' + slot1);
+    const again = await ev('fireHabitNote("' + slot1 + '")');
+    t('85 · and not a second one the same day', again === false && shown.length === 1);
+    S.habits[slot2].days[T] = true;
+    const logged = await ev('fireHabitNote("' + slot2 + '")');
+    t('85 · a habit that is already logged sends nothing', logged === false && shown.length === 1);
+    delete S.habits[slot2].days[T]; S.habits[slot1].remind = false;
+    w.localStorage.removeItem('gauntlet.habitnote');
+    t('85 · a habit with its reminder switched off sends nothing', (await ev('fireHabitNote("' + slot1 + '")')) === false);
+    S.habits[slot1].remind = true; ev('scheduleHabitNotes()'); ev('clearHabitNotes()');
+    ev('openHabitDue("' + slot1 + '")');
+    t('85 · with support it says plainly the reminder is the app\'s own, not a server, and only arrives while it is running', /not a server/.test(body()) && /open or running in the background/.test(body()));
+    G.closeSheets();
+
+    /* ---- settings ---- */
+    G.renderAll();
+    t('85 · Settings has Habit reminders and says what is on', /Habit reminders/.test(txt(d.getElementById('settingsList'))) && /Prompts on Today/.test(txt(d.querySelector('[data-setting="habitrem"]'))));
+    d.querySelector('[data-setting="habitrem"]').click();
+    t('85 · it opens prompts, badge, phone reminders and the end of day time', /Prompts on Today/.test(body()) && /Number on the app icon/.test(body()) && /Phone reminders/.test(body()) && !!d.getElementById('hrEod'));
+    t('85 · it says the closed-app answer is the calendar, and the Home Screen is needed on iPhone', /even with Gauntlet closed/.test(body()));
+    const eodIn = d.getElementById('hrEod'); eodIn.value = '21:30'; eodIn.dispatchEvent(new w.Event('change', { bubbles: true }));
+    t('85 · the end of day time can be moved', S.profile.eodTime === '21:30' && ev('habitDue(S.habits.' + slot2 + '.eod?{}:{},habitOf("' + stopId + '"))').t === '21:30');
+    d.querySelector('[data-hrset="prompts"]').click();
+    S.habits[slot1].days = {}; S.habits[slot1].due = '13:00'; G.save(); G.renderAll();
+    t('85 · with prompts off, Today stops asking and the badge is clear', nx().length === 0 && ev('badgeNow') === 0 && ev('hrOn("prompts")') === false);
+    d.querySelector('[data-hrset="prompts"]').click();
+    t('85 · and back on, it asks again', ev('hrOn("prompts")') === true && nx().some(x => x.id === 'habit'));
+    G.closeSheets();
+
+    /* ---- old saves and housekeeping ---- */
+    delete S.habits[slot1].due; delete S.habits[slot1].eod; delete S.profile.eodTime; G.save(); G.renderAll();
+    t('85 · a habit saved before this build, with no time, still works and gets a default', /^\d\d:\d\d$/.test(ev('habitDue(S.habits.' + slot1 + ',habitOf("' + hid + '"))').t) && ev('habitsToLog().length') >= 1);
+    t('85 · the release note says what changed', /time to be done by/.test(JSON.stringify(w.eval('RELEASE_NOTES').find(n => n.v === '81'))) && /eating/i.test(JSON.stringify(w.eval('RELEASE_NOTES').find(n => n.v === '81'))) && w.eval('APP_VERSION') === '81');
+    const fsy = require('fs'), pathy = require('path');
+    t('85 · no em dashes in the reminder code', fsy.readFileSync(pathy.join(__dirname, 'src/js/reminders.js'), 'utf8').indexOf('\u2014') < 0);
+    t('85 · and no page errors', errs.length === 0, errs.join(' | '));
   }
 
   const r = s.report(allErrs);

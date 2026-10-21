@@ -1915,6 +1915,58 @@ body.rv-open .toast{z-index:310}
 .gwhy .gw p,.gwhy .gw li{margin:0;font-size:14px;line-height:1.45;color:var(--ink)}
 .gwhy .gw ul{margin:0;padding-left:18px;display:grid;gap:4px}
 .gwbtns{display:grid;gap:8px;margin-top:6px}
+
+/* ===== eating pattern (build 81) ===== */
+.ep{padding:0 14px 8px}
+.ep-chips{display:flex;flex-wrap:wrap;gap:7px;margin:4px 0 12px}
+.ep-chip{display:inline-flex;align-items:center;gap:7px;background:var(--surface)}
+.ep-chip em{font-style:normal;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;opacity:.75}
+.ep-dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--mute)}
+.ep-dot.d-green{background:var(--green)}
+.ep-dot.d-amber{background:var(--amber)}
+.ep-dot.d-coral{background:var(--coral)}
+.ep-head{display:flex;flex-direction:column;gap:2px;margin-bottom:10px}
+.ep-head b{font-size:17px;font-weight:800}
+.ep-head span{font-size:13px;color:var(--sub)}
+.ep-ctl{display:flex;flex-direction:column;gap:10px;margin-bottom:6px}
+.ep-pair{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ep-meals{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--sub)}
+.ep-meals span{flex:1}
+.ep-meals b{min-width:18px;text-align:center;font-family:var(--font-num);font-size:20px;color:var(--ink)}
+.ep-goals{display:flex;flex-direction:column;gap:8px}
+.ep-goal{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;align-items:baseline;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.ep-goal b{font-size:14px}
+.ep-gw{font-size:11px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:var(--sub);min-width:78px}
+.ep-gw.d-green{color:var(--green-text)}
+.ep-gw.d-amber{color:var(--amber-text)}
+.ep-gw.d-coral{color:var(--coral-text)}
+.ep-gs{grid-column:1 / -1;font-size:12.5px;color:var(--sub);line-height:1.4}
+.ep-list{margin:4px 0 0;padding-left:18px;font-size:13px;line-height:1.45;color:var(--ink)}
+.ep-list li{margin:0 0 6px}
+.ep-list small{display:block;color:var(--mute);font-size:11.5px}
+.ep-nums{display:block;list-style:none;margin:4px 0 0;padding:0;font-size:13px;line-height:1.45;color:var(--sub)}
+.ep-nums li{display:block;margin:0 0 5px}
+.ep-safe{margin:14px 0 4px;padding:12px;border-radius:10px;background:var(--amber-tint);color:var(--ink);font-size:13px}
+.ep-safe b{display:block;margin-bottom:4px}
+.ep-safe ul{margin:0 0 10px;padding-left:18px}
+.ep-ack.on{background:var(--ink);color:var(--surface)}
+.fastcard{padding:12px 14px}
+.fastcard .fk{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;font-weight:800}
+.fastcard .fs{font-size:13px;color:var(--sub);margin:3px 0 8px}
+.fastcard .fbar{height:6px;border-radius:99px;background:var(--track);overflow:hidden}
+.fastcard .fbar i{display:block;height:100%;border-radius:99px;background:var(--green)}
+.fastcard.shut .fbar i{background:var(--amber)}
+.fastrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 2px 0;font-size:12.5px;color:var(--mute)}
+.fastrow b{color:var(--sub)}
+.mwin{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:6px 14px 8px;font-size:12px;color:var(--mute)}
+.mwin b{font-weight:700;color:var(--sub)}
+.mwin.open b{color:var(--green-text)}
+.mwin.shut b{color:var(--amber-text)}
+
+/* ===== habit due times (build 81) ===== */
+.rt-cue.due{color:var(--coral-text);font-weight:700}
+.rt-cue.soon{color:var(--amber-text);font-weight:700}
+.due-chips small{font-weight:600;opacity:.8}
 </style>
 </head>
 <body data-screen="today">
@@ -2214,7 +2266,7 @@ body.rv-open .toast{z-index:310}
 const HUE={run:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},workout:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},
   fast:{deep:'var(--amber-text)',tint:'var(--amber-tint)'},meal:{deep:'var(--coral-text)',tint:'var(--coral-tint)'},any:{deep:'var(--ink)',tint:'var(--track)'},
   walk:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},rest:{deep:'var(--mute)',tint:'var(--track)'},checkin:{deep:'var(--green-text)',tint:'var(--green-tint)'}};
-const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='80';
+const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='81';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -4468,8 +4520,13 @@ function priorities(){
   if(!teen&&t.protein){
     const fc=confidence('food'), pr=Math.round(foodTotals(k).protein||0);
     const aimP=(typeof proteinAim==='function'&&proteinAim())||t.protein;
-    const expected=Math.round(aimP*Math.min(1,Math.max(0,(hour-7)/13)));
-    if(dayFood(k).length===0&&hour>=13&&fc.n>=3&&!((S.days[k]||{}).skipped||[]).length)
+    const fh=(typeof foodHorizon==='function')? foodHorizon() : null;
+    /* inside a chosen window the pace runs from its first meal to its last,
+       not from 7am to 8pm */
+    const rel=fh? ((hour*60+new Date().getMinutes()-clockOf('wake'))%1440+1440)%1440 : 0;
+    const expected=Math.round(aimP*(fh? Math.min(1,Math.max(0,(rel-fh.from)/Math.max(60,fh.to-fh.from-60))) : Math.min(1,Math.max(0,(hour-7)/13))));
+    const started=(typeof windowStarted==='function')? windowStarted(60) : true;
+    if(dayFood(k).length===0&&hour>=13&&started&&fc.n>=3&&!((S.days[k]||{}).skipped||[]).length)
       add(60,'food','Log what you have eaten so far','Nothing logged yet today, and the rest of the week relies on it. Same as yesterday is one tap.','<button class="mini go" data-glance="food">Log food</button>');
     else if(dayFood(k).length&&pr<expected-25)
     { const left=t.kcal? Math.round(t.kcal-(foodTotals(k).kcal||0)) : null, tight=proteinTight(pr,aimP,left);
@@ -4508,7 +4565,7 @@ function proteinTight(pr,target,left){
   if(gap<15) return null;
   if(left>=gap*4*1.6) return null;
   const per=(typeof perMealProtein==='function')? perMealProtein() : null;
-  const tomorrow=`Tomorrow, start breakfast with ${per? per+'g' : '30g or more'} of protein, so the evening is not left to catch up.`;
+  const tomorrow=`Tomorrow, start ${(typeof firstMealWord==='function'? firstMealWord() : 'breakfast')} with ${per? per+'g' : '30g or more'} of protein, so the evening is not left to catch up.`;
   if(left<=0) return ['Over calories, protein short',`${pr}g of ${target}g, and the calories are used up. Leave today: one day matters less than the week. ${tomorrow}`];
   if(gap>=20) return ['Protein short, calories nearly used',`${num(left)} kcal left and ${gap}g of protein to go. Not the whole gap tonight. A lean top-up is worth it even if it tips you a little over: 200g of fat-free Greek yoghurt, a whey shake or a tin of tuna is about 20g of protein for 100 to 150 kcal. ${tomorrow}`];
   return ['Protein a little short',`${num(left)} kcal left, ${gap}g of protein to go. Not worth going over for. ${tomorrow}`];
@@ -4577,6 +4634,10 @@ function todayTrains(){
   return d.templateId? 'lifting' : (d.runId||d.circuitId? 'cardio' : null);
 }
 function eatingPlan(){
+  /* build 81: someone who has chosen a fasting window or a set number of meals
+     gets the day laid out inside it (eating.js); everyone else is unchanged */
+  const chosen=(typeof patternPlan==='function')? patternPlan() : null;
+  if(chosen) return chosen;
   /* Everything is planned in minutes since waking and only turned back into
      clock times at the end. Working in raw clock minutes broke for anyone
      whose day crosses midnight: a night shift came out with "04:00 last meal"
@@ -4691,6 +4752,10 @@ function nextEating(){
 function perMealProtein(){
   const p=S.profile||{};
   if(!p.weight) return null;
+  /* in a window of fewer meals the share is the day's total over the meals,
+     not 0.4 g per kg, which would never add up to the target */
+  const pat=(typeof eatPat==='function')? eatPat() : null, tp=+((S.targets||{}).protein)||0;
+  if(pat&&tp) return Math.max(Math.round(0.4*proteinBasis(p).kg),Math.round(tp/pat.meals));
   return Math.round(0.4*proteinBasis(p).kg);
 }
 const MEAL_NAMES={breakfast:'Breakfast',lunch:'Lunch',last:'Dinner',pre:'Before training',post:'After training',presleep:'Before bed'};
@@ -4714,9 +4779,12 @@ function mealSlots(k){
   const mainSlots=slots.filter(x=>!x.optional);
   const wakeM=hhmmToMin((S.profile&&S.profile.wakeTime)||EAT_CLOCK.wake);
   const sinceWake=x=>((x.min-wakeM)%1440+1440)%1440;
-  if(mainSlots.length&&!slots.some(x=>x.role==='b')){ const f=mainSlots.slice().sort((a,b)=>sinceWake(a)-sinceWake(b))[0]; if(!f.role) f.role='b'; }
-  if(mainSlots.length&&!slots.some(x=>x.role==='d')){ const f=mainSlots.slice().sort((a,b)=>sinceWake(b)-sinceWake(a)).find(x=>!x.role); if(f) f.role='d'; }
-  if(mainSlots.length&&!slots.some(x=>x.role==='l')){ const f=mainSlots.filter(x=>!x.role).sort((a,b)=>Math.abs(sinceWake(a)-330)-Math.abs(sinceWake(b)-330))[0]; if(f) f.role='l'; }
+  const chosenPat=(typeof eatPat==='function')&&eatPat();
+  /* in a chosen pattern the roles come from the plan itself: a window that
+     starts at noon has no breakfast, and the first meal must not become one */
+  if(!chosenPat&&mainSlots.length&&!slots.some(x=>x.role==='b')){ const f=mainSlots.slice().sort((a,b)=>sinceWake(a)-sinceWake(b))[0]; if(!f.role) f.role='b'; }
+  if(!chosenPat&&mainSlots.length&&!slots.some(x=>x.role==='d')){ const f=mainSlots.slice().sort((a,b)=>sinceWake(b)-sinceWake(a)).find(x=>!x.role); if(f) f.role='d'; }
+  if(!chosenPat&&mainSlots.length&&!slots.some(x=>x.role==='l')){ const f=mainSlots.filter(x=>!x.role).sort((a,b)=>Math.abs(sinceWake(a)-330)-Math.abs(sinceWake(b)-330))[0]; if(f) f.role='l'; }
   const skipped=((S.days[k]||{}).skipped)||[];
   slots.forEach(x=>{ x.skipped=!!(x.role&&skipped.indexOf(x.role)>=0); });
   if(!slots.length) return {slots,per:perMealProtein()};
@@ -4773,9 +4841,11 @@ function timingStats(days){
 function openEating(){
   const plan=eatingPlan();
   document.getElementById('altTitle').textContent='Eating around today';
-  document.getElementById('altSub').textContent= plan.kind
+  document.getElementById('altSub').textContent= plan.pat
+    ? 'Laid out inside your '+plan.pat.label+' window, '+plan.pat.start+' to '+plan.pat.end+(plan.kind? ', with training at '+plan.train : '')+'.'
+    : (plan.kind
     ? 'Built around training at '+plan.train+' and bed at '+plan.bed+'.'
-    : 'A day with no session in it, built around bed at '+plan.bed+'.';
+    : 'A day with no session in it, built around bed at '+plan.bed+'.');
   document.getElementById('altBody').innerHTML=`
     <div style="padding:0 14px 6px">
       ${plan.items.map(i=>`<div class="eatitem">
@@ -4784,6 +4854,7 @@ function openEating(){
       <div class="method"><b>What this will and will not do</b><span>This is for training quality, recovery and sleep. It is not a weight loss trick: what you eat in total decides that, and moving the same food around the clock does not change it. If a time does not suit your life, ignore it. The one worth keeping is the spread of protein.</span></div>
       <div class="method"><b>Where it comes from</b><span>The International Society of Sports Nutrition's 2017 position stand on nutrient timing, which puts 20 to 40g of protein every three to four hours ahead of post-workout timing; Schoenfeld, Aragon and Krieger's pooled analysis, where the timing effect disappeared once daily protein was accounted for; the sleep work on finishing large meals two to three hours before bed; pre-sleep protein trials at 20 to 40g; and a randomised crossover on caffeine, where a coffee-sized dose inside eight hours of bed fragmented sleep.</span></div>
       <button class="mini" id="eatTimes">Change your times</button>
+      ${typeof eatAdult==='function'&&eatAdult()? '<button class="mini" data-eatopen="1">Change your eating pattern</button>' : ''}
     </div>`;
   openSheet('altSheet');
 }
@@ -5065,7 +5136,7 @@ function mealsList(){
     if(m==='b'&&sl&&sl.tag==='post') label='Breakfast, after training';
     return {m,label,items,sl,kcal:Math.round(items.reduce((a,f)=>a+(+f.kcal||0)*(+f.q||1),0)),skipped:skipped.indexOf(m)>=0,
       p:Math.round(items.reduce((a,f)=>a+(+f.p||0)*(+f.q||1),0))};
-  });
+  }).filter(r=>!(typeof eatRoleOff==='function'&&eatRoleOff(r.m)&&!r.items.length));
   const per=teen? null : perMealProtein();
   const next=rows.find(r=>r.m!=='s'&&!r.items.length&&!r.skipped&&(!r.sl||r.sl.min>=now-90));
   const t=S.targets||{}, tot=foodTotals(k);
@@ -5092,6 +5163,7 @@ function mealsList(){
   }
   return `<div class="mealscard">
     <div class="mhead"><b>Meals</b>${head}</div>
+    ${typeof windowChip==='function'? windowChip() : ''}
     <div class="meals">${rows.map(row).join('')}</div>
     <div class="mfoot">${spread? `<span class="mealsnote">${spread}</span>` : '<span></span>'}<button id="eatBtn">Why these times</button></div></div>`;
 }
@@ -5625,7 +5697,8 @@ function renderPeople(){
 }
 function renderAll(){ syncWeek(); renderToday(); renderPlan(); renderFeed(); renderPeople(); renderProgress();
   if(typeof renderEat==='function') renderEat();
-  if(typeof mountColophons==='function') mountColophons(); }
+  if(typeof mountColophons==='function') mountColophons();
+  if(typeof updateBadge==='function') updateBadge(); }
 
 /* ===================== chrome and actions ===================== */
 const scrim=$('scrim');
@@ -5913,6 +5986,8 @@ document.addEventListener('click',e=>{
     closeSheets(); renderAll();
     toast(meta? (meta.kind==='stop'? meta.t+'. One day at a time.' : meta.t+' it is. One thing.') : 'Could not start that',
       meta? 'Undo' : undefined, meta? ()=>{ S.habits=beforeH; save(); renderAll(); } : undefined);
+    /* build 81: straight on to when it is to be done by */
+    if(meta&&typeof openHabitDue==='function'){ const sl=habitSlotOf(h.id); if(sl) openHabitDue(sl,true); }
     return; }
   const ho=e.target.closest('[data-habitown]');
   if(ho){
@@ -5923,6 +5998,7 @@ document.addEventListener('click',e=>{
     const beforeH=JSON.parse(JSON.stringify(habitSlots()));
     startHabit(r.habit.id); closeSheets(); renderAll();
     toast((kind==='stop'? 'Stop: ' : '')+r.habit.t+(kind==='stop'? '. One day at a time.' : '. One thing.'),'Undo',()=>{ S.habits=beforeH; save(); renderAll(); });
+    if(typeof openHabitDue==='function'){ const sl=habitSlotOf(r.habit.id); if(sl) openHabitDue(sl,true); }
     return; }
   const trec=e.target.closest('[data-tplrec]');
   if(trec&&tplDraft){ const i=+trec.dataset.tplrec, r=tplDraft.ex[i];
@@ -14809,7 +14885,7 @@ function eatSections(k){
   let slots=[]; if(isToday){ try{ slots=mealSlots(k).slots; }catch(e){} }
   const per=teen? null : perMealProtein();
   const now=new Date().getHours()*60+new Date().getMinutes();
-  const secs=EAT_SECTIONS.map(([m,label])=>{
+  const secs=EAT_SECTIONS.filter(([m])=>!(typeof eatRoleOff==='function'&&eatRoleOff(m)&&!food.some(f=>(f.meal||'s')===m)&&skipped.indexOf(m)<0)).map(([m,label])=>{
     const items=food.filter(f=>(f.meal||'s')===m), sl=m==='s'? null : slots.find(x=>x.role===m);
     if(m==='d'&&sl&&sl.tag==='post') label='Dinner, after training';
     if(m==='d'&&sl&&sl.tag==='pre') label='Dinner, before training';
@@ -14862,6 +14938,7 @@ function renderEat(){
     <div class="eatfind"><button class="eatsearch" data-eatsearch><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>Search food or meals</span></button>
       ${typeof scanIcon==='function'? `<button class="eatscan" data-eatscan aria-label="Scan a barcode">${scanIcon()}</button>` : ''}</div>
     ${eatSummary(k)}
+    ${typeof fastStrip==='function'&&k===t? fastStrip() : ''}
     ${eatSections(k)}
     ${eatShortcuts(k)}
     ${k===t? `<div class="efoot"><button class="inlinebtn" data-eattimes>Why these meal times</button></div>` : ''}`;
@@ -14922,6 +14999,468 @@ if(window.__G){
     eatDay:{get:()=>eatDay,set:v=>{eatDay=v},configurable:true},
     foodDay:{get:()=>foodDay,configurable:true}
   });
+}
+/* ===================== Eating pattern (build 81) =====================
+   Feargal: let people choose how they like to eat (do they fast, what hourly
+   split, once or twice a day, at what times), and say what each choice means
+   for their goals, pros and cons.
+
+   What the research says, and so what this does:
+   - A window is a way of eating less, not a way of burning more. Added to a
+     calorie deficit, windows gave about 2 kg more weight loss over 8 to 14
+     weeks in seven small trials (458 adults), with no change in lean mass,
+     glucose, cholesterol or blood pressure, and low certainty (a meta-analysis
+     of time-restricted eating plus calorie restriction). The best long trial
+     found no extra loss at 12 months: 139 adults, an 8am to 4pm window plus a
+     calorie limit lost 8.0 kg against 6.3 kg for the limit alone, a gap that
+     could be chance (Liu and colleagues, 2022). A 12 week trial of 16:8 with
+     no calorie advice found no more weight loss than three regular meals, and
+     in a 50 person scan subset the arms and legs lost more lean mass (0.64 kg
+     against 0.17 kg, Lowe and colleagues, 2020).
+   - With lifting: eight small studies (219 people, 4 to 8 weeks) of fasting
+     patterns plus resistance training mostly kept lean mass and lost fat; none
+     was long and none measured strength (a 2020 systematic review).
+   - Earlier beats later: across 41 trials (2,287 people, median 8 weeks) an
+     early window (last meal before 5pm) lost 1.15 kg more than a late one
+     (after 7pm), with lower fasting insulin; most of that comparison is
+     indirect (BMJ Medicine network meta-analysis, 2026).
+   - Eating before exercise: across 46 studies a meal beforehand improved
+     prolonged aerobic performance and made no difference to shorter efforts
+     (Aird, Davies and Carson, 2018).
+   - Protein in few meals: a 100g dose raised muscle protein building for more
+     than 12 hours, longer than 25g did (Trommelen and colleagues, 2023), so a
+     big meal is not wasted; the daily total still matters most.
+   - One meal a day: in an 11 person, 11 day trial at maintenance calories it
+     lost weight and fat and also muscle and bone (Frontiers in Physiology,
+     2021); a large observational study followed over 24,000 people for about
+     15 years and linked one meal a day to higher death from any cause and from
+     cardiovascular disease, which cannot show cause.
+   - Windows under 8 hours were linked to higher cardiovascular death in a
+     preliminary 2024 American Heart Association abstract: early, unconfirmed.
+   - Who should not, or should ask first: pregnant or breastfeeding, a history
+     of eating disorders, diabetes or medicines that depend on food, older
+     adults with memory problems, athletes who need to fuel (Baylor College of
+     Medicine). Under 18s are never offered it here: the teen version works
+     with regular meals only.
+   What this is not: a claim that a window burns fat. Calories decide that.
+   Timing is offered for people who find it easier to live with, and the fit
+   shown is for their own goals, numbers and training time. Nothing is blocked
+   for an adult; the words say how good a fit it is.
+   The fit levels and the rules behind them are this app's reading of the
+   evidence above, labelled as such in the method note. */
+
+const EAT_DEFS={
+  'regular':{t:'Regular meals', chip:'Regular', s:'Breakfast, lunch and dinner, with snacks if you like', len:null, meals:null, kind:'reg'},
+  '12-12':{t:'12:12', chip:'12:12', s:'Twelve hours without food overnight', len:12, meals:3},
+  '14-10':{t:'14:10', chip:'14:10', s:'Ten hours to eat, no late night snacking', len:10, meals:3},
+  '16-8':{t:'16:8', chip:'16:8', s:'Eight hours to eat, usually skipping breakfast', len:8, meals:3},
+  '18-6':{t:'18:6', chip:'18:6', s:'Six hours to eat, two or three meals', len:6, meals:2},
+  '20-4':{t:'20:4', chip:'20:4', s:'Four hours to eat, one or two meals', len:4, meals:2},
+  'two':{t:'Two meals a day', chip:'Two meals', s:'You choose the two times', len:null, meals:2},
+  'omad':{t:'One meal a day', chip:'One meal', s:'One meal, you choose the time', len:null, meals:1},
+  'custom':{t:'Your own window', chip:'Custom', s:'Pick the start, the end and the number of meals', len:null, meals:3}
+};
+const EAT_ORDER=['regular','12-12','14-10','16-8','18-6','20-4','two','omad','custom'];
+const EAT_MEALS_MAX=5;
+const EAT_EVIDENCE=`Windows are a way of eating less, not of burning more. Added to a calorie deficit they gave about 2 kg more weight loss in seven small trials, low certainty. The best long trial (Liu and colleagues, 2022, 139 adults, 12 months) found no extra loss over a calorie limit alone, and a 12 week trial of 16:8 found no extra weight loss and more lean mass lost (Lowe and colleagues, 2020). Lifting on a fasting pattern kept lean mass in eight small, short studies. An earlier window beat a later one across 41 trials (BMJ Medicine, 2026). A meal before exercise improved long efforts across 46 studies (Aird and colleagues, 2018). A big protein dose is not wasted (Trommelen and colleagues, 2023). One meal a day lost muscle and bone in a tiny trial and was linked to higher death rates in a large observational study; windows under 8 hours were linked to higher cardiovascular death in a preliminary abstract. The who-should-ask-first list is from Baylor College of Medicine. How good a fit each one is for each goal is this app's reading of that evidence, a rule of thumb, not a verdict. Under 18s are not offered this.`;
+const LV_ORD={good:0,ok:1,care:2,poor:3};
+const LV_WORD={good:'Good fit',ok:'Works',care:'Be careful',poor:'Not a good fit'};
+const LV_TONE={good:'green',ok:'green',care:'amber',poor:'coral'};
+const worse=(lv,n)=>{ const o=Object.keys(LV_ORD); return o[Math.min(3,LV_ORD[lv]+(n||1))]; };
+const fmtH=m=>{ const h=m/60; return (Math.abs(h-Math.round(h))<0.05? String(Math.round(h)) : h.toFixed(1)).replace('.0',''); };
+
+/* ---------- the person's pattern, if they have one ---------- */
+function eatAdult(){ const a=ageOf(); return !a||a>=ADULT_AGE; }
+function eatPatId(){ const e=S.profile&&S.profile.eat; return e&&EAT_DEFS[e.id]? e.id : 'regular'; }
+function eatPat(){
+  const e=S.profile&&S.profile.eat;
+  if(!e||typeof e!=='object'||!EAT_DEFS[e.id]||e.id==='regular'||!eatAdult()) return null;
+  const s=hhmmToMin(e.start), en=hhmmToMin(e.end);
+  if(s===null||en===null) return null;
+  const len=((en-s)%1440+1440)%1440;
+  if(len<30||len>1200) return null;
+  const def=EAT_DEFS[e.id];
+  const meals=Math.max(1,Math.min(EAT_MEALS_MAX,Math.round(+e.meals||def.meals||3)));
+  return {id:e.id,start:minToHhmm(s),end:minToHhmm(en),s,e:en,lenMin:len,fastMin:1440-len,meals,
+    label:eatLabel(e.id,s,en,len,meals)};
+}
+function eatLabel(id,s,en,len,meals){
+  if(id==='two') return 'Two meals';
+  if(id==='omad') return 'One meal';
+  const eat=Math.round(len/60), fast=24-eat;
+  return fast+':'+eat;
+}
+/* is a clock time (minutes since midnight) inside the window? */
+function inWindowMin(m,pat){ pat=pat||eatPat(); if(!pat) return true; return ((m-pat.s)%1440+1440)%1440<pat.lenMin; }
+/* where the clock is against the window right now */
+function windowState(at){
+  const pat=eatPat(); if(!pat) return null;
+  const now=typeof at==='number'? at : nowMins();
+  const rel=((now-pat.s)%1440+1440)%1440, open=rel<pat.lenMin;
+  return open
+    ? {pat,open:true,leftMin:pat.lenMin-rel,frac:rel/pat.lenMin}
+    : {pat,open:false,opensInMin:1440-rel,fastedMin:rel-pat.lenMin,frac:(rel-pat.lenMin)/pat.fastMin};
+}
+function fmtLeft(m){ m=Math.max(0,Math.round(m)); const h=Math.floor(m/60), r=m%60; return h? h+'h'+(r? ' '+r+'m' : '') : r+'m'; }
+function windowText(){
+  const w=windowState(); if(!w) return '';
+  return w.open? 'Window open until '+w.pat.end+', '+fmtLeft(w.leftMin)+' left'
+    : 'Window opens at '+w.pat.start+', in '+fmtLeft(w.opensInMin);
+}
+/* a small line under the Meals heading on Today */
+function windowChip(){
+  const w=windowState(); if(!w) return '';
+  return `<div class="mwin ${w.open?'open':'shut'}"><span>${w.pat.label} · ${w.pat.start} to ${w.pat.end}</span><b>${windowText().replace(/^Window /,'')}</b></div>`;
+}
+
+/* ---------- the day laid out inside the window ----------
+   Same shape as eatingPlan() so the meals list, Eat, Up next and the habits
+   all keep working: items with a tag, time, what and why. Meals are spread
+   from the first to the last start, to the quarter hour. */
+function patternPlan(){
+  const pat=eatPat(); if(!pat) return null;
+  const wakeA=clockOf('wake'), bedA=clockOf('bed'), trainA=clockOf('train');
+  const rel=t=>(((t-wakeA)%1440)+1440)%1440, abs=r=>(((wakeA+r)%1440)+1440)%1440;
+  const bed=rel(bedA)||960, train=rel(trainA), startR=rel(pat.s);
+  const t=S.targets||{}, protein=+t.protein||0, n=pat.meals;
+  const per=protein? Math.round(protein/n) : null, P=per? per+'g' : '20 to 40g';
+  const kind=todayTrains(), trains=!!kind&&train<bed;
+  const lastAt=n===1? startR : startR+Math.max(30,Math.min(pat.lenMin-30,pat.lenMin-60));
+  const slot=k=>n===1? startR : Math.round((startR+k*(lastAt-startR)/(n-1))/15)*15;
+  const roleAt=r=>r<300? 'b' : (r>=bed-300? 'd' : 'l');
+  const taken={}, items=[];
+  for(let k=0;k<n;k++){
+    const at=slot(k); let role=roleAt(at);
+    if(k===n-1&&n>1&&role!=='d'&&at>=bed-420) role='d';
+    if(taken[role]){ if(role==='d'){ /* the last one is dinner; earlier ones become snacks */
+        const prev=items.find(i=>i.tag==='last'); if(prev){ prev.tag='meal'+prev.k; prev.what='A meal or a proper snack'+(per?`, about ${per}g protein`:''); } }
+      else role='s'; }
+    taken[role]=true;
+    const tag= role==='b'? 'breakfast' : (role==='l'? 'lunch' : (role==='d'? 'last' : 'meal'+k));
+    const first=k===0, last=k===n-1;
+    const what= (n===1? 'Your meal' : (first? 'First meal' : (last? 'Last meal' : 'A meal')))+(per? `, about ${per}g protein` : '');
+    const why= n===1? 'Everything for the day goes in here: the protein, the fibre and the calories. Start with the protein.'
+      : first? 'The window opens. Put protein first: it is the meal that sets the rest of the day up.'
+      : last? 'The window closes after this. Two to three hours before bed is the aim; this is the last meal to count.'
+      : `Spreading protein across ${n} meals of about ${P} is the aim, and the day's total matters most.`;
+    items.push({tag,time:at,what,why,k});
+  }
+  if(trains){
+    const inside=((train-startR)%1440+1440)%1440<pat.lenMin;
+    items.push({tag:'train',time:train,what:kind==='lifting'? 'Train' : 'Cardio',
+      why: inside? 'Inside your window, so you can eat before or after it.'
+        : 'Outside your window: you train fasted, or after the fast. Fine for a short session; for a long or hard one, a meal beforehand helps.'});
+  }
+  items.push({tag:'coffee',time:Math.max(60,bed-480),what:'Last coffee',
+    why:'A full coffee within about eight hours of bed fragments sleep even when it does not feel like it. Black coffee does not break a fast.'});
+  const out=items.slice().sort((x,y)=>x.time-y.time).map(i=>{ const o=Object.assign({},i,{time:minToHhmm(abs(i.time))}); delete o.k; return o; });
+  return {items:out,bed:minToHhmm(bedA),train:minToHhmm(trainA),wake:minToHhmm(wakeA),kind,meals:n,per,pat};
+}
+/* which of breakfast, lunch and dinner are part of today's pattern */
+function eatRolesIn(){
+  const pl=patternPlan(); if(!pl) return ['b','l','d'];
+  const r=[]; pl.items.forEach(i=>{ if(i.tag==='breakfast') r.push('b'); else if(i.tag==='lunch') r.push('l'); else if(i.tag==='last') r.push('d'); });
+  return r;
+}
+const eatRoleOff=m=>!!eatPat()&&(m==='b'||m==='l'||m==='d')&&eatRolesIn().indexOf(m)<0;
+function firstMealRole(){ const pl=patternPlan(); if(!pl) return null; const r=eatRolesIn(); return r.indexOf('b')>=0? null : (r[0]||null); }
+function firstMealMin(){ const pl=patternPlan(); if(!pl) return null;
+  const f=pl.items.filter(i=>i.tag!=='train'&&i.tag!=='coffee')[0]; return f? hhmmToMin(f.time) : null; }
+const firstMealWord=()=>eatRoleOff('b')? 'your first meal' : 'breakfast';
+/* has the first meal of the pattern's day come round yet (plus some minutes)?
+   Always true with no pattern */
+function windowStarted(plus){
+  const fm=firstMealMin(); if(fm===null) return true;
+  const w=clockOf('wake'), rel=t=>((t-w)%1440+1440)%1440;
+  return rel(nowMins())>=rel(fm)+(plus||0);
+}
+/* the part of the day food is expected in, in minutes since waking, for the
+   protein pace (a window ends the day's eating early) */
+function foodHorizon(){
+  const pat=eatPat(); if(!pat) return null;
+  const w=clockOf('wake'), rel=t=>((t-w)%1440+1440)%1440, from=rel(pat.s);
+  return {from, to:Math.max(from+60,from+pat.lenMin)};
+}
+
+/* ---------- how well it is keeping to the window ---------- */
+function windowStats(days){
+  const pat=eatPat(); if(!pat) return null;
+  days=days||7; let logged=0, inside=0, outsideDays=[];
+  for(let i=1;i<=days;i++){
+    const k=addDays(todayKey(),-i), food=dayFood(k).filter(f=>f.at);
+    if(!food.length) continue;
+    logged++;
+    const out=food.filter(f=>{ const d=new Date(f.at); return !inWindowMin(d.getHours()*60+d.getMinutes(),pat); });
+    if(out.length) outsideDays.push(k); else inside++;
+  }
+  return logged? {logged,inside,outsideDays,pct:Math.round(inside/logged*100)} : null;
+}
+
+/* ---------- the fit, for this person's goals ---------- */
+function eatKind(draft){
+  if(!draft||draft.id==='regular') return 'reg';
+  const len=((hhmmToMin(draft.end)-hhmmToMin(draft.start))%1440+1440)%1440, fast=(1440-len)/60;
+  if(+draft.meals===1||draft.id==='omad') return 'one';
+  if(fast<=14.05) return 'light';
+  if(fast<=16.05) return 'mid';
+  return 'tight';
+}
+const FIT={
+  reg:  {lose:'good',build:'good',strong:'good',endure:'good',hold:'good',eat:'good'},
+  light:{lose:'good',build:'good',strong:'good',endure:'good',hold:'good',eat:'good'},
+  mid:  {lose:'ok',build:'care',strong:'care',endure:'care',hold:'ok',eat:'ok'},
+  tight:{lose:'care',build:'poor',strong:'poor',endure:'poor',hold:'care',eat:'care'},
+  one:  {lose:'poor',build:'poor',strong:'poor',endure:'poor',hold:'care',eat:'care'}
+};
+const FIT_WHY={
+  light:{_:'An overnight break of 12 to 14 hours is close to what many people already do. It changes little, so nothing here works against a goal.'},
+  mid:{
+    lose:'It can help if a window stops you grazing. The best long trial found it no better than eating to a calorie target (Liu and colleagues, 2022).',
+    hold:'Fine if it is easy to live with. It does not change what you burn.',
+    eat:'A clear rule is easy to follow. It does not make the food itself any better.',
+    build:'Possible, but a window makes the extra food and protein harder to fit in, and one 16:8 trial lost more lean mass than regular meals (Lowe and colleagues, 2020).',
+    strong:'Heavy training wants fuel around it. Lean mass held in small studies of lifters on fasting patterns, but none measured strength.',
+    endure:'Long efforts go better with food beforehand: across 46 studies a meal before improved prolonged aerobic work (Aird and colleagues, 2018).'},
+  tight:{
+    lose:'A short window is hard to keep and hard to get enough protein into. It is not better for fat loss than a calorie target.',
+    hold:'It can be kept, but it is more of a squeeze than a steadying habit needs.',
+    eat:'Less time means fewer chances to cook and eat well, not more.',
+    build:'Too little time to eat the food and the protein that growth needs, and no good evidence that it works.',
+    strong:'Heavy training wants fuel before and protein after, both of which a short window can squeeze out.',
+    endure:'Not enough fuel around long efforts, and eating before them is what helps.'},
+  one:{
+    lose:'The one small trial lost weight and also muscle and bone, and a large study linked one meal a day to higher death rates. Not worth the risk for fat loss.',
+    hold:'Possible, but one meal has to carry all your protein, fibre and vitamins.',
+    eat:'One meal has to carry everything, which is hard to do well.',
+    build:'One meal cannot carry the food and the protein that building muscle needs.',
+    strong:'One meal cannot fuel heavy training and recover from it.',
+    endure:'One meal cannot fuel training and recovery for running.'}
+};
+function eatCtx(){
+  const ob=(typeof onbDraft!=='undefined'&&onbDraft&&document.getElementById('onb')&&document.getElementById('onb').classList.contains('on'))? onbDraft : null;
+  const p=S.profile||{}, T=S.targets||{};
+  let aims= ob? [ob.aim||'lose'] : (typeof planAims==='function'? planAims() : [p.aim||'lose']);
+  const pd=(!ob&&typeof planDir==='function')? planDir() : null, dir=pd? pd.dir : null;
+  if(dir==='up'&&aims.indexOf('build')<0) aims=aims.concat(['build']);
+  if(dir==='down'&&aims.indexOf('lose')<0) aims=aims.concat(['lose']);
+  const lifts=+(ob? ob.liftDays : p.liftDays)||0, cardio=+(ob? ob.cardioDays : p.cardioDays)||0;
+  return {aims, dir, onb:!!ob,
+    kg:+(ob? ob.weight : p.weight)||null, cm:+(ob? ob.height : p.height)||null, age:+(ob? ob.age : p.age)||null,
+    protein: ob? null : (+T.protein||null), kcal: ob? null : (+T.kcal||null),
+    trains:(lifts+cardio)>0, trainMin:clockOf('train'), bedMin:clockOf('bed'), wakeMin:clockOf('wake')};
+}
+function eatFit(draft,ctx){
+  ctx=ctx||eatCtx();
+  const kind=eatKind(draft), n=+draft.meals||1;
+  const s=hhmmToMin(draft.start), en=hhmmToMin(draft.end), len=((en-s)%1440+1440)%1440, fastH=(1440-len)/60;
+  const rows=ctx.aims.map(a=>({aim:a,lv:(FIT[kind]||FIT.reg)[a]||'ok'}));
+  const pros=[], cons=[], numbers=[], steps=[];
+  const has=a=>ctx.aims.indexOf(a)>=0;
+  const eatsMuscle=has('build')||has('strong');
+  const cap=(lv)=>{ rows.forEach(r=>{ if(LV_ORD[r.lv]<LV_ORD[lv]) r.lv=lv; }); };
+  const bump=(pred,by)=>{ rows.forEach(r=>{ if(pred(r.aim)) r.lv=worse(r.lv,by||1); }); };
+  if(kind!=='reg'){
+    numbers.push('Window '+draft.start+' to '+draft.end+', '+fmtH(len)+' hours to eat and '+fmtH(1440-len)+' without food.');
+    /* safety first: things that move every row */
+    if(ctx.kg&&ctx.cm){ const bmi=ctx.kg/Math.pow(ctx.cm/100,2);
+      if(bmi<18.5&&fastH>=14){ cap('poor'); cons.push({t:'Your height and weight put you under 18.5 BMI. Skipping meals is not advised at that weight. Talk to your doctor first.',s:'rule of thumb'}); } }
+    if(ctx.age&&ctx.age>=65&&kind!=='light'){ cap('care'); cons.push({t:'From 65, losing muscle matters more and fasting is less studied. Ask your doctor first.',s:'Baylor College of Medicine'}); }
+    /* what it does to the food */
+    if(ctx.protein){ const pm=Math.round(ctx.protein/n);
+      numbers.push(ctx.protein+' g of protein a day is about '+pm+' g in each of '+n+' meal'+(n===1?'':'s')+'.');
+      if(n<=2&&pm>=60){ bump(a=>a==='build'||a==='strong',1);
+        cons.push({t:'About '+pm+' g of protein a meal is a lot of food at once. It is not wasted: a 100g dose kept muscle building going for over 12 hours in one trial. But the day\'s total is what counts, so a smaller total in a window is worse than a full one outside it.',s:'Trommelen and colleagues, 2023'}); } }
+    if(ctx.kcal){ const km=Math.round(ctx.kcal/n);
+      numbers.push(num(ctx.kcal)+' kcal a day is about '+num(km)+' in each meal.');
+      if(km>=1000&&(has('build')||ctx.dir==='up')){ bump(a=>a==='build',1); cons.push({t:'Eating '+num(ctx.kcal)+' kcal in '+n+' meal'+(n===1?'':'s')+' is about '+num(km)+' each. A surplus is hard to fit into a short window.',s:'rule of thumb'}); } }
+    /* training against the window */
+    if(ctx.trains){
+      const inside=((ctx.trainMin-s)%1440+1440)%1440<len;
+      numbers.push('Your usual session at '+minToHhmm(ctx.trainMin)+' is '+(inside? 'inside' : 'outside')+' the window.');
+      if(!inside){
+        /* one step worse, but never from be careful to not a good fit on this alone */
+        rows.forEach(r=>{ if((r.aim==='endure'||r.aim==='strong')&&LV_ORD[r.lv]<LV_ORD.care) r.lv=worse(r.lv,1); });
+        cons.push({t:'Your usual session at '+minToHhmm(ctx.trainMin)+' falls outside the window, so you train fasted or after the fast. A meal beforehand helped long efforts and made no difference to short ones.',s:'Aird and colleagues, 2018, 46 studies'});
+        steps.push('Open the window about two hours before you train, around '+minToHhmm(ctx.trainMin-120)+', or finish it after your session.');
+      } else steps.push('Keep the session inside the window and put protein in the meal after it.');
+    }
+    /* last meal against bed */
+    const endToBed=((ctx.bedMin-en)%1440+1440)%1440;
+    if(endToBed<120&&endToBed>=0){ cons.push({t:'The window closes '+fmtH(endToBed)+' hours before your usual bed time. Large meals within two to three hours of bed make sleep worse.',s:'sleep research'}); steps.push('Finish eating two to three hours before bed, by '+minToHhmm(ctx.bedMin-150)+'.'); }
+    /* where in the day */
+    if(s>=14*60&&(has('lose')||has('hold'))&&kind!=='light') cons.push({t:'A late window did worse than an early one: about 1.2 kg less weight lost and higher fasting insulin across 41 trials.',s:'BMJ Medicine, 2026, mostly indirect evidence'});
+    if(s<=10*60&&(has('lose')||has('hold'))) pros.push({t:'An early window, with your last meal before about 5pm, did better than a late one across 41 trials: about 1.2 kg more weight lost.',s:'BMJ Medicine, 2026'});
+    /* the general pros and cons of a window */
+    pros.push({t:'A clear rule: no grazing, fewer food decisions, and a defined end to the eating day.',s:''});
+    if(has('lose')||has('hold')) pros.push({t:'Windows were easy to keep in trials: 66 to 99% of the schedule followed, generally better than a plain calorie limit.',s:'41 trials, 2026'});
+    if(has('lose')&&kind!=='light') pros.push({t:'Added to a calorie deficit, windows gave about 2 kg more weight loss over 8 to 14 weeks in seven small trials. Low certainty, short trials.',s:'meta-analysis of 7 trials'});
+    if(has('lose')&&kind!=='light') cons.push({t:'The best long trial found no extra loss from a window: 8.0 kg against 6.3 kg for a calorie limit alone at 12 months, a gap that could be chance.',s:'Liu and colleagues, 2022, 139 adults'});
+    if(kind!=='light') cons.push({t:'A 12 week trial of 16:8 with no calorie advice lost no more weight than regular meals, and arm and leg lean mass fell more (0.64 kg against 0.17 kg, in a 50 person scan group).',s:'Lowe and colleagues, 2020'});
+    if(eatsMuscle&&kind!=='light') pros.push({t:'Lifting while on a fasting pattern mostly kept lean mass in eight small studies, with fat loss in five of them.',s:'2020 systematic review, 4 to 8 weeks'});
+    if(eatsMuscle&&kind!=='light') cons.push({t:'Those studies were short and none measured strength, so there is no good evidence a window helps a lift, and a short one makes protein and calories harder to hit.',s:''});
+    if(kind==='tight'||kind==='one') cons.push({t:'Windows under 8 hours were linked to higher cardiovascular death in a preliminary 2024 American Heart Association abstract. It is early and unconfirmed, but worth knowing.',s:'AHA 2024 abstract'});
+    if(kind==='one'){
+      cons.push({t:'One meal a day for 11 days at maintenance calories lost weight, fat and also muscle and bone in an 11 person trial.',s:'Frontiers in Physiology, 2021'});
+      cons.push({t:'A study of over 24,000 people over about 15 years linked one meal a day to higher death from any cause. That cannot show cause, but it is not a good sign.',s:'observational'}); }
+    steps.push('Keep the day\'s protein at '+(ctx.protein? ctx.protein+' g' : 'your target')+', whatever the window. If you cannot, widen the window.');
+    steps.push('Weigh in and watch your lifts. If either slides, or you feel flat, widen it.');
+  } else {
+    pros.push({t:'Nothing to plan: eat when you are hungry across the day. Protein spread over four or so meals has a small edge for muscle.',s:'Schoenfeld and Aragon, 2018'});
+    cons.push({t:'Easier to graze, and no rule to stop it. If late snacking is where the calories go, a window can help with that.',s:''});
+  }
+  /* what each goal gets */
+  const overall=rows.reduce((a,r)=>LV_ORD[r.lv]>LV_ORD[a]? r.lv : a,'good');
+  rows.forEach(r=>{ r.why= kind==='reg'? '' : ((FIT_WHY[kind]&&(FIT_WHY[kind][r.aim]||FIT_WHY[kind]._))||''); });
+  return {kind,rows,overall,pros,cons,numbers,steps};
+}
+/* the safety note, before anything past an overnight break */
+const EAT_SAFETY=['Pregnant or breastfeeding',
+  'A history of an eating disorder, or if skipping meals worries you',
+  'Diabetes, or medicines that depend on when you eat',
+  'Under 18, or older with memory problems',
+  'Training hard and needing to fuel it'];
+const eatNeedsAck=d=>d.id!=='regular'&&eatKind(d)!=='light';
+
+/* ---------- the picker ---------- */
+let ED=null;   /* the draft being looked at: {id,start,end,meals} */
+const eatOnb=()=>{ try{ return !!(document.getElementById('onb')&&document.getElementById('onb').classList.contains('on')&&typeof onbDraft!=='undefined'&&onbDraft); }catch(e){ return false; } };
+/* a sensible start for each pattern: shifted earlier if the window would run
+   into the two and a half hours before bed */
+function eatSuggest(id){
+  const def=EAT_DEFS[id], wake=clockOf('wake'), bed=clockOf('bed');
+  const rel=t=>((t-wake)%1440+1440)%1440;
+  const base={'12-12':wake+60,'14-10':wake+180,'16-8':12*60,'18-6':13*60,'20-4':15*60,two:12*60+30,omad:18*60+30,custom:11*60}[id];
+  let start=((base%1440)+1440)%1440, len=def.len? def.len*60 : (id==='omad'? 60 : (id==='two'? 6.5*60+60 : 9*60));
+  if(id==='two') len=Math.round((19*60-start)+60);
+  const bedRel=rel(bed)||960;
+  if(rel(start)+len>bedRel-150&&id!=='two'){ start=((start-(rel(start)+len-(bedRel-150)))%1440+1440)%1440; start=Math.round(start/15)*15; }
+  const meals=def.meals||3;
+  return {id,start:minToHhmm(start),end:minToHhmm(start+len),meals};
+}
+function eatDraftFrom(id){
+  if(id==='regular') return {id,start:'',end:'',meals:0};
+  const cur=eatPat();
+  if(cur&&cur.id===id) return {id,start:cur.start,end:cur.end,meals:cur.meals};
+  return eatSuggest(id);
+}
+function eatSetTime(which,val){
+  const m=hhmmToMin(val); if(m===null||!ED) return;
+  const d=ED, def=EAT_DEFS[d.id], lenNow=((hhmmToMin(d.end)-hhmmToMin(d.start))%1440+1440)%1440;
+  if(d.id==='two'){
+    if(which==='start'){ const second=hhmmToMin(d.end)-60; d.start=minToHhmm(m); d.end=minToHhmm(second+60); }
+    else d.end=minToHhmm(m+60);
+  } else if(d.id==='omad'){ d.start=minToHhmm(m); d.end=minToHhmm(m+60); }
+  else if(d.id==='custom'){ if(which==='start') d.start=minToHhmm(m); else d.end=minToHhmm(m); }
+  else { if(which==='start'){ d.start=minToHhmm(m); d.end=minToHhmm(m+(def.len? def.len*60 : lenNow)); } }
+}
+function eatSecond(d){ return minToHhmm(hhmmToMin(d.end)-60); }
+function eatValid(d){
+  if(d.id==='regular') return true;
+  const s=hhmmToMin(d.start), e=hhmmToMin(d.end); if(s===null||e===null) return false;
+  const len=((e-s)%1440+1440)%1440;
+  if(d.id==='two') return len>=120;
+  return len>=30&&len<=1200;
+}
+function drawEatSheet(){
+  if(!ED) return;
+  const d=ED, ctx=eatCtx(), fit=eatFit(d,ctx), def=EAT_DEFS[d.id], cur=eatPatId(), curPat=eatPat();
+  const sheet=document.getElementById('altSheet'), keep=sheet? sheet.scrollTop : 0;
+  const same=curPat? (curPat.id===d.id&&curPat.start===d.start&&curPat.end===d.end&&curPat.meals===d.meals) : d.id==='regular';
+  const ack=!!(S.profile&&S.profile.fastAck), needs=eatNeedsAck(d), okToUse=eatValid(d)&&(!needs||ack);
+  const chip=id=>{ const dd=eatDraftFrom(id), f=eatFit(dd,ctx), on=id===d.id;
+    return `<button class="rt-cuechip ep-chip ${on?'on':''}" data-eatpick="${id}" aria-pressed="${on}" aria-label="${EAT_DEFS[id].t}, ${LV_WORD[f.overall]}">
+      <i class="ep-dot d-${LV_TONE[f.overall]}" aria-hidden="true"></i>${EAT_DEFS[id].chip}${cur===id? '<em>Now</em>' : ''}</button>`; };
+  const time=(id,label,val,key)=>`<div class="nf"><label for="${id}">${label}</label><input id="${id}" type="time" step="900" value="${val}" data-eattime="${key}"></div>`;
+  let ctl='';
+  if(d.id==='two') ctl=`<div class="ep-pair">${time('epFirst','First meal at',d.start,'start')}${time('epSecond','Second meal at',eatSecond(d),'end')}</div>`;
+  else if(d.id==='omad') ctl=time('epOnce','Your meal at',d.start,'start');
+  else if(d.id==='custom') ctl=`<div class="ep-pair">${time('epStart','Window opens',d.start,'start')}${time('epEnd','Window closes',d.end,'end')}</div>`;
+  else if(d.id!=='regular') ctl=time('epStartP','First meal at',d.start,'start');
+  const stepper= (d.id!=='regular'&&d.id!=='omad'&&d.id!=='two')? `<div class="ep-meals"><span>Meals in the window</span>
+      <button class="mini" data-eatmeals="-1" aria-label="One fewer meal"${d.meals<=1?' disabled':''}>−</button><b>${d.meals}</b>
+      <button class="mini" data-eatmeals="1" aria-label="One more meal"${d.meals>=EAT_MEALS_MAX?' disabled':''}>+</button></div>` : '';
+  const goals=fit.rows.map(r=>`<div class="ep-goal"><span class="ep-gw d-${LV_TONE[r.lv]}">${LV_WORD[r.lv]}</span><b>${aimOf(r.aim).t}</b>${r.why? `<span class="ep-gs">${escHabit(r.why)}</span>` : ''}</div>`).join('');
+  const li=(arr,cls)=>arr.length? `<ul class="ep-list ${cls}">${arr.map(x=>`<li>${escHabit(x.t)}${x.s? ` <small>${escHabit(x.s)}</small>` : ''}</li>`).join('')}</ul>` : '';
+  const regular=d.id==='regular';
+  const stat=windowStats(7), adh= (!regular&&curPat&&curPat.id===d.id&&stat)? `<div class="note">Last 7 days: ${stat.inside} of ${stat.logged} logged days were entirely inside your window.</div>` : '';
+  $('altTitle').textContent='Eating pattern';
+  $('altSub').textContent='When you eat, not what. Your total calories still decide your weight.';
+  $('altBody').innerHTML=`<div class="ep">
+    <div class="ep-chips" role="group" aria-label="Eating pattern">${EAT_ORDER.map(chip).join('')}</div>
+    <div class="ep-head"><b>${def.t}</b><span>${def.s}</span></div>
+    ${regular? '' : `<div class="ep-ctl">${ctl}${stepper}</div>`}
+    <div class="slab">For your goals</div>
+    <div class="ep-goals">${goals}</div>
+    ${regular? '' : `<div class="slab">What it would change</div>
+    <ul class="ep-nums">${fit.numbers.map(x=>`<li>${escHabit(x)}</li>`).join('')}</ul>`}
+    <div class="slab">The good</div>${li(fit.pros,'pro')}
+    <div class="slab">The catch</div>${li(fit.cons,'con')}
+    ${fit.steps.length? `<div class="slab">To make it work</div><ul class="ep-list">${fit.steps.map(x=>`<li>${escHabit(x)}</li>`).join('')}</ul>` : ''}
+    ${adh}
+    ${needs? `<div class="ep-safe"><b>Before you start: ask your doctor first if any of these are you</b>
+      <ul>${EAT_SAFETY.map(x=>`<li>${x}</li>`).join('')}</ul>
+      <button class="rt-cuechip ep-ack ${ack?'on':''}" data-eatack="1" aria-pressed="${ack}">${ack? 'Read, and none of that is me, or I have asked' : 'I have read this'}</button></div>` : ''}
+    <button class="sheetcta ep-use" data-eatuse="1" style="margin:14px 0 6px;width:100%"${okToUse&&!same? '' : ' disabled'}>${same? (regular? 'This is your pattern now' : 'This is your pattern now') : (regular? 'Back to regular meals' : 'Use '+def.t)}</button>
+    ${needs&&!ack? '<div class="note">Read the note above to turn this on.</div>' : ''}
+    <div class="method"><b>Where this comes from</b><span>${EAT_EVIDENCE}</span></div>
+  </div>`;
+  openSheet('altSheet');
+  const s2=document.getElementById('altSheet'); if(s2) s2.scrollTop=keep;
+}
+function openEatPattern(){
+  if(!eatAdult()){ toast('Regular meals are what work while you are growing'); return; }
+  const ob=eatOnb(), curOb=ob&&onbDraft.eat;
+  ED= curOb? {id:onbDraft.eat.id,start:onbDraft.eat.start,end:onbDraft.eat.end,meals:onbDraft.eat.meals} : eatDraftFrom(eatPatId());
+  drawEatSheet();
+}
+function eatCommit(){
+  const d=ED; if(!d||!eatValid(d)) return false;
+  if(eatNeedsAck(d)&&!(S.profile&&S.profile.fastAck)) return false;
+  const regular=d.id==='regular';
+  const val= regular? {id:'regular'} : {id:d.id,start:minToHhmm(hhmmToMin(d.start)),end:minToHhmm(hhmmToMin(d.end)),meals:d.meals};
+  if(eatOnb()){ onbDraft.eat=val; closeSheets(); onbRender(); toast(regular? 'Regular meals' : EAT_DEFS[d.id].t+' noted. You can change it any time.'); return true; }
+  const before=S.profile.eat? JSON.parse(JSON.stringify(S.profile.eat)) : null;
+  S.profile.eat=val; save(); closeSheets(); renderAll();
+  toast(regular? 'Back to regular meals' : (eatPat()? eatPat().label+', '+eatPat().start+' to '+eatPat().end : 'Saved'),'Undo',()=>{ if(before) S.profile.eat=before; else delete S.profile.eat; save(); renderAll(); });
+  return true;
+}
+document.addEventListener('click',e=>{
+  const op=e.target.closest('[data-eatopen]');
+  if(op){ openEatPattern(); return; }
+  const pk=e.target.closest('[data-eatpick]');
+  if(pk&&ED){ ED=eatDraftFrom(pk.dataset.eatpick); drawEatSheet(); return; }
+  const ms=e.target.closest('[data-eatmeals]');
+  if(ms&&ED){ ED.meals=Math.max(1,Math.min(EAT_MEALS_MAX,(+ED.meals||1)+(+ms.dataset.eatmeals||0))); drawEatSheet(); return; }
+  const ak=e.target.closest('[data-eatack]');
+  if(ak){ S.profile.fastAck= S.profile.fastAck? null : todayKey(); save(); drawEatSheet(); return; }
+  if(e.target.closest('[data-eatuse]')){ eatCommit(); return; }
+});
+document.addEventListener('change',e=>{
+  const tt=e.target.closest&&e.target.closest('[data-eattime]');
+  if(tt&&ED){ eatSetTime(tt.dataset.eattime,tt.value); drawEatSheet(); }
+});
+
+/* ---------- where it shows ---------- */
+/* the top of Eat: the pattern, the clock, and a way to change it */
+function fastStrip(){
+  if(!eatAdult()) return '';
+  const w=windowState();
+  if(!w) return `<div class="fastrow"><span>Eating pattern: <b>Regular meals</b></span><button class="inlinebtn" data-eatopen="1">Change</button></div>`;
+  const left= w.open? fmtLeft(w.leftMin)+' left in your window' : 'Fasting for '+fmtLeft(w.fastedMin)+', window opens at '+w.pat.start+' in '+fmtLeft(w.opensInMin);
+  return `<section class="eatcard fastcard ${w.open?'open':'shut'}">
+    <div class="fk"><span>${w.pat.label} · ${w.pat.start} to ${w.pat.end}</span><button class="inlinebtn" data-eatopen="1">Change</button></div>
+    <div class="fs">${left}</div>
+    <div class="fbar" role="img" aria-label="${w.open? 'Window' : 'Fast'} ${Math.round(w.frac*100)} percent through"><i style="width:${Math.round(Math.max(0,Math.min(1,w.frac))*100)}%"></i></div></section>`;
+}
+function eatPatternLabel(){
+  const p=eatPat(); if(!p) return 'Regular meals';
+  if(p.id==='two'||p.id==='omad') return p.label+' · '+(p.id==='omad'? p.start : p.start+' and '+minToHhmm(p.e-60));
+  return p.label+' · '+p.start+' to '+p.end;
+}
+if(window.__G){
+  Object.assign(window.__G,{EAT_DEFS,EAT_ORDER,EAT_SAFETY,FIT,eatPat,eatPatId,eatPatternLabel,eatKind,eatFit,eatCtx,eatSuggest,eatDraftFrom,eatRolesIn,eatRoleOff,
+    windowState,windowText,windowStats,patternPlan,inWindowMin,firstMealMin,firstMealRole,firstMealWord,foodHorizon,windowStarted,openEatPattern,eatCommit,fastStrip,windowChip,eatSetTime,eatValid,drawEatSheet});
+  Object.defineProperty(window.__G,'ED',{get:()=>ED,set:v=>{ED=v},configurable:true});
 }
 /* ===================== Barcode scanning (build 76) =====================
    Feargal: a scan button in the food search and on Eat; the camera finds the
@@ -15551,6 +16090,8 @@ function nextCandidates(at){
       why: ss.last7>=3&&ss.avg<ss.target.lo? `You have averaged ${ss.avg.toFixed(1)} hours this week, under the ${ss.target.lo} hour aim.` : 'A similar time each night helps as much as the hours.',
       act:`<button class="mini" data-opensleep="1">See sleep</button>`});
   }
+  /* build 81: habits that are due, and yesterday's that were not logged */
+  if(typeof habitCandidates==='function') habitCandidates(at).forEach(o=>add(o.score,o.cand));
   return out.sort((a,b)=>b.score-a.score);
 }
 /* ---------- build 67: what comes after, with its time ----------
@@ -15590,6 +16131,7 @@ function laterToday(at){
   if(i===ciDay&&typeof checkinDone==='function'&&!checkinDone()) add('checkin',c.bedAbs-300,'Weekly check in');
   if(!day.checkedIn) add('daycheck',c.bedAbs-210,"Today's check-in");
   if(typeof lightsOut==='function'){ const lo=hhmmToMin(lightsOut()); if(lo!==null) add('bed',lo,'Lights out'); }
+  if(typeof habitLater==='function') habitLater(at).forEach(x=>out.push(x));
   return out.sort((a,b)=>a.rel-b.rel);
 }
 /* The one line after the card: the first thing later today that is not the
@@ -16588,9 +17130,13 @@ function cueTimes(){
   let slots=[]; try{ slots=mealSlots(todayKey()).slots; }catch(e){}
   const role=r=>{ const s=slots.find(x=>x.role===r); return s? s.min : null; };
   out.breakfast=role('b'); out.lunch=role('l'); out.dinner=role('d');
-  if(out.breakfast===null) out.breakfast=(out.wake+60)%1440;
-  if(out.lunch===null) out.lunch=(out.wake+330)%1440;
-  if(out.dinner===null) out.dinner=(out.bed-240+1440)%1440;
+  /* with a chosen eating pattern the cues follow the window: a 16:8 day has
+     no breakfast, so the breakfast cue is the first meal */
+  const pat=(typeof eatPat==='function')? eatPat() : null;
+  const fm=pat&&typeof firstMealMin==='function'? firstMealMin() : null;
+  if(out.breakfast===null) out.breakfast= fm!==null? fm : (out.wake+60)%1440;
+  if(out.lunch===null) out.lunch= pat? (pat.s+Math.round(pat.lenMin/2))%1440 : (out.wake+330)%1440;
+  if(out.dinner===null) out.dinner= pat? (pat.e-60+1440)%1440 : (out.bed-240+1440)%1440;
   out.train=(out.train+60)%1440;
   out.dinner=(out.dinner+30)%1440;
   out.evening=(out.bed-180+1440)%1440;
@@ -16615,7 +17161,7 @@ const PARTS={am:'Morning',day:'Day',pm:'Evening',any:'Any time today'};
 function autoMet(id,k){
   const per=(typeof perMealProtein==='function'? perMealProtein() : null);
   const pIn=m=>dayFood(k).filter(f=>(f.meal||'s')===m).reduce((a,f)=>a+(+f.p||0)*(+f.q||1),0);
-  if(id==='protein_am'){ const g=pIn('b'); return g>=Math.min(30,per||30)? Math.round(g) : null; }
+  if(id==='protein_am'){ const g=pIn((typeof firstMealRole==='function'&&firstMealRole())||'b'); return g>=Math.min(30,per||30)? Math.round(g) : null; }
   if(id==='protein_lunch'){ const g=pIn('l'); return g>=(per||25)? Math.round(g) : null; }
   if(id==='protein_snack'){ const g=pIn('s'); return g>=20? Math.round(g) : null; }
   return null;
@@ -16796,7 +17342,9 @@ function itemStatus(it){
 function routineRow(it){
   const done=it.st==='kept'||it.st==='auto'||it.st==='tiny', stop=it.meta.kind==='stop';
   const name=(stop?'Stop: ':'')+escHabit(it.meta.t);
-  const cueLine=CUES[it.cue].short+(it.at!==null? ' · '+rtClock(it.at) : '');
+  const dueD=(!it.sn&&typeof habitDue==='function')? habitDue(it.h,it.meta) : null;
+  const dueState=dueD&&it.st==='open'? (dueDelta(dueD)<=0? ' due' : (dueDelta(dueD)<=SOON_MIN? ' soon' : '')) : '';
+  const cueLine=CUES[it.cue].short+(it.at!==null? ' · '+rtClock(it.at) : '')+(dueD&&dueD.set? ' · '+(dueD.eod? 'end of day ' : 'by ')+dueD.t : (dueD&&dueD.eod? ' · end of day '+dueD.t : ''));
   const pct= it.sn? 1 : it.L.strength;
   const tog= it.sn? `data-sntoggle="${it.id}"` : `data-habittoggle="${it.slot}"`;
   const open= it.sn? `data-snopen="${it.id}"` : `data-habitopen="${it.slot}"`;
@@ -16805,7 +17353,7 @@ function routineRow(it){
       <button class="rt-tiny" data-habittiny="${it.slot}">${escHabit(it.tiny)}</button></div>` : '';
   return `<div class="rt-item ${done?'done':''} ${stop?'stop':''} ${it.sn?'sn':''} ${it.st==='off'?'off':''}">
     <button class="rt-tick" ${tog} aria-label="${label}" aria-pressed="${done}"${it.st==='off'?' disabled':''}>${strengthRing(pct,done,stop,it.sn)}</button>
-    <button class="rt-txt" ${open} aria-label="${name}: open it"><b>${name}</b><span class="rt-cue">${cueLine}</span><span class="rt-st">${itemStatus(it)}</span></button>
+    <button class="rt-txt" ${open} aria-label="${name}: open it"><b>${name}</b><span class="rt-cue${dueState}">${cueLine}</span><span class="rt-st">${itemStatus(it)}</span></button>
     ${nudge}</div>`;
 }
 /* the one automaticity check due now, if any (oldest habit first) */
@@ -16922,6 +17470,9 @@ function openHabitOne(slot){
     ${today.st==='off'? `<div class="note">Today is not one of its days.</div>`
       : `<button class="sheetcta" data-habittoggle="${slot}" style="margin:10px 0;width:100%">${done? 'Untick today' : (stop? 'Mark today: went without' : 'Mark today done')}</button>`}
     <div class="slab">The last eight weeks</div>${habitGrid(L)}
+    <div class="slab">Do it by</div>
+    ${(()=>{ const d=habitDue(h,meta); return `<div class="note">${d.set||d.eod? (d.eod? 'End of day, '+d.t : 'By '+d.t) : 'Not set. It is asked about at '+d.t+'.'}</div>
+      <button class="sheetcta" data-dueedit="${slot}" style="margin:6px 0 10px;width:100%">${d.set||d.eod? 'Change the time or reminder' : 'Set a time and a reminder'}</button>`; })()}
     <div class="slab">When it happens</div>
     <div class="rt-cues">${CUE_ORDER.map(c=>`<button class="rt-cuechip ${c===cue?'on':''}" data-habitcue="${slot}:${c}">${CUES[c].short}${times[c]!==null? ' '+rtClock(times[c]) : ''}</button>`).join('')}</div>
     <div class="note">${CUES[cue].t}. Hanging a habit off something you already do is what makes it automatic; a reminder alone gets it done without making it a habit (Stawarz and colleagues 2015).</div>
@@ -17011,6 +17562,392 @@ Object.assign(window.__G,{CUES,HABIT_CUE,HABIT_TINY,HABIT_OUT,SRBAI,RT_K,RT_MISS
   cueOf,tinyOf,cueTimes,partOf,autoMet,syncAutoTicks,restDaysFor,habitLedger,habitOutlook,habitEffect,checkDue,canGraduate,
   recordCheck,graduateHabit,backToTraining,secondNature,routineItems,routineBlock,suggestRoutine,openSecondNature,openHabitOne});
 Object.defineProperty(window.__G,'rtCheck',{get:()=>rtCheck,set:v=>{rtCheck=v},configurable:true});
+/* ===================== Habit due times and reminders (build 81) =====================
+   Feargal: "I keep forgetting to log my habits." Habits sat at the bottom of
+   Today with a tick and nothing ever asked for it. He wants them brought to
+   his attention, a time asked for when a habit is added, and daily habits that
+   need the day to be over (a stop habit, "no phone in bed") to be loggable at
+   the end of the day, around 9pm.
+
+   What the research says, and so what this does:
+   - A when and a where help. Plans in the form "when X happens I will do Y"
+     raised goal attainment across 94 independent tests, d = 0.65, a medium to
+     large effect (Gollwitzer and Sheeran, 2006). So a habit gets a time to be
+     done by, asked for in one tap when it is added.
+   - A prompt at the moment helps but does not make a habit automatic: apps
+     that only remind get the thing done and do little for automaticity
+     (Stawarz, Cox and Blandford, 2015). The habits keep their cue (a meal,
+     waking, bed) and the time sits beside it, it does not replace it.
+   - People do not mind a daily prompt. In a small 2017 trial of a stress app
+     (77 people, exploratory), daily notifications were viewed and acted on
+     more than occasional ones and did not drive people away (Morrison and
+     colleagues, 2017). It is a small, early study; the prompts here are one
+     card at a time, only for a habit that is open, and can be turned off.
+   - A miss is not a failure: after a broken run people tend to drop off, and
+     messages pointing at it do not bring them back (Silverman and Barasch,
+     2023). So nothing here says "missed" or "lost": a late habit says "still
+     open today", and a habit from yesterday can be logged until midday.
+   - Habits take a median of 66 days to become automatic (Lally and
+     colleagues, 2010), so the point of a reminder is to carry it until then.
+
+   What a web app can and cannot do, said plainly in the app:
+   - A reminder that arrives with the app closed needs a server to push it
+     (Web Push) and an account on it. This app is local first and has no such
+     server for habits, so the phone reminder here is set by the app itself and
+     arrives while Gauntlet is open or still running in the background. On an
+     iPhone it also needs Gauntlet on the Home Screen.
+   - The reliable closed-app reminder is the phone's own calendar: each habit
+     can be exported as a daily event with an alert at its time (.ics).
+   - Badges (the number on the icon) work for an installed app where the phone
+     allows them, and are cleared when the habits are done.
+   - The prompts on Today and the end of day card work for everyone.
+   The 21:00 end of day, the hour before as "soon" and the 8 hours after waking
+   for yesterday's catch-up are this app's own rules of thumb. */
+
+const REMIND_EVIDENCE=`A plan that says when you will do something raised goal achievement across 94 independent tests, d = 0.65, a medium to large effect (Gollwitzer and Sheeran, 2006). Reminders alone get a habit done but do little for making it automatic, which is why each habit keeps its cue and the time sits beside it (Stawarz and colleagues, 2015). In a small exploratory trial of 77 people, daily prompts were viewed and acted on more than occasional ones and did not put people off (Morrison and colleagues, 2017). A habit takes a median of 66 days to become automatic (Lally and colleagues, 2010). Nothing here calls a late habit missed: a habit from yesterday can be logged until midday. The 21:00 end of day, the hour of notice and the eight hours of catch-up are this app's rules of thumb.`;
+const EOD_DEFAULT='21:00';
+const SOON_MIN=60;          /* "by" turns to "due soon" this long before */
+const CATCH_HOURS=8;        /* yesterday can be logged this long after waking */
+const WD_ICS=['SU','MO','TU','WE','TH','FR','SA'];
+const hhmmOk=t=>hhmmToMin(t)!==null;
+const q15=m=>Math.round(((m%1440)+1440)%1440/15)*15%1440;
+
+/* ---------- settings, all on by default except phone reminders ---------- */
+const hrOn=key=>{ const p=S.profile||{}; return key==='notes'? !!p.habitNotes : p['habit_'+key]!==false; };
+const eodTime=()=>{ const t=S.profile&&S.profile.eodTime; return hhmmOk(t)? t : EOD_DEFAULT; };
+
+/* ---------- when each habit is due ----------
+   h.due is a clock time the person chose; h.eod says it is an end of day habit
+   (logged once the day is done). With neither, the habit gets a time from its
+   cue so nobody has to set anything up: a stop habit is judged at the end of
+   the day, another one an hour after its moment in the day. */
+function habitDue(h,meta){
+  const stop=meta&&meta.kind==='stop';
+  if(h&&hhmmOk(h.due)) return {t:h.due,min:hhmmToMin(h.due),set:true,eod:!!h.eod};
+  if(h&&h.eod) return {t:eodTime(),min:hhmmToMin(eodTime()),set:false,eod:true};
+  if(stop) return {t:eodTime(),min:hhmmToMin(eodTime()),set:false,eod:true};
+  const cue=cueOf(h,meta), at=cueTimes()[cue];
+  const w=clockOf('wake'), rel=m=>((m-w)%1440+1440)%1440, bed=rel(clockOf('bed'))||960;
+  let r= at===null? rel(hhmmToMin(eodTime())-60) : rel(at)+60;
+  r=Math.min(r,bed-60);
+  const m=q15(w+r);
+  return {t:minToHhmm(m),min:m,set:false,eod:false};
+}
+/* where the clock is against a habit's time, in minutes: positive is still to come */
+function dueDelta(d,at){
+  const w=clockOf('wake'), rel=m=>((m-w)%1440+1440)%1440;
+  const now=typeof at==='number'? at : nowMins();
+  return rel(d.min)-rel(now);
+}
+/* the open habits today, each with how pressing it is */
+function habitsToLog(at){
+  const k=todayKey(), out=[];
+  activeHabits().forEach(x=>{
+    const h=habitSlots()[x.slot], meta=habitOf(h.id); if(!meta) return;
+    if(!habitApplies(meta,k)||k<h.started) return;
+    const L=habitLedger(h,meta), today=L.days[L.days.length-1]||{st:'open'};
+    if(today.st!=='open') return;
+    const d=habitDue(h,meta), delta=dueDelta(d,at);
+    const state= delta>SOON_MIN? 'later' : (delta>0? 'soon' : 'due');
+    out.push({slot:x.slot,h,meta,due:d,delta,state,stop:meta.kind==='stop',tiny:tinyOf(h,meta)});
+  });
+  return out.sort((a,b)=>a.delta-b.delta);
+}
+/* yesterday's open ends: not logged, and the morning is not over yet */
+function habitCatchUp(at){
+  const c=dayClock(at); if(c.n>=CATCH_HOURS*60) return [];
+  const y=addDays(todayKey(),-1), out=[];
+  activeHabits().forEach(x=>{
+    const h=habitSlots()[x.slot], meta=habitOf(h.id); if(!meta||y<h.started) return;
+    if(!habitApplies(meta,y)||h.skipCatch===y) return;
+    const L=habitLedger(h,meta), yd=L.days.find(d=>d.k===y);
+    if(yd&&(yd.st==='miss'||yd.st==='rest')) out.push({slot:x.slot,h,meta,k:y,stop:meta.kind==='stop'});
+  });
+  return out;
+}
+const dueWord=(it)=> it.due.eod? 'end of day' : 'by '+it.due.t;
+const pressing=a=>a.filter(x=>x.state==='due'||x.state==='soon');
+
+/* ---------- Up next ---------- */
+function habitCandidates(at){
+  if(!hrOn('prompts')) return [];
+  const out=[], c=dayClock(at);
+  const list=pressing(habitsToLog(at)), eodNow=list.filter(x=>x.state==='due'&&x.due.eod);
+  const act=it=>`<button class="mini go" data-habittoggle="${it.slot}">${escHabit(it.stop? 'Went without' : 'Done')}</button>`+
+    (it.tiny&&!it.stop? `<button class="mini" data-habittiny="${it.slot}">Tiny version</button>` : '');
+  if(list.length===1){
+    const it=list[0], eod=it.due.eod, late=it.state==='due';
+    out.push({score: eod&&late? 95 : (late? 91 : 76), cand:{id:'habit',tone:'green',
+      kick: late? (eod? 'End of the day' : 'Due, '+dueWord(it)) : 'Coming up, '+dueWord(it),
+      title: (it.stop? 'Stop: ' : '')+escHabit(it.meta.t),
+      why: late? (eod? 'This one is judged once the day is done. Log it now, a second.' : 'Still open today. Log it now, a second, or open it for the tiny version.')
+        : 'Due '+dueWord(it)+', in about '+fmtIn(it.delta)+'.',
+      act:act(it)}});
+  } else if(list.length>1){
+    const late=list.some(x=>x.state==='due'), eod=eodNow.length>0;
+    out.push({score: eod? 95 : (late? 91 : 76), cand:{id:'habit',tone:'green',
+      kick: eod? 'End of the day' : (late? 'Due' : 'Coming up'),
+      title: eod? 'Close the day: your habits' : 'Habits to log',
+      why: eod? 'Tap each one you kept today. Anything you leave stays open until the day ends.' : 'Tap each one as you do it.',
+      act:list.map(it=>`<button class="mini ${it.state==='due'?'go':''}" data-habittoggle="${it.slot}" aria-label="${escHabit((it.stop?'Went without ':'Done: ')+it.meta.t)}">${escHabit((it.stop?'Stop: ':'')+it.meta.t)}</button>`).join('')}});
+  }
+  const cu=habitCatchUp(at)[0];
+  if(cu) out.push({score:78,cand:{id:'habitcatch',tone:'amber',kick:'Yesterday',
+    title:(cu.stop? 'Did you go without ' : 'Did you do ')+escHabit(cu.meta.t)+' yesterday?',
+    why:'It was not logged. Log it now if you did, and it counts.',
+    act:`<button class="mini go" data-habitcatch="${cu.slot}|${cu.k}">Yes, I did</button><button class="mini" data-habitcatch="${cu.slot}|${cu.k}|no">No</button>`}});
+  return out;
+}
+/* the later-today list and the "Then" line */
+function habitLater(at){
+  if(!hrOn('prompts')) return [];
+  const c=dayClock(at);
+  /* a habit that is due still shows after the card, so the evening check in
+     does not hide it */
+  return habitsToLog(at).map(it=>{
+    const m=((it.due.min%1440)+1440)%1440, rel=c.rel(m);
+    return {id:'habit',rel,time:minToHhmm(m),title:(it.stop?'Stop: ':'')+it.meta.t+(it.due.eod? ' (end of day)' : ''),role:null,due:rel<=c.n};
+  });
+}
+
+/* ---------- the number on the icon ---------- */
+function habitBadgeCount(){ return pressing(habitsToLog()).filter(x=>x.state==='due').length; }
+let badgeNow=null;
+function updateBadge(){
+  const n=hrOn('badge')&&hrOn('prompts')? habitBadgeCount() : 0;
+  if(n===badgeNow) return; badgeNow=n;
+  try{
+    if(n>0&&navigator.setAppBadge) navigator.setAppBadge(n).catch(()=>{});
+    else if(navigator.clearAppBadge) navigator.clearAppBadge().catch(()=>{});
+  }catch(e){}
+}
+
+/* ---------- phone reminders, set by the app itself ---------- */
+const HNOTE_KEY='gauntlet.habitnote';
+let hnTimers=[];
+function clearHabitNotes(){ hnTimers.forEach(clearTimeout); hnTimers=[]; }
+function habitNoteState(){
+  if(!canNudge()) return 'unsupported';
+  if(Notification.permission==='denied') return 'blocked';
+  if(!hrOn('notes')) return 'off';
+  return Notification.permission==='granted'? 'on' : 'pending';
+}
+async function enableHabitNotes(){
+  if(!canNudge()){ toast(onIOS()&&!installed()? 'Add Gauntlet to your Home Screen first, then turn phone reminders on' : 'This browser cannot do reminders'); return false; }
+  let perm=Notification.permission;
+  if(perm==='default'){ try{ perm=await Notification.requestPermission(); }catch(e){ perm='denied'; } }
+  if(perm!=='granted'){ toast('Reminders are blocked in your browser settings'); return false; }
+  S.profile.habitNotes=true; save(); scheduleHabitNotes();
+  toast('Phone reminders on. They arrive while Gauntlet is open or running in the background.');
+  return true;
+}
+function disableHabitNotes(){ S.profile.habitNotes=false; save(); clearHabitNotes(); toast('Phone reminders off'); }
+async function fireHabitNote(slot){
+  if(habitNoteState()!=='on') return false;
+  const h=currentHabit(slot), meta=h&&habitOf(h.id); if(!meta||h.remind===false) return false;
+  const it=habitsToLog().find(x=>x.slot===slot); if(!it) return false;   /* already logged: say nothing */
+  let seen={}; try{ seen=JSON.parse(localStorage.getItem(HNOTE_KEY)||'{}'); }catch(e){}
+  const key=todayKey()+':'+slot;
+  if(seen[key]) return false;
+  const title=(it.stop? 'Stop: ' : '')+meta.t;
+  const opts={body: it.due.eod? 'End of the day. Tap to log it.' : 'Due '+it.due.t+'. A second to log.', tag:'gauntlet-habit-'+slot, data:{url:'./?go=today'}};
+  let sent=false;
+  try{
+    if('serviceWorker' in navigator&&navigator.serviceWorker.getRegistration){
+      const reg=await navigator.serviceWorker.getRegistration();
+      if(reg&&reg.showNotification){ await reg.showNotification(title,opts); sent=true; }
+    }
+  }catch(e){}
+  if(!sent){ try{ new Notification(title,opts); sent=true; }catch(e){} }
+  if(sent){ seen[key]=1; Object.keys(seen).forEach(k=>{ if(k.slice(0,10)<addDays(todayKey(),-3)) delete seen[k]; });
+    try{ localStorage.setItem(HNOTE_KEY,JSON.stringify(seen)); }catch(e){} }
+  return sent;
+}
+function scheduleHabitNotes(){
+  clearHabitNotes();
+  if(habitNoteState()!=='on') return;
+  activeHabits().forEach(x=>{
+    const h=habitSlots()[x.slot], meta=habitOf(h.id); if(!meta||h.remind===false) return;
+    const d=habitDue(h,meta), now=new Date();
+    const at=new Date(now.getFullYear(),now.getMonth(),now.getDate(),Math.floor(d.min/60),d.min%60,0);
+    if(at.getTime()<=Date.now()) at.setDate(at.getDate()+1);
+    /* a long timer drifts: it re-arms in steps of up to six hours */
+    const ms=Math.min(at.getTime()-Date.now(),6*3600e3);
+    hnTimers.push(setTimeout(()=>{
+      if(Date.now()>=at.getTime()-60e3) fireHabitNote(x.slot);
+      scheduleHabitNotes();
+    },Math.max(1000,ms)));
+  });
+}
+
+/* ---------- a calendar file: the one reminder that arrives with the app closed ---------- */
+const icsEsc=t=>String(t).replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\r?\n/g,'\\n');
+function icsStamp(d){ const p=n=>String(n).padStart(2,'0'); return d.getUTCFullYear()+p(d.getUTCMonth()+1)+p(d.getUTCDate())+'T'+p(d.getUTCHours())+p(d.getUTCMinutes())+p(d.getUTCSeconds())+'Z'; }
+function habitIcs(slot){
+  const h=currentHabit(slot), meta=h&&habitOf(h.id); if(!meta) return '';
+  const d=habitDue(h,meta), now=new Date(), p=n=>String(n).padStart(2,'0');
+  const day=now.getFullYear()+p(now.getMonth()+1)+p(now.getDate());
+  const start=day+'T'+p(Math.floor(d.min/60))+p(d.min%60)+'00', endM=(d.min+15)%1440;
+  const end=day+'T'+p(Math.floor(endM/60))+p(endM%60)+'00';
+  const days=meta.days&&meta.days.length&&meta.days.length<7? ';BYDAY='+meta.days.map(n=>WD_ICS[n]).join(',') : '';
+  const name=(meta.kind==='stop'? 'Stop: ' : '')+meta.t;
+  return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Gauntlet//Habits//EN','CALSCALE:GREGORIAN','BEGIN:VEVENT',
+    'UID:habit-'+h.id+'-'+(h.started||day)+'@gauntlet',
+    'DTSTAMP:'+icsStamp(now),
+    'DTSTART:'+start,'DTEND:'+end,'RRULE:FREQ=DAILY'+days,
+    'SUMMARY:'+icsEsc(name),
+    'DESCRIPTION:'+icsEsc('Open Gauntlet and tick it off. '+(d.eod? 'End of the day habit.' : 'Do it by '+d.t+'.')),
+    'BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+icsEsc(name),'TRIGGER:PT0M','END:VALARM',
+    'END:VEVENT','END:VCALENDAR'].join('\r\n')+'\r\n';
+}
+function downloadIcs(slot){
+  const txt=habitIcs(slot); if(!txt) return false;
+  try{
+    const blob=new Blob([txt],{type:'text/calendar;charset=utf-8'}), url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download='gauntlet-habit.ics';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>{ try{ URL.revokeObjectURL(url); }catch(e){} },4000);
+    return true;
+  }catch(e){ return false; }
+}
+
+/* ---------- the "do it by" sheet ---------- */
+let dueSlot=null;
+function dueChoices(slot){
+  const h=currentHabit(slot), meta=h&&habitOf(h.id), times=cueTimes(), w=clockOf('wake'), bed=clockOf('bed');
+  const out=[];
+  const rel=m=>((m-w)%1440+1440)%1440, bedR=rel(bed)||960;
+  const morning=q15(w+120), lunch=times.lunch!==null? q15(times.lunch) : null, eve=q15(w+Math.max(600,bedR-300));
+  out.push({t:'Morning',time:minToHhmm(morning),eod:false});
+  if(lunch!==null) out.push({t:'Lunch',time:minToHhmm(lunch),eod:false});
+  out.push({t:'Evening',time:minToHhmm(eve),eod:false});
+  out.push({t:'End of day',time:eodTime(),eod:true});
+  return out;
+}
+function openHabitDue(slot,fresh){
+  const h=currentHabit(slot); if(!h) return;
+  const meta=habitOf(h.id), stop=meta.kind==='stop', d=habitDue(h,meta);
+  dueSlot=slot;
+  const ch=dueChoices(slot);
+  /* a stop habit can only be judged once the day is done, so it starts there */
+  const cur=d.set||h.eod? d : (stop? {t:eodTime(),eod:true,set:false} : null);
+  const noteState=habitNoteState(), noteOn=noteState==='on'&&h.remind!==false;
+  document.getElementById('altTitle').textContent= fresh? 'Do it by when?' : 'Do it by';
+  document.getElementById('altSub').textContent=(stop? 'Stop: ' : '')+meta.t;
+  document.getElementById('altBody').innerHTML=`<div class="due" style="padding:0 14px 8px">
+    <div class="note">${stop? 'This one can only be judged once the day is over, so end of day is the natural time.'
+      : 'A time to do it by is what makes it happen: a when beats a maybe. Tap one and it is saved.'}</div>
+    <div class="ep-chips due-chips" role="group" aria-label="Do it by">${ch.map(c=>{ const on=cur&&cur.t===c.time&&!!cur.eod===c.eod;
+      return `<button class="rt-cuechip ep-chip ${on?'on':''}" data-duepick="${slot}|${c.time}|${c.eod?1:0}" aria-pressed="${on}">${c.t} <small>${c.time}</small></button>`; }).join('')}</div>
+    <div class="nf"><label for="dueTime">Or pick a time</label>
+      <div class="ownrow"><input id="dueTime" type="time" step="900" value="${d.t}" aria-label="Time to do it by">
+        <button class="mini go" data-duesave="${slot}">Save</button></div></div>
+    ${d.set||h.eod? `<div class="note">Now: ${d.eod? 'end of day, '+d.t : 'by '+d.t}. ${hrOn('prompts')? 'It comes up on Today when it is due, and stays there until it is ticked.' : 'Prompts on Today are off in your settings.'}</div>` : `<div class="note">Not set yet. Until you pick one, it is asked about ${stop? 'at '+d.t : 'at '+d.t+', an hour after its moment in your day'}.</div>`}
+    <div class="slab">Reminders</div>
+    <button class="rt-cuechip ep-chip ${noteOn?'on':''}" data-dueremind="${slot}" aria-pressed="${noteOn}" ${noteState==='unsupported'?'disabled':''}>Phone reminder at this time: ${noteOn? 'On' : 'Off'}</button>
+    <div class="note">${noteState==='unsupported'? 'This browser cannot do reminders. The prompt on Today still works.'
+      : (noteState==='blocked'? 'Reminders are blocked in your browser settings. The prompt on Today still works.'
+      : (onIOS()&&!installed()? 'On iPhone and iPad this needs Gauntlet on your Home Screen: tap Share, then Add to Home Screen. '
+        : '')+'This reminder comes from the app itself, not a server, so it arrives while Gauntlet is open or running in the background. If it is closed, the habit waits for you on Today.')}</div>
+    <button class="sheetcta" data-dueics="${slot}" style="margin:10px 0 6px;width:100%">Add to my phone's calendar</button>
+    <div class="note">A daily event with an alert at ${d.t}, from your own calendar app. That one arrives even when Gauntlet is closed. Add it once; if you change the time here, add it again and delete the old one.</div>
+    <div class="method"><b>Where this comes from</b><span>${REMIND_EVIDENCE}</span></div>
+  </div>`;
+  openSheet('altSheet');
+}
+function setDue(slot,time,eod,quiet){
+  const h=currentHabit(slot); if(!h||!hhmmOk(time)) return false;
+  const before={due:h.due,eod:h.eod};
+  h.due=minToHhmm(hhmmToMin(time)); h.eod=!!eod; save();
+  if(!quiet){ closeSheets(); renderAll(); scheduleHabitNotes();
+    const meta=habitOf(h.id);
+    toast((meta.kind==='stop'? 'Stop: ' : '')+meta.t+': '+(eod? 'end of day, ' : 'by ')+h.due,'Undo',()=>{
+      if(before.due===undefined) delete h.due; else h.due=before.due;
+      if(before.eod===undefined) delete h.eod; else h.eod=before.eod;
+      save(); renderAll(); scheduleHabitNotes(); }); }
+  return true;
+}
+
+document.addEventListener('click',e=>{
+  const dp=e.target.closest('[data-duepick]');
+  if(dp){ const [slot,time,eod]=dp.dataset.duepick.split('|'); setDue(slot,time,eod==='1'); return; }
+  const ds=e.target.closest('[data-duesave]');
+  if(ds){ const inp=document.getElementById('dueTime'), v=inp&&inp.value;
+    if(!hhmmOk(v)){ toast('Pick a time first'); return; }
+    /* a time at or after the end of day time is an end of day habit */
+    setDue(ds.dataset.duesave,v,hhmmToMin(v)>=hhmmToMin(eodTime())); return; }
+  const dr=e.target.closest('[data-dueremind]');
+  if(dr){ const slot=dr.dataset.dueremind, h=currentHabit(slot); if(!h) return;
+    const on=habitNoteState()==='on'&&h.remind!==false;
+    if(on){ h.remind=false; save(); }
+    else { h.remind=true; save(); }
+    (async()=>{ if(!on&&habitNoteState()!=='on') await enableHabitNotes(); else if(!on) toast('Phone reminder on for this habit'); else toast('Phone reminder off for this habit');
+      scheduleHabitNotes(); if(dueSlot===slot&&document.getElementById('altSheet').classList.contains('on')) openHabitDue(slot,false); })();
+    return; }
+  const di=e.target.closest('[data-dueics]');
+  if(di){ const ok=downloadIcs(di.dataset.dueics);
+    toast(ok? 'Open the file to add it to your calendar' : 'Could not make the calendar file here'); return; }
+  const de=e.target.closest('[data-dueedit]');
+  if(de){ openHabitDue(de.dataset.dueedit,false); return; }
+  const hc=e.target.closest('[data-habitcatch]');
+  if(hc){ const [slot,k,no]=hc.dataset.habitcatch.split('|'), h=currentHabit(slot); if(!h) return;
+    if(no==='no'){ h.skipCatch=k; save(); renderAll(); return; }
+    h.days=h.days||{}; const was=h.days[k]; h.days[k]=true; save(); renderAll();
+    toast('Logged for yesterday','Undo',()=>{ if(was===undefined) delete h.days[k]; else h.days[k]=was; save(); renderAll(); }); return; }
+  const hs=e.target.closest('[data-hrset]');
+  if(hs){ const key=hs.dataset.hrset;
+    if(key==='notes'){ (async()=>{ if(hrOn('notes')) disableHabitNotes(); else await enableHabitNotes(); openHabitReminders(); })(); return; }
+    S.profile['habit_'+key]= !hrOn(key); save(); updateBadge(); renderAll(); openHabitReminders(); return; }
+  const et=e.target.closest('[data-hreod]');
+  if(et){ const v=et.dataset.hreod; if(hhmmOk(v)){ S.profile.eodTime=v; save(); renderAll(); openHabitReminders(); toast('End of day is '+v); } return; }
+});
+document.addEventListener('change',e=>{
+  const t=e.target.closest&&e.target.closest('#hrEod');
+  if(t&&hhmmOk(t.value)){ S.profile.eodTime=t.value; save(); renderAll(); toast('End of day is '+t.value); }
+});
+
+/* ---------- the settings sheet ---------- */
+function habitRemindersLabel(){
+  const bits=[hrOn('prompts')? 'Prompts on Today' : 'Prompts off'];
+  const ns=habitNoteState(); bits.push(ns==='on'? 'phone reminders on' : 'phone reminders off');
+  return bits.join(' · ');
+}
+function openHabitReminders(){
+  const ns=habitNoteState(), tg=(key,label,sub)=>`<button class="ysrow" data-hrset="${key}" aria-pressed="${hrOn(key)}" style="width:100%">
+      <span class="ysd"><b>${label}</b><span>${sub}</span></span><span class="ysv">${hrOn(key)? 'On' : 'Off'}</span></button>`;
+  document.getElementById('altTitle').textContent='Habit reminders';
+  document.getElementById('altSub').textContent='How your habits are brought to your attention.';
+  document.getElementById('altBody').innerHTML=`<div style="padding:0 14px 8px">
+    ${tg('prompts','Prompts on Today','The Up next card asks for a habit when it is due, and again at the end of the day until it is ticked.')}
+    ${tg('badge','Number on the app icon','How many habits are due. Only where your phone allows it, and cleared when they are done.')}
+    <button class="ysrow" data-hrset="notes" aria-pressed="${ns==='on'}" style="width:100%" ${ns==='unsupported'?'disabled':''}>
+      <span class="ysd"><b>Phone reminders</b><span>${ns==='unsupported'? 'This browser cannot do reminders.' : (ns==='blocked'? 'Blocked in your browser settings.' : 'A notification at each habit\'s time. Set by the app itself, not a server, so it arrives while Gauntlet is open or running in the background.')}</span></span>
+      <span class="ysv">${ns==='on'? 'On' : 'Off'}</span></button>
+    <div class="nf" style="margin-top:12px"><label for="hrEod">End of day is</label><input id="hrEod" type="time" step="900" value="${eodTime()}"></div>
+    <div class="note">The time a stop habit, or one set to end of day, comes up. It starts at ${EOD_DEFAULT}.</div>
+    ${onIOS()&&!installed()? '<div class="note">On iPhone and iPad, reminders and the badge only work once Gauntlet is on your Home Screen: tap Share, then Add to Home Screen.</div>' : ''}
+    <div class="note">For a reminder that always arrives, even with Gauntlet closed, open a habit and add it to your phone's calendar.</div>
+  </div>`;
+  openSheet('altSheet');
+}
+
+/* ---------- keep it current ---------- */
+let hrSig='';
+function hrTick(){
+  updateBadge();
+  /* the Up next card follows the clock: redraw Today only when what it would
+     say has changed, and never under an open sheet or a typing cursor */
+  const sig=habitsToLog().map(x=>x.slot+x.state).join(',')+'|'+habitCatchUp().length;
+  if(sig!==hrSig){ const was=hrSig; hrSig=sig;
+    if(was!==''&&document.body.dataset.screen==='today'&&!document.querySelector('.sheet.on')
+       &&!(document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName))) { try{ renderToday(); }catch(e){} } }
+}
+setInterval(hrTick,60e3);
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ hrTick(); scheduleHabitNotes(); } });
+if(typeof window!=='undefined') window.addEventListener('load',()=>{ setTimeout(()=>{ hrTick(); scheduleHabitNotes(); },1500); });
+
+if(window.__G) Object.assign(window.__G,{habitDue,dueDelta,habitsToLog,habitCatchUp,habitCandidates,habitLater,habitBadgeCount,habitIcs,openHabitDue,setDue,
+  habitNoteState,fireHabitNote,scheduleHabitNotes,openHabitReminders,habitRemindersLabel,hrOn,eodTime,hrTick,updateBadge,EOD_DEFAULT});
 /* =====================================================================
    Programmes (build 71)
    The named weekly structures people actually follow, across every way of
@@ -18534,6 +19471,8 @@ function openHow(){
     <div class="method"><b>What your steps are worth</b><span>Steps are part of what you burn, so they are already inside your maintenance. The deficit splits into the part food makes, eating less than you burn without walking, and the part the steps make, and the two add up to the whole. That is why skipping the steps at the same food slows the loss by exactly what they were burning.</span></div>
     <div class="method"><b>Sleep</b><span>The aim is 7 hours or more a night for adults, the joint recommendation of the American Academy of Sleep Medicine and the Sleep Research Society (2015), which also notes that individual need varies; 8 to 10 hours for teenagers. How regular sleep is may matter as much as how long it is (Windred and colleagues, 2024, from UK Biobank), but that needs bed and wake times, which only a connected tracker supplies here.</span></div>
     <div class="method"><b>Training splits</b><span>Full body, upper and lower, push pull legs, or a body part split: a 2024 meta-analysis of 14 trials (Ramos-Campo and colleagues) found no difference in strength or muscle growth between them when the weekly work is matched, so the right one is the one you will stick to. Weekly sets per muscle are what drive growth (Pelland and colleagues, 2025), which is why full body suits two or three days and a body part split needs about five. With fewer days than a split has sessions, the week rolls on from where it stopped, so nothing is left out.</span></div>
+    ${typeof EAT_EVIDENCE!=='undefined'? `<div class="method"><b>Eating patterns and fasting windows</b><span>${EAT_EVIDENCE}</span></div>` : ''}
+    ${typeof REMIND_EVIDENCE!=='undefined'? `<div class="method"><b>Habit times and reminders</b><span>${REMIND_EVIDENCE} A reminder that arrives with the app closed needs a server to push it; this app has none for habits, so the phone reminder is set by the app itself and arrives while it is open or running in the background. A calendar alert always arrives.</span></div>` : ''}
     <div class="method"><b>Meal times and skipped meals</b><span>Each meal records when you ate it, not when you logged it, and you can mark a meal as skipped. The American Heart Association's statement on meal timing (St-Onge and colleagues, 2017) notes that irregular eating patterns appear less favourable for heart and metabolic health, and a randomised trial found regular meal times lowered glucose responses and hunger (Alhussain and colleagues, 2016). Much of that evidence is observational, so the app shows the pattern back to you rather than setting rules.</span></div>
     <div class="method"><b>HYROX</b><span>A HYROX race is eight 1 km runs, each followed by a station in a fixed order: SkiErg 1,000 m, sled push 50 m, sled pull 50 m, burpee broad jumps 80 m, row 1,000 m, farmers carry 200 m, sandbag lunges 100 m, and 100 wall balls. Weights default to the Open division (men: 152 kg push, 103 kg pull, 2 × 24 kg carry, 20 kg sandbag, 6 kg ball; women: 102, 78, 2 × 16, 10 and 4 kg). HYROX can change weights between seasons, so check the current standards with HYROX before a race, and change any weight here. Each week mixes running under fatigue, a running engine session and station strength, building towards a full simulation; without a sled, SkiErg or rower, each station is swapped for the closest thing your equipment allows, and the session says what it stands in for.</span></div>
     <div class="method"><b>CrossFit</b><span>Varied workouts in three formats: for time, AMRAP (as many rounds as possible) and EMOM (every minute on the minute), with benchmark workouts that come round again so you can compare, and some days a strength piece first. Weights default to the standard prescribed loads; scale any of them, or swap a movement, and it is kept for next time. Injury rates in CrossFit are similar to weightlifting, powerlifting and gymnastics (Klimek and colleagues, 2018), and scaling is how that stays true for you.</span></div>
@@ -20144,7 +21083,9 @@ function renderSettings(){
     ${setRow('aim','marine','Aim and training days', aim.t+(typeof goalExtras==='function'&&goalExtras().length? ' + '+goalExtras().map(id=>aimOf(id).t).join(', ') : '')+' · '+(+p.liftDays||0)+' lifting, '+(+p.cardioDays||0)+' cardio')}
     ${setRow('goal','forest','Goal', goal)}
     ${setRow('body','burnt','Calories and body', p.detailsSet&&ct? 'Eat '+num(ct.kcal)+' kcal · maintenance '+num(ct.maintenance) : 'Add your details to work these out')}
+    ${typeof eatAdult==='function'&&eatAdult()? setRow('eating','forest','Eating pattern', escHabit(eatPatternLabel()), 'Whether you fast, how long for, and how many meals. With the good and the catch for your goals.') : ''}
     ${setRow('steps','marine','Daily steps', num(stepTarget())+' a day')}
+    ${typeof habitRemindersLabel==='function'? setRow('habitrem','forest','Habit reminders', habitRemindersLabel(), 'When a habit is asked for, and the end of the day time.') : ''}
     ${setRow('habits','forest','Habits', habits.length? habits.join('<br>') : 'None yet. One to start, one to stop')}
     ${typeof progLabel==='function'? setRow('programme','marine','Programme', escHabit(progLabel())+(trainDaysOf()&&trainDaysOf().length? ' · '+trainDaysOf().map(i=>DAYS[i]).join(', ') : ''), Object.keys(pinsOf()).length? Object.keys(pinsOf()).length+' day'+(Object.keys(pinsOf()).length===1?'':'s')+' fixed every week' : '') : ''}
     ${setRow('style','burnt','Training style', STYLES[styleOf()].t+(styleOf()==='hybrid'? ' · '+hyroxDaysOf(sessionsWanted())+' HYROX, '+(sessionsWanted()-hyroxDaysOf(sessionsWanted()))+' CrossFit' : ''))}
@@ -20215,6 +21156,8 @@ document.addEventListener('click',e=>{
   if(k==='aim'){ drawAimSheet(); openSheet('aimSheet'); }
   else if(k==='goal') openTargetSheet();
   else if(k==='body'||k==='steps') openDetails();
+  else if(k==='eating') openEatPattern();
+  else if(k==='habitrem') openHabitReminders();
   else if(k==='habits') openHabitSheet();
   else if(k==='deload') openDeloadSheet();
   else if(k==='focus') openFocusSheet();
@@ -21251,7 +22194,7 @@ function proteinGaps(L){
     const vals=fed.map(d=>dayFood(d.k).filter(x=>(x.meal||'s')===m).reduce((a,x)=>a+(+x.p||0)*(+x.q||1),0));
     return {m, name:NAMES[m], avg:Math.round(meanOf(vals)||0)};
   });
-  const mains=meals.filter(x=>x.m!=='s');
+  const mains=meals.filter(x=>x.m!=='s'&&!(typeof eatRoleOff==='function'&&eatRoleOff(x.m)&&!x.avg));
   const weakest=per? mains.slice().sort((a,b)=>(a.avg-per)-(b.avg-per))[0] : null;
   const bestDay=fed.length? topN(fed,1,d=>d.protein)[0] : null;
   const bestFoods=bestDay? dayFood(bestDay.k).map(x=>({n:x.n, p:Math.round((+x.p||0)*(+x.q||1))})).sort((a,b)=>b.p-a.p).slice(0,3) : [];
@@ -21301,7 +22244,7 @@ function ownEvidence(){
   } else out.push({id:'sleepfood', ready:false, t:'Short nights and what you eat the next day',
     s:`Needs three days of food logged after a night under 6½ hours and three after 7 or more. So far: ${shortK.length} and ${longK.length}.`});
   /* breakfast protein and the day's total */
-  if(per){
+  if(per&&!(typeof eatRoleOff==='function'&&eatRoleOff('b'))){
     const hitB=[], missB=[];
     keys.forEach(k=>{ const f=dayFood(k); if(!f.length) return;
       const b=f.filter(x=>x.meal==='b').reduce((a,x)=>a+(+x.p||0)*(+x.q||1),0), tot=foodTotals(k).protein;
@@ -21881,6 +22824,10 @@ Object.assign(window.__G,{LEGAL,LEGAL_CONTACT,openLegal,closeLegal,ageFromBirth,
    Writing a note: what changed for the person, in their words, one line of
    why it matters if needed, no internal names. Bump APP_VERSION with it. */
 const RELEASE_NOTES=[
+  {v:'81', date:'2026-10-21', items:[
+    {t:'Choose how you eat', d:'Fasting window or regular meals, 12:12 to 20:4, two meals or one, or your own times. For each, you see the good and the catch for your own goals, with the research behind it. Your day on Eat and Today lays itself out inside your window. Find it on Eat or in You, Eating pattern. Not offered under 18.', go:'eat', goLabel:'Open Eat', adult:true},
+    {t:'Habits have a time to be done by', d:'Adding a habit now asks when, in one tap. At that time Today asks for it and keeps asking until it is ticked. Stop habits and anything you set to end of day come up at 9pm, and yesterday can be logged until the morning is over. Turn it all off in You, Habit reminders.'},
+    {t:'Reminders on your phone', d:'Each habit can send a notification at its time while Gauntlet is open or running in the background, show a number on the app icon, or go into your phone\'s calendar as a daily alert that arrives even when Gauntlet is closed.'}]},
   {v:'80', date:'2026-10-18', items:[
     {t:'One plan for all your goals', d:'Under the rings, everything you chose is now one plan with one name, like Lose fat, keep building muscle. Your weight has one direction, set by your goal weight or your aim, and every row is judged against it, so two goals can no longer disagree. Losing weight while your lifts hold or rise now counts as keeping muscle.', adult:true},
     {t:'Is it working, in one line', d:'The plan says Working, Mostly working or Worth a look, with one sentence on why and the one thing to change. Each row has an arrow for which way it is going. Tap anything for what it means and where the numbers come from.', adult:true}]},

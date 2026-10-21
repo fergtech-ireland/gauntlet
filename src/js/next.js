@@ -120,6 +120,8 @@ function nextCandidates(at){
       why: ss.last7>=3&&ss.avg<ss.target.lo? `You have averaged ${ss.avg.toFixed(1)} hours this week, under the ${ss.target.lo} hour aim.` : 'A similar time each night helps as much as the hours.',
       act:`<button class="mini" data-opensleep="1">See sleep</button>`});
   }
+  /* build 81: habits that are due, and yesterday's that were not logged */
+  if(typeof habitCandidates==='function') habitCandidates(at).forEach(o=>add(o.score,o.cand));
   return out.sort((a,b)=>b.score-a.score);
 }
 /* ---------- build 67: what comes after, with its time ----------
@@ -159,6 +161,7 @@ function laterToday(at){
   if(i===ciDay&&typeof checkinDone==='function'&&!checkinDone()) add('checkin',c.bedAbs-300,'Weekly check in');
   if(!day.checkedIn) add('daycheck',c.bedAbs-210,"Today's check-in");
   if(typeof lightsOut==='function'){ const lo=hhmmToMin(lightsOut()); if(lo!==null) add('bed',lo,'Lights out'); }
+  if(typeof habitLater==='function') habitLater(at).forEach(x=>out.push(x));
   return out.sort((a,b)=>a.rel-b.rel);
 }
 /* The one line after the card: the first thing later today that is not the

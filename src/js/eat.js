@@ -89,7 +89,7 @@ function eatSections(k){
   let slots=[]; if(isToday){ try{ slots=mealSlots(k).slots; }catch(e){} }
   const per=teen? null : perMealProtein();
   const now=new Date().getHours()*60+new Date().getMinutes();
-  const secs=EAT_SECTIONS.map(([m,label])=>{
+  const secs=EAT_SECTIONS.filter(([m])=>!(typeof eatRoleOff==='function'&&eatRoleOff(m)&&!food.some(f=>(f.meal||'s')===m)&&skipped.indexOf(m)<0)).map(([m,label])=>{
     const items=food.filter(f=>(f.meal||'s')===m), sl=m==='s'? null : slots.find(x=>x.role===m);
     if(m==='d'&&sl&&sl.tag==='post') label='Dinner, after training';
     if(m==='d'&&sl&&sl.tag==='pre') label='Dinner, before training';
@@ -142,6 +142,7 @@ function renderEat(){
     <div class="eatfind"><button class="eatsearch" data-eatsearch><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span>Search food or meals</span></button>
       ${typeof scanIcon==='function'? `<button class="eatscan" data-eatscan aria-label="Scan a barcode">${scanIcon()}</button>` : ''}</div>
     ${eatSummary(k)}
+    ${typeof fastStrip==='function'&&k===t? fastStrip() : ''}
     ${eatSections(k)}
     ${eatShortcuts(k)}
     ${k===t? `<div class="efoot"><button class="inlinebtn" data-eattimes>Why these meal times</button></div>` : ''}`;

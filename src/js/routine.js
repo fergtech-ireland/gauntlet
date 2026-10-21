@@ -102,9 +102,13 @@ function cueTimes(){
   let slots=[]; try{ slots=mealSlots(todayKey()).slots; }catch(e){}
   const role=r=>{ const s=slots.find(x=>x.role===r); return s? s.min : null; };
   out.breakfast=role('b'); out.lunch=role('l'); out.dinner=role('d');
-  if(out.breakfast===null) out.breakfast=(out.wake+60)%1440;
-  if(out.lunch===null) out.lunch=(out.wake+330)%1440;
-  if(out.dinner===null) out.dinner=(out.bed-240+1440)%1440;
+  /* with a chosen eating pattern the cues follow the window: a 16:8 day has
+     no breakfast, so the breakfast cue is the first meal */
+  const pat=(typeof eatPat==='function')? eatPat() : null;
+  const fm=pat&&typeof firstMealMin==='function'? firstMealMin() : null;
+  if(out.breakfast===null) out.breakfast= fm!==null? fm : (out.wake+60)%1440;
+  if(out.lunch===null) out.lunch= pat? (pat.s+Math.round(pat.lenMin/2))%1440 : (out.wake+330)%1440;
+  if(out.dinner===null) out.dinner= pat? (pat.e-60+1440)%1440 : (out.bed-240+1440)%1440;
   out.train=(out.train+60)%1440;
   out.dinner=(out.dinner+30)%1440;
   out.evening=(out.bed-180+1440)%1440;
@@ -129,7 +133,7 @@ const PARTS={am:'Morning',day:'Day',pm:'Evening',any:'Any time today'};
 function autoMet(id,k){
   const per=(typeof perMealProtein==='function'? perMealProtein() : null);
   const pIn=m=>dayFood(k).filter(f=>(f.meal||'s')===m).reduce((a,f)=>a+(+f.p||0)*(+f.q||1),0);
-  if(id==='protein_am'){ const g=pIn('b'); return g>=Math.min(30,per||30)? Math.round(g) : null; }
+  if(id==='protein_am'){ const g=pIn((typeof firstMealRole==='function'&&firstMealRole())||'b'); return g>=Math.min(30,per||30)? Math.round(g) : null; }
   if(id==='protein_lunch'){ const g=pIn('l'); return g>=(per||25)? Math.round(g) : null; }
   if(id==='protein_snack'){ const g=pIn('s'); return g>=20? Math.round(g) : null; }
   return null;
@@ -310,7 +314,9 @@ function itemStatus(it){
 function routineRow(it){
   const done=it.st==='kept'||it.st==='auto'||it.st==='tiny', stop=it.meta.kind==='stop';
   const name=(stop?'Stop: ':'')+escHabit(it.meta.t);
-  const cueLine=CUES[it.cue].short+(it.at!==null? ' · '+rtClock(it.at) : '');
+  const dueD=(!it.sn&&typeof habitDue==='function')? habitDue(it.h,it.meta) : null;
+  const dueState=dueD&&it.st==='open'? (dueDelta(dueD)<=0? ' due' : (dueDelta(dueD)<=SOON_MIN? ' soon' : '')) : '';
+  const cueLine=CUES[it.cue].short+(it.at!==null? ' · '+rtClock(it.at) : '')+(dueD&&dueD.set? ' · '+(dueD.eod? 'end of day ' : 'by ')+dueD.t : (dueD&&dueD.eod? ' · end of day '+dueD.t : ''));
   const pct= it.sn? 1 : it.L.strength;
   const tog= it.sn? `data-sntoggle="${it.id}"` : `data-habittoggle="${it.slot}"`;
   const open= it.sn? `data-snopen="${it.id}"` : `data-habitopen="${it.slot}"`;
@@ -319,7 +325,7 @@ function routineRow(it){
       <button class="rt-tiny" data-habittiny="${it.slot}">${escHabit(it.tiny)}</button></div>` : '';
   return `<div class="rt-item ${done?'done':''} ${stop?'stop':''} ${it.sn?'sn':''} ${it.st==='off'?'off':''}">
     <button class="rt-tick" ${tog} aria-label="${label}" aria-pressed="${done}"${it.st==='off'?' disabled':''}>${strengthRing(pct,done,stop,it.sn)}</button>
-    <button class="rt-txt" ${open} aria-label="${name}: open it"><b>${name}</b><span class="rt-cue">${cueLine}</span><span class="rt-st">${itemStatus(it)}</span></button>
+    <button class="rt-txt" ${open} aria-label="${name}: open it"><b>${name}</b><span class="rt-cue${dueState}">${cueLine}</span><span class="rt-st">${itemStatus(it)}</span></button>
     ${nudge}</div>`;
 }
 /* the one automaticity check due now, if any (oldest habit first) */
@@ -436,6 +442,9 @@ function openHabitOne(slot){
     ${today.st==='off'? `<div class="note">Today is not one of its days.</div>`
       : `<button class="sheetcta" data-habittoggle="${slot}" style="margin:10px 0;width:100%">${done? 'Untick today' : (stop? 'Mark today: went without' : 'Mark today done')}</button>`}
     <div class="slab">The last eight weeks</div>${habitGrid(L)}
+    <div class="slab">Do it by</div>
+    ${(()=>{ const d=habitDue(h,meta); return `<div class="note">${d.set||d.eod? (d.eod? 'End of day, '+d.t : 'By '+d.t) : 'Not set. It is asked about at '+d.t+'.'}</div>
+      <button class="sheetcta" data-dueedit="${slot}" style="margin:6px 0 10px;width:100%">${d.set||d.eod? 'Change the time or reminder' : 'Set a time and a reminder'}</button>`; })()}
     <div class="slab">When it happens</div>
     <div class="rt-cues">${CUE_ORDER.map(c=>`<button class="rt-cuechip ${c===cue?'on':''}" data-habitcue="${slot}:${c}">${CUES[c].short}${times[c]!==null? ' '+rtClock(times[c]) : ''}</button>`).join('')}</div>
     <div class="note">${CUES[cue].t}. Hanging a habit off something you already do is what makes it automatic; a reminder alone gets it done without making it a habit (Stawarz and colleagues 2015).</div>

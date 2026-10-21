@@ -285,8 +285,13 @@ function priorities(){
   if(!teen&&t.protein){
     const fc=confidence('food'), pr=Math.round(foodTotals(k).protein||0);
     const aimP=(typeof proteinAim==='function'&&proteinAim())||t.protein;
-    const expected=Math.round(aimP*Math.min(1,Math.max(0,(hour-7)/13)));
-    if(dayFood(k).length===0&&hour>=13&&fc.n>=3&&!((S.days[k]||{}).skipped||[]).length)
+    const fh=(typeof foodHorizon==='function')? foodHorizon() : null;
+    /* inside a chosen window the pace runs from its first meal to its last,
+       not from 7am to 8pm */
+    const rel=fh? ((hour*60+new Date().getMinutes()-clockOf('wake'))%1440+1440)%1440 : 0;
+    const expected=Math.round(aimP*(fh? Math.min(1,Math.max(0,(rel-fh.from)/Math.max(60,fh.to-fh.from-60))) : Math.min(1,Math.max(0,(hour-7)/13))));
+    const started=(typeof windowStarted==='function')? windowStarted(60) : true;
+    if(dayFood(k).length===0&&hour>=13&&started&&fc.n>=3&&!((S.days[k]||{}).skipped||[]).length)
       add(60,'food','Log what you have eaten so far','Nothing logged yet today, and the rest of the week relies on it. Same as yesterday is one tap.','<button class="mini go" data-glance="food">Log food</button>');
     else if(dayFood(k).length&&pr<expected-25)
     { const left=t.kcal? Math.round(t.kcal-(foodTotals(k).kcal||0)) : null, tight=proteinTight(pr,aimP,left);
@@ -325,7 +330,7 @@ function proteinTight(pr,target,left){
   if(gap<15) return null;
   if(left>=gap*4*1.6) return null;
   const per=(typeof perMealProtein==='function')? perMealProtein() : null;
-  const tomorrow=`Tomorrow, start breakfast with ${per? per+'g' : '30g or more'} of protein, so the evening is not left to catch up.`;
+  const tomorrow=`Tomorrow, start ${(typeof firstMealWord==='function'? firstMealWord() : 'breakfast')} with ${per? per+'g' : '30g or more'} of protein, so the evening is not left to catch up.`;
   if(left<=0) return ['Over calories, protein short',`${pr}g of ${target}g, and the calories are used up. Leave today: one day matters less than the week. ${tomorrow}`];
   if(gap>=20) return ['Protein short, calories nearly used',`${num(left)} kcal left and ${gap}g of protein to go. Not the whole gap tonight. A lean top-up is worth it even if it tips you a little over: 200g of fat-free Greek yoghurt, a whey shake or a tin of tuna is about 20g of protein for 100 to 150 kcal. ${tomorrow}`];
   return ['Protein a little short',`${num(left)} kcal left, ${gap}g of protein to go. Not worth going over for. ${tomorrow}`];
@@ -394,6 +399,10 @@ function todayTrains(){
   return d.templateId? 'lifting' : (d.runId||d.circuitId? 'cardio' : null);
 }
 function eatingPlan(){
+  /* build 81: someone who has chosen a fasting window or a set number of meals
+     gets the day laid out inside it (eating.js); everyone else is unchanged */
+  const chosen=(typeof patternPlan==='function')? patternPlan() : null;
+  if(chosen) return chosen;
   /* Everything is planned in minutes since waking and only turned back into
      clock times at the end. Working in raw clock minutes broke for anyone
      whose day crosses midnight: a night shift came out with "04:00 last meal"
@@ -508,6 +517,10 @@ function nextEating(){
 function perMealProtein(){
   const p=S.profile||{};
   if(!p.weight) return null;
+  /* in a window of fewer meals the share is the day's total over the meals,
+     not 0.4 g per kg, which would never add up to the target */
+  const pat=(typeof eatPat==='function')? eatPat() : null, tp=+((S.targets||{}).protein)||0;
+  if(pat&&tp) return Math.max(Math.round(0.4*proteinBasis(p).kg),Math.round(tp/pat.meals));
   return Math.round(0.4*proteinBasis(p).kg);
 }
 const MEAL_NAMES={breakfast:'Breakfast',lunch:'Lunch',last:'Dinner',pre:'Before training',post:'After training',presleep:'Before bed'};
@@ -531,9 +544,12 @@ function mealSlots(k){
   const mainSlots=slots.filter(x=>!x.optional);
   const wakeM=hhmmToMin((S.profile&&S.profile.wakeTime)||EAT_CLOCK.wake);
   const sinceWake=x=>((x.min-wakeM)%1440+1440)%1440;
-  if(mainSlots.length&&!slots.some(x=>x.role==='b')){ const f=mainSlots.slice().sort((a,b)=>sinceWake(a)-sinceWake(b))[0]; if(!f.role) f.role='b'; }
-  if(mainSlots.length&&!slots.some(x=>x.role==='d')){ const f=mainSlots.slice().sort((a,b)=>sinceWake(b)-sinceWake(a)).find(x=>!x.role); if(f) f.role='d'; }
-  if(mainSlots.length&&!slots.some(x=>x.role==='l')){ const f=mainSlots.filter(x=>!x.role).sort((a,b)=>Math.abs(sinceWake(a)-330)-Math.abs(sinceWake(b)-330))[0]; if(f) f.role='l'; }
+  const chosenPat=(typeof eatPat==='function')&&eatPat();
+  /* in a chosen pattern the roles come from the plan itself: a window that
+     starts at noon has no breakfast, and the first meal must not become one */
+  if(!chosenPat&&mainSlots.length&&!slots.some(x=>x.role==='b')){ const f=mainSlots.slice().sort((a,b)=>sinceWake(a)-sinceWake(b))[0]; if(!f.role) f.role='b'; }
+  if(!chosenPat&&mainSlots.length&&!slots.some(x=>x.role==='d')){ const f=mainSlots.slice().sort((a,b)=>sinceWake(b)-sinceWake(a)).find(x=>!x.role); if(f) f.role='d'; }
+  if(!chosenPat&&mainSlots.length&&!slots.some(x=>x.role==='l')){ const f=mainSlots.filter(x=>!x.role).sort((a,b)=>Math.abs(sinceWake(a)-330)-Math.abs(sinceWake(b)-330))[0]; if(f) f.role='l'; }
   const skipped=((S.days[k]||{}).skipped)||[];
   slots.forEach(x=>{ x.skipped=!!(x.role&&skipped.indexOf(x.role)>=0); });
   if(!slots.length) return {slots,per:perMealProtein()};
@@ -590,9 +606,11 @@ function timingStats(days){
 function openEating(){
   const plan=eatingPlan();
   document.getElementById('altTitle').textContent='Eating around today';
-  document.getElementById('altSub').textContent= plan.kind
+  document.getElementById('altSub').textContent= plan.pat
+    ? 'Laid out inside your '+plan.pat.label+' window, '+plan.pat.start+' to '+plan.pat.end+(plan.kind? ', with training at '+plan.train : '')+'.'
+    : (plan.kind
     ? 'Built around training at '+plan.train+' and bed at '+plan.bed+'.'
-    : 'A day with no session in it, built around bed at '+plan.bed+'.';
+    : 'A day with no session in it, built around bed at '+plan.bed+'.');
   document.getElementById('altBody').innerHTML=`
     <div style="padding:0 14px 6px">
       ${plan.items.map(i=>`<div class="eatitem">
@@ -601,6 +619,7 @@ function openEating(){
       <div class="method"><b>What this will and will not do</b><span>This is for training quality, recovery and sleep. It is not a weight loss trick: what you eat in total decides that, and moving the same food around the clock does not change it. If a time does not suit your life, ignore it. The one worth keeping is the spread of protein.</span></div>
       <div class="method"><b>Where it comes from</b><span>The International Society of Sports Nutrition's 2017 position stand on nutrient timing, which puts 20 to 40g of protein every three to four hours ahead of post-workout timing; Schoenfeld, Aragon and Krieger's pooled analysis, where the timing effect disappeared once daily protein was accounted for; the sleep work on finishing large meals two to three hours before bed; pre-sleep protein trials at 20 to 40g; and a randomised crossover on caffeine, where a coffee-sized dose inside eight hours of bed fragmented sleep.</span></div>
       <button class="mini" id="eatTimes">Change your times</button>
+      ${typeof eatAdult==='function'&&eatAdult()? '<button class="mini" data-eatopen="1">Change your eating pattern</button>' : ''}
     </div>`;
   openSheet('altSheet');
 }
@@ -882,7 +901,7 @@ function mealsList(){
     if(m==='b'&&sl&&sl.tag==='post') label='Breakfast, after training';
     return {m,label,items,sl,kcal:Math.round(items.reduce((a,f)=>a+(+f.kcal||0)*(+f.q||1),0)),skipped:skipped.indexOf(m)>=0,
       p:Math.round(items.reduce((a,f)=>a+(+f.p||0)*(+f.q||1),0))};
-  });
+  }).filter(r=>!(typeof eatRoleOff==='function'&&eatRoleOff(r.m)&&!r.items.length));
   const per=teen? null : perMealProtein();
   const next=rows.find(r=>r.m!=='s'&&!r.items.length&&!r.skipped&&(!r.sl||r.sl.min>=now-90));
   const t=S.targets||{}, tot=foodTotals(k);
@@ -909,6 +928,7 @@ function mealsList(){
   }
   return `<div class="mealscard">
     <div class="mhead"><b>Meals</b>${head}</div>
+    ${typeof windowChip==='function'? windowChip() : ''}
     <div class="meals">${rows.map(row).join('')}</div>
     <div class="mfoot">${spread? `<span class="mealsnote">${spread}</span>` : '<span></span>'}<button id="eatBtn">Why these times</button></div></div>`;
 }

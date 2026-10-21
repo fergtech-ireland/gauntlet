@@ -35,5 +35,6 @@ function renderPeople(){
 }
 function renderAll(){ syncWeek(); renderToday(); renderPlan(); renderFeed(); renderPeople(); renderProgress();
   if(typeof renderEat==='function') renderEat();
-  if(typeof mountColophons==='function') mountColophons(); }
+  if(typeof mountColophons==='function') mountColophons();
+  if(typeof updateBadge==='function') updateBadge(); }
 

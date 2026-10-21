@@ -284,6 +284,8 @@ document.addEventListener('click',e=>{
     closeSheets(); renderAll();
     toast(meta? (meta.kind==='stop'? meta.t+'. One day at a time.' : meta.t+' it is. One thing.') : 'Could not start that',
       meta? 'Undo' : undefined, meta? ()=>{ S.habits=beforeH; save(); renderAll(); } : undefined);
+    /* build 81: straight on to when it is to be done by */
+    if(meta&&typeof openHabitDue==='function'){ const sl=habitSlotOf(h.id); if(sl) openHabitDue(sl,true); }
     return; }
   const ho=e.target.closest('[data-habitown]');
   if(ho){
@@ -294,6 +296,7 @@ document.addEventListener('click',e=>{
     const beforeH=JSON.parse(JSON.stringify(habitSlots()));
     startHabit(r.habit.id); closeSheets(); renderAll();
     toast((kind==='stop'? 'Stop: ' : '')+r.habit.t+(kind==='stop'? '. One day at a time.' : '. One thing.'),'Undo',()=>{ S.habits=beforeH; save(); renderAll(); });
+    if(typeof openHabitDue==='function'){ const sl=habitSlotOf(r.habit.id); if(sl) openHabitDue(sl,true); }
     return; }
   const trec=e.target.closest('[data-tplrec]');
   if(trec&&tplDraft){ const i=+trec.dataset.tplrec, r=tplDraft.ex[i];

@@ -66,6 +66,19 @@ self.addEventListener('message', event => {
   if (event.data === 'skipWaiting') self.skipWaiting();
 });
 
+/* A tap on a reminder (check in, or a habit) opens the app, or brings the
+   open copy to the front. Added in build 81 with the habit reminders. */
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  event.waitUntil((async () => {
+    const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const c of all) {
+      if ('focus' in c) { try { return await c.focus(); } catch (e) {} }
+    }
+    if (self.clients.openWindow) return self.clients.openWindow('./');
+  })());
+});
+
 function isAppPage(request, url) {
   if (request.mode === 'navigate') return true;
   const scope = new URL(self.registration ? self.registration.scope : './', self.location).pathname;

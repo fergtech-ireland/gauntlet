@@ -62,7 +62,9 @@ function renderSettings(){
     ${setRow('aim','marine','Aim and training days', aim.t+(typeof goalExtras==='function'&&goalExtras().length? ' + '+goalExtras().map(id=>aimOf(id).t).join(', ') : '')+' · '+(+p.liftDays||0)+' lifting, '+(+p.cardioDays||0)+' cardio')}
     ${setRow('goal','forest','Goal', goal)}
     ${setRow('body','burnt','Calories and body', p.detailsSet&&ct? 'Eat '+num(ct.kcal)+' kcal · maintenance '+num(ct.maintenance) : 'Add your details to work these out')}
+    ${typeof eatAdult==='function'&&eatAdult()? setRow('eating','forest','Eating pattern', escHabit(eatPatternLabel()), 'Whether you fast, how long for, and how many meals. With the good and the catch for your goals.') : ''}
     ${setRow('steps','marine','Daily steps', num(stepTarget())+' a day')}
+    ${typeof habitRemindersLabel==='function'? setRow('habitrem','forest','Habit reminders', habitRemindersLabel(), 'When a habit is asked for, and the end of the day time.') : ''}
     ${setRow('habits','forest','Habits', habits.length? habits.join('<br>') : 'None yet. One to start, one to stop')}
     ${typeof progLabel==='function'? setRow('programme','marine','Programme', escHabit(progLabel())+(trainDaysOf()&&trainDaysOf().length? ' · '+trainDaysOf().map(i=>DAYS[i]).join(', ') : ''), Object.keys(pinsOf()).length? Object.keys(pinsOf()).length+' day'+(Object.keys(pinsOf()).length===1?'':'s')+' fixed every week' : '') : ''}
     ${setRow('style','burnt','Training style', STYLES[styleOf()].t+(styleOf()==='hybrid'? ' · '+hyroxDaysOf(sessionsWanted())+' HYROX, '+(sessionsWanted()-hyroxDaysOf(sessionsWanted()))+' CrossFit' : ''))}
@@ -133,6 +135,8 @@ document.addEventListener('click',e=>{
   if(k==='aim'){ drawAimSheet(); openSheet('aimSheet'); }
   else if(k==='goal') openTargetSheet();
   else if(k==='body'||k==='steps') openDetails();
+  else if(k==='eating') openEatPattern();
+  else if(k==='habitrem') openHabitReminders();
   else if(k==='habits') openHabitSheet();
   else if(k==='deload') openDeloadSheet();
   else if(k==='focus') openFocusSheet();

@@ -450,6 +450,37 @@ function fastStrip(){
     <div class="fs">${left}</div>
     <div class="fbar" role="img" aria-label="${w.open? 'Window' : 'Fast'} ${Math.round(w.frac*100)} percent through"><i style="width:${Math.round(Math.max(0,Math.min(1,w.frac))*100)}%"></i></div></section>`;
 }
+/* build 82: the fasting clock on Today. It used to sit as a small line inside
+   the Meals card, below the session, where a person who is fasting could not
+   see it without scrolling. Now it is its own slim card under the rings, and
+   it follows the clock: fasting (how long, and when eating opens), the last
+   hour before the window opens (a different colour and wording, it is the next
+   thing), the window open (how long is left), and the last hour of the window.
+   Nothing at all for regular meals or under 18, so it never takes a place for
+   a person who is not fasting. Tap opens the eating pattern. */
+function todayFast(at){
+  if(!eatAdult()) return '';
+  const w=windowState(typeof at==='number'? at : undefined); if(!w) return '';
+  const p=w.pat, pct=Math.round(Math.max(0,Math.min(1,w.frac))*100);
+  let cls, kick, big, sub;
+  if(w.open){
+    const closing=w.leftMin<=60&&p.lenMin>=180; /* a one hour window is all closing, so it only says so for a longer one */
+    cls= closing? 'open closing' : 'open';
+    kick= closing? 'Window closing' : 'Eating window';
+    big= fmtLeft(w.leftMin)+' left';
+    sub= 'Closes at '+p.end;
+  } else {
+    const soon=w.opensInMin<=60;
+    cls= soon? 'shut soon' : 'shut';
+    kick= soon? 'Window opens soon' : 'Fasting';
+    big= soon? 'Eat from '+p.start : fmtLeft(w.fastedMin);
+    sub= soon? 'In '+fmtLeft(w.opensInMin) : 'Eat from '+p.start+', in '+fmtLeft(w.opensInMin);
+  }
+  return `<button class="todayfast ${cls}" data-eatopen="1" aria-label="${kick}: ${big}. ${sub}. ${p.label}, ${p.start} to ${p.end}. Tap to change your eating pattern.">
+    <span class="tfk"><span>${kick}</span><span>${p.label} · ${p.start} to ${p.end}</span></span>
+    <span class="tfm"><b>${big}</b><span>${sub}</span></span>
+    <span class="tfbar" aria-hidden="true"><i style="width:${pct}%"></i></span></button>`;
+}
 function eatPatternLabel(){
   const p=eatPat(); if(!p) return 'Regular meals';
   if(p.id==='two'||p.id==='omad') return p.label+' · '+(p.id==='omad'? p.start : p.start+' and '+minToHhmm(p.e-60));
@@ -457,6 +488,6 @@ function eatPatternLabel(){
 }
 if(window.__G){
   Object.assign(window.__G,{EAT_DEFS,EAT_ORDER,EAT_SAFETY,FIT,eatPat,eatPatId,eatPatternLabel,eatKind,eatFit,eatCtx,eatSuggest,eatDraftFrom,eatRolesIn,eatRoleOff,
-    windowState,windowText,windowStats,patternPlan,inWindowMin,firstMealMin,firstMealRole,firstMealWord,foodHorizon,windowStarted,openEatPattern,eatCommit,fastStrip,windowChip,eatSetTime,eatValid,drawEatSheet});
+    windowState,windowText,windowStats,todayFast,patternPlan,inWindowMin,firstMealMin,firstMealRole,firstMealWord,foodHorizon,windowStarted,openEatPattern,eatCommit,fastStrip,windowChip,eatSetTime,eatValid,drawEatSheet});
   Object.defineProperty(window.__G,'ED',{get:()=>ED,set:v=>{ED=v},configurable:true});
 }

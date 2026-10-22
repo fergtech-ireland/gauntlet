@@ -5202,7 +5202,8 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('61 · with no weight goal the break is a plain rule', !!wl() && wl().classList.contains('rule') && !wl().textContent.trim());
     S.weights = [{ d: G.addDays(k, -28), kg: 95 }, { d: k, kg: 92 }]; S.target = { kind: 'weight', value: 85, by: G.addDays(k, 60), from: 95 }; G.renderAll();
     const now61 = G.weightNow(), pct61 = Math.round((95 - now61) / 10 * 100);
-    t('61 · with one it sits straight under the rings, before the coach card', home().children[0].classList.contains('ringset') && home().children[1] === wl() && !wl().classList.contains('rule'));
+    /* build 82: the weight line is progress, not an action, so it sits below whatever is open to do (and straight under the line saying all caught up when nothing is) */
+    t('61 · with one it shows under the coach card, after the rings', (() => { const kids = [...home().children], ci = kids.findIndex(e => e.classList.contains('daycoach')); return kids[0].classList.contains('ringset') && !wl().classList.contains('rule') && (ci < 0 || kids.indexOf(wl()) > ci); })());
     t('61 · it shows the start, the goal and how far along', /Start 95/.test(txt(wl())) && /Goal 85/.test(txt(wl())) && new RegExp(pct61 + '%').test(txt(wl())) && /to go/.test(txt(wl())), txt(wl()));
     t('61 · the bar matches that progress', wl().querySelector('.ybar i').style.width === pct61 + '%');
     t('61 · it uses the same weight as the card on You', new RegExp(String(Math.round(now61 * 10) / 10).replace('.', '\\.') + ' kg').test(txt(wl())));
@@ -5824,14 +5825,14 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     /* ---- the tiny version: after a miss, and on a lower day ---- */
     wh.days = {}; wh.started = A(-10); for (let i = 2; i <= 10; i++) wh.days[A(-i)] = true;
     G.renderAll();
-    const tiny = tv().querySelector('[data-habittiny="' + ws + '"]');
+    const tiny = tv().querySelector('.routine [data-habittiny="' + ws + '"]');
     t('74 · the day after a miss the tiny version is offered', !!tiny && /A glass, not a pint/.test(txt(tiny)));
     tiny.click();
     t('74 · and it counts', wh.days[T] === 'tiny' && /Tiny version done/.test(txt(tv())));
     const Lt = G.habitLedger(wh, meta), sY = Lt.days[Lt.days.length - 2].s, sT = Lt.days[Lt.days.length - 1].s;
     t('74 · a bit less than the full thing', Math.abs((sT - sY) - G.RT_TINY * G.RT_K * (1 - sY)) < 1e-9);
     G.toggleHabitDay(T, ws); wh.days[A(-1)] = true; G.renderAll();
-    t('74 · with yesterday kept, no tiny offer', !tv().querySelector('[data-habittiny="' + ws + '"]'));
+    t('74 · with yesterday kept, no tiny offer', !tv().querySelector('.routine [data-habittiny="' + ws + '"]'));
     const realR = w.readiness; w.readiness = () => ({ level: 'lower', drivers: [], text: 'Lower than your usual' }); G.renderAll();
     t('74 · on a lower readiness day it is offered again', /Lower day: the tiny version counts/.test(txt(tv())));
     w.readiness = realR; G.renderAll();
@@ -6269,12 +6270,12 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     t('79 · the newest note is this build', G.RELEASE_NOTES.some(n => n.v === w.eval('APP_VERSION')));
     /* someone who used the app before notes existed */
     delete S.profile.seenVersion; G.closeSheets();
-    t('79 · they are taken as having seen build 72', G.seenVersion() === '72' && G.unseenNotes().map(n => n.v).join(',') === '81,80,79,78,77,76,75,74,73');
+    t('79 · they are taken as having seen build 72', G.seenVersion() === '72' && G.unseenNotes().map(n => n.v).join(',') === '82,81,80,79,78,77,76,75,74,73');
     t('79 · it shows', G.maybeWhatsNew(0) && sheetOn());
     const body = txt(d.getElementById('altBody'));
-    /* build 81: the three shown are 81, 80, 79 */
-    t('79 · newest first, with what changed', body.indexOf('Choose how you eat') >= 0 && body.indexOf('Choose how you eat') < body.indexOf('One plan for all your goals') && body.indexOf('One plan for all your goals') < body.indexOf('Goal charts say what they mean') && !/Goals you can read at a glance/.test(body));
-    t('79 · a fourth build waits one tap away', !/Adding food, rebuilt/.test(body) && /6 earlier updates/.test(txt(d.querySelector('[data-wnall]'))));
+    /* build 82: the three shown are 82, 81, 80 */
+    t('79 · newest first, with what changed', body.indexOf('Today follows what is next') >= 0 && body.indexOf('Today follows what is next') < body.indexOf('Choose how you eat') && body.indexOf('Choose how you eat') < body.indexOf('One plan for all your goals') && !/Goal charts say what they mean/.test(body));
+    t('79 · a fourth build waits one tap away', !/Adding food, rebuilt/.test(body) && /7 earlier updates/.test(txt(d.querySelector('[data-wnall]'))));
     t('79 · and only builds they have not seen', !/Programmes for every kind/.test(body));
     t('79 · it is marked seen as it shows', S.profile.seenVersion === w.eval('APP_VERSION'));
     d.querySelector('[data-wnok]').click();
@@ -7024,7 +7025,7 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     G.renderAll();
     t('84 · Eat shows no Breakfast section while none is in the pattern', !d.querySelector('#eatView [data-eatmeal="b"]') && !!d.querySelector('#eatView [data-eatmeal="l"]') && !!d.querySelector('#eatView [data-eatmeal="d"]'));
     t('84 · Eat shows the window with a bar and a way to change it', !!d.querySelector('#eatView .fastcard') && /16:8/.test(txt(d.querySelector('#eatView .fastcard'))) && !!d.querySelector('#eatView .fastcard [data-eatopen]'));
-    t('84 · Today\'s Meals list drops breakfast too, and says where the window is', !/Breakfast/.test(txt(d.querySelector('.mealscard'))) && !!d.querySelector('.mealscard .mwin'));
+    t('84 · Today\'s Meals list drops breakfast too, and says where the window is', !/Breakfast/.test(txt(d.querySelector('.mealscard'))) && !d.querySelector('.mealscard .mwin') && !!d.querySelector('#todayView .todayfast') && /19:00|\d\d:\d\d/.test(txt(d.querySelector('#todayView .todayfast'))));
     G.addFood('oats', 1, 'b');
     G.renderAll();
     t('84 · food already logged as breakfast is never hidden', !!d.querySelector('#eatView [data-eatmeal="b"]') && /Breakfast/.test(txt(d.querySelector('.mealscard'))));
@@ -7239,10 +7240,124 @@ const habitKindOf = (G, id) => (G.habitOf(id)||{}).kind;
     /* ---- old saves and housekeeping ---- */
     delete S.habits[slot1].due; delete S.habits[slot1].eod; delete S.profile.eodTime; G.save(); G.renderAll();
     t('85 · a habit saved before this build, with no time, still works and gets a default', /^\d\d:\d\d$/.test(ev('habitDue(S.habits.' + slot1 + ',habitOf("' + hid + '"))').t) && ev('habitsToLog().length') >= 1);
-    t('85 · the release note says what changed', /time to be done by/.test(JSON.stringify(w.eval('RELEASE_NOTES').find(n => n.v === '81'))) && /eating/i.test(JSON.stringify(w.eval('RELEASE_NOTES').find(n => n.v === '81'))) && w.eval('APP_VERSION') === '81');
+    t('85 · the release note says what changed', /time to be done by/.test(JSON.stringify(w.eval('RELEASE_NOTES').find(n => n.v === '81'))) && /eating/i.test(JSON.stringify(w.eval('RELEASE_NOTES').find(n => n.v === '81'))) && w.eval('APP_VERSION') === '82');
     const fsy = require('fs'), pathy = require('path');
     t('85 · no em dashes in the reminder code', fsy.readFileSync(pathy.join(__dirname, 'src/js/reminders.js'), 'utf8').indexOf('\u2014') < 0);
     t('85 · and no page errors', errs.length === 0, errs.join(' | '));
+  }
+
+
+  /* ---------------------------------------------------------- 86 */
+  journey(86, 'Build 82: Today follows what is next: the weigh in first thing, the fast in view, the session carrying Up next, the weight said once');
+  {
+    /* a clock fixed at hh:mm today, ticking on, so none of this depends on when the suite runs */
+    const at = async (hh, mm) => { const b = await boot({ before: w0 => {
+      const Real = w0.Date, n = new Real(); const target = new Real(n.getFullYear(), n.getMonth(), n.getDate(), hh, mm, 0).getTime();
+      const off = target - Real.now();
+      class Fixed extends Real { constructor(...a) { if (a.length) super(...a); else super(Real.now() + off); } static now() { return Real.now() + off; } }
+      w0.Date = Fixed; } }); allErrs.push(...b.errs);
+      onboard(b.G); const S = b.G.S; S.profile.wakeTime = '07:00'; S.profile.bedtime = '23:00'; S.profile.trainTime = '18:00';
+      S.weights = []; for (let n = 14; n >= 1; n--) S.weights.push({ d: b.G.addDays(b.G.todayKey(), -n), kg: 92 });
+      S.target = { kind: 'weight', value: 85, by: b.G.addDays(b.G.todayKey(), 60), from: 92, set: b.G.addDays(b.G.todayKey(), -14) };
+      b.G.save(); b.G.renderAll(); return b; };
+    const txt = e => (e ? e.textContent.replace(/\s+/g, ' ').trim() : '');
+    const kidsOf = d => [...d.getElementById('todayView').children].map(e => e.className.split(' ')[0]);
+
+    /* ---- the morning: weigh in is up next, ahead of food ---- */
+    {
+      const { w, d, G, errs } = await at(8, 59); const S = G.S, T = G.todayKey(), ev = c => w.eval(c);
+      const nx = ev('nextUp()');
+      t('86 · first thing, with a weight goal and no weigh in yet, the weigh in is Up next', nx.top.id === 'weigh', nx.list.map(x => x.id + ':' + x.score).join());
+      t('86 · it names the last one and why before breakfast', /yesterday/.test(nx.top.why) && /Before breakfast/.test(nx.top.why));
+      t('86 · what comes after it is sleep, not a clock time far off', /sleep/i.test(nx.then), nx.then);
+      const card = d.querySelector('.daycoach .nextcard[data-next="weigh"]');
+      t('86 · the card is on Today with a Weigh in button', !!card && !!card.querySelector('[data-glance="weigh"]'));
+      t('86 · and the weigh in tile is not on the page a second time', !d.querySelector('.quicks [data-glance="weigh"]') && d.querySelectorAll('#todayView [data-glance="weigh"]').length === 1);
+      t('86 · the weight line sits below what is open to do', (() => { const k = kidsOf(d); return k.indexOf('wline') > k.indexOf('mealscard'); })(), kidsOf(d).join());
+      card.querySelector('[data-weighskip]').click();
+      t('86 · Not today puts it away for the day', S.days[T].noWeigh === true && ev('nextUp()').top.id !== 'weigh' && !d.querySelector('.nextcard[data-next="weigh"]'));
+      t('86 · and the tile is back so it can still be done', !!d.querySelector('.quicks [data-glance="weigh"]'));
+      G.S.days[T].noWeigh = false; G.renderAll();
+      S.weights.push({ d: T, kg: 91.6 }); G.renderAll();
+      t('86 · once weighed in it is no longer asked for', ev('nextUp()').top.id !== 'weigh' && !d.querySelector('.nextcard[data-next="weigh"]'));
+      t('86 · no page errors', errs.length === 0, errs.join(' | '));
+    }
+    /* ---- not everyone is asked every day ---- */
+    {
+      const { w, G } = await at(8, 59); const S = G.S, T = G.todayKey(), ev = c => w.eval(c);
+      S.target = null; S.weights = [{ d: G.addDays(T, -21), kg: 92 }, { d: G.addDays(T, -14), kg: 92 }, { d: G.addDays(T, -7), kg: 92 }, { d: G.addDays(T, -3), kg: 92 }]; G.renderAll();
+      t('86 · someone who weighs in weekly and weighed three days ago is left alone', ev('weighPrompt(dayClock())') === null);
+      S.weights = [{ d: G.addDays(T, -21), kg: 92 }, { d: G.addDays(T, -14), kg: 92 }, { d: G.addDays(T, -8), kg: 92 }]; G.renderAll();
+      t('86 · and asked once the week is up', !!ev('weighPrompt(dayClock())'));
+      S.weights = [{ d: G.addDays(T, -3), kg: 92 }, { d: G.addDays(T, -2), kg: 92 }, { d: G.addDays(T, -1), kg: 92 }]; G.renderAll();
+      t('86 · someone who weighs in most days is asked each morning', !!ev('weighPrompt(dayClock())'));
+    }
+    /* ---- the afternoon: the prompt has gone ---- */
+    {
+      const { w, G } = await at(14, 0); const ev = c => w.eval(c);
+      t('86 · it is only a morning prompt', ev('weighPrompt(dayClock())') === null);
+    }
+    /* ---- the fast ---- */
+    {
+      const { w, d, G, errs } = await at(8, 59); const S = G.S;
+      t('86 · regular meals: no fasting card', !d.querySelector('.todayfast'));
+      S.profile.eat = { id: 'omad', start: '19:30', end: '20:30', meals: 1 }; G.renderAll();
+      const f = d.querySelector('#todayView .todayfast');
+      t('86 · one meal a day: the fasting card is on Today', !!f && /Fasting/.test(txt(f)) && /Eat from 19:30/.test(txt(f)) && /\d+h \d+m/.test(txt(f)), txt(f));
+      t('86 · it sits straight under the rings, above what is next', (() => { const k = kidsOf(d); return k[0] === 'ringset' && k[1] === 'todayfast' && k[2] === 'daycoach'; })(), kidsOf(d).join());
+      t('86 · the Meals card no longer carries a second copy', !d.querySelector('.mealscard .mwin'));
+      t('86 · tapping it opens the eating pattern', (() => { d.querySelector('.todayfast').click(); return d.getElementById('eatSheet') ? d.getElementById('eatSheet').classList.contains('on') : !!d.querySelector('.sheet.on'); })());
+      G.closeSheets();
+      t('86 · no page errors', errs.length === 0, errs.join(' | '));
+    }
+    {
+      const { d, G } = await at(18, 45); G.S.profile.eat = { id: 'omad', start: '19:30', end: '20:30', meals: 1 }; G.renderAll();
+      t('86 · the hour before the window opens it says so', /Window opens soon/.test(txt(d.querySelector('.todayfast'))) && /19:30/.test(txt(d.querySelector('.todayfast'))) && d.querySelector('.todayfast').classList.contains('soon'));
+    }
+    {
+      const { d, G } = await at(19, 45); G.S.profile.eat = { id: 'omad', start: '19:30', end: '20:30', meals: 1 }; G.renderAll();
+      t('86 · with the window open it says how long is left', /Eating window/.test(txt(d.querySelector('.todayfast'))) && /left/.test(txt(d.querySelector('.todayfast'))) && d.querySelector('.todayfast').classList.contains('open'));
+    }
+    {
+      const { w, d, G } = await at(19, 15); G.S.profile.trainTime = '06:30'; G.S.profile.eat = { id: '16-8', start: '12:00', end: '20:00', meals: 3 }; G.S.days[G.todayKey()] = { skipped: ['b', 'l', 'd'], sleep: 7 }; G.S.weights.push({ d: G.todayKey(), kg: 91.9 }); G.renderAll();
+      const nx = w.eval('nextUp()');
+      t('86 · near the end of a long window with food still to eat, Up next says it is closing', nx.top.id === 'windowclose' && /20:00/.test(nx.top.kick) && /protein/.test(nx.top.why), nx.top.id + ' ' + nx.top.why);
+      t('86 · and the fasting card turns amber for the same hour', d.querySelector('.todayfast').classList.contains('closing'));
+    }
+    /* ---- the session carries Up next ---- */
+    {
+      const { w, d, G, errs } = await at(17, 30); const S = G.S, T = G.todayKey(), i = G.dowIdx();
+      const tr = S.plan.days.find(x => x && x.type && x.slot !== 'walk' && x.slot !== 'rest'); S.plan.days[i] = Object.assign({}, tr, { slot: tr.slot }); G.S.days[T] = { sleep: 7, checkedIn: false };
+      S.weights.push({ d: T, kg: 91.9 }); G.renderAll();
+      const nx = w.eval('nextUp()');
+      t('86 · with the session next, the session card carries the mark', nx.top.id === 'session' && !!d.querySelector('.hero.upnext') && /UP NEXT/.test(txt(d.querySelector('.hero.upnext'))), nx.top.id);
+      t('86 · and there is no second card for it with a second Start button', !d.querySelector('.nextcard[data-next="session"]') && d.querySelectorAll('#todayView [data-nextstart], #todayView #startToday').length === 1);
+      t('86 · the session card comes before the line that follows it', (() => { const k = kidsOf(d); return k.indexOf('hero') > -1 && k.indexOf('hero') < k.indexOf('mealscard'); })(), kidsOf(d).join());
+      t('86 · the day still has the session above the meals (build 67)', (() => { const k = kidsOf(d); return k.indexOf('hero') < k.indexOf('mealscard'); })());
+      t('86 · no page errors', errs.length === 0, errs.join(' | '));
+    }
+    /* ---- nothing open: the plan comes up ---- */
+    {
+      const { w, d, G } = await at(15, 0); const S = G.S, T = G.todayKey();
+      S.days[T] = { skipped: ['b', 'l'], sleep: 7 }; S.weights.push({ d: T, kg: 91.9 }); G.renderAll();
+      t('86 · nothing due: Up next says all caught up', w.eval('nextUp()').top.id === 'clear');
+      t('86 · and the weight line comes straight up under it', (() => { const k = kidsOf(d); const ci = k.indexOf('daycoach'); return ci > -1 ? k[ci + 1] === 'wline' : k[1] === 'wline'; })(), kidsOf(d).join());
+    }
+    /* ---- the weight said once ---- */
+    {
+      const { w, d, G } = await at(15, 0); const S = G.S, T = G.todayKey();
+      S.profile.aim = 'lose'; S.profile.alsoAims = ['build']; S.days[T] = { skipped: ['b', 'l'], sleep: 7 }; S.weights.push({ d: T, kg: 92 }); G.renderAll();
+      const sg = w.eval('planSigns(planDir(),false)').find(x => x.key === 'sign:weight');
+      t('86 · (the weight really is off course here, so this is not vacuous)', !!sg && sg.st === 'look' && /not on course/.test(sg.fix), sg && sg.st);
+      const plan = d.querySelector('.plan');
+      t('86 · the plan card has the weight line with its bar', !!plan && !!plan.querySelector('.wline .ybar'));
+      t('86 · the weight target is not written out again above the bar', !!plan && !/not on course for/.test(txt(plan.querySelector('.plan-h'))) && !/Week in review sets next week/.test(txt(plan.querySelector('.plan-h'))), txt(plan && plan.querySelector('.plan-h')));
+      t('86 · it is said once, under the bar', !!plan && /Off track|not on course|about \d/.test(txt(plan.querySelector('.wlook'))));
+      t('86 · the plan sheet still has the full sentence', /not on course for/.test(w.eval('GOAL_WHY.plan.now')));
+      t('86 · and the heading still says Worth a look', /Worth a look|Mostly working/.test(txt(plan.querySelector('.plan-w'))));
+    }
+    const srcN = require('fs').readFileSync(require('path').join(__dirname, 'src/js/next.js'), 'utf8') + require('fs').readFileSync(require('path').join(__dirname, 'src/js/eating.js'), 'utf8') + require('fs').readFileSync(require('path').join(__dirname, 'src/js/whatsnew.js'), 'utf8');
+    t('86 · no em dashes in what was written', srcN.indexOf('—') < 0);
   }
 
   const r = s.report(allErrs);

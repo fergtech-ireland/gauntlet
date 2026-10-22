@@ -37,6 +37,25 @@ function sleepChoices(){
   const out=[]; for(let h=mid-1;h<=mid+1.01;h+=0.5) if(h>=3&&h<=12) out.push(+h.toFixed(1));
   return out;
 }
+/* build 82: should the morning weigh in be offered, and how loudly. Returns
+   null when it should not be (a teen, already weighed today, "Not today"
+   pressed, not the morning, or a weekly weigher inside their week). */
+function weighPrompt(c){
+  const k=todayKey(), ws=S.weights||[];
+  if(isTeen()||(S.days[k]||{}).noWeigh) return null;
+  const last=ws.length? ws[ws.length-1].d : null;
+  if(last===k||c.n>=5*60) return null;
+  const gap=last? Math.round((dateOf(k)-dateOf(last))/864e5) : 99;
+  const goal=!!(S.target&&S.target.kind==='weight');
+  /* how often this person weighs in: the middle gap of their last six */
+  const gaps=[]; for(let n=Math.max(1,ws.length-6);n<ws.length;n++) gaps.push(Math.round((dateOf(ws[n].d)-dateOf(ws[n-1].d))/864e5));
+  gaps.sort((a,b)=>a-b);
+  const often= goal || (gaps.length>=2&&gaps[Math.floor(gaps.length/2)]<=3);
+  if(!often&&gap<7) return null;
+  if(!often&&!goal&&!last) return null;
+  const fed=typeof dayFood==='function'&&dayFood(k).length>0;
+  return {gap,last,score: (!fed&&c.n<3*60)? 91 : (c.n<4*60? 84 : 66)};
+}
 function nextCandidates(at){
   const c=dayClock(at), out=[], add=(score,o)=>out.push(Object.assign({score},o));
   const k=todayKey(), day=S.days[k]||{}, teen=isTeen(), i=dowIdx(), d=(typeof todayPlan==='function')? todayPlan() : null;
@@ -104,13 +123,29 @@ function nextCandidates(at){
       why:'Best done this evening, once the day is mostly over.',act:`<button class="mini" data-checkinnow="1">Do it now</button>`});
   }
 
-  /* a weigh in, in the morning, when a weight goal needs one */
-  if(!teen&&S.target&&S.target.kind==='weight'&&c.n<4*60){
-    const last=S.weights.length? S.weights[S.weights.length-1].d : null;
-    const gap=last? Math.round((dateOf(k)-dateOf(last))/864e5) : 99;
-    if(gap>=7) add(64,{id:'weigh',tone:'green',kick:'This morning',title:'Weigh in',
-      why:(last? 'Last one was '+gap+' days ago. ' : 'None yet. ')+'Before breakfast, after the bathroom, is the steadiest reading.',
-      act:`<button class="cta" data-glance="weigh">Weigh in</button>`});
+  /* a weigh in, first thing: build 82 (Feargal). It used to appear only when
+     the last one was a week old, so for someone who weighs in every morning it
+     never showed, and the weigh in sat in a tile lower down. Now, for a person
+     with a weight goal or who weighs in most days, an unweighed morning puts it
+     at or near the top, ahead of food (a weight is only a steady reading
+     before breakfast). Someone who weighs in weekly keeps the weekly prompt. */
+  const wp=weighPrompt(c);
+  if(wp) add(wp.score,{id:'weigh',tone:'green',kick:'This morning',title:'Weigh in',short:'Weigh in',
+      why:(wp.last? (wp.gap===1? 'Last one was yesterday. ' : 'Last one was '+wp.gap+' days ago. ') : 'None yet. ')+'Before breakfast, after the bathroom, is the steadiest reading.',
+      act:`<button class="cta" data-glance="weigh">Weigh in</button><button class="mini" data-weighskip="1">Not today</button>`});
+
+  /* build 82: the eating window closing with food still to eat (only for a
+     window long enough to be worth warning about, and never on top of a meal
+     that is already due, which says the same thing with its own button) */
+  if(!teen&&typeof windowState==='function'&&!out.some(o=>o.id==='meal')){
+    const w=windowState(c.now), tt=S.targets||{};
+    if(w&&w.open&&w.leftMin>0&&w.leftMin<=60&&w.pat.lenMin>=180&&typeof foodTotals==='function'){
+      const tot=foodTotals(k), proLeft=tt.protein? Math.max(0,Math.round(tt.protein-(tot.protein||0))) : 0, kLeft=tt.kcal? Math.max(0,Math.round(tt.kcal-(tot.kcal||0))) : 0;
+      if(proLeft>=20||kLeft>=300)
+        add(70,{id:'windowclose',tone:'amber',kick:'Closes at '+w.pat.end,title:'Eat before the window closes',short:'Window closes at '+w.pat.end,
+          why:(proLeft>=20? 'About '+proLeft+'g of protein still to go'+(kLeft>=300? ' and '+num(kLeft)+' kcal' : '') : num(kLeft)+' kcal still to eat')+', and '+fmtIn(w.leftMin)+' left to do it in.',
+          act:`<button class="cta" data-go="eat">Log food</button>`});
+    }
   }
 
   /* late: wind down */
@@ -149,6 +184,10 @@ function laterToday(at){
      same windows the card uses: 90 minutes for a meal, 2 hours for training) */
   const add=(id,abs,title,role,grace)=>{ const m=((abs%1440)+1440)%1440, rel=c.rel(m);
     if(rel>c.n||(grace&&rel>=c.n-grace)) out.push({id,rel,time:minToHhmm(m),title,role,due:rel<=c.n}); };
+  /* build 82: the morning ticks that are open right now, first in the line */
+  const wpn=weighPrompt(c);
+  if(wpn) out.push({id:'weigh',rel:c.n-2000,time:minToHhmm(c.now),title:'Weigh in',plain:true,due:true});
+  if(!sleepLoggedFor(k)&&!realAuto(k)&&c.n<6*60) out.push({id:'sleep',rel:c.n-1999,time:minToHhmm(c.now),title:"Log last night's sleep",plain:true,due:true});
   const live=typeof liveSession==='function'&&liveSession();
   if(d&&d.type&&d.slot!=='walk'&&d.slot!=='rest'&&!dayDone(i)&&!live) add('session',c.trainAbs,dayLabel(d).replace(/<[^>]+>/g,''),null,120);
   if(typeof mealSlots==='function'&&typeof dayFood==='function'){
@@ -171,6 +210,7 @@ function thenAfter(top,at){
   const role=top&&top.id==='meal'&&top.role;
   const x=laterToday(at).find(y=>!(top&&y.id===top.id&&(y.id!=='meal'||y.role===role)));
   if(!x) return '';
+  if(x.plain) return x.title;
   if(x.due) return x.title+', due '+x.time;
   const inMin=x.rel-c.n;
   return x.title+' at '+x.time+(inMin<=180? ', in about '+fmtIn(inMin) : '');
@@ -185,20 +225,27 @@ function nextUp(at){
    today (the same priorities as before, in the same rows), then anything
    worth watching that is not a ring. Empty when there is nothing to say. */
 const RING_SIGNALS=['sleep','protein','kcal','steps'];
-function coachCard(nx,prios,at){
+function coachCard(nx,prios,at,opt){
   nx=nx||nextUp(at);
+  /* build 82: when the session is what is next, the session card on Today
+     carries the "Up next" mark itself, so this card leaves its own head out
+     (it used to say the session, with a Start button, straight above a
+     session card that said the same with the same button). What is left is the
+     line after it, the things that matter and the things to watch. */
+  const noHead=!!(opt&&opt.noHead);
   const also=(prios||[]).slice(0,2);
   const watch=focusSignals(at).filter(x=>RING_SIGNALS.indexOf(x.id)<0&&x.id!==NEXT_SAME[nx.top.id]&&x.sev>=0.15)
     .sort((a,b)=>b.sev-a.sev).slice(0,2).map(x=>x.html).join('');
   const clear=nx.top.id==='clear';
-  if(clear&&!also.length&&!watch&&!nx.then) return '';
-  const alsoHtml= also.length? `<div class="alsohead">${clear? 'What matters today' : 'Also today'}</div>
+  if((clear||noHead)&&!also.length&&!watch&&!nx.then) return '';
+  const alsoHtml= also.length? `<div class="alsohead">${clear&&!noHead? 'What matters today' : 'Also today'}</div>
     <div class="prios">${also.map((x,n)=>{ const tone=PRIO_TONE[x.id]||'green';
       return `<div class="prio p-${x.id}"><div class="pn" style="background:var(--${tone}-tint);color:var(--${tone}-text)">${n+1}</div>
       <div class="pt"><b>${x.t}</b><span>${x.why}</span>${x.conf? confChip(x.conf) : ''}${x.action? `<div class="pa">${x.action}</div>` : ''}</div></div>`; }).join('')}</div>` : '';
   /* build 67: with nothing due, a slim line still says what is next */
-  const head= clear? (nx.then? `<div class="nextcard clear" data-next="clear"><div class="nk"><span class="ndot" aria-hidden="true"></span>All caught up</div><div class="nthen first">Next: ${escHabit(nx.then)}</div></div>` : '') : nextCard(nx,true);
-  return `<section class="daycoach ${clear?'t-green':'t-'+nx.top.tone}" ${clear? '' : `data-next="${nx.top.id}"`} aria-label="Your day">${head}${alsoHtml}
+  const head= noHead? (nx.then? `<div class="nextcard thenonly" data-next="then"><div class="nthen first">Then: ${escHabit(nx.then)}</div></div>` : '')
+    : clear? (nx.then? `<div class="nextcard clear" data-next="clear"><div class="nk"><span class="ndot" aria-hidden="true"></span>All caught up</div><div class="nthen first">Next: ${escHabit(nx.then)}</div></div>` : '') : nextCard(nx,true);
+  return `<section class="daycoach ${clear||noHead?'t-green':'t-'+nx.top.tone}" ${clear||noHead? '' : `data-next="${nx.top.id}"`} aria-label="Your day">${head}${alsoHtml}
     ${watch? `<div class="pills watch" aria-label="Worth watching">${watch}</div>` : ''}</section>`;
 }
 function nextCard(nx,inner){
@@ -388,6 +435,9 @@ document.addEventListener('click',e=>{
   if(e.target.closest('[data-nextstart]')){ startPlanDay(todayPlan()); return; }
   const nf=e.target.closest('[data-nextfood]');
   if(nf){ openFood(false,{slot:nf.dataset.nextfood}); return; }
+  if(e.target.closest('[data-weighskip]')){ const k=todayKey();
+    S.days[k]=Object.assign({},S.days[k],{noWeigh:true}); save(); renderAll();
+    toast('No weigh in today','Undo',()=>{ const d2=S.days[k]; if(d2) delete d2.noWeigh; save(); renderAll(); }); return; }
   const nsk=e.target.closest('[data-nextskip]');
   if(nsk){ const k=todayKey(), m=nsk.dataset.nextskip, day=S.days[k]=Object.assign({},S.days[k]);
     day.skipped=(day.skipped||[]).filter(x=>x!==m).concat([m]); save(); renderAll();

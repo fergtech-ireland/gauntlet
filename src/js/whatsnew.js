@@ -18,6 +18,10 @@
    Writing a note: what changed for the person, in their words, one line of
    why it matters if needed, no internal names. Bump APP_VERSION with it. */
 const RELEASE_NOTES=[
+  {v:'82', date:'2026-10-22', items:[
+    {t:'Today follows what is next', d:'The weigh in is now the first thing Today asks for in the morning, ahead of breakfast, with a Not today button. After that it moves on to sleep, your session, meals and habits as the day goes. When your session is next, the session card carries the mark itself instead of a second card saying the same. When nothing is open, your plan comes up under it.'},
+    {t:'Your fast, where you can see it', d:'If you fast, Today now has its own card under the rings: how long you have fasted and when eating opens, then how long is left in your window. Before, it was a small line inside the Meals card.', go:'eat', goLabel:'Open Eat', adult:true},
+    {t:'Your weight said once', d:'Under Your plan, the weight target is no longer written out above the progress bar and again below it. It reads once, under the bar.', adult:true}]},
   {v:'81', date:'2026-10-21', items:[
     {t:'Choose how you eat', d:'Fasting window or regular meals, 12:12 to 20:4, two meals or one, or your own times. For each, you see the good and the catch for your own goals, with the research behind it. Your day on Eat and Today lays itself out inside your window. Find it on Eat or in You, Eating pattern. Not offered under 18.', go:'eat', goLabel:'Open Eat', adult:true},
     {t:'Habits have a time to be done by', d:'Adding a habit now asks when, in one tap. At that time Today asks for it and keeps asking until it is ticked. Stop habits and anything you set to end of day come up at 9pm, and yesterday can be logged until the morning is over. Turn it all off in You, Habit reminders.'},

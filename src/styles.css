@@ -1932,6 +1932,27 @@ body.rv-open .toast{z-index:310}
 .mwin b{font-weight:700;color:var(--sub)}
 .mwin.open b{color:var(--green-text)}
 .mwin.shut b{color:var(--amber-text)}
+/* build 82: the session card carries "Up next"; a lone tile fills the row */
+.hero.upnext{border-left:4px solid var(--cyan)}
+.hero.upnext.islive{border-left-color:var(--green)}
+.nextcard.thenonly{margin-top:8px;padding:8px 14px;border-left-color:var(--line)}
+.nextcard.thenonly .nthen{margin:0;padding:0;border:0}
+#todayView .quicks.one{grid-template-columns:1fr}
+/* build 82: the fasting clock on Today */
+.todayfast{display:block;width:100%;margin-top:12px;text-align:left;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:12px;padding:10px 14px 12px;min-height:44px}
+.todayfast.open{border-left-color:var(--green)}
+.todayfast .tfk{display:flex;justify-content:space-between;gap:10px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--amber-text)}
+.todayfast .tfk span:last-child{letter-spacing:0;text-transform:none;font-weight:700;color:var(--mute)}
+.todayfast.open .tfk span:first-child{color:var(--green-text)}
+.todayfast .tfm{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:3px}
+.todayfast .tfm b{font-size:20px;font-weight:800;line-height:1.15}
+.todayfast .tfm span{font-size:13px;color:var(--sub);text-align:right}
+.todayfast .tfbar{display:block;height:6px;border-radius:99px;background:var(--track);overflow:hidden;margin-top:9px}
+.todayfast .tfbar i{display:block;height:100%;border-radius:99px;background:var(--amber)}
+.todayfast.open .tfbar i{background:var(--green)}
+.todayfast.soon,.todayfast.closing{background:var(--amber-tint)}
+.todayfast.soon .tfk span:first-child,.todayfast.closing .tfk span:first-child{color:var(--amber-text)}
+
 
 /* ===== habit due times (build 81) ===== */
 .rt-cue.due{color:var(--coral-text);font-weight:700}

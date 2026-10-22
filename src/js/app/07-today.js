@@ -831,7 +831,7 @@ const SESS_ICON={
   walk:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4.5" r="1.8"/><path d="m9 21 2.5-6M13 21v-4l-2-3 1-5 3 3 3 1M10 9l-3 3"/></svg>',
   rest:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
   done:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg>'};
-function heroCard(plan,d,i){
+function heroCard(plan,d,i,upnext){
   const st=stepsToday(), done=dayDone(i), isWalk=d.slot==='walk', rest=!d.type||d.slot==='rest';
   const walkPct=st!==null? Math.min(100,Math.round(st/stepTarget()*100)) : 0;
   const whyBtn=plan.why[0]? `<button class="whyline" data-whytoday="1" aria-expanded="false" aria-label="Why today looks like this">Why today <span aria-hidden="true">›</span></button>` : '';
@@ -855,7 +855,7 @@ function heroCard(plan,d,i){
   const walkMarked=isWalk&&!!marked, walkOk=isWalk&&(walkMarked||walkDone());
   const icon= done||walkOk? 'done' : (isWalk? 'walk' : (d.runId? 'run' : (d.circuitId? 'circuit' : 'lift')));
   const tone= done||live||walkOk? 'green' : 'cyan';
-  const kick= isWalk? DAYS[i].toUpperCase()+' · WALK' : (live? 'IN PROGRESS · '+liveClock() : heroKicker(d,done));
+  const kick= upnext&&!done? 'UP NEXT · '+(live? 'IN PROGRESS · '+liveClock() : String(upnext.kick||'').toUpperCase()) : (isWalk? DAYS[i].toUpperCase()+' · WALK' : (live? 'IN PROGRESS · '+liveClock() : heroKicker(d,done)));
   const has=d.templateId||d.runId||d.circuitId;
   const main= isWalk? (walkDone()? `<div class="doneline">Done. ${num(st)} steps in.</div>`
       : (walkMarked? `<div class="doneline">Walk done.</div><button class="skipbtn" data-unmarkday="${i}">Not done after all</button>`
@@ -863,7 +863,7 @@ function heroCard(plan,d,i){
     : live? `<div class="ctarow"><button class="cta" id="startToday">Resume session</button>${has? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`
     : done? `<div class="ctarow"><button class="cta ghost" id="startToday">Do it again</button>${has? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`
     : `<div class="ctarow"><button class="cta" id="startToday">Start session</button>${has? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`;
-  return `<div class="hero ${done||walkOk?'isdone':''} ${live?'islive':''}">
+  return `<div class="hero ${done||walkOk?'isdone':''} ${live?'islive':''} ${upnext&&!done?'upnext':''}">
     ${head(icon,tone,kick,dayLabel(d))}
     <div class="chips">${chips.filter(Boolean).map(c=>`<span>${c}</span>`).join('')}</div>
     ${isWalk&&st!==null
@@ -928,20 +928,22 @@ function mealsList(){
   }
   return `<div class="mealscard">
     <div class="mhead"><b>Meals</b>${head}</div>
-    ${typeof windowChip==='function'? windowChip() : ''}
     <div class="meals">${rows.map(row).join('')}</div>
     <div class="mfoot">${spread? `<span class="mealsnote">${spread}</span>` : '<span></span>'}<button id="eatBtn">Why these times</button></div></div>`;
 }
 /* Weigh in and today's check-in, each saying where it stands. Under 18s get
    Log food in place of the scales. */
-function quickTiles(){
+function quickTiles(topId){
   const k=todayKey(), logged=S.days[k]||{}, done=!!logged.checkedIn;
   const btn=(id,label,state,isDone)=>`<button class="quick ${isDone?'done':''}" data-glance="${id}">
     <span class="ql">${label}</span>${state? `<span class="qs">${state}</span>`:''}</button>`;
-  const ci=btn('checkin',"Today's Check-in",done?'done':'',done);
-  if(isTeen()){ const meals=dayFood(k).length; return `<div class="quicks">${btn('food','Log food',meals? meals+' logged':'',meals>0)}${ci}</div>`; }
+  /* build 82: a tile is left out while the Up next card is that very thing
+     (the card has the button), so the same action is never on screen twice */
+  const ci= topId==='daycheck'? '' : btn('checkin',"Today's Check-in",done?'done':'',done);
+  const wrap=h=>h.trim()? `<div class="quicks${(h.match(/class="quick /g)||[]).length===1?' one':''}">${h}</div>` : '';
+  if(isTeen()){ const meals=dayFood(k).length; return wrap(`${btn('food','Log food',meals? meals+' logged':'',meals>0)}${ci}`); }
   const weighed=S.weights.length&&S.weights[S.weights.length-1].d===k;
-  return `<div class="quicks">${btn('weigh','Weigh in',weighed? showW(S.weights[S.weights.length-1].kg,S.profile.units==='imperial') : '',weighed)}${ci}</div>`;
+  return wrap(`${topId==='weigh'? '' : btn('weigh','Weigh in',weighed? showW(S.weights[S.weights.length-1].kg,S.profile.units==='imperial') : '',weighed)}${ci}`);
 }
 function todayHeadDate(){
   const n=new Date();
@@ -966,20 +968,38 @@ function renderToday(){
   const nx=(typeof nextUp==='function')? nextUp() : null;
   const SAME={checkin:'checkin',pain:'pain',meal:'food',weigh:'weigh',sleep:'sleep',bed:'sleep'};
   const prios=priorities().filter(p=>!nx||SAME[nx.top.id]!==p.id);
-  const hero=heroCard(plan,d,i);
-  /* Build 67 (Feargal): the day's training always sits above the meals. It
-     used to swap places with the meals by the time of day, so the session card
-     was never in the same spot twice; a fixed place is quicker to find, and
-     the coach card above already says which of the two is due first. */
-  const coach=(typeof coachCard==='function')? coachCard(nx,prios) : '';
+  const topId=nx&&nx.top? nx.top.id : 'clear';
+  /* Build 82 (Feargal): Today follows what is next. The order, top to bottom:
+       the rings
+       the fasting clock, if the person fasts (it used to sit in the Meals card)
+       what is next: the Up next card, or, when that is the session, the
+         session card itself carrying the mark (no second card saying it)
+       the plan card (weight line and goals) is progress, not an action, so it
+         sits below what is open to do; when nothing is open ("All caught up")
+         it comes straight up under that line
+       your routine comes up when a habit is what is next
+       the day's training, then the meals (build 67: always in that order)
+       the weigh in and check-in tiles, minus whichever one is Up next
+     Nothing is on the page twice: the weight sentence lives only under the
+     progress bar, the fast only in its card, the session only in its card. */
+  const sessNext= topId==='session'||topId==='live';
+  const hero=heroCard(plan,d,i,sessNext? nx.top : null);
+  const coach=(typeof coachCard==='function')? coachCard(nx,prios,undefined,{noHead:sessNext}) : '';
+  const fast=(typeof todayFast==='function')? todayFast() : '';
+  const goal=typeof goalLine==='function'? goalLine() : (typeof weightLine==='function'? weightLine() : '');
+  const routine=typeof routineBlock==='function'? routineBlock() : '';
+  const goalUp= topId==='clear', routineUp= topId==='habit'||topId==='habitcatch';
   $('todayView').innerHTML=`
   ${ringsRow()}
-  ${typeof goalLine==='function'? goalLine() : (typeof weightLine==='function'? weightLine() : '')}
-  ${coach}
-  ${hero}${mealsList()}
-  ${quickTiles()}
+  ${fast}
+  ${sessNext? hero+coach : coach}
+  ${goalUp? goal : ''}
+  ${routineUp? routine : ''}
+  ${sessNext? '' : hero}${mealsList()}
+  ${quickTiles(topId)}
+  ${goalUp? '' : goal}
   ${S.target&&!isTeen()? '' : `<div class="goalrow">${targetLine()}</div>`}
-  ${typeof routineBlock==='function'? routineBlock() : ''}
+  ${routineUp? '' : routine}
   ${(()=>{ /* build 69: the week strip, the week line and the weekly check in
        row are gone from here (Plan has the week; the coach card asks for the
        check in on its day). What is left is only what is not said anywhere

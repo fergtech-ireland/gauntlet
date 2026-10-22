@@ -1962,6 +1962,27 @@ body.rv-open .toast{z-index:310}
 .mwin b{font-weight:700;color:var(--sub)}
 .mwin.open b{color:var(--green-text)}
 .mwin.shut b{color:var(--amber-text)}
+/* build 82: the session card carries "Up next"; a lone tile fills the row */
+.hero.upnext{border-left:4px solid var(--cyan)}
+.hero.upnext.islive{border-left-color:var(--green)}
+.nextcard.thenonly{margin-top:8px;padding:8px 14px;border-left-color:var(--line)}
+.nextcard.thenonly .nthen{margin:0;padding:0;border:0}
+#todayView .quicks.one{grid-template-columns:1fr}
+/* build 82: the fasting clock on Today */
+.todayfast{display:block;width:100%;margin-top:12px;text-align:left;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:12px;padding:10px 14px 12px;min-height:44px}
+.todayfast.open{border-left-color:var(--green)}
+.todayfast .tfk{display:flex;justify-content:space-between;gap:10px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--amber-text)}
+.todayfast .tfk span:last-child{letter-spacing:0;text-transform:none;font-weight:700;color:var(--mute)}
+.todayfast.open .tfk span:first-child{color:var(--green-text)}
+.todayfast .tfm{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:3px}
+.todayfast .tfm b{font-size:20px;font-weight:800;line-height:1.15}
+.todayfast .tfm span{font-size:13px;color:var(--sub);text-align:right}
+.todayfast .tfbar{display:block;height:6px;border-radius:99px;background:var(--track);overflow:hidden;margin-top:9px}
+.todayfast .tfbar i{display:block;height:100%;border-radius:99px;background:var(--amber)}
+.todayfast.open .tfbar i{background:var(--green)}
+.todayfast.soon,.todayfast.closing{background:var(--amber-tint)}
+.todayfast.soon .tfk span:first-child,.todayfast.closing .tfk span:first-child{color:var(--amber-text)}
+
 
 /* ===== habit due times (build 81) ===== */
 .rt-cue.due{color:var(--coral-text);font-weight:700}
@@ -2266,7 +2287,7 @@ body.rv-open .toast{z-index:310}
 const HUE={run:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},workout:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},
   fast:{deep:'var(--amber-text)',tint:'var(--amber-tint)'},meal:{deep:'var(--coral-text)',tint:'var(--coral-tint)'},any:{deep:'var(--ink)',tint:'var(--track)'},
   walk:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},rest:{deep:'var(--mute)',tint:'var(--track)'},checkin:{deep:'var(--green-text)',tint:'var(--green-tint)'}};
-const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='81';
+const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='82';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -5066,7 +5087,7 @@ const SESS_ICON={
   walk:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4.5" r="1.8"/><path d="m9 21 2.5-6M13 21v-4l-2-3 1-5 3 3 3 1M10 9l-3 3"/></svg>',
   rest:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
   done:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg>'};
-function heroCard(plan,d,i){
+function heroCard(plan,d,i,upnext){
   const st=stepsToday(), done=dayDone(i), isWalk=d.slot==='walk', rest=!d.type||d.slot==='rest';
   const walkPct=st!==null? Math.min(100,Math.round(st/stepTarget()*100)) : 0;
   const whyBtn=plan.why[0]? `<button class="whyline" data-whytoday="1" aria-expanded="false" aria-label="Why today looks like this">Why today <span aria-hidden="true">›</span></button>` : '';
@@ -5090,7 +5111,7 @@ function heroCard(plan,d,i){
   const walkMarked=isWalk&&!!marked, walkOk=isWalk&&(walkMarked||walkDone());
   const icon= done||walkOk? 'done' : (isWalk? 'walk' : (d.runId? 'run' : (d.circuitId? 'circuit' : 'lift')));
   const tone= done||live||walkOk? 'green' : 'cyan';
-  const kick= isWalk? DAYS[i].toUpperCase()+' · WALK' : (live? 'IN PROGRESS · '+liveClock() : heroKicker(d,done));
+  const kick= upnext&&!done? 'UP NEXT · '+(live? 'IN PROGRESS · '+liveClock() : String(upnext.kick||'').toUpperCase()) : (isWalk? DAYS[i].toUpperCase()+' · WALK' : (live? 'IN PROGRESS · '+liveClock() : heroKicker(d,done)));
   const has=d.templateId||d.runId||d.circuitId;
   const main= isWalk? (walkDone()? `<div class="doneline">Done. ${num(st)} steps in.</div>`
       : (walkMarked? `<div class="doneline">Walk done.</div><button class="skipbtn" data-unmarkday="${i}">Not done after all</button>`
@@ -5098,7 +5119,7 @@ function heroCard(plan,d,i){
     : live? `<div class="ctarow"><button class="cta" id="startToday">Resume session</button>${has? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`
     : done? `<div class="ctarow"><button class="cta ghost" id="startToday">Do it again</button>${has? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`
     : `<div class="ctarow"><button class="cta" id="startToday">Start session</button>${has? `<button class="cta ghost" id="todayViewEdit">See or edit</button>`:''}</div>`;
-  return `<div class="hero ${done||walkOk?'isdone':''} ${live?'islive':''}">
+  return `<div class="hero ${done||walkOk?'isdone':''} ${live?'islive':''} ${upnext&&!done?'upnext':''}">
     ${head(icon,tone,kick,dayLabel(d))}
     <div class="chips">${chips.filter(Boolean).map(c=>`<span>${c}</span>`).join('')}</div>
     ${isWalk&&st!==null
@@ -5163,20 +5184,22 @@ function mealsList(){
   }
   return `<div class="mealscard">
     <div class="mhead"><b>Meals</b>${head}</div>
-    ${typeof windowChip==='function'? windowChip() : ''}
     <div class="meals">${rows.map(row).join('')}</div>
     <div class="mfoot">${spread? `<span class="mealsnote">${spread}</span>` : '<span></span>'}<button id="eatBtn">Why these times</button></div></div>`;
 }
 /* Weigh in and today's check-in, each saying where it stands. Under 18s get
    Log food in place of the scales. */
-function quickTiles(){
+function quickTiles(topId){
   const k=todayKey(), logged=S.days[k]||{}, done=!!logged.checkedIn;
   const btn=(id,label,state,isDone)=>`<button class="quick ${isDone?'done':''}" data-glance="${id}">
     <span class="ql">${label}</span>${state? `<span class="qs">${state}</span>`:''}</button>`;
-  const ci=btn('checkin',"Today's Check-in",done?'done':'',done);
-  if(isTeen()){ const meals=dayFood(k).length; return `<div class="quicks">${btn('food','Log food',meals? meals+' logged':'',meals>0)}${ci}</div>`; }
+  /* build 82: a tile is left out while the Up next card is that very thing
+     (the card has the button), so the same action is never on screen twice */
+  const ci= topId==='daycheck'? '' : btn('checkin',"Today's Check-in",done?'done':'',done);
+  const wrap=h=>h.trim()? `<div class="quicks${(h.match(/class="quick /g)||[]).length===1?' one':''}">${h}</div>` : '';
+  if(isTeen()){ const meals=dayFood(k).length; return wrap(`${btn('food','Log food',meals? meals+' logged':'',meals>0)}${ci}`); }
   const weighed=S.weights.length&&S.weights[S.weights.length-1].d===k;
-  return `<div class="quicks">${btn('weigh','Weigh in',weighed? showW(S.weights[S.weights.length-1].kg,S.profile.units==='imperial') : '',weighed)}${ci}</div>`;
+  return wrap(`${topId==='weigh'? '' : btn('weigh','Weigh in',weighed? showW(S.weights[S.weights.length-1].kg,S.profile.units==='imperial') : '',weighed)}${ci}`);
 }
 function todayHeadDate(){
   const n=new Date();
@@ -5201,20 +5224,38 @@ function renderToday(){
   const nx=(typeof nextUp==='function')? nextUp() : null;
   const SAME={checkin:'checkin',pain:'pain',meal:'food',weigh:'weigh',sleep:'sleep',bed:'sleep'};
   const prios=priorities().filter(p=>!nx||SAME[nx.top.id]!==p.id);
-  const hero=heroCard(plan,d,i);
-  /* Build 67 (Feargal): the day's training always sits above the meals. It
-     used to swap places with the meals by the time of day, so the session card
-     was never in the same spot twice; a fixed place is quicker to find, and
-     the coach card above already says which of the two is due first. */
-  const coach=(typeof coachCard==='function')? coachCard(nx,prios) : '';
+  const topId=nx&&nx.top? nx.top.id : 'clear';
+  /* Build 82 (Feargal): Today follows what is next. The order, top to bottom:
+       the rings
+       the fasting clock, if the person fasts (it used to sit in the Meals card)
+       what is next: the Up next card, or, when that is the session, the
+         session card itself carrying the mark (no second card saying it)
+       the plan card (weight line and goals) is progress, not an action, so it
+         sits below what is open to do; when nothing is open ("All caught up")
+         it comes straight up under that line
+       your routine comes up when a habit is what is next
+       the day's training, then the meals (build 67: always in that order)
+       the weigh in and check-in tiles, minus whichever one is Up next
+     Nothing is on the page twice: the weight sentence lives only under the
+     progress bar, the fast only in its card, the session only in its card. */
+  const sessNext= topId==='session'||topId==='live';
+  const hero=heroCard(plan,d,i,sessNext? nx.top : null);
+  const coach=(typeof coachCard==='function')? coachCard(nx,prios,undefined,{noHead:sessNext}) : '';
+  const fast=(typeof todayFast==='function')? todayFast() : '';
+  const goal=typeof goalLine==='function'? goalLine() : (typeof weightLine==='function'? weightLine() : '');
+  const routine=typeof routineBlock==='function'? routineBlock() : '';
+  const goalUp= topId==='clear', routineUp= topId==='habit'||topId==='habitcatch';
   $('todayView').innerHTML=`
   ${ringsRow()}
-  ${typeof goalLine==='function'? goalLine() : (typeof weightLine==='function'? weightLine() : '')}
-  ${coach}
-  ${hero}${mealsList()}
-  ${quickTiles()}
+  ${fast}
+  ${sessNext? hero+coach : coach}
+  ${goalUp? goal : ''}
+  ${routineUp? routine : ''}
+  ${sessNext? '' : hero}${mealsList()}
+  ${quickTiles(topId)}
+  ${goalUp? '' : goal}
   ${S.target&&!isTeen()? '' : `<div class="goalrow">${targetLine()}</div>`}
-  ${typeof routineBlock==='function'? routineBlock() : ''}
+  ${routineUp? '' : routine}
   ${(()=>{ /* build 69: the week strip, the week line and the weekly check in
        row are gone from here (Plan has the week; the coach card asks for the
        check in on its day). What is left is only what is not said anywhere
@@ -15452,6 +15493,37 @@ function fastStrip(){
     <div class="fs">${left}</div>
     <div class="fbar" role="img" aria-label="${w.open? 'Window' : 'Fast'} ${Math.round(w.frac*100)} percent through"><i style="width:${Math.round(Math.max(0,Math.min(1,w.frac))*100)}%"></i></div></section>`;
 }
+/* build 82: the fasting clock on Today. It used to sit as a small line inside
+   the Meals card, below the session, where a person who is fasting could not
+   see it without scrolling. Now it is its own slim card under the rings, and
+   it follows the clock: fasting (how long, and when eating opens), the last
+   hour before the window opens (a different colour and wording, it is the next
+   thing), the window open (how long is left), and the last hour of the window.
+   Nothing at all for regular meals or under 18, so it never takes a place for
+   a person who is not fasting. Tap opens the eating pattern. */
+function todayFast(at){
+  if(!eatAdult()) return '';
+  const w=windowState(typeof at==='number'? at : undefined); if(!w) return '';
+  const p=w.pat, pct=Math.round(Math.max(0,Math.min(1,w.frac))*100);
+  let cls, kick, big, sub;
+  if(w.open){
+    const closing=w.leftMin<=60&&p.lenMin>=180; /* a one hour window is all closing, so it only says so for a longer one */
+    cls= closing? 'open closing' : 'open';
+    kick= closing? 'Window closing' : 'Eating window';
+    big= fmtLeft(w.leftMin)+' left';
+    sub= 'Closes at '+p.end;
+  } else {
+    const soon=w.opensInMin<=60;
+    cls= soon? 'shut soon' : 'shut';
+    kick= soon? 'Window opens soon' : 'Fasting';
+    big= soon? 'Eat from '+p.start : fmtLeft(w.fastedMin);
+    sub= soon? 'In '+fmtLeft(w.opensInMin) : 'Eat from '+p.start+', in '+fmtLeft(w.opensInMin);
+  }
+  return `<button class="todayfast ${cls}" data-eatopen="1" aria-label="${kick}: ${big}. ${sub}. ${p.label}, ${p.start} to ${p.end}. Tap to change your eating pattern.">
+    <span class="tfk"><span>${kick}</span><span>${p.label} · ${p.start} to ${p.end}</span></span>
+    <span class="tfm"><b>${big}</b><span>${sub}</span></span>
+    <span class="tfbar" aria-hidden="true"><i style="width:${pct}%"></i></span></button>`;
+}
 function eatPatternLabel(){
   const p=eatPat(); if(!p) return 'Regular meals';
   if(p.id==='two'||p.id==='omad') return p.label+' · '+(p.id==='omad'? p.start : p.start+' and '+minToHhmm(p.e-60));
@@ -15459,7 +15531,7 @@ function eatPatternLabel(){
 }
 if(window.__G){
   Object.assign(window.__G,{EAT_DEFS,EAT_ORDER,EAT_SAFETY,FIT,eatPat,eatPatId,eatPatternLabel,eatKind,eatFit,eatCtx,eatSuggest,eatDraftFrom,eatRolesIn,eatRoleOff,
-    windowState,windowText,windowStats,patternPlan,inWindowMin,firstMealMin,firstMealRole,firstMealWord,foodHorizon,windowStarted,openEatPattern,eatCommit,fastStrip,windowChip,eatSetTime,eatValid,drawEatSheet});
+    windowState,windowText,windowStats,todayFast,patternPlan,inWindowMin,firstMealMin,firstMealRole,firstMealWord,foodHorizon,windowStarted,openEatPattern,eatCommit,fastStrip,windowChip,eatSetTime,eatValid,drawEatSheet});
   Object.defineProperty(window.__G,'ED',{get:()=>ED,set:v=>{ED=v},configurable:true});
 }
 /* ===================== Barcode scanning (build 76) =====================
@@ -16007,6 +16079,25 @@ function sleepChoices(){
   const out=[]; for(let h=mid-1;h<=mid+1.01;h+=0.5) if(h>=3&&h<=12) out.push(+h.toFixed(1));
   return out;
 }
+/* build 82: should the morning weigh in be offered, and how loudly. Returns
+   null when it should not be (a teen, already weighed today, "Not today"
+   pressed, not the morning, or a weekly weigher inside their week). */
+function weighPrompt(c){
+  const k=todayKey(), ws=S.weights||[];
+  if(isTeen()||(S.days[k]||{}).noWeigh) return null;
+  const last=ws.length? ws[ws.length-1].d : null;
+  if(last===k||c.n>=5*60) return null;
+  const gap=last? Math.round((dateOf(k)-dateOf(last))/864e5) : 99;
+  const goal=!!(S.target&&S.target.kind==='weight');
+  /* how often this person weighs in: the middle gap of their last six */
+  const gaps=[]; for(let n=Math.max(1,ws.length-6);n<ws.length;n++) gaps.push(Math.round((dateOf(ws[n].d)-dateOf(ws[n-1].d))/864e5));
+  gaps.sort((a,b)=>a-b);
+  const often= goal || (gaps.length>=2&&gaps[Math.floor(gaps.length/2)]<=3);
+  if(!often&&gap<7) return null;
+  if(!often&&!goal&&!last) return null;
+  const fed=typeof dayFood==='function'&&dayFood(k).length>0;
+  return {gap,last,score: (!fed&&c.n<3*60)? 91 : (c.n<4*60? 84 : 66)};
+}
 function nextCandidates(at){
   const c=dayClock(at), out=[], add=(score,o)=>out.push(Object.assign({score},o));
   const k=todayKey(), day=S.days[k]||{}, teen=isTeen(), i=dowIdx(), d=(typeof todayPlan==='function')? todayPlan() : null;
@@ -16074,13 +16165,29 @@ function nextCandidates(at){
       why:'Best done this evening, once the day is mostly over.',act:`<button class="mini" data-checkinnow="1">Do it now</button>`});
   }
 
-  /* a weigh in, in the morning, when a weight goal needs one */
-  if(!teen&&S.target&&S.target.kind==='weight'&&c.n<4*60){
-    const last=S.weights.length? S.weights[S.weights.length-1].d : null;
-    const gap=last? Math.round((dateOf(k)-dateOf(last))/864e5) : 99;
-    if(gap>=7) add(64,{id:'weigh',tone:'green',kick:'This morning',title:'Weigh in',
-      why:(last? 'Last one was '+gap+' days ago. ' : 'None yet. ')+'Before breakfast, after the bathroom, is the steadiest reading.',
-      act:`<button class="cta" data-glance="weigh">Weigh in</button>`});
+  /* a weigh in, first thing: build 82 (Feargal). It used to appear only when
+     the last one was a week old, so for someone who weighs in every morning it
+     never showed, and the weigh in sat in a tile lower down. Now, for a person
+     with a weight goal or who weighs in most days, an unweighed morning puts it
+     at or near the top, ahead of food (a weight is only a steady reading
+     before breakfast). Someone who weighs in weekly keeps the weekly prompt. */
+  const wp=weighPrompt(c);
+  if(wp) add(wp.score,{id:'weigh',tone:'green',kick:'This morning',title:'Weigh in',short:'Weigh in',
+      why:(wp.last? (wp.gap===1? 'Last one was yesterday. ' : 'Last one was '+wp.gap+' days ago. ') : 'None yet. ')+'Before breakfast, after the bathroom, is the steadiest reading.',
+      act:`<button class="cta" data-glance="weigh">Weigh in</button><button class="mini" data-weighskip="1">Not today</button>`});
+
+  /* build 82: the eating window closing with food still to eat (only for a
+     window long enough to be worth warning about, and never on top of a meal
+     that is already due, which says the same thing with its own button) */
+  if(!teen&&typeof windowState==='function'&&!out.some(o=>o.id==='meal')){
+    const w=windowState(c.now), tt=S.targets||{};
+    if(w&&w.open&&w.leftMin>0&&w.leftMin<=60&&w.pat.lenMin>=180&&typeof foodTotals==='function'){
+      const tot=foodTotals(k), proLeft=tt.protein? Math.max(0,Math.round(tt.protein-(tot.protein||0))) : 0, kLeft=tt.kcal? Math.max(0,Math.round(tt.kcal-(tot.kcal||0))) : 0;
+      if(proLeft>=20||kLeft>=300)
+        add(70,{id:'windowclose',tone:'amber',kick:'Closes at '+w.pat.end,title:'Eat before the window closes',short:'Window closes at '+w.pat.end,
+          why:(proLeft>=20? 'About '+proLeft+'g of protein still to go'+(kLeft>=300? ' and '+num(kLeft)+' kcal' : '') : num(kLeft)+' kcal still to eat')+', and '+fmtIn(w.leftMin)+' left to do it in.',
+          act:`<button class="cta" data-go="eat">Log food</button>`});
+    }
   }
 
   /* late: wind down */
@@ -16119,6 +16226,10 @@ function laterToday(at){
      same windows the card uses: 90 minutes for a meal, 2 hours for training) */
   const add=(id,abs,title,role,grace)=>{ const m=((abs%1440)+1440)%1440, rel=c.rel(m);
     if(rel>c.n||(grace&&rel>=c.n-grace)) out.push({id,rel,time:minToHhmm(m),title,role,due:rel<=c.n}); };
+  /* build 82: the morning ticks that are open right now, first in the line */
+  const wpn=weighPrompt(c);
+  if(wpn) out.push({id:'weigh',rel:c.n-2000,time:minToHhmm(c.now),title:'Weigh in',plain:true,due:true});
+  if(!sleepLoggedFor(k)&&!realAuto(k)&&c.n<6*60) out.push({id:'sleep',rel:c.n-1999,time:minToHhmm(c.now),title:"Log last night's sleep",plain:true,due:true});
   const live=typeof liveSession==='function'&&liveSession();
   if(d&&d.type&&d.slot!=='walk'&&d.slot!=='rest'&&!dayDone(i)&&!live) add('session',c.trainAbs,dayLabel(d).replace(/<[^>]+>/g,''),null,120);
   if(typeof mealSlots==='function'&&typeof dayFood==='function'){
@@ -16141,6 +16252,7 @@ function thenAfter(top,at){
   const role=top&&top.id==='meal'&&top.role;
   const x=laterToday(at).find(y=>!(top&&y.id===top.id&&(y.id!=='meal'||y.role===role)));
   if(!x) return '';
+  if(x.plain) return x.title;
   if(x.due) return x.title+', due '+x.time;
   const inMin=x.rel-c.n;
   return x.title+' at '+x.time+(inMin<=180? ', in about '+fmtIn(inMin) : '');
@@ -16155,20 +16267,27 @@ function nextUp(at){
    today (the same priorities as before, in the same rows), then anything
    worth watching that is not a ring. Empty when there is nothing to say. */
 const RING_SIGNALS=['sleep','protein','kcal','steps'];
-function coachCard(nx,prios,at){
+function coachCard(nx,prios,at,opt){
   nx=nx||nextUp(at);
+  /* build 82: when the session is what is next, the session card on Today
+     carries the "Up next" mark itself, so this card leaves its own head out
+     (it used to say the session, with a Start button, straight above a
+     session card that said the same with the same button). What is left is the
+     line after it, the things that matter and the things to watch. */
+  const noHead=!!(opt&&opt.noHead);
   const also=(prios||[]).slice(0,2);
   const watch=focusSignals(at).filter(x=>RING_SIGNALS.indexOf(x.id)<0&&x.id!==NEXT_SAME[nx.top.id]&&x.sev>=0.15)
     .sort((a,b)=>b.sev-a.sev).slice(0,2).map(x=>x.html).join('');
   const clear=nx.top.id==='clear';
-  if(clear&&!also.length&&!watch&&!nx.then) return '';
-  const alsoHtml= also.length? `<div class="alsohead">${clear? 'What matters today' : 'Also today'}</div>
+  if((clear||noHead)&&!also.length&&!watch&&!nx.then) return '';
+  const alsoHtml= also.length? `<div class="alsohead">${clear&&!noHead? 'What matters today' : 'Also today'}</div>
     <div class="prios">${also.map((x,n)=>{ const tone=PRIO_TONE[x.id]||'green';
       return `<div class="prio p-${x.id}"><div class="pn" style="background:var(--${tone}-tint);color:var(--${tone}-text)">${n+1}</div>
       <div class="pt"><b>${x.t}</b><span>${x.why}</span>${x.conf? confChip(x.conf) : ''}${x.action? `<div class="pa">${x.action}</div>` : ''}</div></div>`; }).join('')}</div>` : '';
   /* build 67: with nothing due, a slim line still says what is next */
-  const head= clear? (nx.then? `<div class="nextcard clear" data-next="clear"><div class="nk"><span class="ndot" aria-hidden="true"></span>All caught up</div><div class="nthen first">Next: ${escHabit(nx.then)}</div></div>` : '') : nextCard(nx,true);
-  return `<section class="daycoach ${clear?'t-green':'t-'+nx.top.tone}" ${clear? '' : `data-next="${nx.top.id}"`} aria-label="Your day">${head}${alsoHtml}
+  const head= noHead? (nx.then? `<div class="nextcard thenonly" data-next="then"><div class="nthen first">Then: ${escHabit(nx.then)}</div></div>` : '')
+    : clear? (nx.then? `<div class="nextcard clear" data-next="clear"><div class="nk"><span class="ndot" aria-hidden="true"></span>All caught up</div><div class="nthen first">Next: ${escHabit(nx.then)}</div></div>` : '') : nextCard(nx,true);
+  return `<section class="daycoach ${clear||noHead?'t-green':'t-'+nx.top.tone}" ${clear||noHead? '' : `data-next="${nx.top.id}"`} aria-label="Your day">${head}${alsoHtml}
     ${watch? `<div class="pills watch" aria-label="Worth watching">${watch}</div>` : ''}</section>`;
 }
 function nextCard(nx,inner){
@@ -16358,6 +16477,9 @@ document.addEventListener('click',e=>{
   if(e.target.closest('[data-nextstart]')){ startPlanDay(todayPlan()); return; }
   const nf=e.target.closest('[data-nextfood]');
   if(nf){ openFood(false,{slot:nf.dataset.nextfood}); return; }
+  if(e.target.closest('[data-weighskip]')){ const k=todayKey();
+    S.days[k]=Object.assign({},S.days[k],{noWeigh:true}); save(); renderAll();
+    toast('No weigh in today','Undo',()=>{ const d2=S.days[k]; if(d2) delete d2.noWeigh; save(); renderAll(); }); return; }
   const nsk=e.target.closest('[data-nextskip]');
   if(nsk){ const k=todayKey(), m=nsk.dataset.nextskip, day=S.days[k]=Object.assign({},S.days[k]);
     day.skipped=(day.skipped||[]).filter(x=>x!==m).concat([m]); save(); renderAll();
@@ -21612,7 +21734,11 @@ function signWeight(pd,imp){
   if(pd.from==='target'){
     const o=weightOutlook(), s=o? o.status : 'none';
     const st= s==='green'||s==='hit'? 'good' : (s==='none'? 'none' : 'look');
-    return {key:'sign:weight', raw:weightLine(), st,
+    /* build 82: dup. The weight line below the plan heading already says where
+       the weight is heading ("Off track · about 110 kg by 30 Dec, goal 105 kg"),
+       so the heading sentence must not say it a second time. The words stay
+       here for the plan sheet, which has no weight line. */
+    return {key:'sign:weight', raw:weightLine(), st, dup:true,
       say: s==='hit'? 'you reached your goal weight' : 'your weight is on course for '+w(pd.goal),
       fix: 'your weight is not on course for '+w(pd.goal)+(S.target.by? ' by '+prettyDate(S.target.by) : '')+'. The Week in review sets next week\'s calories from it',
       why:null};
@@ -21759,11 +21885,20 @@ function planSigns(pd,imp){
 }
 /* one word and one sentence for the whole plan */
 function planVerdict(signs){
+  /* sayWith: the sentence built from the given signs. `say` (what Today shows
+     under the heading) leaves out a sign whose own line is on the card already
+     (dup: the weight line with its bar), so nothing is said twice; `sayAll`
+     keeps every sign, for the plan sheet and the screen reader label. */
+  const sayWith=list=>{
+    const g=list.filter(s=>s.st==='good'), l=list.filter(s=>s.st==='look');
+    if(!g.length&&!l.length) return '';
+    if(!l.length) return cap1(g.slice(0,2).map(s=>s.say).join(', and '))+'.';
+    return (g.length? cap1(g[0].say)+'. ' : '')+cap1(l[0].fix)+'.';
+  };
   const good=signs.filter(s=>s.st==='good'), look=signs.filter(s=>s.st==='look');
-  if(!good.length&&!look.length) return {st:'none',word:'Getting started',say:'This fills in as you weigh in, log sessions and log food.'};
-  if(!look.length) return {st:'good',word:'Working',say:cap1(good.slice(0,2).map(s=>s.say).join(', and '))+'.'};
-  const one=look[0], goodTxt=good.length? cap1(good[0].say)+'. ' : '';
-  return {st:'look',word: good.length>=look.length? 'Mostly working' : 'Worth a look',say:goodTxt+cap1(one.fix)+'.'};
+  if(!good.length&&!look.length) return {st:'none',word:'Getting started',say:'This fills in as you weigh in, log sessions and log food.',sayAll:'This fills in as you weigh in, log sessions and log food.'};
+  const word= !look.length? 'Working' : (good.length>=look.length? 'Mostly working' : 'Worth a look');
+  return {st: look.length? 'look' : 'good', word, say:sayWith(signs.filter(s=>!s.dup)), sayAll:sayWith(signs)};
 }
 
 function signRow(s){
@@ -21787,17 +21922,17 @@ function goalLine(){
   const v=planVerdict(signs), name=planName(pd);
   signs.forEach(s=>{ if(s.why) GOAL_WHY[s.key]=s.why; });
   const dirTxt= pd.dir==='down'? 'down' : (pd.dir==='up'? 'up, slowly' : (pd.dir==='hold'? 'steady' : ''));
-  GOAL_WHY.plan={title:name,sub:'Your plan, in one place',now:v.say,
+  GOAL_WHY.plan={title:name,sub:'Your plan, in one place',now:v.sayAll,
     target:(pd.dir? 'Your weight has one direction in this plan: '+dirTxt+(pd.from==='target'? ', set by your goal weight of '+showW(pd.goal,imp) : ', set by your aim')+'. Everything else is judged against that same direction, so the rows never pull against each other.' : 'Each row is judged on its own: there is no weight direction in this plan.')
       +(pd.dir==='down'&&keepsMuscle()? ' Losing while building: the weight should come down slowly and your lifts should go up or hold. That is how you know muscle is being kept.' : ''),
     moves:['Tap any row for what it means and what moves it.','Change or add an aim below. Your goal weight lives on You.'],
     source:'Murphy and Koehler 2022; Garthe and colleagues 2010; Helms and colleagues 2014; Iraki and colleagues 2019. '+MOVE_SRC};
   const raw=signs.filter(s=>s.raw).map(s=>s.raw).join(''), rows=signs.filter(s=>!s.raw);
-  return `<section class="plan pl-${v.st}" aria-label="Your plan: ${escHabit(name)}. ${escHabit(v.word)}. ${escHabit(v.say)}">
+  return `<section class="plan pl-${v.st}" aria-label="Your plan: ${escHabit(name)}. ${escHabit(v.word)}.${v.say? ' '+escHabit(v.say) : ''}">
     <button class="plan-h" data-goalwhy="plan">
       <span class="plan-top"><span class="plan-k">Your plan</span><span class="plan-w">${v.word}</span></span>
       <span class="plan-n">${escHabit(name)}</span>
-      <span class="plan-say">${v.say}</span></button>
+      ${v.say? `<span class="plan-say">${v.say}</span>` : ''}</button>
     ${raw}
     ${rows.length? `<div class="plan-rows">${rows.map(signRow).join('')}</div>` : ''}
   </section>`;
@@ -22824,6 +22959,10 @@ Object.assign(window.__G,{LEGAL,LEGAL_CONTACT,openLegal,closeLegal,ageFromBirth,
    Writing a note: what changed for the person, in their words, one line of
    why it matters if needed, no internal names. Bump APP_VERSION with it. */
 const RELEASE_NOTES=[
+  {v:'82', date:'2026-10-22', items:[
+    {t:'Today follows what is next', d:'The weigh in is now the first thing Today asks for in the morning, ahead of breakfast, with a Not today button. After that it moves on to sleep, your session, meals and habits as the day goes. When your session is next, the session card carries the mark itself instead of a second card saying the same. When nothing is open, your plan comes up under it.'},
+    {t:'Your fast, where you can see it', d:'If you fast, Today now has its own card under the rings: how long you have fasted and when eating opens, then how long is left in your window. Before, it was a small line inside the Meals card.', go:'eat', goLabel:'Open Eat', adult:true},
+    {t:'Your weight said once', d:'Under Your plan, the weight target is no longer written out above the progress bar and again below it. It reads once, under the bar.', adult:true}]},
   {v:'81', date:'2026-10-21', items:[
     {t:'Choose how you eat', d:'Fasting window or regular meals, 12:12 to 20:4, two meals or one, or your own times. For each, you see the good and the catch for your own goals, with the research behind it. Your day on Eat and Today lays itself out inside your window. Find it on Eat or in You, Eating pattern. Not offered under 18.', go:'eat', goLabel:'Open Eat', adult:true},
     {t:'Habits have a time to be done by', d:'Adding a habit now asks when, in one tap. At that time Today asks for it and keeps asking until it is ticked. Stop habits and anything you set to end of day come up at 9pm, and yesterday can be logged until the morning is over. Turn it all off in You, Habit reminders.'},

@@ -141,7 +141,11 @@ function signWeight(pd,imp){
   if(pd.from==='target'){
     const o=weightOutlook(), s=o? o.status : 'none';
     const st= s==='green'||s==='hit'? 'good' : (s==='none'? 'none' : 'look');
-    return {key:'sign:weight', raw:weightLine(), st,
+    /* build 82: dup. The weight line below the plan heading already says where
+       the weight is heading ("Off track · about 110 kg by 30 Dec, goal 105 kg"),
+       so the heading sentence must not say it a second time. The words stay
+       here for the plan sheet, which has no weight line. */
+    return {key:'sign:weight', raw:weightLine(), st, dup:true,
       say: s==='hit'? 'you reached your goal weight' : 'your weight is on course for '+w(pd.goal),
       fix: 'your weight is not on course for '+w(pd.goal)+(S.target.by? ' by '+prettyDate(S.target.by) : '')+'. The Week in review sets next week\'s calories from it',
       why:null};
@@ -288,11 +292,20 @@ function planSigns(pd,imp){
 }
 /* one word and one sentence for the whole plan */
 function planVerdict(signs){
+  /* sayWith: the sentence built from the given signs. `say` (what Today shows
+     under the heading) leaves out a sign whose own line is on the card already
+     (dup: the weight line with its bar), so nothing is said twice; `sayAll`
+     keeps every sign, for the plan sheet and the screen reader label. */
+  const sayWith=list=>{
+    const g=list.filter(s=>s.st==='good'), l=list.filter(s=>s.st==='look');
+    if(!g.length&&!l.length) return '';
+    if(!l.length) return cap1(g.slice(0,2).map(s=>s.say).join(', and '))+'.';
+    return (g.length? cap1(g[0].say)+'. ' : '')+cap1(l[0].fix)+'.';
+  };
   const good=signs.filter(s=>s.st==='good'), look=signs.filter(s=>s.st==='look');
-  if(!good.length&&!look.length) return {st:'none',word:'Getting started',say:'This fills in as you weigh in, log sessions and log food.'};
-  if(!look.length) return {st:'good',word:'Working',say:cap1(good.slice(0,2).map(s=>s.say).join(', and '))+'.'};
-  const one=look[0], goodTxt=good.length? cap1(good[0].say)+'. ' : '';
-  return {st:'look',word: good.length>=look.length? 'Mostly working' : 'Worth a look',say:goodTxt+cap1(one.fix)+'.'};
+  if(!good.length&&!look.length) return {st:'none',word:'Getting started',say:'This fills in as you weigh in, log sessions and log food.',sayAll:'This fills in as you weigh in, log sessions and log food.'};
+  const word= !look.length? 'Working' : (good.length>=look.length? 'Mostly working' : 'Worth a look');
+  return {st: look.length? 'look' : 'good', word, say:sayWith(signs.filter(s=>!s.dup)), sayAll:sayWith(signs)};
 }
 
 function signRow(s){
@@ -316,17 +329,17 @@ function goalLine(){
   const v=planVerdict(signs), name=planName(pd);
   signs.forEach(s=>{ if(s.why) GOAL_WHY[s.key]=s.why; });
   const dirTxt= pd.dir==='down'? 'down' : (pd.dir==='up'? 'up, slowly' : (pd.dir==='hold'? 'steady' : ''));
-  GOAL_WHY.plan={title:name,sub:'Your plan, in one place',now:v.say,
+  GOAL_WHY.plan={title:name,sub:'Your plan, in one place',now:v.sayAll,
     target:(pd.dir? 'Your weight has one direction in this plan: '+dirTxt+(pd.from==='target'? ', set by your goal weight of '+showW(pd.goal,imp) : ', set by your aim')+'. Everything else is judged against that same direction, so the rows never pull against each other.' : 'Each row is judged on its own: there is no weight direction in this plan.')
       +(pd.dir==='down'&&keepsMuscle()? ' Losing while building: the weight should come down slowly and your lifts should go up or hold. That is how you know muscle is being kept.' : ''),
     moves:['Tap any row for what it means and what moves it.','Change or add an aim below. Your goal weight lives on You.'],
     source:'Murphy and Koehler 2022; Garthe and colleagues 2010; Helms and colleagues 2014; Iraki and colleagues 2019. '+MOVE_SRC};
   const raw=signs.filter(s=>s.raw).map(s=>s.raw).join(''), rows=signs.filter(s=>!s.raw);
-  return `<section class="plan pl-${v.st}" aria-label="Your plan: ${escHabit(name)}. ${escHabit(v.word)}. ${escHabit(v.say)}">
+  return `<section class="plan pl-${v.st}" aria-label="Your plan: ${escHabit(name)}. ${escHabit(v.word)}.${v.say? ' '+escHabit(v.say) : ''}">
     <button class="plan-h" data-goalwhy="plan">
       <span class="plan-top"><span class="plan-k">Your plan</span><span class="plan-w">${v.word}</span></span>
       <span class="plan-n">${escHabit(name)}</span>
-      <span class="plan-say">${v.say}</span></button>
+      ${v.say? `<span class="plan-say">${v.say}</span>` : ''}</button>
     ${raw}
     ${rows.length? `<div class="plan-rows">${rows.map(signRow).join('')}</div>` : ''}
   </section>`;

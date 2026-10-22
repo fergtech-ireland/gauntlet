@@ -393,3 +393,11 @@ Feargal liked the fasting card and asked for the same design on every progress b
 - **Not changed.** The six rings, the You weight chart and card (the chart is the source of truth), the walk bar inside the session card, and the Eat tab macro bars (the Eat fasting card was already the same shape). Say if he wants any of those matched too.
 - **Tests.** Journey 87 (10 checks). Journey 79 and 85 updated for the version and the new release note. Full suite: build 12, regression 154, cta 59, uat 2,377, sw 29, rls 53.
 
+
+## Third-party UX review pack (22 Oct, after build 83; no app change, no build number)
+
+Feargal is passing the app to an outside review team for UX flow suggestions.
+- **Reviewer brief (doc):** https://claude.ai/artifact/T4YqgevK2CLxSKmnwSiSiJ. It covers the ask, what the app is, how to open it, twelve flows, design intent and the rules to keep, the feedback format, known gaps and test notes. Update it when builds change a flow or a gap closes (accounts, push, muscle map, health data).
+- **Sample history:** `tools/sample-data/make_sample.js` drives the app's own functions in jsdom, one simulated day at a time, and writes the app's own download JSON: a fictional person, five weeks, 31 weigh-ins, meals, 14 sessions, sleep, two habits, four weekly check-ins, a weight goal, ending yesterday. Run `node tools/sample-data/make_sample.js out.json [checkin day 0 Mon to 6 Sun, default 6]` after `npm install`. Reviewers load it in You, the gear, Your data, Restore from a download (after finishing onboarding). The dates are absolute, so regenerate it close to when it is used.
+- **Reviewers stay local-only:** the last onboarding step "Not now. Keep it on this phone only". Anonymous sign-ins and migrations 0002 and 0003 are not on the live project, and no email provider is set up.
+- The weekly check-in and Week in review are only offered on the person's check-in day (set at onboarding, no later way to change it), so a reviewer testing them must pick that day. Worth raising with Feargal: let the day be changed in settings.

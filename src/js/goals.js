@@ -335,7 +335,7 @@ function goalLine(){
     moves:['Tap any row for what it means and what moves it.','Change or add an aim below. Your goal weight lives on You.'],
     source:'Murphy and Koehler 2022; Garthe and colleagues 2010; Helms and colleagues 2014; Iraki and colleagues 2019. '+MOVE_SRC};
   const raw=signs.filter(s=>s.raw).map(s=>s.raw).join(''), rows=signs.filter(s=>!s.raw);
-  return `<section class="plan pl-${v.st}" aria-label="Your plan: ${escHabit(name)}. ${escHabit(v.word)}.${v.say? ' '+escHabit(v.say) : ''}">
+  return `<section class="plan pc tn-${v.st==='good'? 'green' : (v.st==='look'? 'amber' : 'mute')} pl-${v.st}" aria-label="Your plan: ${escHabit(name)}. ${escHabit(v.word)}.${v.say? ' '+escHabit(v.say) : ''}">
     <button class="plan-h" data-goalwhy="plan">
       <span class="plan-top"><span class="plan-k">Your plan</span><span class="plan-w">${v.word}</span></span>
       <span class="plan-n">${escHabit(name)}</span>

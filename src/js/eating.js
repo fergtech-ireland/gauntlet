@@ -462,24 +462,24 @@ function todayFast(at){
   if(!eatAdult()) return '';
   const w=windowState(typeof at==='number'? at : undefined); if(!w) return '';
   const p=w.pat, pct=Math.round(Math.max(0,Math.min(1,w.frac))*100);
-  let cls, kick, big, sub;
+  let cls, kick, big, sub, tone;
   if(w.open){
     const closing=w.leftMin<=60&&p.lenMin>=180; /* a one hour window is all closing, so it only says so for a longer one */
-    cls= closing? 'open closing' : 'open';
+    cls= closing? 'open closing' : 'open'; tone= closing? 'amber' : 'green';
     kick= closing? 'Window closing' : 'Eating window';
     big= fmtLeft(w.leftMin)+' left';
     sub= 'Closes at '+p.end;
   } else {
     const soon=w.opensInMin<=60;
-    cls= soon? 'shut soon' : 'shut';
+    cls= soon? 'shut soon' : 'shut'; tone='amber';
     kick= soon? 'Window opens soon' : 'Fasting';
     big= soon? 'Eat from '+p.start : fmtLeft(w.fastedMin);
     sub= soon? 'In '+fmtLeft(w.opensInMin) : 'Eat from '+p.start+', in '+fmtLeft(w.opensInMin);
   }
-  return `<button class="todayfast ${cls}" data-eatopen="1" aria-label="${kick}: ${big}. ${sub}. ${p.label}, ${p.start} to ${p.end}. Tap to change your eating pattern.">
-    <span class="tfk"><span>${kick}</span><span>${p.label} · ${p.start} to ${p.end}</span></span>
-    <span class="tfm"><b>${big}</b><span>${sub}</span></span>
-    <span class="tfbar" aria-hidden="true"><i style="width:${pct}%"></i></span></button>`;
+  return `<button class="todayfast pc tn-${tone} ${cls}" data-eatopen="1" aria-label="${kick}: ${big}. ${sub}. ${p.label}, ${p.start} to ${p.end}. Tap to change your eating pattern.">
+    <span class="pk"><span>${kick}</span><span>${p.label} · ${p.start} to ${p.end}</span></span>
+    <span class="pm"><b>${big}</b><span>${sub}</span></span>
+    <span class="pbar" aria-hidden="true"><i style="width:${pct}%"></i></span></button>`;
 }
 function eatPatternLabel(){
   const p=eatPat(); if(!p) return 'Regular meals';

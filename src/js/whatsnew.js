@@ -18,6 +18,8 @@
    Writing a note: what changed for the person, in their words, one line of
    why it matters if needed, no internal names. Bump APP_VERSION with it. */
 const RELEASE_NOTES=[
+  {v:'83', date:'2026-10-22', items:[
+    {t:'Progress cards that match', d:'The fasting card\'s look is now used for your weight goal, your plan and your routine on Today: a label, the number big with what it means beside it, and a bar, with a coloured edge that says how it is going. The weight goal also shows how many days are left next to the number.'}]},
   {v:'82', date:'2026-10-22', items:[
     {t:'Today follows what is next', d:'The weigh in is now the first thing Today asks for in the morning, ahead of breakfast, with a Not today button. After that it moves on to sleep, your session, meals and habits as the day goes. When your session is next, the session card carries the mark itself instead of a second card saying the same. When nothing is open, your plan comes up under it.'},
     {t:'Your fast, where you can see it', d:'If you fast, Today now has its own card under the rings: how long you have fasted and when eating opens, then how long is left in your window. Before, it was a small line inside the Meals card.', go:'eat', goLabel:'Open Eat', adult:true},

@@ -484,10 +484,14 @@ function weightLine(){
   const mid= wp.hit? 'Goal met' : `${n(now)} ${unit} · ${pct}%`;
   const scaleTxt= wp.last&&Math.abs(wp.scale-now)>=0.1? ' · scale '+n(wp.scale) : '';
   const look=outlookLine(o,imp);
-  return `<button class="wline st-${st}" data-go="progress" aria-label="Weight: trend ${showW(now,imp)}, started ${showW(from,imp)}, goal ${showW(goal,imp)}, ${pct}% of the way. ${look}. Tap for You.">
-    <span class="wlh"><span>Start <b>${n(from)}</b></span><b class="wnow">${mid}</b><span>Goal <b>${n(goal)}</b></span></span>
-    <span class="ybar"><i style="width:${pct}%"></i></span>
-    <span class="wls">${wp.hit? 'Set the next one on You' : 'Trend '+done+' · '+showW(wp.toGo,imp)+' to go'+left+scaleTxt}</span>
+  /* build 83: the same card as the fasting clock (label, big number with its
+     context, bar), coloured by whether the trend gets there */
+  const tone={green:'green',hit:'green',amber:'amber',red:'coral',none:'mute'}[st]||'mute';
+  return `<button class="wline pc tn-${tone} st-${st}" data-go="progress" aria-label="Weight: trend ${showW(now,imp)}, started ${showW(from,imp)}, goal ${showW(goal,imp)}, ${pct}% of the way. ${look}. Tap for You.">
+    <span class="pk"><span>Weight goal</span><span class="wlh">Start <b>${n(from)}</b> · Goal <b>${n(goal)}</b></span></span>
+    <span class="pm"><b class="wnow">${mid}</b><span class="wdl">${!wp.hit&&wp.daysLeft!==null&&wp.daysLeft>=0? wp.daysLeft+' days left' : ''}</span></span>
+    <span class="ybar pbar"><i style="width:${pct}%"></i></span>
+    <span class="wls">${wp.hit? 'Set the next one on You' : 'Trend '+done+' · '+showW(wp.toGo,imp)+' to go'+scaleTxt}</span>
     ${wp.hit? '' : `<span class="wlook">${look}</span>`}</button>`;
 }
 

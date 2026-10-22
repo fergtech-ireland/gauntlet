@@ -1664,12 +1664,12 @@ body.has-live .toast:not(.top){bottom:140px}
 .rvego{font-size:22px;color:var(--mute)}
 .rvbig{font-size:14.5px;color:var(--ink)}
 /* ---------- build 69: your routine ---------- */
-.routine{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.rt-top{padding:12px 14px 12px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
-.rt-top b{font-size:15px;font-weight:800}
-.rt-top span{font-size:12.5px;color:var(--mute)}
-.rt-top .bar{flex:1 0 100%;height:4px;border-radius:2px;background:var(--track);margin-top:8px}
-.rt-top .bar i{background:var(--green);border-radius:2px}
+.routine{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--green);border-radius:12px;overflow:hidden}
+.rt-top{padding:12px 14px 12px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 10px}
+.rt-top b{font-size:20px;font-weight:800;font-family:var(--font-num)}
+.rt-top span{font-size:13px;color:var(--sub);text-align:right}
+.rt-top .bar{flex:1 0 100%;height:6px;border-radius:99px;background:var(--track);margin-top:9px}
+.rt-top .bar i{background:var(--green);border-radius:99px}
 .rt-part{border-top:1px solid var(--line);padding:4px 0 6px;position:relative}
 .rt-part.now:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--green)}
 .rt-ph{display:flex;align-items:center;gap:8px;padding:8px 14px 2px}
@@ -1968,26 +1968,48 @@ body.rv-open .toast{z-index:310}
 .nextcard.thenonly{margin-top:8px;padding:8px 14px;border-left-color:var(--line)}
 .nextcard.thenonly .nthen{margin:0;padding:0;border:0}
 #todayView .quicks.one{grid-template-columns:1fr}
-/* build 82: the fasting clock on Today */
-.todayfast{display:block;width:100%;margin-top:12px;text-align:left;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:12px;padding:10px 14px 12px;min-height:44px}
-.todayfast.open{border-left-color:var(--green)}
-.todayfast .tfk{display:flex;justify-content:space-between;gap:10px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--amber-text)}
-.todayfast .tfk span:last-child{letter-spacing:0;text-transform:none;font-weight:700;color:var(--mute)}
-.todayfast.open .tfk span:first-child{color:var(--green-text)}
-.todayfast .tfm{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:3px}
-.todayfast .tfm b{font-size:20px;font-weight:800;line-height:1.15}
-.todayfast .tfm span{font-size:13px;color:var(--sub);text-align:right}
-.todayfast .tfbar{display:block;height:6px;border-radius:99px;background:var(--track);overflow:hidden;margin-top:9px}
-.todayfast .tfbar i{display:block;height:100%;border-radius:99px;background:var(--amber)}
-.todayfast.open .tfbar i{background:var(--green)}
-.todayfast.soon,.todayfast.closing{background:var(--amber-tint)}
-.todayfast.soon .tfk span:first-child,.todayfast.closing .tfk span:first-child{color:var(--amber-text)}
 
 
 /* ===== habit due times (build 81) ===== */
 .rt-cue.due{color:var(--coral-text);font-weight:700}
 .rt-cue.soon{color:var(--amber-text);font-weight:700}
 .due-chips small{font-weight:600;opacity:.8}
+
+/* build 83 (Feargal liked the fasting card): one progress card for Today.
+   A white card with a coloured edge, a small label with its context on the
+   right, the number big with what it means beside it, and a 6px bar. Used by
+   the fasting clock, the weight goal, the plan and the routine count. The tone
+   (green, amber, coral, mute) says how it is going. */
+.pc{--tone:var(--green);display:block;width:100%;margin-top:12px;text-align:left;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--tone);border-radius:12px;padding:10px 14px 12px}
+.pc.tn-green{--tone:var(--green)}
+.pc.tn-amber{--tone:var(--amber)}
+.pc.tn-coral{--tone:var(--coral)}
+.pc.tn-mute{--tone:var(--mute)}
+.pc .pk{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--green-text)}
+.pc.tn-amber .pk>span:first-child{color:var(--amber-text)}
+.pc.tn-coral .pk>span:first-child{color:var(--coral-text)}
+.pc.tn-mute .pk>span:first-child{color:var(--mute)}
+.pc .pk>span:last-child{letter-spacing:0;text-transform:none;font-weight:700;color:var(--mute)}
+.pc .pk b{color:var(--ink);font-weight:700}
+.pc .pm{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:3px}
+.pc .pm>b{flex:none;font-size:20px;font-weight:800;line-height:1.15;font-family:var(--font-num);color:var(--ink);letter-spacing:0}
+.pc .pm>span{font-size:13px;line-height:1.3;color:var(--sub);text-align:right}
+.pc .pbar,.pc .ybar{display:block;height:6px;border-radius:99px;background:var(--track);overflow:hidden;margin-top:9px}
+.pc .pbar i,.pc .ybar i{display:block;height:100%;border-radius:99px;background:var(--tone)}
+.pc .wlook{display:block;margin-top:8px;text-align:left;font-size:12.5px;font-weight:700}
+.todayfast.soon,.todayfast.closing{background:var(--amber-tint)}
+/* the weight goal inside the plan, and the plan itself */
+.plan.pc{padding:12px 14px 4px}
+.plan.pc .plan-k{font-size:11px;letter-spacing:.06em}
+.plan.pc.tn-green .plan-k{color:var(--green-text)}
+.plan.pc.tn-amber .plan-k{color:var(--amber-text)}
+.plan.pc.tn-mute .plan-k{color:var(--mute)}
+.plan.pc .wline.pc{margin:10px 0 0;padding:10px 0 12px;border:0;border-top:1px solid var(--line);border-radius:0;background:none}
+.plan.pc .wline.pc .pk{margin-bottom:0}
+.plan.pc .wline+.plan-rows{border-top:1px solid var(--line);margin-top:0}
+.pc .wlh{display:block}
+.pc .wls{display:block;margin-top:7px;font-size:12.5px;color:var(--mute);text-align:left}
+.pc .wls+.wlook{margin-top:3px}
 </style>
 </head>
 <body data-screen="today">
@@ -2287,7 +2309,7 @@ body.rv-open .toast{z-index:310}
 const HUE={run:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},workout:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},
   fast:{deep:'var(--amber-text)',tint:'var(--amber-tint)'},meal:{deep:'var(--coral-text)',tint:'var(--coral-tint)'},any:{deep:'var(--ink)',tint:'var(--track)'},
   walk:{deep:'var(--cyan-text)',tint:'var(--cyan-tint)'},rest:{deep:'var(--mute)',tint:'var(--track)'},checkin:{deep:'var(--green-text)',tint:'var(--green-tint)'}};
-const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='82';
+const MARIGOLD='var(--amber)', CLAY='var(--track)', STORE_KEY='gauntlet.v4', APP_VERSION='83';
 const VERB={run:'Run it',meal:'Cook it',workout:'Start it',fast:'Start the clock'};
 const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 
@@ -15505,24 +15527,24 @@ function todayFast(at){
   if(!eatAdult()) return '';
   const w=windowState(typeof at==='number'? at : undefined); if(!w) return '';
   const p=w.pat, pct=Math.round(Math.max(0,Math.min(1,w.frac))*100);
-  let cls, kick, big, sub;
+  let cls, kick, big, sub, tone;
   if(w.open){
     const closing=w.leftMin<=60&&p.lenMin>=180; /* a one hour window is all closing, so it only says so for a longer one */
-    cls= closing? 'open closing' : 'open';
+    cls= closing? 'open closing' : 'open'; tone= closing? 'amber' : 'green';
     kick= closing? 'Window closing' : 'Eating window';
     big= fmtLeft(w.leftMin)+' left';
     sub= 'Closes at '+p.end;
   } else {
     const soon=w.opensInMin<=60;
-    cls= soon? 'shut soon' : 'shut';
+    cls= soon? 'shut soon' : 'shut'; tone='amber';
     kick= soon? 'Window opens soon' : 'Fasting';
     big= soon? 'Eat from '+p.start : fmtLeft(w.fastedMin);
     sub= soon? 'In '+fmtLeft(w.opensInMin) : 'Eat from '+p.start+', in '+fmtLeft(w.opensInMin);
   }
-  return `<button class="todayfast ${cls}" data-eatopen="1" aria-label="${kick}: ${big}. ${sub}. ${p.label}, ${p.start} to ${p.end}. Tap to change your eating pattern.">
-    <span class="tfk"><span>${kick}</span><span>${p.label} · ${p.start} to ${p.end}</span></span>
-    <span class="tfm"><b>${big}</b><span>${sub}</span></span>
-    <span class="tfbar" aria-hidden="true"><i style="width:${pct}%"></i></span></button>`;
+  return `<button class="todayfast pc tn-${tone} ${cls}" data-eatopen="1" aria-label="${kick}: ${big}. ${sub}. ${p.label}, ${p.start} to ${p.end}. Tap to change your eating pattern.">
+    <span class="pk"><span>${kick}</span><span>${p.label} · ${p.start} to ${p.end}</span></span>
+    <span class="pm"><b>${big}</b><span>${sub}</span></span>
+    <span class="pbar" aria-hidden="true"><i style="width:${pct}%"></i></span></button>`;
 }
 function eatPatternLabel(){
   const p=eatPat(); if(!p) return 'Regular meals';
@@ -16526,10 +16548,14 @@ function weightLine(){
   const mid= wp.hit? 'Goal met' : `${n(now)} ${unit} · ${pct}%`;
   const scaleTxt= wp.last&&Math.abs(wp.scale-now)>=0.1? ' · scale '+n(wp.scale) : '';
   const look=outlookLine(o,imp);
-  return `<button class="wline st-${st}" data-go="progress" aria-label="Weight: trend ${showW(now,imp)}, started ${showW(from,imp)}, goal ${showW(goal,imp)}, ${pct}% of the way. ${look}. Tap for You.">
-    <span class="wlh"><span>Start <b>${n(from)}</b></span><b class="wnow">${mid}</b><span>Goal <b>${n(goal)}</b></span></span>
-    <span class="ybar"><i style="width:${pct}%"></i></span>
-    <span class="wls">${wp.hit? 'Set the next one on You' : 'Trend '+done+' · '+showW(wp.toGo,imp)+' to go'+left+scaleTxt}</span>
+  /* build 83: the same card as the fasting clock (label, big number with its
+     context, bar), coloured by whether the trend gets there */
+  const tone={green:'green',hit:'green',amber:'amber',red:'coral',none:'mute'}[st]||'mute';
+  return `<button class="wline pc tn-${tone} st-${st}" data-go="progress" aria-label="Weight: trend ${showW(now,imp)}, started ${showW(from,imp)}, goal ${showW(goal,imp)}, ${pct}% of the way. ${look}. Tap for You.">
+    <span class="pk"><span>Weight goal</span><span class="wlh">Start <b>${n(from)}</b> · Goal <b>${n(goal)}</b></span></span>
+    <span class="pm"><b class="wnow">${mid}</b><span class="wdl">${!wp.hit&&wp.daysLeft!==null&&wp.daysLeft>=0? wp.daysLeft+' days left' : ''}</span></span>
+    <span class="ybar pbar"><i style="width:${pct}%"></i></span>
+    <span class="wls">${wp.hit? 'Set the next one on You' : 'Trend '+done+' · '+showW(wp.toGo,imp)+' to go'+scaleTxt}</span>
     ${wp.hit? '' : `<span class="wlook">${look}</span>`}</button>`;
 }
 
@@ -21928,7 +21954,7 @@ function goalLine(){
     moves:['Tap any row for what it means and what moves it.','Change or add an aim below. Your goal weight lives on You.'],
     source:'Murphy and Koehler 2022; Garthe and colleagues 2010; Helms and colleagues 2014; Iraki and colleagues 2019. '+MOVE_SRC};
   const raw=signs.filter(s=>s.raw).map(s=>s.raw).join(''), rows=signs.filter(s=>!s.raw);
-  return `<section class="plan pl-${v.st}" aria-label="Your plan: ${escHabit(name)}. ${escHabit(v.word)}.${v.say? ' '+escHabit(v.say) : ''}">
+  return `<section class="plan pc tn-${v.st==='good'? 'green' : (v.st==='look'? 'amber' : 'mute')} pl-${v.st}" aria-label="Your plan: ${escHabit(name)}. ${escHabit(v.word)}.${v.say? ' '+escHabit(v.say) : ''}">
     <button class="plan-h" data-goalwhy="plan">
       <span class="plan-top"><span class="plan-k">Your plan</span><span class="plan-w">${v.word}</span></span>
       <span class="plan-n">${escHabit(name)}</span>
@@ -22959,6 +22985,8 @@ Object.assign(window.__G,{LEGAL,LEGAL_CONTACT,openLegal,closeLegal,ageFromBirth,
    Writing a note: what changed for the person, in their words, one line of
    why it matters if needed, no internal names. Bump APP_VERSION with it. */
 const RELEASE_NOTES=[
+  {v:'83', date:'2026-10-22', items:[
+    {t:'Progress cards that match', d:'The fasting card\'s look is now used for your weight goal, your plan and your routine on Today: a label, the number big with what it means beside it, and a bar, with a coloured edge that says how it is going. The weight goal also shows how many days are left next to the number.'}]},
   {v:'82', date:'2026-10-22', items:[
     {t:'Today follows what is next', d:'The weigh in is now the first thing Today asks for in the morning, ahead of breakfast, with a Not today button. After that it moves on to sleep, your session, meals and habits as the day goes. When your session is next, the session card carries the mark itself instead of a second card saying the same. When nothing is open, your plan comes up under it.'},
     {t:'Your fast, where you can see it', d:'If you fast, Today now has its own card under the rings: how long you have fasted and when eating opens, then how long is left in your window. Before, it was a small line inside the Meals card.', go:'eat', goLabel:'Open Eat', adult:true},

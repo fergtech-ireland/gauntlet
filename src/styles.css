@@ -1634,12 +1634,12 @@ body.has-live .toast:not(.top){bottom:140px}
 .rvego{font-size:22px;color:var(--mute)}
 .rvbig{font-size:14.5px;color:var(--ink)}
 /* ---------- build 69: your routine ---------- */
-.routine{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.rt-top{padding:12px 14px 12px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
-.rt-top b{font-size:15px;font-weight:800}
-.rt-top span{font-size:12.5px;color:var(--mute)}
-.rt-top .bar{flex:1 0 100%;height:4px;border-radius:2px;background:var(--track);margin-top:8px}
-.rt-top .bar i{background:var(--green);border-radius:2px}
+.routine{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--green);border-radius:12px;overflow:hidden}
+.rt-top{padding:12px 14px 12px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 10px}
+.rt-top b{font-size:20px;font-weight:800;font-family:var(--font-num)}
+.rt-top span{font-size:13px;color:var(--sub);text-align:right}
+.rt-top .bar{flex:1 0 100%;height:6px;border-radius:99px;background:var(--track);margin-top:9px}
+.rt-top .bar i{background:var(--green);border-radius:99px}
 .rt-part{border-top:1px solid var(--line);padding:4px 0 6px;position:relative}
 .rt-part.now:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--green)}
 .rt-ph{display:flex;align-items:center;gap:8px;padding:8px 14px 2px}
@@ -1938,23 +1938,45 @@ body.rv-open .toast{z-index:310}
 .nextcard.thenonly{margin-top:8px;padding:8px 14px;border-left-color:var(--line)}
 .nextcard.thenonly .nthen{margin:0;padding:0;border:0}
 #todayView .quicks.one{grid-template-columns:1fr}
-/* build 82: the fasting clock on Today */
-.todayfast{display:block;width:100%;margin-top:12px;text-align:left;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:12px;padding:10px 14px 12px;min-height:44px}
-.todayfast.open{border-left-color:var(--green)}
-.todayfast .tfk{display:flex;justify-content:space-between;gap:10px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--amber-text)}
-.todayfast .tfk span:last-child{letter-spacing:0;text-transform:none;font-weight:700;color:var(--mute)}
-.todayfast.open .tfk span:first-child{color:var(--green-text)}
-.todayfast .tfm{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:3px}
-.todayfast .tfm b{font-size:20px;font-weight:800;line-height:1.15}
-.todayfast .tfm span{font-size:13px;color:var(--sub);text-align:right}
-.todayfast .tfbar{display:block;height:6px;border-radius:99px;background:var(--track);overflow:hidden;margin-top:9px}
-.todayfast .tfbar i{display:block;height:100%;border-radius:99px;background:var(--amber)}
-.todayfast.open .tfbar i{background:var(--green)}
-.todayfast.soon,.todayfast.closing{background:var(--amber-tint)}
-.todayfast.soon .tfk span:first-child,.todayfast.closing .tfk span:first-child{color:var(--amber-text)}
 
 
 /* ===== habit due times (build 81) ===== */
 .rt-cue.due{color:var(--coral-text);font-weight:700}
 .rt-cue.soon{color:var(--amber-text);font-weight:700}
 .due-chips small{font-weight:600;opacity:.8}
+
+/* build 83 (Feargal liked the fasting card): one progress card for Today.
+   A white card with a coloured edge, a small label with its context on the
+   right, the number big with what it means beside it, and a 6px bar. Used by
+   the fasting clock, the weight goal, the plan and the routine count. The tone
+   (green, amber, coral, mute) says how it is going. */
+.pc{--tone:var(--green);display:block;width:100%;margin-top:12px;text-align:left;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--tone);border-radius:12px;padding:10px 14px 12px}
+.pc.tn-green{--tone:var(--green)}
+.pc.tn-amber{--tone:var(--amber)}
+.pc.tn-coral{--tone:var(--coral)}
+.pc.tn-mute{--tone:var(--mute)}
+.pc .pk{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--green-text)}
+.pc.tn-amber .pk>span:first-child{color:var(--amber-text)}
+.pc.tn-coral .pk>span:first-child{color:var(--coral-text)}
+.pc.tn-mute .pk>span:first-child{color:var(--mute)}
+.pc .pk>span:last-child{letter-spacing:0;text-transform:none;font-weight:700;color:var(--mute)}
+.pc .pk b{color:var(--ink);font-weight:700}
+.pc .pm{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:3px}
+.pc .pm>b{flex:none;font-size:20px;font-weight:800;line-height:1.15;font-family:var(--font-num);color:var(--ink);letter-spacing:0}
+.pc .pm>span{font-size:13px;line-height:1.3;color:var(--sub);text-align:right}
+.pc .pbar,.pc .ybar{display:block;height:6px;border-radius:99px;background:var(--track);overflow:hidden;margin-top:9px}
+.pc .pbar i,.pc .ybar i{display:block;height:100%;border-radius:99px;background:var(--tone)}
+.pc .wlook{display:block;margin-top:8px;text-align:left;font-size:12.5px;font-weight:700}
+.todayfast.soon,.todayfast.closing{background:var(--amber-tint)}
+/* the weight goal inside the plan, and the plan itself */
+.plan.pc{padding:12px 14px 4px}
+.plan.pc .plan-k{font-size:11px;letter-spacing:.06em}
+.plan.pc.tn-green .plan-k{color:var(--green-text)}
+.plan.pc.tn-amber .plan-k{color:var(--amber-text)}
+.plan.pc.tn-mute .plan-k{color:var(--mute)}
+.plan.pc .wline.pc{margin:10px 0 0;padding:10px 0 12px;border:0;border-top:1px solid var(--line);border-radius:0;background:none}
+.plan.pc .wline.pc .pk{margin-bottom:0}
+.plan.pc .wline+.plan-rows{border-top:1px solid var(--line);margin-top:0}
+.pc .wlh{display:block}
+.pc .wls{display:block;margin-top:7px;font-size:12.5px;color:var(--mute);text-align:left}
+.pc .wls+.wlook{margin-top:3px}
